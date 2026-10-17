@@ -172,6 +172,14 @@ function recibos(mes){
     r.valor+=a.valor;r.datas.push(a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
   return Object.values(g);
 }
+// No estilo que a Fernanda já usa: "Servicos de Fisioterapia dia 14 e 28 de julho de 2026."
+const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function descRecibo(base,datas){
+  const dias=[...new Set(datas.map(d=>+d.slice(8)))].sort((a,b)=>a-b).map(String);
+  const lista=dias.length>1?dias.slice(0,-1).join(', ')+' e '+dias.at(-1):dias[0];
+  const [a,m]=datas[0].split('-');
+  return `${base||'Servicos de Fisioterapia'} dia${dias.length>1?'s':''} ${lista} de ${MESES[+m-1]} de ${a}.`;
+}
 function fech(){
   const mes=$('f-mes').value, ano=mes.slice(0,4);
   const tot=S.at.filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
@@ -193,7 +201,7 @@ function fech(){
   const antes=S.lotes.filter(l=>l.tipo==='recibos'&&l.mes===mes);
   if(antes.length&&rs.length)erros.push(`Este mês já teve importação em ${new Date(antes[0].criado_em).toLocaleDateString('pt-BR')}. A lista abaixo traz só os atendimentos novos.`);
   const linhas=rs.map(r=>{const p=pacDe(r.pac);
-    const desc=ascii(`${c.descricao} - atendimento${r.datas.length>1?'s':''} em ${r.datas.map(d=>dBR(d).slice(0,5)).join(', ')}`).slice(0,255);
+    const desc=ascii(descRecibo(c.descricao,r.datas)).slice(0,255);
     return [dBR(r.data),'R01.001.001',c.ocupacao,vcsv(r.valor),'',desc,'PF',p.cpf_pagador||p.cpf,p.cpf,'','','','','S',so(c.cpf),ascii(c.registro)].join(';');});
   $('f-lista').innerHTML=rs.length?rs.map(r=>`<div class="item"><div><b>${esc(pacDe(r.pac).nome)}</b><div class="meta">${r.datas.map(dBR).join(', ')}</div></div><div class="num">${brl(r.valor)}</div></div>`).join('')
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
@@ -211,7 +219,7 @@ $('b-emitidos').onclick=()=>fechaLote('recibos',$('f-mes').value,recibos($('f-me
 function cfgTela(){const c=S.prof;$('c-nome').value=c.nome;$('c-cpf').value=fmtCpf(c.cpf);$('c-ocup').value=c.ocupacao;$('c-reg').value=c.registro;$('c-desc').value=c.descricao;}
 $('f-cfg').onsubmit=async e=>{e.preventDefault();const cpf=so($('c-cpf').value);
   if(cpf&&!cpfOk(cpf)){avisa('CPF da profissional inválido.',true);return}
-  const novo={nome:$('c-nome').value.trim(),cpf,ocupacao:$('c-ocup').value,registro:$('c-reg').value.trim(),descricao:$('c-desc').value.trim()||'Sessao de fisioterapia'};
+  const novo={nome:$('c-nome').value.trim(),cpf,ocupacao:$('c-ocup').value,registro:$('c-reg').value.trim(),descricao:$('c-desc').value.trim()||'Servicos de Fisioterapia'};
   if(falhou(await sb.from('profissionais').update(novo).eq('id',S.prof.id),'salvar os dados'))return;
   Object.assign(S.prof,novo);render();avisa('Dados salvos.');};
 async function acessosTela(){
