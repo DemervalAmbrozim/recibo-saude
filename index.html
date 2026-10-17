@@ -186,6 +186,12 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
       <button class="pri" type="submit">Salvar</button>
     </form>
     <div class="card">
+      <h2>Link da profissional (WhatsApp)</h2>
+      <div class="sub">A profissional lança os atendimentos por este link, sem login, e manda o resumo para o WhatsApp da Assessoria. Gerar um link novo desliga o anterior.</div>
+      <input id="lk-url" readonly class="mono">
+      <div class="btns"><button id="b-link" type="button">Gerar link</button><button id="b-link-copiar" type="button">Copiar link</button><button id="b-link-zap" type="button">Mandar link pelo WhatsApp</button></div>
+    </div>
+    <div class="card">
       <h2>Acesso do assessor</h2>
       <div class="sub">Quem cuida do seu Carnê-Leão vê seus atendimentos e fecha o mês. A pessoa precisa ter entrado no app uma vez.</div>
       <label>E-mail do assessor <input id="as-email" type="email"></label>

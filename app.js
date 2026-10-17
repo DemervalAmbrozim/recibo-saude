@@ -61,7 +61,7 @@ async function abrir(id){
     sb.from('lotes').select('*').eq('profissional_id',id).order('criado_em',{ascending:false})]);
   if([p,a,d,l].some(r=>falhou(r,'carregar os dados')))return;
   S.pac=p.data; S.at=a.data.map(x=>({...x,valor:+x.valor})); S.desp=d.data.map(x=>({...x,valor:+x.valor})); S.lotes=l.data;
-  cfgTela();render();despTela();acessosTela();if(!$('t-fech').hidden)fech();
+  cfgTela();render();despTela();acessosTela();linkTela();if(!$('t-fech').hidden)fech();
 }
 
 // ---------- Abas ----------
@@ -236,6 +236,18 @@ $('b-assessor').onclick=async()=>{const em=$('as-email').value.trim();if(!em)ret
   if(r.error){avisa(/conta/.test(r.error.message)?'Essa pessoa ainda não entrou no app. Peça para ela entrar uma vez.':'Não consegui dar o acesso.',true);return}
   $('as-email').value='';acessosTela();avisa('Acesso dado.');};
 $('b-bkp').onclick=()=>copia(JSON.stringify({profissional:S.prof,pacientes:S.pac,atendimentos:S.at,despesas:S.desp,lotes:S.lotes}));
+
+// ---------- Link da profissional ----------
+const urlLink=tok=>new URL('lancar.html#'+tok,location.href).href;
+async function linkTela(){
+  const r=await sb.from('links').select('token').eq('profissional_id',S.prof.id).eq('ativo',true).limit(1);
+  $('lk-url').value=r.data&&r.data[0]?urlLink(r.data[0].token):'';
+}
+$('b-link').onclick=async()=>{const r=await sb.rpc('gerar_link',{prof:S.prof.id});
+  if(falhou(r,'gerar o link'))return;$('lk-url').value=urlLink(r.data);avisa('Link novo gerado. O anterior parou de funcionar.');};
+$('b-link-copiar').onclick=()=>$('lk-url').value&&copia($('lk-url').value,$('lk-url'));
+$('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
+  location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link do Recibo Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos:\n${$('lk-url').value}`);};
 
 // ---------- Início ----------
 const h=hojeISO();$('a-data').value=h;$('a-mes').value=h.slice(0,7);$('f-mes').value=h.slice(0,7);$('d-data').value=h;$('d-mes').value=h.slice(0,7);
