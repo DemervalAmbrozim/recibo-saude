@@ -174,13 +174,13 @@ function recibos(mes){
     r.valor+=a.valor;r.datas.push(a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
   return Object.values(g);
 }
-// No estilo que a Fernanda já usa: "Servicos de Fisioterapia dia 14 e 28 de julho de 2026."
+// No estilo dos recibos da Fernanda: "Servicos de Fisioterapia nos dias 03, 10 e 31 de Agosto de 2026."
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 function descRecibo(base,datas){
-  const dias=[...new Set(datas.map(d=>+d.slice(8)))].sort((a,b)=>a-b).map(String);
+  const dias=[...new Set(datas.map(d=>d.slice(8)))].sort();
   const lista=dias.length>1?dias.slice(0,-1).join(', ')+' e '+dias.at(-1):dias[0];
-  const [a,m]=datas[0].split('-');
-  return `${base||'Servicos de Fisioterapia'} dia${dias.length>1?'s':''} ${lista} de ${MESES[+m-1]} de ${a}.`;
+  const [a,m]=datas[0].split('-'), nm=MESES[+m-1];
+  return `${base||'Servicos de Fisioterapia'} ${dias.length>1?'nos dias':'no dia'} ${lista} de ${nm[0].toUpperCase()+nm.slice(1)} de ${a}.`;
 }
 function fech(){
   const mes=$('f-mes').value, ano=mes.slice(0,4);
