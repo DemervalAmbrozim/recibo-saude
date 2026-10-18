@@ -190,7 +190,7 @@ function fech(){
   $('f-calc').innerHTML=[['Recebido no mês',brl(tot)],[cl.usaSimpl?'Desconto simplificado (maior que as despesas)':'Despesas do livro-caixa',brl(cl.deducao)],
     ['Base de cálculo',brl(cl.base)],['Imposto pela tabela',brl(cl.bruto)],['Redução de 2026',brl(cl.red)],
     ['<b>Carnê-Leão a pagar</b>',`<b>${brl(cl.devido)}</b>`],['Vencimento',cl.devido>0?venc.toLocaleDateString('pt-BR'):'nada a pagar']]
-    .map(([a,b])=>`<div class="item"><span>${a}</span><span class="num">${b}</span></div>`).join('')+'<div class="sub">Estimativa. O valor oficial é o do Carnê-Leão Web.</div>';
+    .map(([a,b])=>`<div class="item"><span>${a}</span><span class="num">${b}</span></div>`).join('')+'<div class="sub">Tabela de 2026 conferida na Receita em 18/10/2026. O valor que vale é o do Carnê-Leão Web.</div>';
   const m=$('f-meter');m.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');
   m.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('f-faixa').textContent=tot<=LIM?`Dentro da isenção de 2026: faltam ${brl(LIM-tot)} para ${brl(LIM)}.`
@@ -213,6 +213,18 @@ $('b-copiar').onclick=()=>copia($('f-csv').value,$('f-csv'));
 $('b-baixar').onclick=()=>$('f-csv').value&&baixa('recibos-'+$('f-mes').value+'.csv',$('f-csv').value);
 $('b-zap').onclick=()=>{const rs=recibos($('f-mes').value);
   copia(`Recibos de ${$('f-mes').value.split('-').reverse().join('/')}:\n`+rs.map(r=>`${pacDe(r.pac).nome}: ${brl(r.valor)} (${r.datas.map(d=>dBR(d).slice(0,5)).join(', ')})`).join('\n')+`\nTotal: ${brl(rs.reduce((s,r)=>s+r.valor,0))}`);};
+// Mensagem que vai para a profissional junto com os PDFs: recibos já emitidos no mês, faixa e Carnê-Leão
+$('b-devol').onclick=()=>{const mes=$('f-mes').value,[aa,mm]=mes.split('-').map(Number),g={};
+  S.at.filter(a=>a.data.startsWith(mes)&&a.lote_id).forEach(a=>{(g[a.paciente_id]=g[a.paciente_id]||[]).push(a)});
+  const linhas=Object.entries(g).map(([id,as])=>`• ${pacDe(id).nome}: ${brl(as.reduce((s,a)=>s+a.valor,0))}`);
+  if(!linhas.length){avisa('Nenhum recibo emitido neste mês ainda. Marque como emitidos primeiro.',true);return}
+  const tot=S.at.filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
+  const cl=carneLeao(tot,S.desp.filter(d=>d.data.startsWith(mes)).reduce((s,d)=>s+d.valor,0));
+  const venc=new Date(aa,mm+1,0);while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
+  copia(`Olá, ${S.prof.nome.split(' ')[0]}! Seus recibos de ${MESES[mm-1].replace('marco','março')}/${aa} já foram emitidos no Receita Saúde:\n`+linhas.join('\n')
+    +`\n\nConfira e encaminhe cada PDF ao paciente.\nTotal do mês: ${brl(tot)}. `
+    +(cl.devido>0?`Carnê-Leão a pagar: ${brl(cl.devido)}, vence em ${venc.toLocaleDateString('pt-BR')}. O DARF vai em seguida.`
+      :tot<=LIM?`Dentro da isenção: nada de Carnê-Leão este mês.`:`Carnê-Leão zerado pela redução de 2026.`));};
 $('b-emitidos').onclick=()=>fechaLote('recibos',$('f-mes').value,recibos($('f-mes').value).flatMap(r=>r.ids));
 
 // ---------- Ajustes ----------
