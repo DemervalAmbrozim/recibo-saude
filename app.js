@@ -200,6 +200,8 @@ function fech(){
   $('f-ano').textContent=`No ano ${ano}: ${brl(tano)} recebidos.`;
   const c=S.prof, rs=recibos(mes), erros=[];
   if(!cpfOk(c.cpf))erros.push('Preencha o CPF da profissional em Ajustes.');
+  if(!(c.registro||'').trim())erros.push('Preencha o registro no conselho (CREFITO) em Ajustes.');
+  const falta=erros.length; // sem CPF ou registro a Receita recusa o arquivo: não gera
   const antes=S.lotes.filter(l=>l.tipo==='recibos'&&l.mes===mes);
   if(antes.length&&rs.length)erros.push(`Este mês já teve importação em ${new Date(antes[0].criado_em).toLocaleDateString('pt-BR')}. A lista abaixo traz só os atendimentos novos.`);
   const linhas=rs.map(r=>{const p=pacDe(r.pac);
@@ -208,7 +210,7 @@ function fech(){
   $('f-lista').innerHTML=rs.length?rs.map(r=>`<div class="item"><div><b>${esc(pacDe(r.pac).nome)}</b><div class="meta">${r.datas.map(dBR).join(', ')}</div></div><div class="num">${brl(r.valor)}</div></div>`).join('')
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
   $('f-erros').innerHTML=[...new Set(erros)].map(t=>`<div class="msg err">${esc(t)}</div>`).join('');
-  $('f-csv').value=linhas.join('\r\n');
+  $('f-csv').value=falta?'':linhas.join('\r\n');
 }
 $('f-mes').onchange=fech;$('f-agrupa').onchange=fech;
 $('b-copiar').onclick=()=>copia($('f-csv').value,$('f-csv'));
