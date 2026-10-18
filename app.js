@@ -68,7 +68,9 @@ async function abrir(id){
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tab').forEach(s=>s.hidden=s.id!==b.dataset.t);
   document.querySelectorAll('nav button').forEach(x=>x===b?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));
-  if(b.dataset.t==='t-fech')fech();});
+  if(b.dataset.t==='t-fech')S.prof?abrir(S.prof.id):fech();}); // recarrega: a profissional pode ter lançado pelo link
+// Ao voltar para o app (celular), traz o que entrou pelo link enquanto ele estava aberto
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.prof)abrir(S.prof.id);});
 
 // ---------- Atendimentos e pacientes ----------
 function render(){
