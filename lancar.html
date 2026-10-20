@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Recibo Saúde Fácil</title>
 <meta name="robots" content="noindex">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="profissional.webmanifest">
+<link rel="apple-touch-icon" href="icone-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -66,19 +68,56 @@ nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px
 nav button{border:0;border-radius:0;background:transparent;color:var(--muted);font-size:13px;padding:14px 4px}
 nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--bg);border-radius:8px;padding:10px;min-width:0}
+.kpi .sub{font-size:12px}
+.kpi b{display:block;font-family:var(--mono);font-size:15px;margin-top:2px;overflow-wrap:anywhere}
+details{border-top:1px solid var(--line);padding:10px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600}
+details p{margin:8px 0 0;color:var(--muted)}
+.dia{font-family:var(--mono);font-weight:600;min-width:52px}
+@media (max-width:400px){.grid3{grid-template-columns:1fr 1fr}.grid3>.kpi:last-child{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <main>
   <header class="head">
-    <h1 id="nome">Recibo Saúde Fácil</h1>
-    <span class="sub">Lançamento de atendimentos</span>
+    <h1 id="nome">Recibo Saúde</h1>
+    <span class="sub" id="sub">Seu financeiro do consultório</span>
   </header>
   <div id="aviso" class="msg" hidden></div>
   <div id="ruim" class="card" hidden><h2>Link inválido</h2><div class="sub">Este link não vale mais. Peça um novo pelo WhatsApp da Assessoria: 27 99971-2727.</div></div>
 
-  <div id="tela" hidden style="display:grid;gap:16px">
+  <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
+  <section id="t-ini" hidden style="display:grid;gap:16px">
+    <div class="card">
+      <div class="head"><h2>Seu mês</h2><input id="i-mes" type="month" style="width:auto;padding:6px 8px"></div>
+      <div class="grid3">
+        <div class="kpi"><span class="sub">Recebido</span><b id="i-rec">–</b></div>
+        <div class="kpi"><span class="sub">Despesas que abatem</span><b id="i-desp">–</b></div>
+        <div class="kpi"><span class="sub">Carnê-Leão</span><b id="i-imp">–</b></div>
+      </div>
+      <div class="meter" id="i-meter"><i style="width:0"></i></div>
+      <div class="sub" id="i-faixa"></div>
+      <div class="msg" id="i-guardar"></div>
+      <div class="list" id="i-locais"></div>
+    </div>
+    <div class="card">
+      <h2>Próximos compromissos</h2>
+      <div class="list" id="i-agenda"></div>
+    </div>
+    <div class="card" id="i-pendcard">
+      <h2>Aguardando recibo</h2>
+      <div class="list" id="pend"></div>
+      <button class="pri" id="b-zap" type="button">Enviar para a Assessoria pelo WhatsApp</button>
+      <div class="sub">Abre o WhatsApp com o resumo pronto. Nós emitimos os recibos e devolvemos os PDFs por lá para você conferir e encaminhar aos pacientes.</div>
+    </div>
+  </section>
+
+  <!-- LANÇAR: atendimento -->
+  <section id="t-lan" hidden style="display:grid;gap:16px">
     <form class="card" id="f-at">
       <h2>Novo atendimento</h2>
       <label>Paciente <select id="pac"></select></label>
@@ -87,6 +126,7 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
         <label>CPF do paciente <input id="n-cpf" inputmode="numeric" placeholder="só números"></label>
         <label>CPF de quem paga (só se for outra pessoa, ex.: mãe de criança) <input id="n-pag" inputmode="numeric"></label>
       </div>
+      <label id="l-local">Onde foi o atendimento <select id="a-local"></select></label>
       <div class="row">
         <label>Data <input id="data" type="date" required></label>
         <label>Valor (R$) <input id="valor" inputmode="decimal" placeholder="150,00" required></label>
@@ -95,20 +135,90 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
         <select id="forma"><option>Pix</option><option>Dinheiro</option><option>Cartão</option><option>Transferência</option></select></label>
       <button class="pri" type="submit">Salvar atendimento</button>
     </form>
-
     <div class="card">
-      <h2>Aguardando recibo</h2>
-      <div class="list" id="pend"></div>
-      <button class="pri" id="b-zap" type="button">Enviar para a Assessoria pelo WhatsApp</button>
-      <div class="sub">Abre o WhatsApp com o resumo pronto para a Assessoria (27 99971-2727). Nós emitimos os recibos e devolvemos os PDFs por lá para você conferir e encaminhar aos pacientes.</div>
-    </div>
-
-    <div class="card">
-      <h2>Recibos já emitidos</h2>
+      <h2>Últimos atendimentos</h2>
       <div class="list" id="feitos"></div>
     </div>
-  </div>
+  </section>
+
+  <!-- DESPESAS: livro-caixa, fixas e locais -->
+  <section id="t-desp" hidden style="display:grid;gap:16px">
+    <form class="card" id="f-desp">
+      <h2>Lançar despesa</h2>
+      <label>Tipo de despesa <select id="d-cod"></select></label>
+      <label>De qual local <select id="d-local"></select></label>
+      <div class="row">
+        <label>Data do pagamento <input id="d-data" type="date" required></label>
+        <label>Valor da conta (R$) <input id="d-valor" inputmode="decimal" placeholder="312,40" required></label>
+      </div>
+      <label>Observação (opcional) <input id="d-obs" placeholder="ex.: conta de outubro"></label>
+      <div class="sub" id="d-prev"></div>
+      <button class="pri" type="submit">Salvar despesa</button>
+      <div class="sub">Guarde o comprovante por 5 anos, no seu nome e CPF.</div>
+    </form>
+    <div class="card">
+      <div class="head"><h2>Despesas do mês</h2><input id="d-mes" type="month" style="width:auto;padding:6px 8px"></div>
+      <div class="list" id="l-desp"></div>
+    </div>
+    <div class="card">
+      <h2>Contas fixas</h2>
+      <div class="sub">Cadastre uma vez. Todo mês aparece aqui e na agenda; é só tocar em "Lançar" e conferir o valor.</div>
+      <div class="list" id="l-fixas"></div>
+      <details><summary>+ Nova conta fixa</summary>
+        <form id="f-fixa" style="display:grid;gap:12px;margin-top:10px">
+          <label>Tipo <select id="x-cod"></select></label>
+          <label>Local <select id="x-local"></select></label>
+          <div class="row">
+            <label>Valor de costume (R$) <input id="x-valor" inputmode="decimal" required></label>
+            <label>Dia do vencimento <input id="x-dia" type="number" min="1" max="31" required></label>
+          </div>
+          <button class="pri" type="submit">Salvar conta fixa</button>
+        </form>
+      </details>
+    </div>
+    <div class="card">
+      <h2>Meus locais de atendimento</h2>
+      <div class="list" id="l-locais"></div>
+      <details><summary>+ Novo local</summary>
+        <form id="f-local" style="display:grid;gap:12px;margin-top:10px">
+          <label>Nome <input id="o-nome" placeholder="ex.: Consultório Praia do Canto" required></label>
+          <label>Tipo <select id="o-tipo">
+            <option value="consultorio">Consultório próprio ou alugado só para o trabalho</option>
+            <option value="sala">Sala dividida ou sublocada (lance só a sua parte)</option>
+            <option value="casa">Minha casa, que também é consultório</option>
+            <option value="domicilio">Na casa dos pacientes (domiciliar)</option></select></label>
+          <div class="sub" id="o-regra"></div>
+          <button class="pri" type="submit">Salvar local</button>
+        </form>
+      </details>
+    </div>
+  </section>
+
+  <!-- AGENDA: vencimentos -->
+  <section id="t-ag" hidden style="display:grid;gap:16px">
+    <div class="card">
+      <h2>Agenda fiscal</h2>
+      <div class="sub">Seus vencimentos dos próximos 90 dias. Em breve, os lembretes chegam também pelo WhatsApp.</div>
+      <div class="list" id="ag-lista"></div>
+    </div>
+  </section>
+
+  <!-- AJUDA -->
+  <section id="t-aj" hidden style="display:grid;gap:16px">
+    <div class="card" id="aj-lista"></div>
+    <div class="card">
+      <h2>Ficou alguma dúvida?</h2>
+      <button class="pri" id="b-duvida" type="button">Perguntar à Assessoria pelo WhatsApp</button>
+    </div>
+  </section>
 </main>
+<nav id="nav" hidden>
+  <button data-t="t-ini" aria-current="page">Início</button>
+  <button data-t="t-lan">Lançar</button>
+  <button data-t="t-desp">Despesas</button>
+  <button data-t="t-ag">Agenda</button>
+  <button data-t="t-aj">Ajuda</button>
+</nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="lancar.js"></script>

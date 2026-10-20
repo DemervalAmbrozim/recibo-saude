@@ -1,35 +1,97 @@
-// Tela da profissional, aberta pelo link do WhatsApp (lancar.html#<código>). Sem login: tudo passa pelas funções link_* do banco.
+// App da profissional, aberto pelo link do WhatsApp (lancar.html#<código>) e instalável no celular.
+// Sem login: tudo passa pelas funções link_* do banco. O código fica guardado no aparelho para o app instalado abrir sozinho.
 const sb = supabase.createClient(CONFIG.url, CONFIG.chave);
 const ZAP = '5527999712727'; // WhatsApp da Assessoria até o produto ir ao mercado (decisão de 17/10/2026)
-const TOK = location.hash.slice(1).replace(/^t=/, '');
+const guarda={get(){try{return localStorage.getItem('rs_tok')||''}catch(e){return ''}},set(t){try{localStorage.setItem('rs_tok',t)}catch(e){}}};
+const TOK = location.hash.slice(1).replace(/^t=/, '') || guarda.get();
 const $=id=>document.getElementById(id);
 const so=s=>String(s||'').replace(/\D/g,'');
 const brl=n=>(+n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const dBR=iso=>iso.split('-').reverse().join('/');
-const hojeISO=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const iso=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const hojeISO=()=>iso(new Date());
+const num=v=>parseFloat(String(v).replace(/\./g,'').replace(',','.'));
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cpfOk(c){c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
   for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true}
 function avisa(t,err){const a=$('aviso');a.textContent=t;a.className='msg'+(err?' err':'');a.hidden=false;clearTimeout(avisa.t);avisa.t=setTimeout(()=>a.hidden=true,5000)}
 
+// ---------- Regras: plano de contas da Receita (P10), locais e Carnê-Leão 2026 (iguais às do painel, app.js) ----------
+const P10=[['00002','Aluguel do consultório'],['00003','Condomínio do consultório'],['00001','Água do consultório'],['00007','Energia do consultório'],
+  ['00014','Telefone e internet do consultório'],['00008','Gás do consultório'],['00009','IPTU do consultório'],['00004','Anuidade do conselho (CREFITO etc.)'],
+  ['00011','Material de limpeza do consultório'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
+  ['00005','Cópias e autenticações'],['00006','Emolumentos pagos a terceiros']].map(([c,n])=>['P10.01.'+c,n]);
+const IMOVEL=['00001','00002','00003','00007','00008','00009','00014'].map(c=>'P10.01.'+c); // contas que dependem do local
+const nomeCod=c=>(P10.find(x=>x[0]===c)||[c,c])[1];
+const TIPOS={consultorio:['Consultório',1,'Abate 100% das contas deste local.'],sala:['Sala dividida',1,'Abate 100% da parte que você paga.'],
+  casa:['Casa e consultório',0.2,'Abate 1/5 (20%) das contas da casa, porque a casa também é moradia.'],
+  domicilio:['Domiciliar',0,'Sem conta de imóvel para abater. Combustível e carro não abatem no Carnê-Leão.']};
+const LIM=5000, LIM2=7350, SIMPL=607.20;
+const TAB=[[2428.80,0,0],[2826.65,.075,182.16],[3751.05,.15,394.16],[4664.68,.225,675.49],[Infinity,.275,908.73]];
+function carneLeao(rend,desp){
+  const deducao=Math.max(desp,SIMPL), base=Math.max(0,rend-deducao);
+  const [,al,pd]=TAB.find(f=>base<=f[0]); const bruto=Math.max(0,base*al-pd);
+  const red=rend<=LIM?Math.min(bruto,312.89):rend<=LIM2?Math.max(0,978.62-0.133145*rend):0;
+  return {deducao,usaSimpl:desp<SIMPL,devido:Math.max(0,Math.round((bruto-red)*100)/100)};
+}
+function ultimoDiaUtil(a,m){const d=new Date(a,m+1,0);while([0,6].includes(d.getDay()))d.setDate(d.getDate()-1);return d} // m: 0-11
+const mesDe=(a,m)=>`${a}-${String(m+1).padStart(2,'0')}`;
+const NOMES_MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
 let D=null;
+const localDe=id=>D.locais.find(l=>l.id===id);
+const opLocais=(soDedutiveis,vazio)=>(vazio?`<option value="">${vazio}</option>`:'')+D.locais.filter(l=>!soDedutiveis||TIPOS[l.tipo][1]>0)
+  .map(l=>`<option value="${l.id}">${esc(l.nome)} (${TIPOS[l.tipo][0]})</option>`).join('');
+const totMes=m=>D.atendimentos.filter(a=>a.data.startsWith(m)).reduce((s,a)=>s+ +a.valor,0);
+const despMes=m=>D.despesas.filter(d=>d.data.startsWith(m));
+
 async function carrega(){
   const r=await sb.rpc('link_dados',{tok:TOK});
-  if(r.error){$('ruim').hidden=false;$('tela').hidden=true;return}
-  D=r.data;$('tela').hidden=false;
-  $('nome').textContent=D.nome||'Recibo Saúde Fácil';
+  if(r.error){$('ruim').hidden=false;['t-ini','t-lan','t-desp','t-ag','t-aj','nav'].forEach(i=>$(i).hidden=true);return}
+  D=r.data;D.locais=D.locais||[];D.fixas=D.fixas||[];D.despesas=D.despesas||[];
+  guarda.set(TOK);if(location.hash)history.replaceState(null,'',location.pathname);
+  $('nome').textContent=D.nome||'Recibo Saúde';$('nav').hidden=false;
+  if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
+  telaIni();telaLan();telaDesp();telaAg();
+}
+function mostra(t){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
+  document.querySelectorAll('nav button').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));scrollTo(0,0)}
+$('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
+
+// ---------- Início ----------
+function telaIni(){
+  const m=$('i-mes').value, tot=totMes(m), ds=despMes(m), desp=ds.reduce((s,d)=>s+ +d.valor,0), cl=carneLeao(tot,desp);
+  $('i-rec').textContent=brl(tot);$('i-desp').textContent=brl(desp);$('i-imp').textContent=cl.devido>0?brl(cl.devido):'R$ 0,00';
+  const me=$('i-meter');me.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');me.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
+  $('i-faixa').textContent=tot<=LIM?`Isenção de 2026: até ${brl(LIM)} no mês não paga Carnê-Leão. Faltam ${brl(LIM-tot)}.`
+    :tot<=LIM2?`Passou de ${brl(LIM)}: o imposto tem desconto parcial em 2026.`:`Acima de ${brl(LIM2)}: imposto sem desconto.`;
+  const [a,mm]=m.split('-').map(Number), venc=ultimoDiaUtil(a,mm);
+  $('i-guardar').textContent=cl.devido>0?`Guarde ${brl(cl.devido)} para o Carnê-Leão deste mês. Vence em ${venc.toLocaleDateString('pt-BR')}; a Assessoria manda o DARF.`
+    :desp<SIMPL&&tot>LIM?`Suas despesas (${brl(desp)}) são menores que o desconto padrão de ${brl(SIMPL)}; o cálculo usa o desconto padrão.`
+    :'Nada a guardar de imposto neste mês.';
+  const porLocal={};D.atendimentos.filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
+  const ks=Object.keys(porLocal);
+  $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';
+  $('i-agenda').innerHTML=agenda().slice(0,3).map(itemAg).join('')||'<div class="sub">Nada nos próximos dias.</div>';
+  const pend=D.atendimentos.filter(x=>!x.emitido);
+  $('pend').innerHTML=pend.length?pend.map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${esc(x.forma)}</div></div>
+    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-del="${x.id}" type="button">Excluir</button></div></div>`).join('')
+    +`<div class="item"><b>Total</b><b class="num">${brl(pend.reduce((s,x)=>s+ +x.valor,0))}</b></div>`
+    :'<div class="sub">Nada aguardando recibo. Lance os atendimentos na aba Lançar.</div>';
+  $('b-zap').hidden=!pend.length;
+}
+$('i-mes').onchange=telaIni;
+
+// ---------- Lançar ----------
+function telaLan(){
   const sel=$('pac').value;
   $('pac').innerHTML='<option value="">Escolha o paciente</option>'+D.pacientes.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')+'<option value="novo">+ Paciente novo</option>';
   if(sel&&[...$('pac').options].some(o=>o.value===sel))$('pac').value=sel;
   $('novo').hidden=$('pac').value!=='novo';
-  const pend=D.atendimentos.filter(a=>!a.emitido), feitos=D.atendimentos.filter(a=>a.emitido);
-  $('pend').innerHTML=pend.length?pend.map(a=>`<div class="item"><div><b>${esc(a.paciente)}</b><div class="meta">${dBR(a.data)} · ${esc(a.forma)}</div></div>
-    <div style="text-align:right"><div class="num">${brl(a.valor)}</div><button class="small" data-del="${a.id}" type="button">Excluir</button></div></div>`).join('')
-    +`<div class="item"><b>Total</b><b class="num">${brl(pend.reduce((s,a)=>s+ +a.valor,0))}</b></div>`
-    :'<div class="sub">Nada aguardando. Lance o atendimento acima.</div>';
-  $('b-zap').hidden=!pend.length;
-  $('feitos').innerHTML=feitos.length?feitos.slice(0,30).map(a=>`<div class="item"><div><b>${esc(a.paciente)}</b><div class="meta">${dBR(a.data)}</div></div><span class="pill">recibo emitido</span></div>`).join('')
-    :'<div class="sub">Ainda não há recibos emitidos por aqui.</div>';
+  const lsel=$('a-local').value;$('a-local').innerHTML=opLocais(false,D.locais.length?'':'Cadastre seus locais na aba Despesas');
+  if(lsel)$('a-local').value=lsel;$('l-local').hidden=!D.locais.length;
+  $('feitos').innerHTML=D.atendimentos.slice(0,30).map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)}${x.local_id&&localDe(x.local_id)?' · '+esc(localDe(x.local_id).nome):''}</div></div>
+    <span class="pill ${x.emitido?'':'pend'}">${x.emitido?'recibo emitido':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
 }
 $('pac').onchange=()=>{$('novo').hidden=$('pac').value!=='novo'};
 $('f-at').onsubmit=async e=>{e.preventDefault();
@@ -46,20 +108,107 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     if(r.error){avisa('Não consegui salvar o paciente. Tente de novo.',true);return}
     pac=r.data;$('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';
   }
-  const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value});
+  const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null});
   if(r.error){avisa('Não consegui salvar. Confira a data e tente de novo.',true);return}
   $('valor').value='';await carrega();$('pac').value=pac;$('novo').hidden=true;avisa('Atendimento salvo.');
 };
-function num(v){return parseFloat(String(v).replace(/\./g,'').replace(',','.'))}
-document.addEventListener('click',async e=>{const id=e.target.dataset&&e.target.dataset.del;if(!id)return;
-  const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:id});
-  if(r.error){avisa('Não consegui excluir.',true);return}
-  carrega();});
+
+// ---------- Despesas ----------
+function telaDesp(){
+  $('d-local').innerHTML=opLocais(true,'Não é conta de imóvel (anuidade, ISS, material...)');
+  $('x-local').innerHTML=opLocais(true,'Não é conta de imóvel');
+  prevDesp();
+  const m=$('d-mes').value, ds=despMes(m);
+  $('l-desp').innerHTML=ds.length?ds.map(d=>{const l=d.local_id&&localDe(d.local_id), parcial=d.valor_pago&&+d.valor_pago!==+d.valor;
+    return `<div class="item"><div><b>${esc(nomeCod(d.codigo))}</b><div class="meta">${dBR(d.data)}${l?' · '+esc(l.nome):''}${d.obs?' · '+esc(d.obs):''}${parcial?` · conta de ${brl(d.valor_pago)}`:''}</div></div>
+    <div style="text-align:right"><div class="num">${brl(d.valor)}</div>${d.importada?'<span class="pill">importada</span>':`<button class="small" data-ddesp="${d.id}" type="button">Excluir</button>`}</div></div>`}).join('')
+    +`<div class="item"><b>Total que abate</b><b class="num">${brl(ds.reduce((s,d)=>s+ +d.valor,0))}</b></div>`
+    :'<div class="sub">Nenhuma despesa neste mês.</div>';
+  const mesAtual=hojeISO().slice(0,7);
+  $('l-fixas').innerHTML=D.fixas.length?D.fixas.map(f=>{const l=f.local_id&&localDe(f.local_id), feita=D.despesas.some(d=>d.fixa_id===f.id&&d.data.startsWith(mesAtual));
+    return `<div class="item"><div><b>${esc(nomeCod(f.codigo))}</b><div class="meta">dia ${f.dia} · ${brl(f.valor)}${l?' · '+esc(l.nome):''}</div></div>
+    <div style="text-align:right">${feita?'<span class="pill">lançada este mês</span>':`<button class="small" data-lfixa="${f.id}" type="button">Lançar</button>`} <button class="small" data-dfixa="${f.id}" type="button" aria-label="Remover conta fixa">×</button></div></div>`}).join('')
+    :'<div class="sub">Nenhuma conta fixa ainda. Ex.: aluguel, energia, internet, anuidade.</div>';
+  $('l-locais').innerHTML=D.locais.length?D.locais.map(l=>`<div class="item"><div><b>${esc(l.nome)}</b><div class="meta">${TIPOS[l.tipo][2]}</div></div><span class="pill">${TIPOS[l.tipo][0]}</span></div>`).join('')
+    :'<div class="sub">Cadastre onde você atende. Cada tipo de local tem uma regra diferente para abater as contas.</div>';
+}
+function prevDesp(){const v=num($('d-valor').value), l=localDe($('d-local').value), f=l?TIPOS[l.tipo][1]:1;
+  $('d-prev').textContent=!(v>0)?'':f<1?`Abate ${brl(Math.round(v*f*100)/100)} (20% da conta, porque é a sua casa).`:`Abate ${brl(v)} no Carnê-Leão.`}
+['d-valor','d-local'].forEach(i=>$(i).oninput=prevDesp);
+$('d-mes').onchange=telaDesp;
+$('o-tipo').onchange=()=>$('o-regra').textContent=TIPOS[$('o-tipo').value][2];
+let fixaAtual=null;
+$('f-desp').onsubmit=async e=>{e.preventDefault();
+  const v=num($('d-valor').value), cod=$('d-cod').value, loc=$('d-local').value||null;
+  if(!(v>0)){avisa('Valor inválido. Use, por exemplo, 312,40.',true);return}
+  if(IMOVEL.includes(cod)&&!loc){avisa('Escolha de qual local é essa conta: a regra muda se for a sua casa.',true);return}
+  const r=await sb.rpc('link_despesa',{tok:TOK,p_codigo:cod,p_data:$('d-data').value,p_valor:v,p_local:loc,p_obs:$('d-obs').value.trim(),p_fixa:fixaAtual});
+  if(r.error){avisa('Não consegui salvar a despesa. Confira a data e tente de novo.',true);return}
+  fixaAtual=null;$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);await carrega();avisa('Despesa salva.');
+};
+$('f-fixa').onsubmit=async e=>{e.preventDefault();
+  const v=num($('x-valor').value), dia=+$('x-dia').value, cod=$('x-cod').value, loc=$('x-local').value||null;
+  if(!(v>0)||!(dia>=1&&dia<=31)){avisa('Confira o valor e o dia do vencimento.',true);return}
+  if(IMOVEL.includes(cod)&&!loc){avisa('Escolha de qual local é essa conta.',true);return}
+  const r=await sb.rpc('link_fixa',{tok:TOK,p_codigo:cod,p_valor:v,p_dia:dia,p_local:loc});
+  if(r.error){avisa('Não consegui salvar a conta fixa.',true);return}
+  $('x-valor').value='';$('x-dia').value='';$('f-fixa').closest('details').open=false;await carrega();avisa('Conta fixa salva. Ela aparece na agenda todo mês.');
+};
+$('f-local').onsubmit=async e=>{e.preventDefault();
+  const nome=$('o-nome').value.trim();if(!nome){avisa('Dê um nome ao local.',true);return}
+  const r=await sb.rpc('link_local',{tok:TOK,p_nome:nome,p_tipo:$('o-tipo').value});
+  if(r.error){avisa('Não consegui salvar o local.',true);return}
+  $('o-nome').value='';$('f-local').closest('details').open=false;await carrega();avisa('Local salvo.');
+};
+
+// ---------- Agenda: fixas do mês, fechamento no dia 1º, Carnê-Leão quando houver imposto e datas do ano ----------
+function agenda(){
+  const hoje=new Date();hoje.setHours(0,0,0,0);const fim=new Date(hoje);fim.setDate(fim.getDate()+90);const it=[];
+  for(let k=0;k<4;k++){const a=hoje.getFullYear(),m=hoje.getMonth()+k,d1=new Date(a,m,1);
+    it.push({d:d1,t:'Fechamento do mês',s:`A Assessoria emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
+    D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
+    const ant=new Date(a,m-1,1), mAnt=mesDe(ant.getFullYear(),ant.getMonth()), cl=carneLeao(totMes(mAnt),despMes(mAnt).reduce((s,x)=>s+ +x.valor,0));
+    if(cl.devido>0)it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(cl.devido)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
+    if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Assessoria prepara o resumo do ano para cada paciente declarar no IR dele.'});
+    if(d1.getMonth()===2)it.push({d:new Date(d1.getFullYear(),2,1),t:'Declaração do IR',s:'Começa o prazo da declaração. O livro-caixa do ano já está pronto aqui.'});
+  }
+  return it.filter(x=>x.d>=hoje&&x.d<=fim).sort((x,y)=>x.d-y.d);
+}
+const itemAg=x=>`<div class="item" style="grid-template-columns:auto 1fr"><span class="dia">${x.d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</span><div><b>${esc(x.t)}</b><div class="meta">${esc(x.s)}</div></div></div>`;
+function telaAg(){$('ag-lista').innerHTML=agenda().map(itemAg).join('')||'<div class="sub">Nada nos próximos 90 dias.</div>'}
+
+// ---------- Ajuda ----------
+const AJUDA=[
+  ['Até quanto não pago Carnê-Leão?','Em 2026, quem recebe até R$ 5.000 no mês não paga. De R$ 5.000 a R$ 7.350 o imposto tem desconto parcial. A barra no Início mostra onde você está.'],
+  ['Quais despesas abatem?','Aluguel, condomínio, energia, água, gás, telefone, internet e IPTU do local onde você atende, anuidade do CREFITO, ISS, material de limpeza e de escritório e salário de funcionário.'],
+  ['Atendo na minha casa. Posso abater?','Sim, mas só 1/5 (20%) das contas da casa, porque ela também é moradia. Cadastre a casa como local "Minha casa, que também é consultório" e o app faz a conta.'],
+  ['Atendo na casa dos pacientes. Combustível abate?','Não. Combustível, estacionamento e manutenção do carro não abatem no Carnê-Leão de quem é da saúde.'],
+  ['Maca, aparelhos e computador abatem?','Não. Equipamento que dura anos não entra no livro-caixa. Material que se gasta no dia a dia entra se estiver no plano da Receita.'],
+  ['Quanto tempo guardo os comprovantes?','5 anos, no seu nome e CPF. Foto legível também serve para você, mas guarde o papel ou o PDF original.'],
+  ['O paciente é criança. Como lanço?','Lance no nome da criança e preencha o CPF de quem paga (mãe ou pai). O recibo sai certo para os dois.'],
+  ['Quando vence o Carnê-Leão?','No último dia útil do mês seguinte. Se der imposto, a Assessoria manda o DARF com o valor.'],
+  ['Tenho mais de um local. Como faço?','Cadastre cada um em Despesas → Meus locais e escolha o local em cada atendimento e conta. O Início mostra quanto rende cada um.']];
+$('aj-lista').innerHTML='<h2>Perguntas frequentes</h2>'+AJUDA.map(([p,r])=>`<details><summary>${esc(p)}</summary><p>${esc(r)}</p></details>`).join('');
+$('b-duvida').onclick=()=>location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Sou ${D?D.nome:''} e tenho uma dúvida:`)}`;
+
+// ---------- Ações nas listas ----------
+document.addEventListener('click',async e=>{const t=e.target.dataset||{};
+  if(t.del){const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:t.del});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
+  if(t.ddesp){const r=await sb.rpc('link_excluir_despesa',{tok:TOK,p_despesa:t.ddesp});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
+  if(t.dfixa){if(!confirm('Remover esta conta fixa? As despesas já lançadas continuam.'))return;
+    const r=await sb.rpc('link_fixa_desligar',{tok:TOK,p_fixa:t.dfixa});if(r.error){avisa('Não consegui remover.',true);return}carrega()}
+  if(t.lfixa){const f=D.fixas.find(x=>x.id===t.lfixa);fixaAtual=f.id;$('d-cod').value=f.codigo;$('d-local').value=f.local_id||'';
+    $('d-valor').value=String(f.valor).replace('.',',');$('d-data').value=hojeISO();$('d-obs').value='';prevDesp();scrollTo(0,0);$('d-valor').focus();
+    avisa('Confira o valor da conta deste mês e toque em Salvar.')}
+});
 $('b-zap').onclick=()=>{
   const pend=D.atendimentos.filter(a=>!a.emitido);
   const txt=`Recibo Saúde - ${D.nome}\nAtendimentos para emitir recibo:\n`+pend.slice().reverse().map(a=>`• ${a.paciente}: ${dBR(a.data)} - ${brl(a.valor)}`).join('\n')
     +`\nTotal: ${brl(pend.reduce((s,a)=>s+ +a.valor,0))}`;
   location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(txt)}`;
 };
-$('data').value=hojeISO();
+
+const opCod=P10.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');$('d-cod').innerHTML=opCod;$('x-cod').innerHTML=opCod;
+$('data').value=$('d-data').value=hojeISO();$('i-mes').value=$('d-mes').value=hojeISO().slice(0,7);$('o-regra').textContent=TIPOS.consultorio[2];
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 if(TOK.length<20){$('ruim').hidden=false}else carrega();
