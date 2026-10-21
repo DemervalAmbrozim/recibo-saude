@@ -16,25 +16,7 @@ function cpfOk(c){c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
   for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true}
 function avisa(t,err){const a=$('aviso');a.textContent=t;a.className='msg'+(err?' err':'');a.hidden=false;clearTimeout(avisa.t);avisa.t=setTimeout(()=>a.hidden=true,5000)}
 
-// ---------- Regras: plano de contas da Receita (P10), locais e Carnê-Leão 2026 (iguais às do painel, app.js) ----------
-const P10=[['00002','Aluguel do consultório'],['00003','Condomínio do consultório'],['00001','Água do consultório'],['00007','Energia do consultório'],
-  ['00014','Telefone e internet do consultório'],['00008','Gás do consultório'],['00009','IPTU do consultório'],['00004','Anuidade do conselho (CREFITO etc.)'],
-  ['00011','Material de limpeza do consultório'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
-  ['00005','Cópias e autenticações'],['00006','Emolumentos pagos a terceiros']].map(([c,n])=>['P10.01.'+c,n]);
-const IMOVEL=['00001','00002','00003','00007','00008','00009','00014'].map(c=>'P10.01.'+c); // contas que dependem do local
-const nomeCod=c=>(P10.find(x=>x[0]===c)||[c,c])[1];
-const TIPOS={consultorio:['Consultório',1,'Abate 100% das contas deste local.'],sala:['Sala dividida',1,'Abate 100% da parte que você paga.'],
-  casa:['Casa e consultório',0.2,'Abate 1/5 (20%) das contas da casa, porque a casa também é moradia.'],
-  domicilio:['Domiciliar',0,'Sem conta de imóvel para abater. Combustível e carro não abatem no Carnê-Leão.']};
-const LIM=5000, LIM2=7350, SIMPL=607.20;
-const TAB=[[2428.80,0,0],[2826.65,.075,182.16],[3751.05,.15,394.16],[4664.68,.225,675.49],[Infinity,.275,908.73]];
-function carneLeao(rend,desp){
-  const deducao=Math.max(desp,SIMPL), base=Math.max(0,rend-deducao);
-  const [,al,pd]=TAB.find(f=>base<=f[0]); const bruto=Math.max(0,base*al-pd);
-  const red=rend<=LIM?Math.min(bruto,312.89):rend<=LIM2?Math.max(0,978.62-0.133145*rend):0;
-  return {deducao,usaSimpl:desp<SIMPL,devido:Math.max(0,Math.round((bruto-red)*100)/100)};
-}
-function ultimoDiaUtil(a,m){const d=new Date(a,m+1,0);while([0,6].includes(d.getDay()))d.setDate(d.getDate()-1);return d} // m: 0-11
+// Regras fiscais (contas, locais, Carnê-Leão, sobra de despesa, reforma) ficam em regras.js, igual para o painel
 const mesDe=(a,m)=>`${a}-${String(m+1).padStart(2,'0')}`;
 const NOMES_MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
@@ -60,7 +42,7 @@ $('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
 
 // ---------- Início ----------
 function telaIni(){
-  const m=$('i-mes').value, tot=totMes(m), ds=despMes(m), desp=ds.reduce((s,d)=>s+ +d.valor,0), cl=carneLeao(tot,desp);
+  const m=$('i-mes').value, ap=apura(D.atendimentos,D.despesas,m), tot=ap.rec, cl=ap.cl, desp=ap.usado+ap.inss;
   $('i-rec').textContent=brl(tot);$('i-desp').textContent=brl(desp);$('i-imp').textContent=cl.devido>0?brl(cl.devido):'R$ 0,00';
   const me=$('i-meter');me.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');me.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('i-faixa').textContent=tot<=LIM?`Isenção de 2026: até ${brl(LIM)} no mês não paga Carnê-Leão. Faltam ${brl(LIM-tot)}.`
@@ -69,6 +51,11 @@ function telaIni(){
   $('i-guardar').textContent=cl.devido>0?`Guarde ${brl(cl.devido)} para o Carnê-Leão deste mês. Vence em ${venc.toLocaleDateString('pt-BR')}; a Assessoria manda o DARF.`
     :desp<SIMPL&&tot>LIM?`Suas despesas (${brl(desp)}) são menores que o desconto padrão de ${brl(SIMPL)}; o cálculo usa o desconto padrão.`
     :'Nada a guardar de imposto neste mês.';
+  $('i-sobra').hidden=!(ap.sobra>0||ap.anterior>0);
+  $('i-sobra').textContent=ap.sobra>0?`Suas despesas passaram do que entrou no mês: ${brl(ap.sobra)} ficam para abater nos próximos meses (até dezembro).`
+    :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
+  const ano=m.slice(0,4), rf=reforma(D.atendimentos.filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0));
+  const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';$('i-reforma').textContent=rf.txt;
   const porLocal={};D.atendimentos.filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';
@@ -120,9 +107,9 @@ function telaDesp(){
   prevDesp();
   const m=$('d-mes').value, ds=despMes(m);
   $('l-desp').innerHTML=ds.length?ds.map(d=>{const l=d.local_id&&localDe(d.local_id), parcial=d.valor_pago&&+d.valor_pago!==+d.valor;
-    return `<div class="item"><div><b>${esc(nomeCod(d.codigo))}</b><div class="meta">${dBR(d.data)}${l?' · '+esc(l.nome):''}${d.obs?' · '+esc(d.obs):''}${parcial?` · conta de ${brl(d.valor_pago)}`:''}</div></div>
+    return `<div class="item"><div><b>${esc(nomeCod(d.codigo))}</b><div class="meta">${dBR(d.data)}${d.competencia?' · competência '+d.competencia:''}${l?' · '+esc(l.nome):''}${d.obs?' · '+esc(d.obs):''}${parcial?` · conta de ${brl(d.valor_pago)}`:''}</div></div>
     <div style="text-align:right"><div class="num">${brl(d.valor)}</div>${d.importada?'<span class="pill">importada</span>':`<button class="small" data-ddesp="${d.id}" type="button">Excluir</button>`}</div></div>`}).join('')
-    +`<div class="item"><b>Total que abate</b><b class="num">${brl(ds.reduce((s,d)=>s+ +d.valor,0))}</b></div>`
+    +`<div class="item"><b>Total lançado que abate</b><b class="num">${brl(ds.reduce((s,d)=>s+ +d.valor,0))}</b></div>`
     :'<div class="sub">Nenhuma despesa neste mês.</div>';
   const mesAtual=hojeISO().slice(0,7);
   $('l-fixas').innerHTML=D.fixas.length?D.fixas.map(f=>{const l=f.local_id&&localDe(f.local_id), feita=D.despesas.some(d=>d.fixa_id===f.id&&d.data.startsWith(mesAtual));
@@ -132,17 +119,18 @@ function telaDesp(){
   $('l-locais').innerHTML=D.locais.length?D.locais.map(l=>`<div class="item"><div><b>${esc(l.nome)}</b><div class="meta">${TIPOS[l.tipo][2]}</div></div><span class="pill">${TIPOS[l.tipo][0]}</span></div>`).join('')
     :'<div class="sub">Cadastre onde você atende. Cada tipo de local tem uma regra diferente para abater as contas.</div>';
 }
-function prevDesp(){const v=num($('d-valor').value), l=localDe($('d-local').value), f=l?TIPOS[l.tipo][1]:1;
+function prevDesp(){const ins=$('d-cod').value===INSS;$('l-dlocal').hidden=ins;$('l-dcomp').hidden=!ins;
+  const v=num($('d-valor').value), l=!ins&&localDe($('d-local').value), f=l?TIPOS[l.tipo][1]:1;
   $('d-prev').textContent=!(v>0)?'':f<1?`Abate ${brl(Math.round(v*f*100)/100)} (20% da conta, porque é a sua casa).`:`Abate ${brl(v)} no Carnê-Leão.`}
-['d-valor','d-local'].forEach(i=>$(i).oninput=prevDesp);
+['d-valor','d-local','d-cod'].forEach(i=>$(i).oninput=$(i).onchange=prevDesp);
 $('d-mes').onchange=telaDesp;
 $('o-tipo').onchange=()=>$('o-regra').textContent=TIPOS[$('o-tipo').value][2];
 let fixaAtual=null;
 $('f-desp').onsubmit=async e=>{e.preventDefault();
-  const v=num($('d-valor').value), cod=$('d-cod').value, loc=$('d-local').value||null;
+  const v=num($('d-valor').value), cod=$('d-cod').value, loc=cod===INSS?null:$('d-local').value||null, comp=$('d-comp').value;
   if(!(v>0)){avisa('Valor inválido. Use, por exemplo, 312,40.',true);return}
   if(IMOVEL.includes(cod)&&!loc){avisa('Escolha de qual local é essa conta: a regra muda se for a sua casa.',true);return}
-  const r=await sb.rpc('link_despesa',{tok:TOK,p_codigo:cod,p_data:$('d-data').value,p_valor:v,p_local:loc,p_obs:$('d-obs').value.trim(),p_fixa:fixaAtual});
+  const r=await sb.rpc('link_despesa',{tok:TOK,p_codigo:cod,p_data:$('d-data').value,p_valor:v,p_local:loc,p_obs:$('d-obs').value.trim(),p_fixa:fixaAtual,p_competencia:cod===INSS&&comp?comp.split('-').reverse().join('/'):null});
   if(r.error){avisa('Não consegui salvar a despesa. Confira a data e tente de novo.',true);return}
   fixaAtual=null;$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);await carrega();avisa('Despesa salva.');
 };
@@ -167,7 +155,7 @@ function agenda(){
   for(let k=0;k<4;k++){const a=hoje.getFullYear(),m=hoje.getMonth()+k,d1=new Date(a,m,1);
     it.push({d:d1,t:'Fechamento do mês',s:`A Assessoria emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
     D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
-    const ant=new Date(a,m-1,1), mAnt=mesDe(ant.getFullYear(),ant.getMonth()), cl=carneLeao(totMes(mAnt),despMes(mAnt).reduce((s,x)=>s+ +x.valor,0));
+    const ant=new Date(a,m-1,1), cl=apura(D.atendimentos,D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).cl;
     if(cl.devido>0)it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(cl.devido)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
     if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Assessoria prepara o resumo do ano para cada paciente declarar no IR dele.'});
     if(d1.getMonth()===2)it.push({d:new Date(d1.getFullYear(),2,1),t:'Declaração do IR',s:'Começa o prazo da declaração. O livro-caixa do ano já está pronto aqui.'});
@@ -187,6 +175,9 @@ const AJUDA=[
   ['Quanto tempo guardo os comprovantes?','5 anos, no seu nome e CPF. Foto legível também serve para você, mas guarde o papel ou o PDF original.'],
   ['O paciente é criança. Como lanço?','Lance no nome da criança e preencha o CPF de quem paga (mãe ou pai). O recibo sai certo para os dois.'],
   ['Quando vence o Carnê-Leão?','No último dia útil do mês seguinte. Se der imposto, a Assessoria manda o DARF com o valor.'],
+  ['Meu INSS abate?','Sim. O INSS que você paga como autônoma (carnê ou GPS) abate do Carnê-Leão no mês em que foi pago. Lance em Despesas, tipo "Seu INSS", com o mês a que se refere.'],
+  ['Gastei mais do que recebi no mês. Perco a despesa?','Não. O que passar do recebido fica guardado e abate nos meses seguintes, até dezembro. O app faz essa conta sozinho e mostra no Início.'],
+  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 40,5 mil no ano passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Abaixo disso, segue só no recibo. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Assessoria acompanha.'],
   ['Tenho mais de um local. Como faço?','Cadastre cada um em Despesas → Meus locais e escolha o local em cada atendimento e conta. O Início mostra quanto rende cada um.']];
 $('aj-lista').innerHTML='<h2>Perguntas frequentes</h2>'+AJUDA.map(([p,r])=>`<details><summary>${esc(p)}</summary><p>${esc(r)}</p></details>`).join('');
 $('b-duvida').onclick=()=>location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Sou ${D?D.nome:''} e tenho uma dúvida:`)}`;
@@ -208,7 +199,7 @@ $('b-zap').onclick=()=>{
   location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(txt)}`;
 };
 
-const opCod=P10.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');$('d-cod').innerHTML=opCod;$('x-cod').innerHTML=opCod;
-$('data').value=$('d-data').value=hojeISO();$('i-mes').value=$('d-mes').value=hojeISO().slice(0,7);$('o-regra').textContent=TIPOS.consultorio[2];
+const opCod=CONTAS.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');$('d-cod').innerHTML=opCod;$('x-cod').innerHTML=opCod;
+$('data').value=$('d-data').value=hojeISO();{const d=new Date();d.setMonth(d.getMonth()-1);$('d-comp').value=iso(d).slice(0,7)}$('i-mes').value=$('d-mes').value=hojeISO().slice(0,7);$('o-regra').textContent=TIPOS.consultorio[2];
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 if(TOK.length<20){$('ruim').hidden=false}else carrega();

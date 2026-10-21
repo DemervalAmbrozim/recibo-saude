@@ -128,9 +128,11 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
       <h2>Lançar despesa do consultório</h2>
       <div class="sub">Só entram aqui as despesas que a Receita deixa abater do Carnê-Leão. Guarde o comprovante.</div>
       <label>Tipo <select id="d-cod"></select></label>
+      <label id="l-dlocal">De qual local <select id="d-local"></select></label>
+      <label id="l-dcomp" hidden>Competência (mês a que o INSS se refere) <input id="d-comp" type="month"></label>
       <div class="row">
         <label>Data do pagamento <input id="d-data" type="date" required></label>
-        <label>Valor (R$) <input id="d-valor" inputmode="decimal" placeholder="800,00" required></label>
+        <label>Valor da conta (R$) <input id="d-valor" inputmode="decimal" placeholder="800,00" required></label>
       </div>
       <label>Observação <input id="d-obs" placeholder="ex.: aluguel de outubro"></label>
       <button class="pri" type="submit">Salvar despesa</button>
@@ -140,6 +142,8 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
       <div class="list" id="l-desp"></div>
       <label>Arquivo de despesas para o Carnê-Leão Web (importar separado dos recibos)
         <textarea id="d-csv" readonly></textarea></label>
+      <label id="l-csv2" hidden>Arquivo do INSS (modelo "Pagamentos gerais", importar separado)
+        <textarea id="d-csv2" readonly></textarea></label>
       <div class="btns"><button id="d-copiar" type="button">Copiar arquivo de despesas</button><button id="d-baixar" type="button">Baixar .csv</button><button id="d-importadas" type="button">Marcar despesas como importadas</button></div>
     </div>
   </section>
@@ -217,6 +221,7 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="regras.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

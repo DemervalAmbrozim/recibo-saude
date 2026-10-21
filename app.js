@@ -21,7 +21,7 @@ function baixa(nome,txt){const a=document.createElement('a');a.href=URL.createOb
 function falhou(r,oque){if(!r.error)return false;console.error(r.error);avisa(`Não consegui ${oque}. Confira a internet e tente de novo.`,true);return true}
 
 // Estado em memória do profissional aberto
-let S={prof:null,pac:[],at:[],desp:[],lotes:[]}, PROFS=[];
+let S={prof:null,pac:[],at:[],desp:[],lotes:[],locais:[]}, PROFS=[];
 const pacDe=id=>S.pac.find(p=>p.id===id)||{nome:'(removido)',cpf:''};
 
 // ---------- Login ----------
@@ -54,14 +54,16 @@ $('prof-sel').onchange=()=>abrir($('prof-sel').value);
 
 async function abrir(id){
   S.prof=PROFS.find(p=>p.id===id);
-  const [p,a,d,l]=await Promise.all([
+  const [p,a,d,l,lc]=await Promise.all([
     sb.from('pacientes').select('*').eq('profissional_id',id).eq('ativo',true),
     sb.from('atendimentos').select('*').eq('profissional_id',id),
     sb.from('despesas').select('*').eq('profissional_id',id),
-    sb.from('lotes').select('*').eq('profissional_id',id).order('criado_em',{ascending:false})]);
-  if([p,a,d,l].some(r=>falhou(r,'carregar os dados')))return;
-  S.pac=p.data; S.at=a.data.map(x=>({...x,valor:+x.valor})); S.desp=d.data.map(x=>({...x,valor:+x.valor})); S.lotes=l.data;
-  cfgTela();render();despTela();acessosTela();linkTela();if(!$('t-fech').hidden)fech();
+    sb.from('lotes').select('*').eq('profissional_id',id).order('criado_em',{ascending:false}),
+    sb.from('locais').select('*').eq('profissional_id',id).eq('ativo',true).order('criado_em')]);
+  if([p,a,d,l,lc].some(r=>falhou(r,'carregar os dados')))return;
+  S.locais=lc.data;
+  S.pac=p.data; S.at=a.data.map(x=>({...x,valor:+x.valor})); S.desp=d.data.map(x=>({...x,valor:+x.valor,valor_pago:x.valor_pago==null?null:+x.valor_pago})); S.lotes=l.data;
+  cfgTela();render();locaisTela();despTela();acessosTela();linkTela();if(!$('t-fech').hidden)fech();
 }
 
 // ---------- Abas ----------
@@ -79,7 +81,7 @@ function render(){
   $('a-pac').innerHTML=pacs.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');
   const mes=$('a-mes').value;
   const at=S.at.filter(a=>a.data.startsWith(mes)).sort((a,b)=>b.data.localeCompare(a.data));
-  $('l-atend').innerHTML=at.length?at.map(a=>`<div class="item"><div><b>${esc(pacDe(a.paciente_id).nome)}</b><div class="meta">${dBR(a.data)} · ${esc(a.forma)}</div></div>
+  $('l-atend').innerHTML=at.length?at.map(a=>`<div class="item"><div><b>${esc(pacDe(a.paciente_id).nome)}</b><div class="meta">${dBR(a.data)} · ${esc(a.forma)}${a.local_id&&localDe(a.local_id)?' · '+esc(localDe(a.local_id).nome):''}</div></div>
     <div style="text-align:right"><div class="num">${brl(a.valor)}</div><span class="pill ${a.lote_id?'':'pend'}">${a.lote_id?'recibo emitido':'falta recibo'}</span></div>
     <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
     :'<div class="sub">Nenhum atendimento neste mês. Registre o primeiro acima.</div>';
@@ -117,28 +119,35 @@ $('f-pac').onsubmit=async e=>{e.preventDefault();
   S.pac.push(r.data);e.target.reset();render();avisa('Paciente salvo.');};
 $('a-mes').onchange=render;
 
-// ---------- Livro-caixa: plano de contas da Receita, só despesas dedutíveis (P10) ----------
-const P10=[['00002','Aluguel do consultório'],['00003','Condomínio do consultório'],['00001','Água do consultório'],['00007','Energia do consultório'],
-  ['00014','Telefone e internet do consultório'],['00008','Gás do consultório'],['00009','IPTU do consultório'],['00004','Anuidade do conselho (CREFITO etc.)'],
-  ['00011','Material de limpeza do consultório'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
-  ['00005','Cópias e autenticações'],['00006','Emolumentos pagos a terceiros']].map(([c,n])=>['P10.01.'+c,n]);
-const nomeCod=c=>(P10.find(x=>x[0]===c)||[c,c])[1];
-$('d-cod').innerHTML=P10.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');
+// ---------- Livro-caixa: contas, locais e INSS vêm de regras.js ----------
+const localDe=id=>S.locais.find(l=>l.id===id);
+$('d-cod').innerHTML=CONTAS.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');
+function locaisTela(){$('d-local').innerHTML='<option value="">Não é conta de imóvel</option>'+S.locais.filter(l=>TIPOS[l.tipo][1]>0)
+  .map(l=>`<option value="${l.id}">${esc(l.nome)} (${TIPOS[l.tipo][0]})</option>`).join('');despForm()}
+function despForm(){const ins=$('d-cod').value===INSS;$('l-dlocal').hidden=ins;$('l-dcomp').hidden=!ins}
+$('d-cod').onchange=despForm;
 const despMes=()=>S.desp.filter(d=>d.data.startsWith($('d-mes').value)).sort((a,b)=>a.data.localeCompare(b.data));
 function despTela(){
   const ds=despMes();
-  $('l-desp').innerHTML=ds.length?ds.map(d=>`<div class="item"><div><b>${esc(nomeCod(d.codigo))}</b><div class="meta">${dBR(d.data)}${d.obs?' · '+esc(d.obs):''}</div></div>
-    <div style="text-align:right"><div class="num">${brl(d.valor)}</div>${d.lote_id?'<span class="pill">importada</span>':`<button class="small" data-ddesp="${d.id}" type="button">Excluir</button>`}</div></div>`).join('')
+  $('l-desp').innerHTML=ds.length?ds.map(d=>{const l=d.local_id&&localDe(d.local_id);return `<div class="item"><div><b>${esc(nomeCod(d.codigo))}</b><div class="meta">${dBR(d.data)}${d.competencia?' · competência '+d.competencia:''}${l?' · '+esc(l.nome):''}${d.valor_pago&&d.valor_pago!==d.valor?' · conta de '+brl(d.valor_pago):''}${d.obs?' · '+esc(d.obs):''}</div></div>
+    <div style="text-align:right"><div class="num">${brl(d.valor)}</div>${d.lote_id?'<span class="pill">importada</span>':`<button class="small" data-ddesp="${d.id}" type="button">Excluir</button>`}</div></div>`}).join('')
     +`<div class="item"><b>Total</b><b class="num">${brl(ds.reduce((s,d)=>s+d.valor,0))}</b></div>`
     :'<div class="sub">Nenhuma despesa neste mês.</div>';
-  $('d-csv').value=ds.filter(d=>!d.lote_id).map(d=>[dBR(d.data),d.codigo,vcsv(d.valor),ascii(nomeCod(d.codigo)+(d.obs?' - '+d.obs:'')).slice(0,255)].join(';')).join('\r\n');
+  // Dois arquivos, como nos modelos da Receita: livro-caixa (plano de contas padrão) e INSS (pagamentos gerais: multa, juros e competência)
+  const nov=ds.filter(d=>!d.lote_id), hist=d=>ascii(nomeCod(d.codigo)+(d.obs?' - '+d.obs:'')).slice(0,255);
+  $('d-csv').value=nov.filter(d=>d.codigo!==INSS).map(d=>[dBR(d.data),d.codigo,vcsv(d.valor),hist(d)].join(';')).join('\r\n');
+  $('d-csv2').value=nov.filter(d=>d.codigo===INSS).map(d=>[dBR(d.data),d.codigo,vcsv(d.valor),hist(d),'','',d.competencia||''].join(';')).join('\r\n');
+  $('l-csv2').hidden=!$('d-csv2').value;
 }
 $('f-desp').onsubmit=async e=>{e.preventDefault();
-  const v=num($('d-valor').value);
+  const v=num($('d-valor').value), cod=$('d-cod').value, ins=cod===INSS, l=!ins&&localDe($('d-local').value), f=l?TIPOS[l.tipo][1]:1;
   if(!(v>0)){avisa('Valor inválido. Use, por exemplo, 800,00.',true);return}
-  const r=await sb.from('despesas').insert({profissional_id:S.prof.id,codigo:$('d-cod').value,data:$('d-data').value,valor:v,obs:$('d-obs').value.trim()}).select().single();
+  if(IMOVEL.includes(cod)&&!l){avisa('Escolha de qual local é essa conta: na casa só abate 20%.',true);return}
+  const comp=ins?($('d-comp').value||'').split('-').reverse().join('/')||null:null;
+  const r=await sb.from('despesas').insert({profissional_id:S.prof.id,codigo:cod,data:$('d-data').value,valor:Math.round(v*f*100)/100,valor_pago:v,
+    local_id:l?l.id:null,competencia:comp,obs:$('d-obs').value.trim()}).select().single();
   if(falhou(r,'salvar a despesa'))return;
-  S.desp.push({...r.data,valor:+r.data.valor});$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);despTela();avisa('Despesa salva.');};
+  S.desp.push({...r.data,valor:+r.data.valor,valor_pago:+r.data.valor_pago});$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);despTela();avisa('Despesa salva.');};
 $('d-mes').onchange=despTela;
 $('d-copiar').onclick=()=>copia($('d-csv').value,$('d-csv'));
 $('d-baixar').onclick=()=>$('d-csv').value&&baixa('despesas-'+$('d-mes').value+'.csv',$('d-csv').value);
@@ -155,26 +164,7 @@ async function fechaLote(tipo,mes,ids){
   render();despTela();if(!$('t-fech').hidden)fech();avisa(`${ids.length} ${tipo==='recibos'?'atendimento(s)':'despesa(s)'} marcados como importados.`);
 }
 
-// ---------- Carnê-Leão 2026: tabela mensal + desconto simplificado + redução da Lei 15.270/2025 ----------
-const LIM=5000, LIM2=7350;
-const TAB=[[2428.80,0,0],[2826.65,.075,182.16],[3751.05,.15,394.16],[4664.68,.225,675.49],[Infinity,.275,908.73]];
-const SIMPL=607.20;
-function carneLeao(rend,desp){
-  const deducao=Math.max(desp,SIMPL), base=Math.max(0,rend-deducao);
-  const [,al,pd]=TAB.find(f=>base<=f[0]); const bruto=Math.max(0,base*al-pd);
-  const red=rend<=LIM?Math.min(bruto,312.89):rend<=LIM2?Math.max(0,978.62-0.133145*rend):0;
-  return {deducao,usaSimpl:desp<SIMPL,base,bruto,red,devido:Math.max(0,Math.round((bruto-red)*100)/100)};
-}
-
-// ---------- Fechamento ----------
-function recibos(mes){
-  const pend=S.at.filter(a=>a.data.startsWith(mes)&&!a.lote_id).sort((a,b)=>a.data.localeCompare(b.data));
-  if(!$('f-agrupa').checked)return pend.map(a=>({pac:a.paciente_id,data:a.data,valor:a.valor,datas:[a.data],ids:[a.id]}));
-  const g={};pend.forEach(a=>{const r=g[a.paciente_id]||(g[a.paciente_id]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
-    r.valor+=a.valor;r.datas.push(a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
-  return Object.values(g);
-}
-// No estilo dos recibos da Fernanda: "Servicos de Fisioterapia nos dias 03, 10 e 31 de Agosto de 2026."
+// ---------- Fechamento: o cálculo do Carnê-Leão está em regras.js ----------
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 function descRecibo(base,datas){
   const dias=[...new Set(datas.map(d=>d.slice(8)))].sort();
@@ -187,9 +177,11 @@ function fech(){
   const tot=S.at.filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
   const tano=S.at.filter(a=>a.data.startsWith(ano)).reduce((s,a)=>s+a.valor,0);
   $('f-total').textContent=brl(tot);
-  const desp=S.desp.filter(d=>d.data.startsWith(mes)).reduce((s,d)=>s+d.valor,0), cl=carneLeao(tot,desp);
+  const ap=apura(S.at,S.desp,mes), cl=ap.cl;
   const [aa,mm]=mes.split('-').map(Number), venc=new Date(aa,mm+1,0); while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
-  $('f-calc').innerHTML=[['Recebido no mês',brl(tot)],[cl.usaSimpl?'Desconto simplificado (maior que as despesas)':'Despesas do livro-caixa',brl(cl.deducao)],
+  $('f-calc').innerHTML=[['Recebido no mês',brl(tot)],['Livro-caixa lançado no mês',brl(ap.lc)],...(ap.anterior>0?[['Sobra de meses anteriores',brl(ap.anterior)]]:[]),['Livro-caixa usado (até o recebido)',brl(ap.usado)],
+    ...(ap.inss>0?[['INSS pago no mês',brl(ap.inss)]]:[]),[cl.usaSimpl?'Desconto simplificado (maior que as deduções)':'Total de deduções',brl(cl.deducao)],
+    ...(ap.sobra>0?[['Sobra que passa para o mês seguinte',brl(ap.sobra)]]:[]),
     ['Base de cálculo',brl(cl.base)],['Imposto pela tabela',brl(cl.bruto)],['Redução de 2026',brl(cl.red)],
     ['<b>Carnê-Leão a pagar</b>',`<b>${brl(cl.devido)}</b>`],['Vencimento',cl.devido>0?venc.toLocaleDateString('pt-BR'):'nada a pagar']]
     .map(([a,b])=>`<div class="item"><span>${a}</span><span class="num">${b}</span></div>`).join('')+'<div class="sub">Tabela de 2026 conferida na Receita em 18/10/2026. O valor que vale é o do Carnê-Leão Web.</div>';
@@ -197,7 +189,7 @@ function fech(){
   m.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('f-faixa').textContent=tot<=LIM?`Dentro da isenção de 2026: faltam ${brl(LIM-tot)} para ${brl(LIM)}.`
     :tot<=LIM2?`Passou de ${brl(LIM)}: imposto com redução parcial.`:`Acima de ${brl(LIM2)}: imposto sem redução.`;
-  $('f-ano').textContent=`No ano ${ano}: ${brl(tano)} recebidos.`;
+  $('f-ano').textContent=`No ano ${ano}: ${brl(tano)} recebidos. `+reforma(tano).txt;
   const c=S.prof, rs=recibos(mes), erros=[];
   if(!cpfOk(c.cpf))erros.push('Preencha o CPF da profissional em Ajustes.');
   if(!(c.registro||'').trim())erros.push('Preencha o registro no conselho (CREFITO) em Ajustes.');
@@ -223,7 +215,7 @@ $('b-devol').onclick=()=>{const mes=$('f-mes').value,[aa,mm]=mes.split('-').map(
   const linhas=Object.entries(g).map(([id,as])=>`• ${pacDe(id).nome}: ${brl(as.reduce((s,a)=>s+a.valor,0))}`);
   if(!linhas.length){avisa('Nenhum recibo emitido neste mês ainda. Marque como emitidos primeiro.',true);return}
   const tot=S.at.filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
-  const cl=carneLeao(tot,S.desp.filter(d=>d.data.startsWith(mes)).reduce((s,d)=>s+d.valor,0));
+  const cl=apura(S.at,S.desp,mes).cl;
   const venc=new Date(aa,mm+1,0);while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
   copia(`Olá, ${S.prof.nome.split(' ')[0]}! Seus recibos de ${MESES[mm-1].replace('marco','março')}/${aa} já foram emitidos no Receita Saúde:\n`+linhas.join('\n')
     +`\n\nConfira e encaminhe cada PDF ao paciente.\nTotal do mês: ${brl(tot)}. `
@@ -266,6 +258,6 @@ $('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
   location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link do Recibo Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos:\n${$('lk-url').value}`);};
 
 // ---------- Início ----------
-const h=hojeISO();$('a-data').value=h;$('a-mes').value=h.slice(0,7);$('f-mes').value=h.slice(0,7);$('d-data').value=h;$('d-mes').value=h.slice(0,7);
+const h=hojeISO();$('a-data').value=h;$('a-mes').value=h.slice(0,7);$('f-mes').value=h.slice(0,7);$('d-data').value=h;$('d-mes').value=h.slice(0,7);{const d=new Date(h+'T12:00');d.setMonth(d.getMonth()-1);$('d-comp').value=d.toISOString().slice(0,7)}
 sb.auth.getSession().then(({data})=>{if(data.session)entrar();else $('t-login').hidden=false;});
 sb.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_IN'&&!S.prof)entrar();});

@@ -102,7 +102,11 @@ details p{margin:8px 0 0;color:var(--muted)}
       <div class="meter" id="i-meter"><i style="width:0"></i></div>
       <div class="sub" id="i-faixa"></div>
       <div class="msg" id="i-guardar"></div>
+      <div class="msg" id="i-sobra" hidden></div>
       <div class="list" id="i-locais"></div>
+      <div class="sub" style="margin-top:4px"><b>Reforma tributária</b></div>
+      <div class="meter" id="i-rmeter"><i style="width:0"></i></div>
+      <div class="sub" id="i-reforma"></div>
     </div>
     <div class="card">
       <h2>Próximos compromissos</h2>
@@ -146,7 +150,8 @@ details p{margin:8px 0 0;color:var(--muted)}
     <form class="card" id="f-desp">
       <h2>Lançar despesa</h2>
       <label>Tipo de despesa <select id="d-cod"></select></label>
-      <label>De qual local <select id="d-local"></select></label>
+      <label id="l-dlocal">De qual local <select id="d-local"></select></label>
+      <label id="l-dcomp" hidden>Mês a que se refere (competência) <input id="d-comp" type="month"></label>
       <div class="row">
         <label>Data do pagamento <input id="d-data" type="date" required></label>
         <label>Valor da conta (R$) <input id="d-valor" inputmode="decimal" placeholder="312,40" required></label>
@@ -221,6 +226,7 @@ details p{margin:8px 0 0;color:var(--muted)}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="regras.js"></script>
 <script src="lancar.js"></script>
 </body>
 </html>
