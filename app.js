@@ -82,7 +82,7 @@ function render(){
   const mes=$('a-mes').value;
   const at=S.at.filter(a=>a.data.startsWith(mes)).sort((a,b)=>b.data.localeCompare(a.data));
   $('l-atend').innerHTML=at.length?at.map(a=>`<div class="item"><div><b>${esc(pacDe(a.paciente_id).nome)}</b><div class="meta">${dBR(a.data)} · ${esc(a.forma)}${a.local_id&&localDe(a.local_id)?' · '+esc(localDe(a.local_id).nome):''}</div></div>
-    <div style="text-align:right"><div class="num">${brl(a.valor)}</div><span class="pill ${a.lote_id?'':'pend'}">${a.lote_id?'recibo emitido':'falta recibo'}</span></div>
+    <div style="text-align:right"><div class="num">${brl(a.valor)}</div><span class="pill ${a.lote_id?'':'pend'}">${a.lote_id?'recibo emitido':a.pago===false?'a receber':'falta recibo'}</span></div>
     <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
     :'<div class="sub">Nenhum atendimento neste mês. Registre o primeiro acima.</div>';
   $('l-pac').innerHTML=pacs.length?pacs.map(p=>`<div class="item"><div><b>${esc(p.nome)}</b>
@@ -165,6 +165,15 @@ async function fechaLote(tipo,mes,ids){
 }
 
 // ---------- Fechamento: o cálculo do Carnê-Leão está em regras.js ----------
+// Regime de caixa (pontos do Daniel, 23/10): só o que já foi pago entra no recibo e no Carnê-Leão
+const pagos=()=>S.at.filter(a=>a.pago!==false);
+function recibos(mes){
+  const pend=pagos().filter(a=>a.data.startsWith(mes)&&!a.lote_id).sort((a,b)=>a.data.localeCompare(b.data));
+  if(!$('f-agrupa').checked)return pend.map(a=>({pac:a.paciente_id,data:a.data,valor:a.valor,datas:[a.data],ids:[a.id]}));
+  const g={};pend.forEach(a=>{const r=g[a.paciente_id]||(g[a.paciente_id]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
+    r.valor+=a.valor;r.datas.push(a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
+  return Object.values(g);
+}
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 function descRecibo(base,datas){
   const dias=[...new Set(datas.map(d=>d.slice(8)))].sort();
@@ -174,10 +183,10 @@ function descRecibo(base,datas){
 }
 function fech(){
   const mes=$('f-mes').value, ano=mes.slice(0,4);
-  const tot=S.at.filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
-  const tano=S.at.filter(a=>a.data.startsWith(ano)).reduce((s,a)=>s+a.valor,0);
+  const tot=pagos().filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
+  const tano=pagos().filter(a=>a.data.startsWith(ano)).reduce((s,a)=>s+a.valor,0);
   $('f-total').textContent=brl(tot);
-  const ap=apura(S.at,S.desp,mes), cl=ap.cl;
+  const ap=apura(pagos(),S.desp,mes), cl=ap.cl;
   const [aa,mm]=mes.split('-').map(Number), venc=new Date(aa,mm+1,0); while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
   $('f-calc').innerHTML=[['Recebido no mês',brl(tot)],['Livro-caixa lançado no mês',brl(ap.lc)],...(ap.anterior>0?[['Sobra de meses anteriores',brl(ap.anterior)]]:[]),['Livro-caixa usado (até o recebido)',brl(ap.usado)],
     ...(ap.inss>0?[['INSS pago no mês',brl(ap.inss)]]:[]),[cl.usaSimpl?'Desconto simplificado (maior que as deduções)':'Total de deduções',brl(cl.deducao)],
@@ -214,8 +223,8 @@ $('b-devol').onclick=()=>{const mes=$('f-mes').value,[aa,mm]=mes.split('-').map(
   S.at.filter(a=>a.data.startsWith(mes)&&a.lote_id).forEach(a=>{(g[a.paciente_id]=g[a.paciente_id]||[]).push(a)});
   const linhas=Object.entries(g).map(([id,as])=>`• ${pacDe(id).nome}: ${brl(as.reduce((s,a)=>s+a.valor,0))}`);
   if(!linhas.length){avisa('Nenhum recibo emitido neste mês ainda. Marque como emitidos primeiro.',true);return}
-  const tot=S.at.filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
-  const cl=apura(S.at,S.desp,mes).cl;
+  const tot=pagos().filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
+  const cl=apura(pagos(),S.desp,mes).cl;
   const venc=new Date(aa,mm+1,0);while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
   copia(`Olá, ${S.prof.nome.split(' ')[0]}! Seus recibos de ${MESES[mm-1].replace('marco','março')}/${aa} já foram emitidos no Receita Saúde:\n`+linhas.join('\n')
     +`\n\nConfira e encaminhe cada PDF ao paciente.\nTotal do mês: ${brl(tot)}. `

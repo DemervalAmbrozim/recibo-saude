@@ -112,11 +112,16 @@ details p{margin:8px 0 0;color:var(--muted)}
       <h2>Próximos compromissos</h2>
       <div class="list" id="i-agenda"></div>
     </div>
+    <div class="card" id="i-recebercard" hidden>
+      <h2>A receber</h2>
+      <div class="list" id="receber"></div>
+      <div class="sub">O recibo só sai quando o dinheiro entra. Recebeu uma parcela? Toque em Recebi e informe o valor: cada parcela vira um recibo.</div>
+    </div>
     <div class="card" id="i-pendcard">
       <h2>Aguardando recibo</h2>
       <div class="list" id="pend"></div>
-      <button class="pri" id="b-zap" type="button">Enviar para a Assessoria pelo WhatsApp</button>
-      <div class="sub">Abre o WhatsApp com o resumo pronto. Nós emitimos os recibos e devolvemos os PDFs por lá para você conferir e encaminhar aos pacientes.</div>
+      <button class="pri" id="b-zap" type="button">Transmitir para a Assessoria emitir os recibos</button>
+      <div class="sub">Abre o WhatsApp com o resumo pronto. A Assessoria emite no Receita Saúde e devolve os PDFs para você encaminhar. O paciente também vê o recibo no app Receita Saúde (gov.br), com o CPF dele. Lançou errado? Toque em Apagar.</div>
     </div>
   </section>
 
@@ -132,11 +137,13 @@ details p{margin:8px 0 0;color:var(--muted)}
       </div>
       <label id="l-local">Onde foi o atendimento <select id="a-local"></select></label>
       <div class="row">
-        <label>Data <input id="data" type="date" required></label>
+        <label><span id="l-data">Data do pagamento</span> <input id="data" type="date" required></label>
         <label>Valor (R$) <input id="valor" inputmode="decimal" placeholder="150,00" required></label>
       </div>
       <label>Forma de pagamento
         <select id="forma"><option>Pix</option><option>Dinheiro</option><option>Cartão</option><option>Transferência</option></select></label>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pago" checked style="width:auto"> Já recebi o pagamento</label>
+      <div class="sub" id="pago-dica" hidden>Fica em "A receber" no Início. O recibo só sai quando você marcar que recebeu.</div>
       <button class="pri" type="submit">Salvar atendimento</button>
     </form>
     <div class="card">

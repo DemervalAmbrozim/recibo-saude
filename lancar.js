@@ -24,7 +24,8 @@ let D=null;
 const localDe=id=>D.locais.find(l=>l.id===id);
 const opLocais=(soDedutiveis,vazio)=>(vazio?`<option value="">${vazio}</option>`:'')+D.locais.filter(l=>!soDedutiveis||TIPOS[l.tipo][1]>0)
   .map(l=>`<option value="${l.id}">${esc(l.nome)} (${TIPOS[l.tipo][0]})</option>`).join('');
-const totMes=m=>D.atendimentos.filter(a=>a.data.startsWith(m)).reduce((s,a)=>s+ +a.valor,0);
+const totMes=m=>D.atendimentos.filter(a=>a.pago!==false&&a.data.startsWith(m)).reduce((s,a)=>s+ +a.valor,0);
+const pagos=()=>D.atendimentos.filter(a=>a.pago!==false); // regime de caixa: só o que já entrou
 const despMes=m=>D.despesas.filter(d=>d.data.startsWith(m));
 
 async function carrega(){
@@ -42,7 +43,7 @@ $('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
 
 // ---------- Início ----------
 function telaIni(){
-  const m=$('i-mes').value, ap=apura(D.atendimentos,D.despesas,m), tot=ap.rec, cl=ap.cl, desp=ap.usado+ap.inss;
+  const m=$('i-mes').value, ap=apura(pagos(),D.despesas,m), tot=ap.rec, cl=ap.cl, desp=ap.usado+ap.inss;
   $('i-rec').textContent=brl(tot);$('i-desp').textContent=brl(desp);$('i-imp').textContent=cl.devido>0?brl(cl.devido):'R$ 0,00';
   const me=$('i-meter');me.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');me.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('i-faixa').textContent=tot<=LIM?`Isenção de 2026: até ${brl(LIM)} no mês não paga Carnê-Leão. Faltam ${brl(LIM-tot)}.`
@@ -54,15 +55,19 @@ function telaIni(){
   $('i-sobra').hidden=!(ap.sobra>0||ap.anterior>0);
   $('i-sobra').textContent=ap.sobra>0?`Suas despesas passaram do que entrou no mês: ${brl(ap.sobra)} ficam para abater nos próximos meses (até dezembro).`
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
-  const ano=m.slice(0,4), rf=reforma(D.atendimentos.filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0));
+  const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0));
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';$('i-reforma').textContent=rf.txt;
-  const porLocal={};D.atendimentos.filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
+  const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';
   $('i-agenda').innerHTML=agenda().slice(0,3).map(itemAg).join('')||'<div class="sub">Nada nos próximos dias.</div>';
-  const pend=D.atendimentos.filter(x=>!x.emitido);
-  $('pend').innerHTML=pend.length?pend.map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${esc(x.forma)}</div></div>
-    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-del="${x.id}" type="button">Excluir</button></div></div>`).join('')
+  const rec=D.atendimentos.filter(x=>x.pago===false);$('i-recebercard').hidden=!rec.length;
+  $('receber').innerHTML=rec.map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">atendido em ${dBR(x.data)} · ${esc(x.forma)}</div></div>
+    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-rec="${x.id}" type="button">Recebi</button> <button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
+    +(rec.length?`<div class="item"><b>Total a receber</b><b class="num">${brl(rec.reduce((s,x)=>s+ +x.valor,0))}</b></div>`:'');
+  const pend=pagos().filter(x=>!x.emitido);
+  $('pend').innerHTML=pend.length?pend.map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">pago em ${dBR(x.data)} · ${esc(x.forma)}</div></div>
+    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
     +`<div class="item"><b>Total</b><b class="num">${brl(pend.reduce((s,x)=>s+ +x.valor,0))}</b></div>`
     :'<div class="sub">Nada aguardando recibo. Lance os atendimentos na aba Lançar.</div>';
   $('b-zap').hidden=!pend.length;
@@ -78,9 +83,11 @@ function telaLan(){
   const lsel=$('a-local').value;$('a-local').innerHTML=opLocais(false,D.locais.length?'':'Cadastre seus locais na aba Despesas');
   if(lsel)$('a-local').value=lsel;$('l-local').hidden=!D.locais.length;
   $('feitos').innerHTML=D.atendimentos.slice(0,30).map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)}${x.local_id&&localDe(x.local_id)?' · '+esc(localDe(x.local_id).nome):''}</div></div>
-    <span class="pill ${x.emitido?'':'pend'}">${x.emitido?'recibo emitido':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
+    <span class="pill ${x.emitido?'':'pend'}">${x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
 }
 $('pac').onchange=()=>{$('novo').hidden=$('pac').value!=='novo'};
+function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
+$('pago').onchange=pagoTela;
 $('f-at').onsubmit=async e=>{e.preventDefault();
   const v=num($('valor').value);
   if(!(v>0)){avisa('Valor inválido. Use, por exemplo, 150,00.',true);return}
@@ -95,9 +102,9 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     if(r.error){avisa('Não consegui salvar o paciente. Tente de novo.',true);return}
     pac=r.data;$('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';
   }
-  const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null});
+  const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked});
   if(r.error){avisa('Não consegui salvar. Confira a data e tente de novo.',true);return}
-  $('valor').value='';await carrega();$('pac').value=pac;$('novo').hidden=true;avisa('Atendimento salvo.');
+  const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;$('novo').hidden=true;avisa(pg?'Atendimento salvo.':'Salvo em "A receber". Marque quando o paciente pagar.');
 };
 
 // ---------- Despesas ----------
@@ -155,7 +162,7 @@ function agenda(){
   for(let k=0;k<4;k++){const a=hoje.getFullYear(),m=hoje.getMonth()+k,d1=new Date(a,m,1);
     it.push({d:d1,t:'Fechamento do mês',s:`A Assessoria emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
     D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
-    const ant=new Date(a,m-1,1), cl=apura(D.atendimentos,D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).cl;
+    const ant=new Date(a,m-1,1), cl=apura(pagos(),D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).cl;
     if(cl.devido>0)it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(cl.devido)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
     if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Assessoria prepara o resumo do ano para cada paciente declarar no IR dele.'});
     if(d1.getMonth()===2)it.push({d:new Date(d1.getFullYear(),2,1),t:'Declaração do IR',s:'Começa o prazo da declaração. O livro-caixa do ano já está pronto aqui.'});
@@ -177,13 +184,21 @@ const AJUDA=[
   ['Quando vence o Carnê-Leão?','No último dia útil do mês seguinte. Se der imposto, a Assessoria manda o DARF com o valor.'],
   ['Meu INSS abate?','Sim. O INSS que você paga como autônoma (carnê ou GPS) abate do Carnê-Leão no mês em que foi pago. Lance em Despesas, tipo "Seu INSS", com o mês a que se refere.'],
   ['Gastei mais do que recebi no mês. Perco a despesa?','Não. O que passar do recebido fica guardado e abate nos meses seguintes, até dezembro. O app faz essa conta sozinho e mostra no Início.'],
-  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 40,5 mil no ano passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Abaixo disso, segue só no recibo. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Assessoria acompanha.'],
+  ['Quando sai o recibo? E se o paciente parcelar?','O recibo vale pela data em que o dinheiro entrou, não pela data do atendimento. Se ainda não recebeu, desmarque "Já recebi" ao lançar: fica em A receber. Parcelado ou cartão: a cada parcela que cair, toque em Recebi e informe o valor; cada parcela vira um recibo.'],
+  ['Como o paciente recebe o recibo?','A Assessoria emite no Receita Saúde e manda o PDF para você encaminhar. O paciente também vê todos os recibos dele no app Receita Saúde (gov.br), com o CPF.'],
+  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 40,5 mil no ano passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Atenção: a nota fiscal não dispensa o recibo do Receita Saúde; quem emite nota continua emitindo o recibo de cada pagamento. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Assessoria acompanha.'],
   ['Tenho mais de um local. Como faço?','Cadastre cada um em Despesas → Meus locais e escolha o local em cada atendimento e conta. O Início mostra quanto rende cada um.']];
 $('aj-lista').innerHTML='<h2>Perguntas frequentes</h2>'+AJUDA.map(([p,r])=>`<details><summary>${esc(p)}</summary><p>${esc(r)}</p></details>`).join('');
 $('b-duvida').onclick=()=>location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Sou ${D?D.nome:''} e tenho uma dúvida:`)}`;
 
 // ---------- Ações nas listas ----------
 document.addEventListener('click',async e=>{const t=e.target.dataset||{};
+  if(t.rec){const a=D.atendimentos.find(x=>x.id===t.rec);
+    const v=num(prompt(`Quanto ${a.paciente} pagou hoje? (total ${brl(a.valor)}; se foi uma parcela, escreva só o valor dela)`,String(a.valor).replace('.',','))||'');
+    if(!(v>0)||v>+a.valor){if(v)avisa('Valor inválido.',true);return}
+    const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:t.rec,p_valor:v,p_data:hojeISO()});if(r.error){avisa('Não consegui registrar o pagamento.',true);return}
+    await carrega();avisa(v<+a.valor?`Parcela de ${brl(v)} registrada. Faltam ${brl(a.valor-v)}.`:'Pagamento registrado. Já está em Aguardando recibo.');return}
+  if(t.del&&!confirm('Apagar este lançamento? Use só se foi lançado errado.'))return;
   if(t.del){const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:t.del});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
   if(t.ddesp){const r=await sb.rpc('link_excluir_despesa',{tok:TOK,p_despesa:t.ddesp});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
   if(t.dfixa){if(!confirm('Remover esta conta fixa? As despesas já lançadas continuam.'))return;
@@ -193,8 +208,8 @@ document.addEventListener('click',async e=>{const t=e.target.dataset||{};
     avisa('Confira o valor da conta deste mês e toque em Salvar.')}
 });
 $('b-zap').onclick=()=>{
-  const pend=D.atendimentos.filter(a=>!a.emitido);
-  const txt=`Recibo Saúde - ${D.nome}\nAtendimentos para emitir recibo:\n`+pend.slice().reverse().map(a=>`• ${a.paciente}: ${dBR(a.data)} - ${brl(a.valor)}`).join('\n')
+  const pend=pagos().filter(a=>!a.emitido);
+  const txt=`Recibo Saúde - ${D.nome}\nPagamentos recebidos para emitir recibo:\n`+pend.slice().reverse().map(a=>`• ${a.paciente}: ${dBR(a.data)} - ${brl(a.valor)}`).join('\n')
     +`\nTotal: ${brl(pend.reduce((s,a)=>s+ +a.valor,0))}`;
   location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(txt)}`;
 };
