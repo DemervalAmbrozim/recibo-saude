@@ -339,7 +339,8 @@ function admTela(){
     return `<div class="item"><div><b>${esc(p.nome||'(sem nome)')}</b><div class="meta">${esc(OCUP[p.ocupacao]||'')}${p.registro?' · '+esc(p.registro):''}${p.cidade?' · '+esc(p.cidade):''}</div>
       <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div></div>
       <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div></div>
-      <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`:''}
+      <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`
+          :`<input data-fone-in="${p.id}" inputmode="tel" placeholder="WhatsApp com DDD" style="width:auto;max-width:170px;padding:6px 8px"><button class="small" data-fone="${p.id}" type="button">Salvar WhatsApp</button>`}
         <button class="small" data-conselho="${p.id}" type="button">${p.conselho_ok?'Desfazer conferência':'Conselho conferido'}</button>
         <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
         <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op({'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'Com contador'},p.plano||'')}</select>
@@ -353,6 +354,10 @@ async function admMuda(id,novo,msg){
   PROFS.filter(p=>p.id===id).forEach(p=>Object.assign(p,novo));admTela();avisa(msg);}
 document.addEventListener('click',e=>{const t=e.target.dataset||{};
   if(t.conselho){const p=PROFS.find(x=>x.id===t.conselho);admMuda(p.id,{conselho_ok:!p.conselho_ok},p.conselho_ok?'Conferência desfeita.':'Conselho marcado como conferido.')}
+  if(t.fone){const f=so(document.querySelector(`[data-fone-in="${t.fone}"]`).value).replace(/^55(?=\d{10,11}$)/,'');
+    if(!/^\d{10,11}$/.test(f)){avisa('WhatsApp com DDD, ex.: 27 99999-9999.',true);return}
+    sb.rpc('prof_whatsapp',{p_prof:t.fone,p_fone:f}).then(r=>{if(falhou(r,'salvar o WhatsApp'))return;
+      PROFS.filter(p=>p.id===t.fone).forEach(p=>p.telefone=f);admTela();avisa('WhatsApp salvo: o zap já reconhece este número.')})}
   if(t.mais30){const d=new Date(Math.max(Date.now(),new Date(PROFS.find(x=>x.id===t.mais30).teste_ate+'T12:00')));d.setDate(d.getDate()+30);
     admMuda(t.mais30,{situacao:'teste',teste_ate:d.toISOString().slice(0,10)},`Teste até ${d.toLocaleDateString('pt-BR')}.`)}});
 document.addEventListener('change',e=>{const t=e.target.dataset||{};
@@ -383,3 +388,16 @@ $('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
 const h=hojeISO();$('a-data').value=h;$('a-mes').value=h.slice(0,7);$('f-mes').value=h.slice(0,7);$('d-data').value=h;$('d-mes').value=h.slice(0,7);{const d=new Date(h+'T12:00');d.setMonth(d.getMonth()-1);$('d-comp').value=d.toISOString().slice(0,7)}
 sb.auth.getSession().then(({data})=>{if(data.session)entrar();else $('t-login').hidden=false;});
 sb.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_IN'&&!S.prof)entrar();});
+
+// ---------- PDFs pelo WhatsApp (supabase/012 + função zap): sobe na pasta privada recibos/<profissional>/<mês>/ e pede o envio ----------
+$('b-pdfs').onclick=async()=>{const fs=[...$('f-pdfs').files],mes=$('f-mes').value,st=$('f-pdfs-st');
+  if(!fs.length){avisa('Escolha os PDFs primeiro.',true);return}
+  st.textContent=`Guardando ${fs.length} PDF(s)...`;
+  for(const f of fs){const nome=f.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w.\-]+/g,'_');
+    const r=await sb.storage.from('recibos').upload(`${S.prof.id}/${mes}/${nome}`,f,{upsert:true,contentType:'application/pdf'});
+    if(r.error){st.textContent='';falhou(r,'guardar '+f.name);return}}
+  const r=await sb.functions.invoke('zap',{body:{acao:'pdfs',prof:S.prof.id,mes}});
+  if(r.error||!r.data||r.data.erro){st.textContent='PDFs guardados, mas o envio falhou: '+((r.data&&r.data.erro)||'sem resposta');return}
+  st.textContent=r.data.ensaio?`${fs.length} PDF(s) guardados. O WhatsApp oficial ainda não está ligado: quando o número entrar, clique de novo (eles ficam guardados).`
+    :r.data.enviados?`Enviados ${r.data.enviados} PDF(s) pelo WhatsApp.`:'Nada enviado: '+r.data.motivo;
+  $('f-pdfs').value='';};
