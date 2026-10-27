@@ -42,7 +42,10 @@ function zPartes(linha,hoje){const ts=zNorm(linha).replace(/\s+r\$\s*/g,' r$').s
 // Acha a paciente pelo começo do nome: "maria" acha "Maria Silva"; "maria s" separa duas Marias
 function zAcha(pacs,nome){const q=nome.filter(Boolean);if(!q.length)return[];
   const exato=pacs.filter(p=>zNorm(p.nome)===q.join(' '));if(exato.length)return exato;
-  return pacs.filter(p=>{const ns=zNorm(p.nome).split(/\s+/);let i=0;for(const n of ns)if(i<q.length&&n.startsWith(q[i]))i++;return i===q.length&&ns[0].startsWith(q[0])})}
+  const seq=p=>{const ns=zNorm(p.nome).split(/\s+/);let i=0;for(const n of ns)if(i<q.length&&n.startsWith(q[i]))i++;return i===q.length?ns:null};
+  const ini=pacs.filter(p=>{const ns=seq(p);return ns&&ns[0].startsWith(q[0])});
+  // Sem ninguém pelo 1º nome, vale o sobrenome ou o nome do meio: "silva" acha "Maria Silva"
+  return ini.length?ini:pacs.filter(p=>seq(p))}
 
 const AJUDA=`É só escrever como fala:
 • *Maria 180 pix* (lança o atendimento de hoje)
@@ -89,6 +92,10 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
   if(/^(darf|imposto|carne[ -]?leao)$/.test(t))return zDarf(D,hoje);
   if(/^(a receber|receber|pendentes?|devendo)$/.test(t))return zReceber(D);
+  // Perguntas do jeito que se fala, sem número: "quanto já recebi esse mês?", "quanto pago de imposto?", "quem me deve?"
+  if(!/\d/.test(t)){if(/\b(imposto|carne|darf|leao)\b/.test(t)&&/\b(quanto|qual|tenho|vou|devo|pagar|pago)\b/.test(t))return zDarf(D,hoje);
+    if(/\bquem\b.*\b(deve|devendo|falta|pagou)\b|\b(falta|ainda) receber\b/.test(t))return zReceber(D);
+    if(/\bquanto\b.*\b(recebi|ganhei|faturei|entrou|fiz|tirei)\b|\bcomo (esta|ta) (o|meu) mes\b/.test(t))return zResumo(D,hoje)}
   if(/^(recibos?|pdfs?)$/.test(t))return 'Os PDFs dos recibos chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês. O paciente também vê no app Receita Saúde (gov.br).';
   if(/^(desfazer|desfaz|apagar|apaga|cancela|cancelar)$/.test(t)){const u=est.ultimo;
     if(!u)return 'Não tenho lançamento recente seu para desfazer. Para apagar outro, use o app (aba Lançar).';
