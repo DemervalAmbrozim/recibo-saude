@@ -77,6 +77,9 @@ details:first-of-type{border-top:0}
 summary{cursor:pointer;font-weight:600}
 details p{margin:8px 0 0;color:var(--muted)}
 .dia{font-family:var(--mono);font-weight:600;min-width:52px}
+/* Conta só leitura: vê tudo, não grava */
+body.leitura form{opacity:.5;pointer-events:none}
+body.leitura [data-rec],body.leitura [data-del],body.leitura [data-ddesp],body.leitura [data-dfixa],body.leitura [data-lfixa]{display:none}
 @media (max-width:400px){.grid3{grid-template-columns:1fr 1fr}.grid3>.kpi:last-child{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -88,7 +91,9 @@ details p{margin:8px 0 0;color:var(--muted)}
     <span class="sub" id="sub">Seu financeiro do consultório</span>
   </header>
   <div id="aviso" class="msg" hidden></div>
-  <div id="ruim" class="card" hidden><h2>Link inválido</h2><div class="sub">Este link não vale mais. Peça um novo pelo WhatsApp da Assessoria: 27 99971-2727.</div></div>
+  <div id="conta" class="msg" hidden></div>
+  <div id="ruim" class="card" hidden><h2>Abra pelo seu link ou entre com seu e-mail</h2><div class="sub">Este link não vale mais ou você ainda não entrou. Tem conta com e-mail? Entre abaixo. Usa o link do WhatsApp? Peça um novo à Assessoria: 27 99971-2727.</div>
+    <a href="entrar.html" style="text-align:center;padding:11px;border-radius:8px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:600">Entrar com e-mail</a></div>
 
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
   <section id="t-ini" hidden style="display:grid;gap:16px">
@@ -225,6 +230,7 @@ details p{margin:8px 0 0;color:var(--muted)}
     <div class="card">
       <h2>Ficou alguma dúvida?</h2>
       <button class="pri" id="b-duvida" type="button">Perguntar à Assessoria pelo WhatsApp</button>
+      <button id="b-sair" type="button" hidden>Sair desta conta</button>
     </div>
   </section>
 </main>

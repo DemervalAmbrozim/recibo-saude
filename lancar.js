@@ -1,9 +1,10 @@
 // App da profissional, aberto pelo link do WhatsApp (lancar.html#<código>) e instalável no celular.
 // Sem login: tudo passa pelas funções link_* do banco. O código fica guardado no aparelho para o app instalado abrir sozinho.
+// Com login (entrar.html, desde 27/10/2026): TOK fica vazio e as mesmas funções resolvem a profissional pela conta logada.
 const sb = supabase.createClient(CONFIG.url, CONFIG.chave);
 const ZAP = '5527999712727'; // WhatsApp da Assessoria até o produto ir ao mercado (decisão de 17/10/2026)
 const guarda={get(){try{return localStorage.getItem('rs_tok')||''}catch(e){return ''}},set(t){try{localStorage.setItem('rs_tok',t)}catch(e){}}};
-const TOK = location.hash.slice(1).replace(/^t=/, '') || guarda.get();
+let TOK = location.hash.slice(1).replace(/^t=/, '') || guarda.get();
 const $=id=>document.getElementById(id);
 const so=s=>String(s||'').replace(/\D/g,'');
 const brl=n=>(+n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -34,12 +35,25 @@ const despMes=m=>D.despesas.filter(d=>d.data.startsWith(m));
 
 async function carrega(){
   const r=await sb.rpc('link_dados',{tok:TOK});
+  if(r.error&&!TOK){location.replace('entrar.html');return} // logada sem cadastro: termina o cadastro
   if(r.error){$('ruim').hidden=false;['t-ini','t-lan','t-desp','t-ag','t-aj','nav'].forEach(i=>$(i).hidden=true);return}
   D=r.data;D.locais=D.locais||[];D.fixas=D.fixas||[];D.despesas=D.despesas||[];
-  guarda.set(TOK);if(location.hash)history.replaceState(null,'',location.pathname);
+  if(TOK)guarda.set(TOK);if(location.hash)history.replaceState(null,'',location.pathname);
+  contaTela();
   $('nome').textContent=D.nome||'Recibo Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
   telaIni();telaLan();telaDesp();telaAg();
+}
+// Situação da conta (supabase/010): teste com prazo, só leitura quando vence; sem a função no banco, segue como antes
+async function contaTela(){
+  const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;
+  const c=r.data, leitura=['leitura','cancelada'].includes(c.situacao), teste=c.situacao==='teste'&&c.teste_ate;
+  const dias=teste?Math.round((new Date(c.teste_ate)-new Date(hojeISO()))/864e5):0;
+  document.body.classList.toggle('leitura',leitura);
+  $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
+  $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, fale com a Assessoria pelo WhatsApp (Ajuda).'
+    :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Assessoria.'}`:'';
+  $('b-sair').hidden=!c.logada;
 }
 function mostra(t){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
   document.querySelectorAll('nav button').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));scrollTo(0,0)}
@@ -237,4 +251,8 @@ $('b-zap').onclick=()=>{
 const opCod=CONTAS.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');$('d-cod').innerHTML=opCod;$('x-cod').innerHTML=opCod;
 $('data').value=$('d-data').value=hojeISO();{const d=new Date();d.setMonth(d.getMonth()-1);$('d-comp').value=iso(d).slice(0,7)}$('i-mes').value=$('d-mes').value=hojeISO().slice(0,7);$('o-regra').textContent=TIPOS.consultorio[2];
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-if(TOK.length<20){$('ruim').hidden=false}else carrega();
+// Link válido primeiro; sem link, a conta logada; sem nenhum dos dois, o aviso com o caminho para entrar
+(async()=>{if(TOK.length>=20)return carrega();
+  const {data}=await sb.auth.getSession();if(data.session){TOK='';return carrega()}
+  $('ruim').hidden=false})();
+$('b-sair').onclick=async()=>{await sb.auth.signOut();location.replace('entrar.html')};

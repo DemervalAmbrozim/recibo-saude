@@ -61,11 +61,15 @@ a.btn{font-weight:600;border-radius:8px;padding:6px 10px;font-size:13px;border:1
 .msg{font-size:13px;padding:8px 10px;border-radius:8px;background:var(--soft)}
 .msg.err{background:transparent;border:1px solid var(--bad);color:var(--bad)}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(5,1fr);
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
 nav button{border:0;border-radius:0;background:transparent;color:var(--muted);font-size:13px;padding:14px 4px}
 nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--bg);border-radius:8px;padding:10px;min-width:0}
+.kpi .sub{font-size:12px}
+.kpi b{display:block;font-family:var(--mono);font-size:15px;margin-top:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -87,9 +91,18 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
       <button class="pri" type="submit">Receber link de acesso</button>
       <div class="sub" id="l-msg"></div>
     </form>
-    <div class="card"><h2>Primeiro acesso</h2>
-      <label>Seu nome (aparece nos recibos) <input id="l-nome" placeholder="só no primeiro acesso"></label></div>
+    <div class="card"><h2>É profissional da saúde?</h2>
+      <div class="sub">Este painel é da Assessoria. Para criar sua conta ou lançar atendimentos, <a href="entrar.html">entre por aqui</a>.</div></div>
   </section>
+
+  <!-- 2º FATOR: código do aplicativo autenticador (auditoria S5) -->
+  <form id="t-mfa" class="card" hidden>
+    <h2>Código de segurança</h2>
+    <div class="sub">Abra o aplicativo autenticador (Google Authenticator, Microsoft Authenticator ou outro) e digite o código de 6 números do Recibo Saúde.</div>
+    <label>Código <input id="mfa-cod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></label>
+    <button class="pri" type="submit">Confirmar</button>
+    <button id="mfa-sair" type="button">Sair</button>
+  </form>
 
   <!-- ATENDIMENTOS -->
   <section id="t-atend" class="tab" hidden style="display:grid;gap:16px">
@@ -214,10 +227,51 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
       <div class="btns"><button id="b-assessor" type="button">Dar acesso</button></div>
       <div class="list" id="l-acessos"></div>
     </div>
+    <div class="card" id="c-mfa">
+      <h2>2º fator de segurança</h2>
+      <div class="sub" id="mfa-sit"></div>
+      <div id="mfa-novo" hidden style="display:grid;gap:12px">
+        <div class="sub">1. No aplicativo autenticador, adicione uma conta lendo este código (ou digite a chave). 2. Digite o código de 6 números que aparecer.</div>
+        <img id="mfa-qr" alt="Código QR para o aplicativo autenticador" style="width:180px;height:180px;background:#fff;border-radius:8px;padding:6px">
+        <input id="mfa-chave" readonly class="mono">
+        <label>Código de 6 números <input id="mfa-cod2" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
+        <button class="pri" id="mfa-confirma" type="button">Confirmar e ligar</button>
+      </div>
+      <div class="btns"><button id="mfa-ligar" type="button">Ligar o 2º fator</button><button id="mfa-desligar" type="button" hidden>Desligar</button></div>
+    </div>
     <div class="card">
       <h2>Cópia de segurança</h2>
       <div class="sub">Os dados ficam guardados no servidor. Esta cópia é uma garantia extra.</div>
       <div class="btns"><button id="b-bkp" type="button">Copiar cópia de segurança</button><button id="b-sair" type="button">Sair</button></div>
+    </div>
+  </section>
+
+  <!-- ADMINISTRAÇÃO: só a equipe (supabase/010) -->
+  <section id="t-adm" class="tab" hidden style="display:grid;gap:16px">
+    <div class="msg err" id="adm-mfa" hidden>Ligue o 2º fator em Ajustes: com ele, quem descobrir sua senha do e-mail não entra no painel.</div>
+    <div class="card">
+      <div class="head"><h2>Profissionais</h2><select id="adm-filtro" style="width:auto;padding:6px 8px">
+        <option value="">Todas</option><option value="conferir">Conselho a conferir</option><option value="teste">Em teste</option><option value="vence">Teste vence em 7 dias</option><option value="ativa">Ativas</option><option value="leitura">Só leitura</option><option value="cancelada">Canceladas</option></select></div>
+      <div class="grid3" id="adm-kpi"></div>
+      <div class="list" id="adm-lista"></div>
+      <div class="sub">Conselho: confira o nome e o registro no site do conselho regional (CREFITO, CRP, CRFa, CRO, CRM) antes de marcar.</div>
+    </div>
+    <div class="card adm-so">
+      <h2>Convidar para o painel</h2>
+      <div class="sub">Só quem foi convidado entra no painel. Assessoria vê todas as profissionais; contador vê só a carteira dele.</div>
+      <div class="row">
+        <label>E-mail <input id="cv-email" type="email"></label>
+        <label>Papel <select id="cv-papel"><option value="contador">Contador</option><option value="assessoria">Assessoria</option></select></label>
+      </div>
+      <button class="pri" id="b-convidar" type="button">Convidar</button>
+    </div>
+    <div class="card adm-so">
+      <h2>Carteira do contador</h2>
+      <div class="row">
+        <label>Profissional <select id="ct-prof"></select></label>
+        <label>E-mail do contador <input id="ct-email" type="email"></label>
+      </div>
+      <div class="btns"><button class="pri" id="b-ct-dar" type="button">Pôr na carteira</button><button id="b-ct-tirar" type="button">Tirar da carteira</button></div>
     </div>
   </section>
 </main>
@@ -228,6 +282,7 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
   <button data-t="t-desp">Despesas</button>
   <button data-t="t-fech">Fechamento</button>
   <button data-t="t-aj">Ajustes</button>
+  <button data-t="t-adm" id="nav-adm" hidden>Admin</button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>

@@ -30,23 +30,24 @@ const pacDe=id=>S.pac.find(p=>p.id===id)||{nome:'(removido)',cpf:''};
 
 // ---------- Login ----------
 $('f-login').onsubmit=async e=>{e.preventDefault();
-  try{localStorage.setItem('rs-nome',$('l-nome').value.trim())}catch(_){}
   const r=await sb.auth.signInWithOtp({email:$('l-email').value.trim(),options:{emailRedirectTo:location.origin+location.pathname}});
   $('l-msg').textContent=r.error?'Não foi possível enviar: '+r.error.message:'Link enviado. Abra seu e-mail neste aparelho e toque no link.';};
-$('b-sair').onclick=async()=>{await sb.auth.signOut();location.reload();};
+$('b-sair').onclick=$('mfa-sair').onclick=async()=>{await sb.auth.signOut();location.reload();};
 
-let entrando=false;
+let entrando=false, EQUIPE=false, ADMIN=false;
 async function entrar(again){
   if(entrando&&!again)return; entrando=true;
-  const ac=await sb.from('acessos').select('papel, profissionais(*)');
+  // 2º fator ligado: a sessão só abre os dados depois do código (o banco também cobra, supabase/011)
+  const aal=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aal.data&&aal.data.nextLevel==='aal2'&&aal.data.currentLevel!=='aal2'){$('t-login').hidden=true;$('t-mfa').hidden=false;$('mfa-cod').focus();entrando=false;return}
+  $('t-mfa').hidden=true;
+  const [ac,eq,ad]=await Promise.all([sb.from('acessos').select('papel, profissionais(*)'),sb.rpc('e_equipe'),sb.rpc('e_admin')]);
   if(falhou(ac,'abrir seus dados'))return;
+  EQUIPE=eq.data===true;ADMIN=ad.data===true;
   PROFS=ac.data.map(x=>({...x.profissionais,papel:x.papel}));
-  if(!PROFS.length){ // primeiro acesso: cria o cadastro da profissional
-    let nome='';try{nome=localStorage.getItem('rs-nome')||''}catch(_){}
-    const r=await sb.rpc('criar_profissional',{p_nome:nome});
-    if(falhou(r,'criar seu cadastro'))return;
-    return entrar(true);
-  }
+  // O painel é da equipe e dos contadores. A profissional usa o app dela; cadastro novo só por entrar.html (auditoria S2)
+  if(!EQUIPE&&!PROFS.some(p=>p.papel==='assessor')){location.replace(PROFS.length?'lancar.html':'entrar.html');return}
+  $('nav-adm').hidden=!EQUIPE;document.querySelectorAll('.adm-so').forEach(c=>c.hidden=!ADMIN);mfaTela();
   PROFS.sort((a,b)=>(a.papel==='dono'?0:1)-(b.papel==='dono'?0:1)||a.nome.localeCompare(b.nome));
   $('prof-sel').innerHTML=PROFS.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}${p.papel==='assessor'?' (cliente)':''}</option>`).join('');
   $('prof-sel').hidden=PROFS.length<2;
@@ -74,7 +75,8 @@ async function abrir(id){
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tab').forEach(s=>s.hidden=s.id!==b.dataset.t);
   document.querySelectorAll('nav button').forEach(x=>x===b?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));
-  if(b.dataset.t==='t-fech')S.prof?abrir(S.prof.id):fech();}); // recarrega: a profissional pode ter lançado pelo link
+  if(b.dataset.t==='t-fech')S.prof?abrir(S.prof.id):fech();
+  if(b.dataset.t==='t-adm')admTela();}); // recarrega: a profissional pode ter lançado pelo link
 // Ao voltar para o app (celular), traz o que entrou pelo link enquanto ele estava aberto
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.prof)abrir(S.prof.id);});
 
@@ -290,6 +292,80 @@ $('b-assessor').onclick=async()=>{const em=$('as-email').value.trim();if(!em)ret
   if(r.error){avisa(/conta/.test(r.error.message)?'Essa pessoa ainda não entrou no app. Peça para ela entrar uma vez.':'Não consegui dar o acesso.',true);return}
   $('as-email').value='';acessosTela();avisa('Acesso dado.');};
 $('b-bkp').onclick=()=>copia(JSON.stringify({profissional:S.prof,pacientes:S.pac,atendimentos:S.at,despesas:S.desp,lotes:S.lotes}));
+
+// ---------- 2º fator (auditoria S5): aplicativo autenticador, TOTP do Supabase ----------
+$('t-mfa').onsubmit=async e=>{e.preventDefault();
+  const f=await sb.auth.mfa.listFactors(), x=f.data&&f.data.totp[0];
+  if(!x){avisa('Nenhum 2º fator ligado nesta conta.',true);return}
+  const r=await sb.auth.mfa.challengeAndVerify({factorId:x.id,code:so($('mfa-cod').value)});
+  if(r.error){avisa('Código errado ou vencido. Confira a hora do celular e digite o código novo.',true);return}
+  $('mfa-cod').value='';entrar(true);};
+let novoFator=null;
+async function mfaTela(){
+  const f=await sb.auth.mfa.listFactors();if(f.error)return;
+  const ligado=f.data.totp.length>0; // a lista totp só traz os confirmados
+  $('mfa-sit').textContent=ligado?'Ligado: o painel pede o código do aplicativo autenticador a cada entrada.'
+    :'Desligado. Com ele, quem descobrir a senha do seu e-mail não entra no painel. Obrigatório para a equipe.';
+  $('mfa-ligar').hidden=ligado;$('mfa-desligar').hidden=!ligado;$('mfa-novo').hidden=true;$('adm-mfa').hidden=!(EQUIPE&&!ligado);
+}
+$('mfa-ligar').onclick=async()=>{
+  const f=await sb.auth.mfa.listFactors(); // cadastro que ficou pela metade impede um novo
+  for(const x of (f.data&&f.data.all||[]).filter(x=>x.status!=='verified'))await sb.auth.mfa.unenroll({factorId:x.id});
+  const r=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Recibo Saúde'});
+  if(falhou(r,'começar o 2º fator'))return;
+  novoFator=r.data.id;$('mfa-qr').src=r.data.totp.qr_code;$('mfa-chave').value=r.data.totp.secret;$('mfa-novo').hidden=false;$('mfa-ligar').hidden=true;};
+$('mfa-confirma').onclick=async()=>{
+  const r=await sb.auth.mfa.challengeAndVerify({factorId:novoFator,code:so($('mfa-cod2').value)});
+  if(r.error){avisa('Código errado. Confira a hora do celular e digite o código novo.',true);return}
+  $('mfa-cod2').value='';novoFator=null;mfaTela();avisa('2º fator ligado. Sem o celular com o aplicativo, só o suporte técnico destrava a entrada.');};
+$('mfa-desligar').onclick=async()=>{if(!confirm('Desligar o 2º fator? O painel volta a abrir só com o link do e-mail.'))return;
+  const f=await sb.auth.mfa.listFactors(), x=f.data&&f.data.totp[0];if(!x)return;
+  if(falhou(await sb.auth.mfa.unenroll({factorId:x.id}),'desligar o 2º fator'))return;await sb.auth.refreshSession();mfaTela();avisa('2º fator desligado.');};
+
+// ---------- Administração (supabase/010): situação das contas, conselho, convites e carteira do contador ----------
+const SIT={teste:'em teste',ativa:'ativa',leitura:'só leitura',cancelada:'cancelada'};
+const OCUP={'231':'Fisioterapeuta','255':'Psicólogo(a)','230':'Fonoaudiólogo(a)','232':'Terapeuta ocupacional','226':'Dentista','225':'Médico(a)'};
+const sitEf=p=>p.situacao==='teste'&&p.teste_ate&&p.teste_ate<hojeISO()?'leitura':p.situacao||'ativa'; // igual a situacao_efetiva do banco
+const profsUnicos=()=>[...new Map(PROFS.map(p=>[p.id,p])).values()];
+function admTela(){
+  const em7=new Date(Date.now()+7*864e5).toISOString().slice(0,10), todos=profsUnicos();
+  const F={conferir:p=>!p.conselho_ok&&sitEf(p)!=='cancelada',teste:p=>sitEf(p)==='teste',vence:p=>sitEf(p)==='teste'&&p.teste_ate<=em7,
+    ativa:p=>sitEf(p)==='ativa',leitura:p=>sitEf(p)==='leitura',cancelada:p=>sitEf(p)==='cancelada'};
+  $('adm-kpi').innerHTML=[['Em teste','teste'],['Ativas','ativa'],['Conselho a conferir','conferir']]
+    .map(([n,k])=>`<div class="kpi"><span class="sub">${n}</span><b>${todos.filter(F[k]).length}</b></div>`).join('');
+  const ps=todos.filter(F[$('adm-filtro').value]||(()=>true)).sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
+  const op=(o,v)=>Object.entries(o).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
+  $('adm-lista').innerHTML=ps.length?ps.map(p=>{const s=sitEf(p), zap=p.telefone?`https://wa.me/55${p.telefone}?text=${encodeURIComponent(`Olá, ${(p.nome||'').split(' ')[0]}! Aqui é da Assessoria Lado a Lado, do Recibo Saúde.`)}`:'';
+    return `<div class="item"><div><b>${esc(p.nome||'(sem nome)')}</b><div class="meta">${esc(OCUP[p.ocupacao]||'')}${p.registro?' · '+esc(p.registro):''}${p.cidade?' · '+esc(p.cidade):''}</div>
+      <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div></div>
+      <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div></div>
+      <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`:''}
+        <button class="small" data-conselho="${p.id}" type="button">${p.conselho_ok?'Desfazer conferência':'Conselho conferido'}</button>
+        <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
+        <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op({'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'Com contador'},p.plano||'')}</select>
+        ${s==='teste'||s==='leitura'?`<button class="small" data-mais30="${p.id}" type="button">+30 dias de teste</button>`:''}</div></div>`}).join('')
+    :'<div class="sub">Nenhuma profissional neste filtro.</div>';
+  $('ct-prof').innerHTML=todos.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}</option>`).join('');
+}
+$('adm-filtro').onchange=admTela;
+async function admMuda(id,novo,msg){
+  if(falhou(await sb.from('profissionais').update(novo).eq('id',id),'mudar a conta'))return;
+  PROFS.filter(p=>p.id===id).forEach(p=>Object.assign(p,novo));admTela();avisa(msg);}
+document.addEventListener('click',e=>{const t=e.target.dataset||{};
+  if(t.conselho){const p=PROFS.find(x=>x.id===t.conselho);admMuda(p.id,{conselho_ok:!p.conselho_ok},p.conselho_ok?'Conferência desfeita.':'Conselho marcado como conferido.')}
+  if(t.mais30){const d=new Date(Math.max(Date.now(),new Date(PROFS.find(x=>x.id===t.mais30).teste_ate+'T12:00')));d.setDate(d.getDate()+30);
+    admMuda(t.mais30,{situacao:'teste',teste_ate:d.toISOString().slice(0,10)},`Teste até ${d.toLocaleDateString('pt-BR')}.`)}});
+document.addEventListener('change',e=>{const t=e.target.dataset||{};
+  if(t.sit)admMuda(t.sit,{situacao:e.target.value},`Situação: ${SIT[e.target.value]}.`);
+  if(t.plano!==undefined)admMuda(t.plano,{plano:e.target.value||null},'Plano salvo.');});
+$('b-convidar').onclick=async()=>{const em=$('cv-email').value.trim();if(!mailOk(em)){avisa('E-mail inválido.',true);return}
+  const r=await sb.rpc('convidar',{p_email:em,p_papel:$('cv-papel').value});if(falhou(r,'convidar'))return;
+  $('cv-email').value='';avisa(r.data.replace(/^./,c=>c.toUpperCase())+'.');};
+async function carteira(dar){const em=$('ct-email').value.trim();if(!mailOk(em)){avisa('E-mail do contador inválido.',true);return}
+  const r=await sb.rpc('carteira',{p_prof:$('ct-prof').value,p_email:em,p_dar:dar});
+  if(r.error){avisa(/nao entrou/.test(r.error.message)?'Esse contador ainda não entrou no painel. Convide e peça para ele entrar uma vez.':'Não consegui mudar a carteira.',true);return}
+  avisa(dar?'Profissional posta na carteira do contador.':'Profissional tirada da carteira do contador.');}
+$('b-ct-dar').onclick=()=>carteira(true);$('b-ct-tirar').onclick=()=>carteira(false);
 
 // ---------- Link da profissional ----------
 const urlLink=tok=>new URL('lancar.html#'+tok,location.href).href;
