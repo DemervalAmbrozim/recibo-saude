@@ -1,5 +1,5 @@
 // App instalável: guarda a casca do app para abrir rápido; os dados vêm sempre do banco (rede primeiro).
-const C='rs-v5', CASCA=['lancar.html','lancar.js','regras.js','config.js','icone-192.png','profissional.webmanifest'];
+const C='rs-v6', CASCA=['lancar.html','lancar.js','regras.js','config.js','icone-192.png','profissional.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(CASCA)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);

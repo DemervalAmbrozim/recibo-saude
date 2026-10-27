@@ -48,18 +48,19 @@ $('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
 // ---------- Início ----------
 function telaIni(){
   const m=$('i-mes').value, ap=apura(pagos(),D.despesas,m), tot=ap.rec, cl=ap.cl, desp=ap.usado+ap.inss;
-  $('i-rec').textContent=brl(tot);$('i-desp').textContent=brl(desp);$('i-imp').textContent=cl.devido>0?brl(cl.devido):'R$ 0,00';
+  $('i-rec').textContent=brl(tot);$('i-desp').textContent=brl(desp);$('i-imp').textContent=brl(ap.darf.pagar);
   const me=$('i-meter');me.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');me.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('i-faixa').textContent=tot<=LIM?`Isenção de 2026: até ${brl(LIM)} no mês não paga Carnê-Leão. Faltam ${brl(LIM-tot)}.`
     :tot<=LIM2?`Passou de ${brl(LIM)}: o imposto tem desconto parcial em 2026.`:`Acima de ${brl(LIM2)}: imposto sem desconto.`;
   const [a,mm]=m.split('-').map(Number), venc=ultimoDiaUtil(a,mm);
-  $('i-guardar').textContent=cl.devido>0?`Guarde ${brl(cl.devido)} para o Carnê-Leão deste mês. Vence em ${venc.toLocaleDateString('pt-BR')}; a Assessoria manda o DARF.`
+  $('i-guardar').textContent=ap.darf.pagar>0?`Guarde ${brl(ap.darf.pagar)} para o Carnê-Leão deste mês. Vence em ${venc.toLocaleDateString('pt-BR')}; a Assessoria manda o DARF.`
+    :ap.darf.adia?`Carnê-Leão de ${brl(ap.darf.total)}: abaixo de R$ 10 não tem DARF; o valor soma ao do mês seguinte.`
     :desp<SIMPL&&tot>LIM?`Suas despesas (${brl(desp)}) são menores que o desconto padrão de ${brl(SIMPL)}; o cálculo usa o desconto padrão.`
     :'Nada a guardar de imposto neste mês.';
   $('i-sobra').hidden=!(ap.sobra>0||ap.anterior>0);
   $('i-sobra').textContent=ap.sobra>0?`Suas despesas passaram do que entrou no mês: ${brl(ap.sobra)} ficam para abater nos próximos meses (até dezembro).`
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
-  const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0));
+  const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0),ano);
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';$('i-reforma').textContent=rf.txt;
   const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
@@ -179,8 +180,10 @@ function agenda(){
   for(let k=0;k<4;k++){const a=hoje.getFullYear(),m=hoje.getMonth()+k,d1=new Date(a,m,1);
     it.push({d:d1,t:'Fechamento do mês',s:`A Assessoria emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
     D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
-    const ant=new Date(a,m-1,1), cl=apura(pagos(),D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).cl;
-    if(cl.devido>0)it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(cl.devido)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
+    const ant=new Date(a,m-1,1), dv=apura(pagos(),D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).darf;
+    if(dv.pagar>0)it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(dv.pagar)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
+    // Auditoria F8: o cadastro no Carnê-Leão Web vale um ano; sem ele o Receita Saúde não emite
+    if(d1.getMonth()===0)it.push({d:new Date(d1.getFullYear(),0,2),t:'Cadastro do ano no Carnê-Leão',s:'A Assessoria atualiza o seu cadastro do ano no Carnê-Leão Web. Sem ele, o recibo do Receita Saúde não sai.'});
     if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Assessoria prepara o resumo do ano para cada paciente declarar no IR dele.'});
     if(d1.getMonth()===2)it.push({d:new Date(d1.getFullYear(),2,1),t:'Declaração do IR',s:'Começa o prazo da declaração. O livro-caixa do ano já está pronto aqui.'});
   }
@@ -203,7 +206,7 @@ const AJUDA=[
   ['Gastei mais do que recebi no mês. Perco a despesa?','Não. O que passar do recebido fica guardado e abate nos meses seguintes, até dezembro. O app faz essa conta sozinho e mostra no Início.'],
   ['Quando sai o recibo? E se o paciente parcelar?','O recibo vale pela data em que o dinheiro entrou, não pela data do atendimento. Se ainda não recebeu, desmarque "Já recebi" ao lançar: fica em A receber. Parcelado ou cartão: a cada parcela que cair, toque em Recebi e informe o valor; cada parcela vira um recibo.'],
   ['Como o paciente recebe o recibo?','A Assessoria emite no Receita Saúde e manda o PDF para você encaminhar. O paciente também vê todos os recibos dele no app Receita Saúde (gov.br), com o CPF.'],
-  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 40,5 mil no ano passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Atenção: a nota fiscal não dispensa o recibo do Receita Saúde; quem emite nota continua emitindo o recibo de cada pagamento. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Assessoria acompanha.'],
+  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 55 mil no ano (R$ 70 mil em 2028, pela lei nova do MEI, a confirmar) passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Atenção: a nota fiscal não dispensa o recibo do Receita Saúde; quem emite nota continua emitindo o recibo de cada pagamento. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Assessoria acompanha.'],
   ['Tenho mais de um local. Como faço?','Cadastre cada um em Despesas → Meus locais e escolha o local em cada atendimento e conta. O Início mostra quanto rende cada um.']];
 $('aj-lista').innerHTML='<h2>Perguntas frequentes</h2>'+AJUDA.map(([p,r])=>`<details><summary>${esc(p)}</summary><p>${esc(r)}</p></details>`).join('');
 $('b-duvida').onclick=()=>location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Sou ${D?D.nome:''} e tenho uma dúvida:`)}`;

@@ -99,7 +99,11 @@ document.addEventListener('click',async e=>{
   const t=e.target.dataset; if(!t)return;
   if(t.del){if(falhou(await sb.from('atendimentos').delete().eq('id',t.del),'excluir'))return;
     S.at=S.at.filter(a=>a.id!==t.del);render();}
-  if(t.reab){if(falhou(await sb.from('atendimentos').update({lote_id:null}).eq('id',t.reab),'desmarcar'))return;
+  if(t.reab){const l=S.lotes.find(x=>x.id===S.at.find(a=>a.id===t.reab).lote_id), dias=l?Math.floor((Date.now()-new Date(l.criado_em))/864e5):0;
+    // Auditoria F4: a Receita só cancela recibo em até 10 dias; reabrir e gerar o arquivo de novo emite em dobro
+    if(!confirm(`Antes de desmarcar, cancele o recibo no Carnê-Leão Web ("Desfazer escrituração"). A Receita só cancela em até 10 dias da emissão`
+      +(l?`; este foi emitido há ${dias} dia(s)${dias>10?' e já passou do prazo: se gerar o arquivo de novo, o recibo sai em dobro':''}`:'')+`.\n\nJá cancelou na Receita e quer desmarcar?`))return;
+    if(falhou(await sb.from('atendimentos').update({lote_id:null}).eq('id',t.reab),'desmarcar'))return;
     S.at.find(a=>a.id===t.reab).lote_id=null;render();}
   if(t.dpac){if(S.at.some(a=>a.paciente_id===t.dpac&&!a.lote_id)){avisa('Esse paciente tem atendimento sem recibo. Emita ou exclua antes.',true);return}
     // guarda o histórico: o paciente sai da lista, os recibos antigos continuam
@@ -186,6 +190,7 @@ async function fechaLote(tipo,mes,ids){
 const pagos=()=>S.at.filter(a=>a.pago!==false);
 function recibos(mes){
   const pend=pagos().filter(a=>a.data.startsWith(mes)&&!a.lote_id).sort((a,b)=>a.data.localeCompare(b.data));
+  // Auditoria F1 (IN 2.240, art. 3º): cada pagamento tem o seu recibo. Juntar só quando o paciente pagou as sessões de uma vez.
   if(!$('f-agrupa').checked)return pend.map(a=>({pac:a.paciente_id,data:a.data,valor:a.valor,datas:[a.data],ids:[a.id]}));
   const g={};pend.forEach(a=>{const r=g[a.paciente_id]||(g[a.paciente_id]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
     r.valor+=a.valor;r.datas.push(a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
@@ -204,18 +209,19 @@ function fech(){
   const tano=pagos().filter(a=>a.data.startsWith(ano)).reduce((s,a)=>s+a.valor,0);
   $('f-total').textContent=brl(tot);
   const ap=apura(pagos(),S.desp,mes), cl=ap.cl;
-  const [aa,mm]=mes.split('-').map(Number), venc=new Date(aa,mm+1,0); while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
+  const [aa,mm]=mes.split('-').map(Number), venc=ultimoDiaUtil(aa,mm), dv=ap.darf;
   $('f-calc').innerHTML=[['Recebido no mês',brl(tot)],['Livro-caixa lançado no mês',brl(ap.lc)],...(ap.anterior>0?[['Sobra de meses anteriores',brl(ap.anterior)]]:[]),['Livro-caixa usado (até o recebido)',brl(ap.usado)],
     ...(ap.inss>0?[['INSS pago no mês',brl(ap.inss)]]:[]),[cl.usaSimpl?'Desconto simplificado (maior que as deduções)':'Total de deduções',brl(cl.deducao)],
     ...(ap.sobra>0?[['Sobra que passa para o mês seguinte',brl(ap.sobra)]]:[]),
     ['Base de cálculo',brl(cl.base)],['Imposto pela tabela',brl(cl.bruto)],['Redução de 2026',brl(cl.red)],
-    ['<b>Carnê-Leão a pagar</b>',`<b>${brl(cl.devido)}</b>`],['Vencimento',cl.devido>0?venc.toLocaleDateString('pt-BR'):'nada a pagar']]
+    ['Carnê-Leão do mês',brl(cl.devido)],...(dv.vem>0?[['Somado de meses anteriores (DARF abaixo de R$ 10)',brl(dv.vem)]]:[]),
+    ['<b>Carnê-Leão a pagar</b>',`<b>${brl(dv.pagar)}</b>`],['Vencimento',dv.pagar>0?venc.toLocaleDateString('pt-BR'):dv.adia?`abaixo de R$ 10: ${brl(dv.total)} passam para o mês seguinte`:'nada a pagar']]
     .map(([a,b])=>`<div class="item"><span>${a}</span><span class="num">${b}</span></div>`).join('')+'<div class="sub">Tabela de 2026 conferida na Receita em 18/10/2026. O valor que vale é o do Carnê-Leão Web.</div>';
   const m=$('f-meter');m.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');
   m.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('f-faixa').textContent=tot<=LIM?`Dentro da isenção de 2026: faltam ${brl(LIM-tot)} para ${brl(LIM)}.`
     :tot<=LIM2?`Passou de ${brl(LIM)}: imposto com redução parcial.`:`Acima de ${brl(LIM2)}: imposto sem redução.`;
-  $('f-ano').textContent=`No ano ${ano}: ${brl(tano)} recebidos. `+reforma(tano).txt;
+  $('f-ano').textContent=`No ano ${ano}: ${brl(tano)} recebidos. `+reforma(tano,ano).txt;
   const c=S.prof, rs=recibos(mes), erros=[];
   if(!cpfOk(c.cpf))erros.push('Preencha o CPF da profissional em Ajustes.');
   if(!(c.registro||'').trim())erros.push('Preencha o registro no conselho (CREFITO) em Ajustes.');
@@ -255,11 +261,11 @@ $('b-devol').onclick=()=>{const mes=$('f-mes').value,[aa,mm]=mes.split('-').map(
   const linhas=Object.entries(g).map(([id,as])=>`• ${pacDe(id).nome}: ${brl(as.reduce((s,a)=>s+a.valor,0))}`);
   if(!linhas.length){avisa('Nenhum recibo emitido neste mês ainda. Marque como emitidos primeiro.',true);return}
   const tot=pagos().filter(a=>a.data.startsWith(mes)).reduce((s,a)=>s+a.valor,0);
-  const cl=apura(pagos(),S.desp,mes).cl;
-  const venc=new Date(aa,mm+1,0);while([0,6].includes(venc.getDay()))venc.setDate(venc.getDate()-1);
+  const dv=apura(pagos(),S.desp,mes).darf, venc=ultimoDiaUtil(aa,mm);
   copia(`Olá, ${S.prof.nome.split(' ')[0]}! Seus recibos de ${MESES[mm-1].replace('marco','março')}/${aa} já foram emitidos no Receita Saúde:\n`+linhas.join('\n')
     +`\n\nConfira e encaminhe cada PDF ao paciente.\nTotal do mês: ${brl(tot)}. `
-    +(cl.devido>0?`Carnê-Leão a pagar: ${brl(cl.devido)}, vence em ${venc.toLocaleDateString('pt-BR')}. O DARF vai em seguida.`
+    +(dv.pagar>0?`Carnê-Leão a pagar: ${brl(dv.pagar)}, vence em ${venc.toLocaleDateString('pt-BR')}. O DARF vai em seguida.`
+      :dv.adia?`Carnê-Leão de ${brl(dv.total)}: abaixo de R$ 10 a Receita não gera DARF, o valor soma ao do mês seguinte.`
       :tot<=LIM?`Dentro da isenção: nada de Carnê-Leão este mês.`:`Carnê-Leão zerado pela redução de 2026.`));};
 $('b-emitidos').onclick=()=>fechaLote('recibos',$('f-mes').value,recibos($('f-mes').value).flatMap(r=>r.ids));
 

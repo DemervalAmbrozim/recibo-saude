@@ -29,19 +29,39 @@ const soma=xs=>xs.reduce((s,x)=>s+ +x.valor,0);
 // O INSS pago no mês entra como dedução à parte.
 function apura(ats,ds,mes){
   const ano=mes.slice(0,4); let sobra=0, r=null;
+  // o DARF pequeno de dezembro passa para janeiro (a sobra de despesa, não)
+  let darf=ats.some(a=>a.data.startsWith(ano-1))?(p=>p.adia?p.total:0)(apura(ats,ds,`${ano-1}-12`).darf):0;
   for(let m=1;m<=+mes.slice(5,7);m++){const k=`${ano}-${String(m).padStart(2,'0')}`, dm=ds.filter(d=>d.data.startsWith(k));
     const rec=soma(ats.filter(a=>a.data.startsWith(k))), lc=soma(dm.filter(d=>d.codigo!==INSS)), inss=soma(dm.filter(d=>d.codigo===INSS));
     const anterior=sobra, usado=Math.min(lc+anterior,rec); sobra=Math.round((lc+anterior-usado)*100)/100;
-    r={rec,lc,inss,anterior,usado,sobra,cl:carneLeao(rec,usado+inss)};}
+    const cl=carneLeao(rec,usado+inss), total=Math.round((cl.devido+darf)*100)/100;
+    // A Receita não gera DARF abaixo de R$ 10: o valor soma ao imposto do mês seguinte (auditoria F6, Carnê-Leão "Como pagar", código 0190)
+    r={rec,lc,inss,anterior,usado,sobra,cl,darf:{vem:darf,total,pagar:total>=10?total:0,adia:total>0&&total<10}}; darf=total<10?total:0;}
   return r;
 }
-function ultimoDiaUtil(a,m){const d=new Date(a,m+1,0);while([0,6].includes(d.getDay()))d.setDate(d.getDate()-1);return d} // m: 0-11
+// Feriados nacionais e dias sem banco (auditoria F7). Contar Carnaval, Corpus Christi e 31/12 como não úteis é de propósito:
+// no pior caso o vencimento mostrado é um dia antes, e pagar antes nunca gera multa.
+function feriados(a){
+  const f=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','11-20','12-25','12-31'].map(x=>`${a}-${x}`);
+  const g=a%19,c=Math.floor(a/100),h=(c-Math.floor(c/4)-Math.floor((8*c+13)/25)+19*g+15)%30,i=h-Math.floor(h/28)*(1-Math.floor(29/(h+1))*Math.floor((21-g)/11)),
+    j=(a+Math.floor(a/4)+i+2-c+Math.floor(c/4))%7,l=i-j,mp=3+Math.floor((l+40)/44),dp=l+28-31*Math.floor(mp/4); // Páscoa (Meeus)
+  [-48,-47,-2,60].forEach(k=>{const d=new Date(a,mp-1,dp+k);f.push(dISO(d))}); // Carnaval (seg e ter), Sexta-feira Santa, Corpus Christi
+  return f;
+}
+const dISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const diaUtil=d=>![0,6].includes(d.getDay())&&!feriados(d.getFullYear()).includes(dISO(d));
+function ultimoDiaUtil(a,m){const d=new Date(a,m+1,0);while(!diaUtil(d))d.setDate(d.getDate()-1);return d} // m: 0-11
 
-// Reforma tributária (LC 214/2025): abaixo de 50% do limite do MEI (R$ 81 mil) a pessoa física é "nanoempreendedor" e não paga CBS/IBS (art. 26, IV).
-// Acima disso, a partir de 2027 vira contribuinte, com nota fiscal; fisioterapia tem 60% de redução (art. 130, Anexo III).
-const NANO=40500;
-function reforma(recAno){const p=recAno/NANO;
-  return {p,txt:p<0.8?`Recebido no ano: abaixo do limite de ${NANO.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} da reforma tributária. Por esse ritmo, segue sem nota fiscal em 2027.`
-    :p<1?`Atenção: perto do limite de ${NANO.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} por ano. Acima dele, a partir de 2027 será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia).`
-    :`Acima de ${NANO.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} no ano: pela reforma tributária, a partir de 2027 será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia). A Assessoria vai orientar.`};
+// Reforma tributária (LC 214/2025): abaixo de 50% do limite do MEI a pessoa física é "nanoempreendedor" e não paga CBS/IBS (art. 26, IV).
+// Acima disso vira contribuinte, com nota fiscal e cadastro pelo CPF (art. 59); fisioterapia tem 60% de redução (art. 130, Anexo III).
+// A LC 238/2026 (DOU 21/10/2026) sobe o MEI para R$ 110 mil em 2027 e R$ 140 mil em 2028 (esta condicionada ao orçamento, art. 3º),
+// então a linha vai a R$ 55 mil e R$ 70 mil (auditoria F2). A receita do ano é comparada com a linha do ano seguinte, quando a regra
+// passa a valer: a confirmar com o contador.
+const NANO={2027:55000,2028:70000};
+const nano=ano=>NANO[Math.min(Math.max(+ano+1,2027),2028)];
+function reforma(recAno,ano){const lim=nano(ano),p=recAno/lim,a1=Math.max(+ano+1,2027),L=lim.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  return {p,lim,txt:(p<0.8?`Recebido no ano: abaixo do limite de ${L} da reforma tributária para ${a1}. Por esse ritmo, segue sem nota fiscal.`
+    :p<1?`Atenção: perto do limite de ${L} por ano. Acima dele, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia).`
+    :`Acima de ${L} no ano: pela reforma tributária, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia). A Assessoria vai orientar.`)
+    +' Limite novo (LC 238/2026), a confirmar com o contador.'};
 }

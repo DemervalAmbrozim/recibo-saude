@@ -165,7 +165,8 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
     </div>
     <div class="card">
       <h2>Recibos para emitir</h2>
-      <label style="display:flex;gap:8px;align-items:center;color:var(--fg)"><input type="checkbox" id="f-agrupa" checked style="width:auto"> Um recibo por paciente no mês (junta as sessões)</label>
+      <label style="display:flex;gap:8px;align-items:center;color:var(--fg)"><input type="checkbox" id="f-agrupa" style="width:auto"> Juntar as sessões do paciente num recibo só</label>
+      <div class="sub">Deixe desmarcado: a Receita pede um recibo por pagamento (IN 2.240). Junte só quando o paciente pagou todas as sessões de uma vez, e confira a data desse pagamento.</div>
       <div class="list" id="f-lista"></div>
       <div id="f-erros"></div>
       <label>Arquivo para o Carnê-Leão Web (Escrituração → Importar Escrituração)
