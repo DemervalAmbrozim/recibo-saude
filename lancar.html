@@ -135,6 +135,10 @@ details p{margin:8px 0 0;color:var(--muted)}
         <label>CPF do paciente <input id="n-cpf" inputmode="numeric" placeholder="só números"></label>
         <label>CPF de quem paga (só se for outra pessoa, ex.: mãe de criança) <input id="n-pag" inputmode="numeric"></label>
       </div>
+      <div id="contato" hidden class="row">
+        <label>WhatsApp do paciente (opcional) <input id="n-tel" inputmode="tel" placeholder="27 99999-9999"></label>
+        <label>E-mail do paciente (opcional) <input id="n-email" type="email" autocomplete="off"></label>
+      </div>
       <label id="l-local">Onde foi o atendimento <select id="a-local"></select></label>
       <div class="row">
         <label><span id="l-data">Data do pagamento</span> <input id="data" type="date" required></label>

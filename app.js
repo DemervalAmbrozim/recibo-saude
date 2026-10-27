@@ -11,6 +11,10 @@ const num=v=>parseFloat(String(v).replace(/\./g,'').replace(',','.'));
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cpfOk(c){c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
   for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true}
+const telOk=t=>/^\d{10,11}$/.test(so(t).replace(/^55(?=\d{10,11}$)/,''));
+const telLimpo=t=>so(t).replace(/^55(?=\d{10,11}$)/,'');
+const fmtTel=t=>{t=so(t);return t.length===11?t.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3'):t.replace(/(\d{2})(\d{4})(\d{4})/,'($1) $2-$3')};
+const mailOk=m=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m);
 const fmtCpf=c=>{c=so(c);return c.length===11?c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'):c};
 
 function avisa(t,err){const a=$('aviso');a.textContent=t;a.className='msg'+(err?' err':'');a.hidden=false;clearTimeout(avisa.t);avisa.t=setTimeout(()=>a.hidden=true,5000)}
@@ -86,7 +90,9 @@ function render(){
     <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
     :'<div class="sub">Nenhum atendimento neste mês. Registre o primeiro acima.</div>';
   $('l-pac').innerHTML=pacs.length?pacs.map(p=>`<div class="item"><div><b>${esc(p.nome)}</b>
-    <div class="meta mono">${fmtCpf(p.cpf)}${p.cpf_pagador?' · paga: '+fmtCpf(p.cpf_pagador):''}</div></div><button class="small" data-dpac="${p.id}" type="button">Excluir</button></div>`).join('')
+    <div class="meta mono">${fmtCpf(p.cpf)}${p.cpf_pagador?' · paga: '+fmtCpf(p.cpf_pagador):''}</div>
+    <div class="meta">${[p.telefone&&fmtTel(p.telefone),p.email&&esc(p.email)].filter(Boolean).join(' · ')||'sem WhatsApp nem e-mail'}</div></div>
+    <div class="btns"><button class="small" data-cpac="${p.id}" type="button">Contato</button><button class="small" data-dpac="${p.id}" type="button">Excluir</button></div></div>`).join('')
     :'<div class="sub">Cadastre o primeiro paciente acima.</div>';
 }
 document.addEventListener('click',async e=>{
@@ -99,6 +105,14 @@ document.addEventListener('click',async e=>{
     // guarda o histórico: o paciente sai da lista, os recibos antigos continuam
     if(falhou(await sb.from('pacientes').update({ativo:false}).eq('id',t.dpac),'excluir o paciente'))return;
     S.pac=S.pac.filter(p=>p.id!==t.dpac);render();}
+  if(t.cpac){const p=S.pac.find(x=>x.id===t.cpac);
+    const tel=prompt(`WhatsApp de ${p.nome} com DDD (deixe vazio para apagar):`,p.telefone?fmtTel(p.telefone):'');if(tel===null)return;
+    if(tel.trim()&&!telOk(tel)){avisa('WhatsApp inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
+    const em=prompt(`E-mail de ${p.nome} (deixe vazio para apagar):`,p.email||'');if(em===null)return;
+    if(em.trim()&&!mailOk(em.trim())){avisa('E-mail inválido.',true);return}
+    const novo={telefone:tel.trim()?telLimpo(tel):null,email:em.trim()||null};
+    if(falhou(await sb.from('pacientes').update(novo).eq('id',p.id),'salvar o contato'))return;
+    Object.assign(p,novo);render();fech();avisa('Contato salvo.');}
   if(t.ddesp){if(falhou(await sb.from('despesas').delete().eq('id',t.ddesp),'excluir a despesa'))return;
     S.desp=S.desp.filter(d=>d.id!==t.ddesp);despTela();}
   if(t.tirar){if(falhou(await sb.from('acessos').delete().eq('profissional_id',S.prof.id).eq('user_id',t.tirar),'tirar o acesso'))return;acessosTela();}
@@ -111,10 +125,13 @@ $('f-atend').onsubmit=async e=>{e.preventDefault();
   if(falhou(r,'salvar o atendimento'))return;
   S.at.push({...r.data,valor:+r.data.valor});$('a-valor').value='';$('a-mes').value=$('a-data').value.slice(0,7);render();avisa('Atendimento salvo.');};
 $('f-pac').onsubmit=async e=>{e.preventDefault();
-  const cpf=so($('p-cpf').value),pag=so($('p-pag').value);
+  const cpf=so($('p-cpf').value),pag=so($('p-pag').value),tel=$('p-tel').value.trim(),em=$('p-email').value.trim();
   if(!cpfOk(cpf)){avisa('CPF do paciente inválido. Confira os números.',true);return}
   if(pag&&!cpfOk(pag)){avisa('CPF de quem paga inválido.',true);return}
-  const r=await sb.from('pacientes').insert({profissional_id:S.prof.id,nome:$('p-nome').value.trim(),cpf,cpf_pagador:pag&&pag!==cpf?pag:null}).select().single();
+  if(tel&&!telOk(tel)){avisa('WhatsApp inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
+  if(em&&!mailOk(em)){avisa('E-mail do paciente inválido.',true);return}
+  const r=await sb.from('pacientes').insert({profissional_id:S.prof.id,nome:$('p-nome').value.trim(),cpf,cpf_pagador:pag&&pag!==cpf?pag:null,
+    telefone:tel?telLimpo(tel):null,email:em||null}).select().single();
   if(falhou(r,'salvar o paciente'))return;
   S.pac.push(r.data);e.target.reset();render();avisa('Paciente salvo.');};
 $('a-mes').onchange=render;
@@ -212,6 +229,20 @@ function fech(){
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
   $('f-erros').innerHTML=[...new Set(erros)].map(t=>`<div class="msg err">${esc(t)}</div>`).join('');
   $('f-csv').value=falta?'':linhas.join('\r\n');
+  envioTela(mes);
+}
+// Envio do recibo ao paciente (ponto 3 do Daniel): por enquanto abre o WhatsApp ou o e-mail com o texto pronto
+function msgPaciente(p,mes,valor){const [aa,mm]=mes.split('-').map(Number);
+  return `Olá, ${p.nome.split(' ')[0]}! Segue o recibo de ${MESES[mm-1].replace('marco','março')}/${aa}, no valor de ${brl(valor)}, emitido no Receita Saúde. `
+    +`Ele também aparece no app Receita Saúde (gov.br) e já vai para a sua declaração de IR. ${S.prof.nome}`}
+function envioTela(mes){const g={};
+  S.at.filter(a=>a.data.startsWith(mes)&&a.lote_id).forEach(a=>{g[a.paciente_id]=(g[a.paciente_id]||0)+a.valor});
+  const ids=Object.keys(g);
+  $('f-envio').innerHTML=ids.length?ids.map(id=>{const p=pacDe(id),t=msgPaciente(p,mes,g[id]);
+    const zap=p.telefone?`<a class="small btn" target="_blank" rel="noopener" href="https://wa.me/55${p.telefone}?text=${encodeURIComponent(t)}">WhatsApp</a>`:'';
+    const mail=p.email?`<a class="small btn" href="mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent('Recibo '+mes.split('-').reverse().join('/'))}&body=${encodeURIComponent(t)}">E-mail</a>`:'';
+    return `<div class="item"><div><b>${esc(p.nome)}</b><div class="meta">${brl(g[id])}${zap||mail?'':' · sem contato: cadastre em Pacientes'}</div></div><div class="btns">${zap}${mail}</div></div>`}).join('')
+    :'<div class="sub">Nenhum recibo emitido neste mês ainda.</div>';
 }
 $('f-mes').onchange=fech;$('f-agrupa').onchange=fech;
 $('b-copiar').onclick=()=>copia($('f-csv').value,$('f-csv'));

@@ -14,6 +14,10 @@ const num=v=>parseFloat(String(v).replace(/\./g,'').replace(',','.'));
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cpfOk(c){c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
   for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true}
+const telLimpo=t=>so(t).replace(/^55(?=\d{10,11}$)/,'');
+const telOk=t=>/^\d{10,11}$/.test(telLimpo(t));
+const fmtTel=t=>{t=so(t);return t.length===11?t.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3'):t.replace(/(\d{2})(\d{4})(\d{4})/,'($1) $2-$3')};
+const mailOk=m=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m);
 function avisa(t,err){const a=$('aviso');a.textContent=t;a.className='msg'+(err?' err':'');a.hidden=false;clearTimeout(avisa.t);avisa.t=setTimeout(()=>a.hidden=true,5000)}
 
 // Regras fiscais (contas, locais, Carnê-Leão, sobra de despesa, reforma) ficam em regras.js, igual para o painel
@@ -79,13 +83,17 @@ function telaLan(){
   const sel=$('pac').value;
   $('pac').innerHTML='<option value="">Escolha o paciente</option>'+D.pacientes.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')+'<option value="novo">+ Paciente novo</option>';
   if(sel&&[...$('pac').options].some(o=>o.value===sel))$('pac').value=sel;
-  $('novo').hidden=$('pac').value!=='novo';
+  contatoTela();
   const lsel=$('a-local').value;$('a-local').innerHTML=opLocais(false,D.locais.length?'':'Cadastre seus locais na aba Despesas');
   if(lsel)$('a-local').value=lsel;$('l-local').hidden=!D.locais.length;
   $('feitos').innerHTML=D.atendimentos.slice(0,30).map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)}${x.local_id&&localDe(x.local_id)?' · '+esc(localDe(x.local_id).nome):''}</div></div>
     <span class="pill ${x.emitido?'':'pend'}">${x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
 }
-$('pac').onchange=()=>{$('novo').hidden=$('pac').value!=='novo'};
+// WhatsApp e e-mail do paciente, para a Assessoria mandar o recibo (ponto 3 do Daniel)
+function contatoTela(){const v=$('pac').value,p=D.pacientes.find(x=>x.id===v);
+  $('novo').hidden=v!=='novo';$('contato').hidden=!v;
+  $('n-tel').value=p&&p.telefone?fmtTel(p.telefone):'';$('n-email').value=p&&p.email||'';}
+$('pac').onchange=contatoTela;
 function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
 $('pago').onchange=pagoTela;
 $('f-at').onsubmit=async e=>{e.preventDefault();
@@ -98,13 +106,22 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     if(!nome){avisa('Escreva o nome do paciente.',true);return}
     if(!cpfOk(cpf)){avisa('CPF do paciente inválido. Confira os números.',true);return}
     if(pag&&!cpfOk(pag)){avisa('CPF de quem paga inválido.',true);return}
-    const r=await sb.rpc('link_paciente',{tok:TOK,p_nome:nome,p_cpf:cpf,p_cpf_pagador:pag});
+  }
+  const tel=$('n-tel').value.trim(),em=$('n-email').value.trim();
+  if(tel&&!telOk(tel)){avisa('WhatsApp do paciente inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
+  if(em&&!mailOk(em)){avisa('E-mail do paciente inválido.',true);return}
+  if(pac==='novo'){
+    const r=await sb.rpc('link_paciente',{tok:TOK,p_nome:$('n-nome').value.trim(),p_cpf:so($('n-cpf').value),p_cpf_pagador:so($('n-pag').value),p_telefone:tel?telLimpo(tel):'',p_email:em});
     if(r.error){avisa('Não consegui salvar o paciente. Tente de novo.',true);return}
     pac=r.data;$('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';
+  }else{const p=D.pacientes.find(x=>x.id===pac);
+    if(p&&((p.telefone||'')!==(tel?telLimpo(tel):'')||(p.email||'')!==em)){
+      const r=await sb.rpc('link_paciente_contato',{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em});
+      if(r.error){avisa('Não consegui salvar o contato do paciente. Tente de novo.',true);return}}
   }
   const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked});
   if(r.error){avisa('Não consegui salvar. Confira a data e tente de novo.',true);return}
-  const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;$('novo').hidden=true;avisa(pg?'Atendimento salvo.':'Salvo em "A receber". Marque quando o paciente pagar.');
+  const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa(pg?'Atendimento salvo.':'Salvo em "A receber". Marque quando o paciente pagar.');
 };
 
 // ---------- Despesas ----------
