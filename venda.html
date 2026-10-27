@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lado a Lado Saúde</title>
+<meta name="description" content="Recibo do Receita Saúde, Carnê-Leão e lembretes pelo WhatsApp para fisioterapeutas, psicólogos e profissionais da saúde. 30 dias grátis.">
+<meta name="robots" content="noindex"><!-- abre para o Google só no lançamento (07/12) -->
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f6b55">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;
+  --zap:#dcf8c6;--zap-fg:#17231e;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;
+  --accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:56px;padding:20px 0 64px}
+h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(22px,4vw,30px);margin:0 0 6px;text-wrap:balance}
+h3{font-size:17px;margin:0}
+p{margin:6px 0}
+a{color:var(--accent)}
+.sub{color:var(--muted)}
+.marca{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.marca i{width:28px;height:28px;border-radius:8px;background:var(--accent);display:inline-block}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cta{display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}
+.cta.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:10px 16px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.hero .lead{font-size:19px;color:var(--muted);margin:14px 0 22px}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;font-size:14px}
+.b{max-width:85%;padding:8px 11px;border-radius:12px;white-space:pre-line}
+.b.eu{justify-self:end;background:var(--zap);color:var(--zap-fg);border-bottom-right-radius:3px}
+.b.nos{justify-self:start;background:var(--soft);border-bottom-left-radius:3px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.n{font-weight:700;color:var(--accent);font-size:14px}
+.plano.destaque{border:2px solid var(--accent)}
+.preco{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.preco small{font-size:15px;color:var(--muted);font-weight:500}
+.tag{justify-self:start;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent);border-radius:99px;padding:2px 10px}
+ul.ok{list-style:none;padding:0;margin:4px 0;display:grid;gap:6px}
+ul.ok li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.ciclo{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;margin:10px 0 18px;background:var(--card)}
+.ciclo button{font:inherit;border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;cursor:pointer}
+.ciclo button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600}
+details{border-top:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600}
+.faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
+footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
+@media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="topo"><span class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</span><a class="cta sec" href="entrar.html">Entrar</a></div>
+
+  <section class="hero">
+    <div>
+      <h1>Você atende. A gente cuida do recibo e do imposto, pelo WhatsApp.</h1>
+      <p class="lead">Recibo do Receita Saúde, Carnê-Leão, livro-caixa e lembretes para fisioterapeutas, psicólogos, fonoaudiólogos e demais profissionais da saúde que atendem como pessoa física. Sem abrir o gov.br.</p>
+      <a class="cta" href="entrar.html">Testar 30 dias grátis</a>
+      <p class="sub" style="font-size:14px;margin-top:10px">Sem cartão. Cancela quando quiser.</p>
+    </div>
+    <div class="chat" aria-label="Exemplo de conversa no WhatsApp">
+      <div class="b eu">Maria 180 pix</div>
+      <div class="b nos">✅ Maria Silva · R$ 180,00 · Pix · hoje
+No mês: R$ 4.320,00 em 24.</div>
+      <div class="b eu">quanto vou pagar de imposto?</div>
+      <div class="b nos">Carnê-Leão estimado de outubro: R$ 126,42, vence 30/11. A Assessoria manda o DARF pronto.</div>
+      <div class="b eu">quem me deve?</div>
+      <div class="b nos">• João Pereira: R$ 200,00 (20/10)</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Como funciona</h2>
+    <p class="sub">Desde 2025, cada pagamento de paciente precisa de recibo no Receita Saúde. Sem recibo, a multa é de R$ 100 por mês.</p>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><span class="n">1 · no dia a dia</span><h3>Você manda uma frase</h3><p class="sub">"Maria 180 pix" no WhatsApp, ou lança no app. Quem ficou devendo vai para "a receber".</p></div>
+      <div class="card"><span class="n">2 · do dia 1º ao 5</span><h3>Nós emitimos os recibos</h3><p class="sub">Com a sua procuração no e-CAC (só Carnê-Leão Web), emitimos todos no Receita Saúde e devolvemos os PDFs no seu WhatsApp.</p></div>
+      <div class="card"><span class="n">3 · antes do vencimento</span><h3>Você recebe o DARF</h3><p class="sub">Carnê-Leão calculado com as despesas que abatem, o DARF pronto e o resumo: entrou, saiu, imposto e sobra.</p></div>
+    </div>
+  </section>
+
+  <section id="planos">
+    <h2>Planos</h2>
+    <div class="ciclo" role="group" aria-label="Forma de pagamento"><button type="button" data-c="mensal" aria-pressed="true">Mensal</button><button type="button" data-c="anual" aria-pressed="false">Anual: paga 10, leva 12</button></div>
+    <div class="grid3" id="planos-lista">
+      <div class="card plano" data-p="essencial"><h3>Essencial</h3><div class="preco"><span>R$ 79</span><small>/mês</small></div><p class="sub">Para quem quer o controle e emite sozinha.</p>
+        <ul class="ok"><li>App e WhatsApp para lançar</li><li>Carnê-Leão e DARF calculados</li><li>Arquivo dos recibos para importar</li><li>Lembretes de fim de mês e vencimento</li></ul></div>
+      <div class="card plano destaque" data-p="completo"><span class="tag">o mais escolhido</span><h3>Completo</h3><div class="preco"><span>R$ 149</span><small>/mês</small></div><p class="sub">A Assessoria faz por você.</p>
+        <ul class="ok"><li>Tudo do Essencial</li><li>Emitimos todos os recibos no Receita Saúde</li><li>PDFs devolvidos no WhatsApp</li><li>Fechamento do mês e DARF prontos</li><li>Suporte no WhatsApp em 1 dia útil</li></ul></div>
+      <div class="card plano" data-p="contador"><h3>Completo + Contador</h3><div class="preco"><span>R$ 249</span><small>/mês</small></div><p class="sub">Com contador parceiro.</p>
+        <ul class="ok"><li>Tudo do Completo</li><li>Declaração do IR anual</li><li>Revisão do ano e PF × CNPJ</li><li>Orientação da reforma de 2027</li></ul></div>
+    </div>
+    <p class="sub" style="margin-top:14px">Todos com 30 dias grátis e, de bônus, revisão do seu Instagram e LinkedIn com 4 posts prontos por mês da sua especialidade. <b>Fundadoras:</b> as 10 primeiras têm 30% de desconto por 12 meses.</p>
+  </section>
+
+  <section>
+    <h2>Perguntas</h2>
+    <details><summary>Preciso dar minha senha do gov.br?</summary><p>Não. Você cadastra no e-CAC uma procuração eletrônica para a Assessoria só com o serviço "Carnê-Leão Web". Leva 5 minutos, mostramos o passo a passo e você revoga quando quiser.</p></details>
+    <details><summary>Vocês são contabilidade?</summary><p>Não. Fazemos a gestão do recibo, do livro-caixa e do Carnê-Leão. A parte de contador (declaração anual, planejamento) fica com o contador parceiro, no plano Completo + Contador.</p></details>
+    <details><summary>E os dados dos meus pacientes?</summary><p>Ficam num banco com servidor em São Paulo, separados por profissional, com backup criptografado. São usados só para emitir os recibos e calcular o seu imposto. Você é a controladora, e nós, operadores, com contrato de dados (LGPD).</p></details>
+    <details><summary>E se eu parar de pagar?</summary><p>A conta fica só para consulta: você vê e baixa tudo, nada é apagado. Pagou, volta na hora.</p></details>
+    <details><summary>Atendo em mais de um lugar, ou em casa. Funciona?</summary><p>Sim. Cada local tem as suas despesas, e o app aplica a regra da Receita (em casa, abate 1/5 das contas).</p></details>
+    <details><summary>Quais profissões?</summary><p>As obrigadas ao Receita Saúde que atendem como pessoa física: fisioterapia, psicologia, fonoaudiologia, terapia ocupacional, odontologia e medicina.</p></details>
+  </section>
+
+  <section class="faixa">
+    <h2>Teste 30 dias, sem cartão</h2>
+    <p class="sub">Cria a conta em 3 minutos e já lança pelo WhatsApp.</p>
+    <a class="cta" href="entrar.html">Começar meu teste grátis</a>
+  </section>
+</main>
+<footer>Lado a Lado Saúde é um serviço da Lado a Lado Assessoria · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="termos.html">Termos e privacidade</a></footer>
+<script src="config.js"></script>
+<script>
+// Preços: tabela planos do banco (pública); se não responder, ficam os escritos na página
+let PRECOS={essencial:79,completo:149,contador:249},CICLO='mensal';
+const brl=v=>'R$ '+(Number.isInteger(+v)?(+v).toLocaleString('pt-BR'):(+v).toLocaleString('pt-BR',{minimumFractionDigits:2}));
+function mostra(){document.querySelectorAll('.plano').forEach(c=>{const m=PRECOS[c.dataset.p];if(!m)return;
+  c.querySelector('.preco span').textContent=brl(CICLO==='anual'?m*10:m);c.querySelector('.preco small').textContent=CICLO==='anual'?'/ano':'/mês'})}
+document.querySelectorAll('.ciclo button').forEach(b=>b.onclick=()=>{CICLO=b.dataset.c;
+  document.querySelectorAll('.ciclo button').forEach(x=>x.setAttribute('aria-pressed',x===b));mostra()});
+fetch(CONFIG.url+'/rest/v1/planos?select=codigo,mensal',{headers:{apikey:CONFIG.chave}}).then(r=>r.ok?r.json():[])
+  .then(l=>{if(Array.isArray(l)&&l.length){l.forEach(p=>PRECOS[p.codigo]=+p.mensal);mostra()}}).catch(()=>{});
+</script>
+</body>
+</html>

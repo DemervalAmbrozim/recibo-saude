@@ -76,7 +76,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tab').forEach(s=>s.hidden=s.id!==b.dataset.t);
   document.querySelectorAll('nav button').forEach(x=>x===b?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));
   if(b.dataset.t==='t-fech')S.prof?abrir(S.prof.id):fech();
-  if(b.dataset.t==='t-adm')admTela();}); // recarrega: a profissional pode ter lançado pelo link
+  if(b.dataset.t==='t-adm')cobsCarrega().then(admTela);}); // recarrega: a profissional pode ter lançado pelo link
 // Ao voltar para o app (celular), traz o que entrou pelo link enquanto ele estava aberto
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.prof)abrir(S.prof.id);});
 
@@ -325,7 +325,13 @@ $('mfa-desligar').onclick=async()=>{if(!confirm('Desligar o 2º fator? O painel 
 // ---------- Administração (supabase/010): situação das contas, conselho, convites e carteira do contador ----------
 const SIT={teste:'em teste',ativa:'ativa',leitura:'só leitura',cancelada:'cancelada'};
 const OCUP={'231':'Fisioterapeuta','255':'Psicólogo(a)','230':'Fonoaudiólogo(a)','232':'Terapeuta ocupacional','226':'Dentista','225':'Médico(a)'};
-const sitEf=p=>p.situacao==='teste'&&p.teste_ate&&p.teste_ate<hojeISO()?'leitura':p.situacao||'ativa'; // igual a situacao_efetiva do banco
+// Cobranças (supabase/013): a última de cada profissional; teste vencido com cobrança aberta há até 10 dias segue em teste
+let COBS={};
+async function cobsCarrega(){const r=await sb.from('cobrancas').select('profissional_id,valor,vencimento,status,link').neq('status','cancelada').order('vencimento');
+  if(!r.error){COBS={};r.data.forEach(c=>COBS[c.profissional_id]=c)}}
+const cobAberta=p=>{const c=COBS[p.id],d=new Date(Date.now()-10*864e5).toISOString().slice(0,10);return c&&['pendente','vencida'].includes(c.status)&&c.vencimento>=d};
+const sitEf=p=>p.situacao==='teste'&&p.teste_ate&&p.teste_ate<hojeISO()&&!cobAberta(p)?'leitura':p.situacao||'ativa'; // igual a situacao_efetiva do banco
+const PLANO={'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'Com contador'};
 const profsUnicos=()=>[...new Map(PROFS.map(p=>[p.id,p])).values()];
 function admTela(){
   const em7=new Date(Date.now()+7*864e5).toISOString().slice(0,10), todos=profsUnicos();
@@ -337,13 +343,16 @@ function admTela(){
   const op=(o,v)=>Object.entries(o).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-lista').innerHTML=ps.length?ps.map(p=>{const s=sitEf(p), zap=p.telefone?`https://wa.me/55${p.telefone}?text=${encodeURIComponent(`Olá, ${(p.nome||'').split(' ')[0]}! Aqui é da Assessoria Lado a Lado, do Recibo Saúde.`)}`:'';
     return `<div class="item"><div><b>${esc(p.nome||'(sem nome)')}</b><div class="meta">${esc(OCUP[p.ocupacao]||'')}${p.registro?' · '+esc(p.registro):''}${p.cidade?' · '+esc(p.cidade):''}</div>
-      <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div></div>
+      <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div>
+      ${p.plano_pedido||COBS[p.id]||p.fundadora?`<div class="meta">${[p.plano_pedido&&`pediu ${PLANO[p.plano_pedido]} (${p.ciclo||'mensal'})`,p.fundadora&&'fundadora −30%',
+        COBS[p.id]&&`cobrança ${brl(+COBS[p.id].valor)} · vence ${dBR(COBS[p.id].vencimento).slice(0,5)} · ${COBS[p.id].status}`].filter(Boolean).join(' · ')}</div>`:''}</div>
       <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div></div>
       <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`
           :`<input data-fone-in="${p.id}" inputmode="tel" placeholder="WhatsApp com DDD" style="width:auto;max-width:170px;padding:6px 8px"><button class="small" data-fone="${p.id}" type="button">Salvar WhatsApp</button>`}
         <button class="small" data-conselho="${p.id}" type="button">${p.conselho_ok?'Desfazer conferência':'Conselho conferido'}</button>
         <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
-        <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op({'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'Com contador'},p.plano||'')}</select>
+        <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op(PLANO,p.plano||'')}</select>
+        <button class="small" data-fundadora="${p.id}" type="button">${p.fundadora?'Tirar fundadora':'Fundadora −30%'}</button>
         ${s==='teste'||s==='leitura'?`<button class="small" data-mais30="${p.id}" type="button">+30 dias de teste</button>`:''}</div></div>`}).join('')
     :'<div class="sub">Nenhuma profissional neste filtro.</div>';
   $('ct-prof').innerHTML=todos.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}</option>`).join('');
@@ -353,6 +362,7 @@ async function admMuda(id,novo,msg){
   if(falhou(await sb.from('profissionais').update(novo).eq('id',id),'mudar a conta'))return;
   PROFS.filter(p=>p.id===id).forEach(p=>Object.assign(p,novo));admTela();avisa(msg);}
 document.addEventListener('click',e=>{const t=e.target.dataset||{};
+  if(t.fundadora){const p=PROFS.find(x=>x.id===t.fundadora);admMuda(p.id,{fundadora:!p.fundadora},p.fundadora?'Desconto de fundadora retirado.':'Fundadora: 30% de desconto na próxima assinatura.')}
   if(t.conselho){const p=PROFS.find(x=>x.id===t.conselho);admMuda(p.id,{conselho_ok:!p.conselho_ok},p.conselho_ok?'Conferência desfeita.':'Conselho marcado como conferido.')}
   if(t.fone){const f=so(document.querySelector(`[data-fone-in="${t.fone}"]`).value).replace(/^55(?=\d{10,11}$)/,'');
     if(!/^\d{10,11}$/.test(f)){avisa('WhatsApp com DDD, ex.: 27 99999-9999.',true);return}

@@ -46,15 +46,42 @@ async function carrega(){
 }
 // Situação da conta (supabase/010): teste com prazo, só leitura quando vence; sem a função no banco, segue como antes
 async function contaTela(){
-  const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;
+  const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();
   const c=r.data, leitura=['leitura','cancelada'].includes(c.situacao), teste=c.situacao==='teste'&&c.teste_ate;
   const dias=teste?Math.round((new Date(c.teste_ate)-new Date(hojeISO()))/864e5):0;
   document.body.classList.toggle('leitura',leitura);
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
-  $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, fale com a Assessoria pelo WhatsApp (Ajuda).'
+  $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
     :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Assessoria.'}`:'';
   $('b-sair').hidden=!c.logada;
 }
+// Plano e cobrança (supabase/013 + função cobranca). Sem a função no banco, o cartão fica escondido.
+let PL=null;
+async function planoTela(){const r=await sb.rpc('minha_cobranca',{tok:TOK});if(r.error||!r.data)return;PL=r.data;$('aj-plano').hidden=false;
+  const c=PL.cobranca,nome=k=>(PL.planos.find(x=>x.codigo===k)||{}).nome||k;
+  $('pl-sit').innerHTML=c&&c.status!=='paga'?`Cobrança ${c.status==='vencida'?'<b>vencida</b>':'em aberto'}: ${brl(c.valor)}, vencimento ${dBR(c.vencimento)}. <a href="${esc(c.link||'#')}" target="_blank" rel="noopener">Pagar agora</a>`
+    :PL.plano&&PL.situacao==='ativa'?`Plano ${esc(nome(PL.plano))}${PL.ciclo?` (${PL.ciclo})`:''}, em dia.`
+    :PL.situacao==='teste'?`Teste grátis até ${dBR(PL.teste_ate)}. Escolha o plano agora e a 1ª cobrança vence só no fim do teste.`
+    :'Escolha um plano para voltar a lançar. Nada foi apagado.';
+  if(PL.fundadora)$('pl-sit').innerHTML+=' <b>Fundadora: 30% de desconto.</b>';
+  const ciclo=(document.querySelector('[name=pl-ciclo]:checked')||{}).value||'mensal';
+  $('pl-lista').innerHTML=PL.planos.map(p=>{const atual=PL.situacao==='ativa'&&PL.plano===p.codigo,v=ciclo==='anual'?p.anual:p.mensal;
+    return `<div class="item" style="grid-template-columns:1fr;gap:6px"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p.nome)}</b><b class="num">${brl(v)}<span class="sub">/${ciclo==='anual'?'ano':'mês'}</span></b></div>
+      <div class="sub">${esc(p.resumo)}</div>${atual?'<div class="sub"><b>Seu plano atual</b></div>':`<button type="button" data-plano="${p.codigo}">${PL.plano_pedido===p.codigo&&c&&c.status!=='paga'?'Ver cobrança':'Quero este'}</button>`}</div>`}).join('')}
+document.querySelectorAll('[name=pl-ciclo]').forEach(r=>r.onchange=planoTela);
+document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.dataset.plano;if(!k)return;
+  const ciclo=document.querySelector('[name=pl-ciclo]:checked').value,p=PL.planos.find(x=>x.codigo===k);
+  if(!confirm(`Plano ${p.nome}, ${ciclo}: ${brl(ciclo==='anual'?p.anual:p.mensal)}. Abrir a página de pagamento?`))return;
+  e.target.disabled=true;const w=window.open('about:blank','_blank');
+  try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
+    const r=await fetch(CONFIG.url+'/functions/v1/cobranca',{method:'POST',headers:h,body:JSON.stringify({acao:'assinar',tok:TOK,plano:k,ciclo})});
+    const j=await r.json();if(!r.ok||!j.link)throw new Error(j.erro||r.status);
+    if(j.ensaio){if(w)w.close();avisa(`Modo de teste: nenhuma cobrança real foi criada (${brl(j.valor)}, vencimento ${dBR(j.vencimento)}).`)}
+    else if(w)w.location=j.link;else location.href=j.link;
+    await planoTela()}
+  catch(err){if(w)w.close();avisa('Não consegui abrir o pagamento agora. Tente de novo ou fale com a Assessoria.',true)}
+  e.target.disabled=false});
+
 function mostra(t){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
   document.querySelectorAll('nav button').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));scrollTo(0,0)}
 $('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
