@@ -99,6 +99,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(/^(recibos?|pdfs?)$/.test(t))return 'Os PDFs dos recibos chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês. O paciente também vê no app Receita Saúde (gov.br).';
   if(/^(desfazer|desfaz|apagar|apaga|cancela|cancelar)$/.test(t)){const u=est.ultimo;
     if(!u)return 'Não tenho lançamento recente seu para desfazer. Para apagar outro, use o app (aba Lançar).';
+    if(u.tipo==='rec')return `O último foi um ${u.txt}: esse se corrige no app (aba Lançar). Nada foi apagado.`;
     try{await api[u.tipo==='desp'?'apagaDespesa':'apaga'](u.id)}catch(e){return zErro(String(e.message||e))}
     est.ultimo=null;return `Desfeito: ${u.txt}.`}
   // Escolha entre homônimas: "2"
@@ -122,6 +123,8 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
     const a=dela[0],v=Math.min(p.valor||a.valor,a.valor);
     try{await api.receber(a.id,v,p.data||hoje)}catch(e){return zErro(String(e.message||e))}
     a.valor-=v;if(a.valor<=0)a.pago=true;
+    // "desfazer" agora não pode apagar o atendimento de antes: recebimento se corrige no app
+    est.ultimo={tipo:'rec',txt:`recebimento de ${a.paciente}`};
     return `✅ Recebido de ${a.paciente}: ${zBrl(v)}`+(a.valor>0?`. Ainda falta ${zBrl(a.valor)}.`:'.')}
   // Despesa: "aluguel 1200" (ou "despesa aluguel 1200")
   const n0=p.nome[0]==='despesa'||p.nome[0]==='paguei'?p.nome.slice(1):p.nome;
