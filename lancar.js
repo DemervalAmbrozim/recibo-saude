@@ -243,6 +243,7 @@ const AJUDA=[
   ['Quanto tempo guardo os comprovantes?','5 anos, no seu nome e CPF. Foto legível também serve para você, mas guarde o papel ou o PDF original.'],
   ['O paciente é criança. Como lanço?','Lance no nome da criança e preencha o CPF de quem paga (mãe ou pai). O recibo sai certo para os dois.'],
   ['Quando vence o Carnê-Leão?','No último dia útil do mês seguinte. Se der imposto, a Assessoria manda o DARF com o valor.'],
+  ['Pago ISS para a prefeitura?','Quem atende como autônoma com inscrição na prefeitura paga um ISS fixo por ano, que depende da cidade e da escolaridade da profissão, não de quanto você recebe. Em Vitória, em 2026, venceu em 22/04, com 5% de desconto na cota única. Em Vila Velha e na Serra, valor e data vêm no carnê da prefeitura. O ISS pago abate no Carnê-Leão: lance em Despesas, tipo ISS. A Assessoria confere a sua situação.'],
   ['Meu INSS abate?','Sim. O INSS que você paga como autônoma (carnê ou GPS) abate do Carnê-Leão no mês em que foi pago. Lance em Despesas, tipo "Seu INSS", com o mês a que se refere.'],
   ['Gastei mais do que recebi no mês. Perco a despesa?','Não. O que passar do recebido fica guardado e abate nos meses seguintes, até dezembro. O app faz essa conta sozinho e mostra no Início.'],
   ['Quando sai o recibo? E se o paciente parcelar?','O recibo vale pela data em que o dinheiro entrou, não pela data do atendimento. Se ainda não recebeu, desmarque "Já recebi" ao lançar: fica em A receber. Parcelado ou cartão: a cada parcela que cair, toque em Recebi e informe o valor; cada parcela vira um recibo.'],
