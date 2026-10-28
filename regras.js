@@ -65,6 +65,12 @@ function reforma(recAno,ano){const lim=nano(ano),p=recAno/lim,a1=Math.max(+ano+1
     :`Acima de ${L} no ano: pela reforma tributária, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia). A Assessoria vai orientar.`)
     +' Limite novo (LC 238/2026), a confirmar com o contador.'};
 }
+// Gatilho da linha da reforma (revisão item 33, 28/10): o ritmo dos meses fechados do ano, levado a 12 meses. Avisa a partir de 80% da linha.
+function reformaRitmo(ats,ano,meses){if(meses<1)return null;const rec=soma(ats.filter(x=>x.data.startsWith(ano)&&+x.data.slice(5,7)<=meses)),
+  proj=rec/meses*12,lim=nano(ano),a1=Math.max(+ano+1,2027),B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+  if(proj<0.8*lim)return null;
+  return {rec,proj,lim,txt:`Pelo ritmo de ${ano} (${B(rec)} até agora), você deve fechar o ano com cerca de ${B(proj)}, ${proj>=lim?'acima':'perto'} da linha de ${B(lim)} da reforma tributária. Acima dela, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (fisioterapia e psicologia com 60% de desconto). Mande *reforma* para entender ou *quero conversar* para ver o CNPJ com a Assessoria.`};
+}
 
 // Pessoa física × CNPJ (comparativo de 28/10/2026, projeto/pf-x-cnpj-e-nfse.html e ferramentas/comparativo-pf-cnpj.py).
 // Usa a média dos 3 meses fechados antes de `mes` (os 3 precisam ter receita). PF: INSS de autônoma (20% da receita, do mínimo

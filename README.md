@@ -1,4 +1,4 @@
-# Recibo Saúde Fácil
+# Lado a Lado Saúde (app e painel)
 
 App para profissionais da saúde que atendem como pessoa física: registra atendimentos, gera o arquivo de importação dos recibos do Receita Saúde no Carnê-Leão Web, controla o livro-caixa e estima o Carnê-Leão do mês.
 
