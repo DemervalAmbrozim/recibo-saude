@@ -42,7 +42,7 @@ async function carrega(){
   contaTela();
   $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
-  telaIni();telaLan();telaDesp();telaAg();pacotesTela();indTela();
+  telaIni();telaLan();telaDesp();telaAg();pacotesTela();indTela();irAnos();
 }
 // Pacotes (supabase/018): saldo por paciente e "+1 sessão hoje"; sem a função no banco, o cartão fica escondido
 async function pacotesTela(){const r=await sb.rpc('link_pacotes',{tok:TOK});const l=r.error?[]:r.data||[];
@@ -137,6 +137,26 @@ function zip(arqs){const enc=new TextEncoder(),partes=[],dir=[];let pos=0;
 // CSV para o Excel em português: ponto e vírgula, vírgula decimal, acentos (BOM)
 const csv=(cab,linhas)=>new TextEncoder().encode('﻿'+[cab,...linhas].map(l=>l.map(v=>{v=v==null?'':typeof v==='number'?String(v.toFixed(2)).replace('.',','):String(v);
   return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\r\n'));
+// ---------- Relatório do ano para o IR (revisão item 8): planilha e PDF (página de impressão do aparelho) ----------
+function irAnos(){const as=[...new Set(D.atendimentos.map(a=>a.data.slice(0,4)))].sort().reverse(),s=$('ir-ano');if(!s)return;
+  const v=s.value;s.innerHTML=(as.length?as:[hojeISO().slice(0,4)]).map(a=>`<option>${a}</option>`).join('');if(as.includes(v))s.value=v}
+const irDados=()=>relatorioIR(D.atendimentos.map(a=>({...a,valor:+a.valor})),D.despesas.map(d=>({...d,valor:+d.valor})),$('ir-ano').value);
+const mesBR=m=>m.split('-').reverse().join('/');
+$('b-ir-csv').onclick=()=>{const R=irDados(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv(['Mês','Recebido de pessoas físicas','Pacientes','Livro-caixa usado','INSS','Carnê-Leão devido','DARF a pagar'],
+    [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf]),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf],[],['Despesas do ano por conta'],
+    ...Object.entries(R.porConta).map(([n,v])=>[n,v])])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
+$('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){avisa('Libere a janela nova para gerar o PDF.',true);return}
+  const td=v=>`<td style="text-align:right">${brl(v)}</td>`;
+  w.document.write(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Relatório IR ${R.ano}</title><style>body{font:13px system-ui,sans-serif;margin:24px;color:#1b2b26}
+    h1{font-size:18px;color:#0f6b55}table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border-bottom:1px solid #d6e2dd;padding:5px 6px;text-align:left}tfoot td{font-weight:700}.s{color:#5b6b66;font-size:12px}</style>
+    <h1>Relatório do ano ${R.ano} para a declaração do IR</h1><div>${esc(D.nome||'')}</div><div class="s">Gerado em ${new Date().toLocaleDateString('pt-BR')} pela Lado a Lado Saúde</div>
+    <table><thead><tr><th>Mês</th><th style="text-align:right">Recebido (PF)</th><th style="text-align:right">Pacientes</th><th style="text-align:right">Livro-caixa usado</th><th style="text-align:right">INSS</th><th style="text-align:right">Carnê-Leão devido</th><th style="text-align:right">DARF a pagar</th></tr></thead>
+    <tbody>${R.meses.map(x=>`<tr><td>${mesBR(x.mes)}</td>${td(x.rec)}<td style="text-align:right">${x.pacientes}</td>${td(x.lc)}${td(x.inss)}${td(x.devido)}${td(x.darf)}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td>${td(R.tot.rec)}<td></td>${td(R.tot.lc)}${td(R.tot.inss)}${td(R.tot.devido)}${td(R.tot.darf)}</tr></tfoot></table>
+    ${Object.keys(R.porConta).length?`<h1>Despesas do ano por conta</h1><table>${Object.entries(R.porConta).map(([n,v])=>`<tr><td>${esc(n)}</td>${td(v)}</tr>`).join('')}</table>`:''}
+    <p class="s">Na declaração: importe os dados do Carnê-Leão Web (menu Declaração), que levam os rendimentos, o livro-caixa e o imposto de cada mês. Os recibos do Receita Saúde já aparecem na declaração pré-preenchida. "DARF a pagar" é o calculado: confira os pagos no e-CAC (Pagamentos). Valores a conferir com o seu contador.</p>
+    <script>onload=()=>print()<\/script>`);w.document.close()};
 $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disabled=true;st.textContent='Juntando os seus dados...';
   try{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error)throw r.error;const X=r.data,pr=X.profissional||{};
     const loc=id=>(X.locais.find(l=>l.id===id)||{}).nome||'',sim=v=>v?'sim':'não',n=v=>v==null?null:+v;

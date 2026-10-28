@@ -320,6 +320,10 @@ a{color:var(--accent)}
       <div class="sub">Baixe tudo num arquivo só: planilhas (pacientes, atendimentos, despesas, livro-caixa de cada mês) e os PDFs dos recibos. Os dados são seus: leve quando quiser.</div>
       <button id="b-exportar" type="button">Baixar todos os meus dados</button>
       <div class="sub" id="exp-st" aria-live="polite"></div>
+      <h2 style="margin-top:14px">Relatório do ano para o IR</h2>
+      <div class="sub">Mês a mês: o que recebeu, as despesas que abateram, o INSS e o Carnê-Leão. Leve para quem faz a sua declaração.</div>
+      <div class="row" style="align-items:center"><select id="ir-ano" style="width:auto"></select>
+        <button id="b-ir-pdf" type="button" class="small">PDF</button><button id="b-ir-csv" type="button" class="small">Planilha</button></div>
       <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-novidades" style="width:auto"> Quero receber pelo WhatsApp avisos de novidades, como a conta para virar CNPJ</label>
     </div>
     <div class="card" id="aj-lista"></div>

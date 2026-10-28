@@ -65,6 +65,16 @@ function reforma(recAno,ano){const lim=nano(ano),p=recAno/lim,a1=Math.max(+ano+1
     :`Acima de ${L} no ano: pela reforma tributária, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia). A Assessoria vai orientar.`)
     +' Limite novo (LC 238/2026), a confirmar com o contador.'};
 }
+// Relatório do ano para a declaração do IR (revisão item 8, 28/10): mês a mês o que o Carnê-Leão Web mostra, os totais e as despesas por conta.
+// "DARF a pagar" é o calculado; o pago se confere no e-CAC (Pagamentos), porque o app não recebe o comprovante do banco.
+function relatorioIR(ats,ds,ano){const pg=ats.filter(a=>a.pago!==false),meses=[];
+  for(let k=1;k<=12;k++){const m=`${ano}-${String(k).padStart(2,'0')}`,no=pg.filter(a=>a.data.startsWith(m));
+    if(!no.length&&!ds.some(d=>d.data.startsWith(m)))continue;const ap=apura(pg,ds,m);
+    meses.push({mes:m,rec:ap.rec,pacientes:new Set(no.map(a=>a.paciente_id||a.paciente)).size,lc:ap.usado,inss:ap.inss,devido:ap.cl.devido,darf:ap.darf.pagar})}
+  const T=c=>Math.round(meses.reduce((s,x)=>s+x[c],0)*100)/100,porConta={};
+  ds.filter(d=>d.data.startsWith(ano)).forEach(d=>{const n=nomeCod(d.codigo);porConta[n]=(porConta[n]||0)+ +d.valor});
+  return {ano,meses,tot:{rec:T('rec'),lc:T('lc'),inss:T('inss'),devido:T('devido'),darf:T('darf')},porConta}}
+
 // Gatilho da linha da reforma (revisão item 33, 28/10): o ritmo dos meses fechados do ano, levado a 12 meses. Avisa a partir de 80% da linha.
 function reformaRitmo(ats,ano,meses){if(meses<1)return null;const rec=soma(ats.filter(x=>x.data.startsWith(ano)&&+x.data.slice(5,7)<=meses)),
   proj=rec/meses*12,lim=nano(ano),a1=Math.max(+ano+1,2027),B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
