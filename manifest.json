@@ -1,2 +1,2 @@
-{"name":"Recibo Saúde Fácil","short_name":"Recibos","start_url":"./","display":"standalone","background_color":"#f3f6f4","theme_color":"#0f6b55","lang":"pt-BR",
+{"name":"Painel · Lado a Lado Saúde","short_name":"Painel LaL","start_url":"./","display":"standalone","background_color":"#f3f6f4","theme_color":"#0f6b55","lang":"pt-BR",
  "icons":[{"src":"icone.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

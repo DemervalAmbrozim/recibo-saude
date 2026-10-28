@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Recibo Saúde Fácil</title>
+<title>Painel · Lado a Lado Saúde</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
@@ -71,12 +71,14 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
 .kpi .sub{font-size:12px}
 .kpi b{display:block;font-family:var(--mono);font-size:15px;margin-top:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.marca{display:flex;align-items:center;gap:8px}.marca i{width:24px;height:24px;border-radius:7px;background:var(--accent);flex:none}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
   <header class="head">
-    <h1>Recibo Saúde Fácil</h1>
+    <h1 class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</h1>
     <span class="sub" id="quem"></span>
     <select id="prof-sel" hidden style="width:auto"></select>
   </header>
@@ -98,7 +100,7 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
   <!-- 2º FATOR: código do aplicativo autenticador (auditoria S5) -->
   <form id="t-mfa" class="card" hidden>
     <h2>Código de segurança</h2>
-    <div class="sub">Abra o aplicativo autenticador (Google Authenticator, Microsoft Authenticator ou outro) e digite o código de 6 números do Recibo Saúde.</div>
+    <div class="sub">Abra o aplicativo autenticador (Google Authenticator, Microsoft Authenticator ou outro) e digite o código de 6 números da Lado a Lado Saúde.</div>
     <label>Código <input id="mfa-cod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></label>
     <button class="pri" type="submit">Confirmar</button>
     <button id="mfa-sair" type="button">Sair</button>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Recibo Saúde Fácil</title>
+<title>Lado a Lado Saúde</title>
 <meta name="robots" content="noindex">
 <link rel="manifest" href="profissional.webmanifest">
 <link rel="apple-touch-icon" href="icone-192.png">
@@ -78,12 +78,14 @@ details p{margin:8px 0 0;color:var(--muted)}
 .dia{font-family:var(--mono);font-weight:600;min-width:52px}
 @media (max-width:400px){.grid3{grid-template-columns:1fr 1fr}.grid3>.kpi:last-child{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.marca{display:flex;align-items:center;gap:8px}.marca i{width:24px;height:24px;border-radius:7px;background:var(--accent);flex:none}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
   <header class="head">
-    <h1>Recibo Saúde</h1>
+    <h1 class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</h1>
     <span class="sub">Seu financeiro do consultório</span>
   </header>
   <div id="aviso" class="msg" hidden></div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Recibo Saúde Fácil</title>
+<title>Lado a Lado Saúde</title>
 <meta name="robots" content="noindex">
 <link rel="manifest" href="profissional.webmanifest">
 <link rel="apple-touch-icon" href="icone-192.png">
@@ -82,17 +82,19 @@ body.leitura form{opacity:.5;pointer-events:none}
 body.leitura [data-rec],body.leitura [data-del],body.leitura [data-ddesp],body.leitura [data-dfixa],body.leitura [data-lfixa]{display:none}
 @media (max-width:400px){.grid3{grid-template-columns:1fr 1fr}.grid3>.kpi:last-child{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.marca{display:flex;align-items:center;gap:8px}.marca i{width:24px;height:24px;border-radius:7px;background:var(--accent);flex:none}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
 <main>
   <header class="head">
-    <h1 id="nome">Recibo Saúde</h1>
+    <h1 id="nome">Lado a Lado Saúde</h1>
     <span class="sub" id="sub">Seu financeiro do consultório</span>
   </header>
   <div id="aviso" class="msg" hidden></div>
   <div id="conta" class="msg" hidden></div>
-  <div id="ruim" class="card" hidden><h2>Abra pelo seu link ou entre com seu e-mail</h2><div class="sub">Este link não vale mais ou você ainda não entrou. Tem conta com e-mail? Entre abaixo. Usa o link do WhatsApp? Peça um novo à Assessoria: 27 99971-2727.</div>
+  <div id="ruim" class="card" hidden><h2>Vamos abrir a sua conta</h2><div class="sub">Se você criou a conta com e-mail, entre pelo botão abaixo. Se usa o link que a Assessoria mandou no WhatsApp e ele não abriu, peça um novo pelo número 27 99971-2727.</div>
     <a href="entrar.html" style="text-align:center;padding:11px;border-radius:8px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:600">Entrar com e-mail</a></div>
 
   <!-- PIN do link (supabase/014, auditoria S4): o link sozinho não abre o app depois que ela cria o PIN -->

@@ -1,4 +1,4 @@
-// Recibo Saúde Fácil, fase 2: os dados ficam no Supabase, protegidos por RLS (ver supabase/001_esquema.sql).
+// Lado a Lado Saúde (antes Recibo Saúde Fácil), fase 2: os dados ficam no Supabase, protegidos por RLS (ver supabase/001_esquema.sql).
 const sb = supabase.createClient(CONFIG.url, CONFIG.chave);
 const $=id=>document.getElementById(id);
 const so=s=>String(s||'').replace(/\D/g,'');
@@ -326,7 +326,7 @@ async function mfaTela(){
 $('mfa-ligar').onclick=async()=>{
   const f=await sb.auth.mfa.listFactors(); // cadastro que ficou pela metade impede um novo
   for(const x of (f.data&&f.data.all||[]).filter(x=>x.status!=='verified'))await sb.auth.mfa.unenroll({factorId:x.id});
-  const r=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Recibo Saúde'});
+  const r=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Lado a Lado Saúde'});
   if(falhou(r,'começar o 2º fator'))return;
   novoFator=r.data.id;$('mfa-qr').src=r.data.totp.qr_code;$('mfa-chave').value=r.data.totp.secret;$('mfa-novo').hidden=false;$('mfa-ligar').hidden=true;};
 $('mfa-confirma').onclick=async()=>{
@@ -356,7 +356,7 @@ function admTela(){
     .map(([n,k])=>`<div class="kpi"><span class="sub">${n}</span><b>${todos.filter(F[k]).length}</b></div>`).join('');
   const ps=todos.filter(F[$('adm-filtro').value]||(()=>true)).sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
   const op=(o,v)=>Object.entries(o).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
-  $('adm-lista').innerHTML=ps.length?ps.map(p=>{const s=sitEf(p), zap=p.telefone?`https://wa.me/55${p.telefone}?text=${encodeURIComponent(`Olá, ${(p.nome||'').split(' ')[0]}! Aqui é da Assessoria Lado a Lado, do Recibo Saúde.`)}`:'';
+  $('adm-lista').innerHTML=ps.length?ps.map(p=>{const s=sitEf(p), zap=p.telefone?`https://wa.me/55${p.telefone}?text=${encodeURIComponent(`Olá, ${(p.nome||'').split(' ')[0]}! Aqui é da Assessoria Lado a Lado, da Lado a Lado Saúde.`)}`:'';
     return `<div class="item"><div><b>${esc(p.nome||'(sem nome)')}</b><div class="meta">${esc(OCUP[p.ocupacao]||'')}${p.registro?' · '+esc(p.registro):''}${p.cidade?' · '+esc(p.cidade):''}</div>
       <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div>
       ${p.plano_pedido||COBS[p.id]||p.fundadora?`<div class="meta">${[p.plano_pedido&&`pediu ${PLANO[p.plano_pedido]} (${p.ciclo||'mensal'})`,p.fundadora&&'fundadora −30%',
@@ -410,7 +410,7 @@ $('b-link').onclick=async()=>{const r=await sb.rpc('gerar_link',{prof:S.prof.id}
   if(falhou(r,'gerar o link'))return;$('lk-url').value=urlLink(r.data);avisa('Link novo gerado. O anterior parou de funcionar.');};
 $('b-link-copiar').onclick=()=>$('lk-url').value&&copia($('lk-url').value,$('lk-url'));
 $('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
-  location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link do Recibo Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos. No primeiro acesso você cria um PIN de 4 números. Não encaminhe este link:\n${$('lk-url').value}`);};
+  location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link da Lado a Lado Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos. No primeiro acesso você cria um PIN de 4 números. Não encaminhe este link:\n${$('lk-url').value}`);};
 
 // ---------- Início ----------
 const h=hojeISO();$('a-data').value=h;$('a-mes').value=h.slice(0,7);$('f-mes').value=h.slice(0,7);$('d-data').value=h;$('d-mes').value=h.slice(0,7);{const d=new Date(h+'T12:00');d.setMonth(d.getMonth()-1);$('d-comp').value=d.toISOString().slice(0,7)}

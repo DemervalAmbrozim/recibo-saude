@@ -53,7 +53,7 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
 };
 
 $('b-oi').onclick=()=>{const ocup=$('c-ocup').selectedOptions[0].textContent, cid=$('c-cid').value.trim();
-  location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Acabei de criar minha conta no Recibo Saúde. Sou ${$('c-nome').value.trim()}, ${ocup.toLowerCase()}${cid?', de '+cid:''}.`)}`};
+  location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Acabei de criar minha conta na Lado a Lado Saúde. Sou ${$('c-nome').value.trim()}, ${ocup.toLowerCase()}${cid?', de '+cid:''}.`)}`};
 $('b-sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // Volta do link do e-mail: o Supabase avisa SIGNED_IN (fora do callback, para não travar o cliente)

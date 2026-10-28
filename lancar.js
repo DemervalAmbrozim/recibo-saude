@@ -40,7 +40,7 @@ async function carrega(){
   D=r.data;D.locais=D.locais||[];D.fixas=D.fixas||[];D.despesas=D.despesas||[];
   if(TOK)guarda.set(TOK);if(location.hash)history.replaceState(null,'',location.pathname);
   contaTela();
-  $('nome').textContent=D.nome||'Recibo Saúde';$('nav').hidden=false;
+  $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
   telaIni();telaLan();telaDesp();telaAg();
 }
@@ -271,7 +271,7 @@ document.addEventListener('click',async e=>{const t=e.target.dataset||{};
 });
 $('b-zap').onclick=()=>{
   const pend=pagos().filter(a=>!a.emitido);
-  const txt=`Recibo Saúde - ${D.nome}\nPagamentos recebidos para emitir recibo:\n`+pend.slice().reverse().map(a=>`• ${a.paciente}: ${dBR(a.data)} - ${brl(a.valor)}`).join('\n')
+  const txt=`Lado a Lado Saúde - ${D.nome}\nPagamentos recebidos para emitir recibo:\n`+pend.slice().reverse().map(a=>`• ${a.paciente}: ${dBR(a.data)} - ${brl(a.valor)}`).join('\n')
     +`\nTotal: ${brl(pend.reduce((s,a)=>s+ +a.valor,0))}`;
   location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(txt)}`;
 };
