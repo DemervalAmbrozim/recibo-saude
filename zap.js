@@ -59,6 +59,7 @@ const AJUDA=`É só escrever como fala:
 • *procuração* (passo a passo para a Assessoria emitir por você)
 • *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
+• *posso deduzir o curso?* (o que abate no livro-caixa)
 • *a receber* (quem está devendo)
 • *Maria pacote 10 1500 pix* e depois *Maria sessão* (pacotes)
 • *novo Maria Silva 123.456.789-09* (paciente nova)
@@ -115,10 +116,28 @@ const PROCURACAO=`Procuração no e-CAC (5 minutos, no computador ou no celular)
 5. Marque só o serviço *IRPF - Carnê Leão Web* e confirme.
 Pronto? Responda *fiz a procuração* que a Assessoria confere.`;
 
+// Perguntas livres (revisão item 15, 28/10): "posso deduzir o curso?". Regra do livro-caixa: RIR/2018 (Decreto 9.580/2018) art. 68,
+// conferido no Planalto em 28/10/2026: abate salário com carteira e encargos (I), emolumentos (II) e custeio necessário à atividade (III);
+// não abate depreciação de equipamento e arrendamento (§ ún. I) nem locomoção e transporte (§ ún. II). O que é parecer vai ao contador.
+const ART68='(Regulamento do IR, art. 68)',CONTADOR_Q=' Isso é parecer: mande *suporte* que a Assessoria leva ao contador.';
+const PERGUNTAS=[
+  [/carro|combustivel|gasolina|estacionamento|uber|onibus|transporte|locomocao|pedagio|moto\b/,`Não abate. Carro, combustível, estacionamento e transporte ficam de fora para quem é da saúde ${ART68}.`],
+  [/curso|congresso|seminario|especializacao|pos.graduacao|mestrado|formacao|livro|workshop|simposio/,`Depende. Abate o que é necessário para receber e manter a atividade ${ART68}; curso e congresso da sua área entram ou não conforme o caso, e a Receita costuma pedir prova de que era necessário. Guarde a nota.`+CONTADOR_Q],
+  [/computador|notebook|celular|aparelho|equipamento|maca|maquina|movel|moveis|cadeira|ar.condicionado|impressora|leasing|arrendamento/,`Compra de equipamento ou móvel não abate, nem a depreciação ou o arrendamento ${ART68}. Material que se gasta no atendimento (luva, gel, papel, álcool) abate: lance em *material*.`],
+  [/reforma|obra|pintura|conserto do (imovel|consultorio)/,`Reforma e obra do imóvel não abatem como despesa do mês ${ART68}. Manutenção pequena do consultório é parecer.`+CONTADOR_Q],
+  [/secretaria|funcionari|empregad|salario|recepcionista|faxineir|diarista/,`Abate o salário de quem tem carteira assinada e os encargos (INSS, FGTS) ${ART68}. Diarista ou ajudante sem carteira não abate.`],
+  [/aluguel|condominio|luz|energia|agua|internet|telefone|iptu/,`Abate, se for do lugar onde você atende ${ART68}: consultório ou sala, 100%; casa que também é consultório, 1/5 das contas. Lance com o local: ex. *aluguel 1200*.`],
+  [/anuidade|crefito|crp\b|conselho|crefono|cro\b|crm\b/,`A anuidade do conselho entra como despesa necessária à atividade ${ART68}. Lance em despesas com o boleto guardado.`],
+  [/plano de saude|escola|faculdade dos filhos|medico|dentista|remedio|farmacia|previdencia privada|pgbl/,`Isso não entra no livro-caixa do mês: é dedução da declaração anual do IR (saúde, educação, PGBL), com regras próprias.`+CONTADOR_Q]];
+function zPergunta(t){if(!/(posso|pode|da pra|da para|consigo).{0,20}(deduz|abat|descont|lancar)|^(deduz|abate)|\b(e dedutivel|abate\?|deduz\?)/.test(t))return null;
+  const r=PERGUNTAS.find(([re])=>re.test(t));
+  return r?r[1]:`Pela lei, abate o que é necessário para receber e manter a sua atividade: aluguel e contas do consultório, material, salário de quem tem carteira ${ART68}.`+CONTADOR_Q}
+
 // Uma linha da mensagem. est = memória da conversa (escolha entre homônimas, último lançamento).
 async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(!t)return null;
   if(/^(oi|ola|bom dia|boa tarde|boa noite|ajuda|menu|\?)\b/.test(t)&&t.split(' ').length<=3)return `Olá, ${(D.nome||'').split(' ')[0]}! `+AJUDA;
+  {const q=zPergunta(t);if(q)return q}
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
   if(/^(reforma|reforma tributaria|cbs|ibs|2027)$/.test(t)){const ano=hoje.slice(0,4),rec=soma(D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(ano))),r=reforma(rec,ano);
     return `*Reforma tributária*: PIS, Cofins e ISS viram CBS (federal) e IBS. O Carnê-Leão não muda.
