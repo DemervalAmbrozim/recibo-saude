@@ -74,6 +74,18 @@ function zResumo(D,hoje){const mes=hoje.slice(0,7),[a,m]=mes.split('-').map(Numb
     +`\nCarnê-Leão estimado deste mês: ${r.darf.pagar?zBrl(r.darf.pagar)+`, vence ${ultimoDiaUtil(m===12?a+1:a,m%12).toLocaleDateString('pt-BR')}`:'nada a pagar até agora'}.`
     +((c=>c?.mostra?`\nPela sua média, um CNPJ pode sair ${zBrl(c.eco)} por mês mais barato. Mande *cnpj* para ver.`:'')(cnpjAviso(pagos,D.despesas,mes)))}
 
+// Primeira semana da cliente (rotina 19h45): 1º, 3º e 7º dia desde o cadastro, com o que fazer e o que já ganhou.
+// d = dias desde o cadastro (0 = o próprio dia). Outros dias: nada.
+function zSemana1(D,d){const at=D.atendimentos||[],ds=D.despesas||[],q=n=>`${n} atendimento${n===1?'':'s'}`;
+  if(d===0)return at.length
+    ?`Bem-vinda! Você já lançou ${q(at.length)} (${zBrl(soma(at))}). É assim todo dia: mandou aqui, está guardado e o recibo sai pronto no fim do mês.`
+    :`Bem-vinda! Seu primeiro passo leva 10 segundos: mande aqui o último atendimento, ex.: *Maria 180 pix*. O resto (recibo, Carnê-Leão, lembretes) é com a gente. Mande *ajuda* para ver tudo que dá para fazer.`;
+  if(d===2)return (at.length?`Em 3 dias: ${q(at.length)}, ${zBrl(soma(at))} guardados com recibo garantido.`:`Ainda sem atendimentos lançados. Mande o de hoje, ex.: *Maria 180 pix*.`)
+    +(ds.length?` Despesas: ${zBrl(soma(ds))}, que já abatem do Carnê-Leão.`:` Próximo passo: a despesa do consultório (ex.: *aluguel 1200*). Ela abate do Carnê-Leão e diminui o imposto.`);
+  if(d===6)return `Sua primeira semana: ${q(at.length)} (${zBrl(soma(at))})`+(ds.length?` e ${zBrl(soma(ds))} em despesas`:'')
+    +`. Mande *resumo* para ver o mês e *darf* para saber o Carnê-Leão. No último dia do mês eu aviso para conferir, e os recibos saem sem você digitar nada de novo.`;
+  return ''}
+
 // DARF do mês passado (vence no último dia útil deste mês)
 function zDarf(D,hoje){const h=new Date(hoje+'T12:00'),p=new Date(h.getFullYear(),h.getMonth()-1,1),mes=zISO(p).slice(0,7);
   const r=apura(D.atendimentos.filter(x=>x.pago!==false),D.despesas,mes),venc=ultimoDiaUtil(h.getFullYear(),h.getMonth());
@@ -184,4 +196,4 @@ async function zapResponde(texto,D,api,est,hoje){const out=[];
   for(const l of linhas){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r)}
   return out.join('\n\n')||AJUDA}
 
-if(typeof module!=='undefined')module.exports={zapResponde,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};
+if(typeof module!=='undefined')module.exports={zapResponde,zSemana1,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};
