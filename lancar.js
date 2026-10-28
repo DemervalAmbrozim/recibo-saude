@@ -103,6 +103,7 @@ function telaIni(){
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
   const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0),ano);
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';$('i-reforma').textContent=rf.txt;
+  const cj=cnpjAviso(pagos(),D.despesas,m);$('i-cnpj').hidden=!cj?.mostra;if(cj?.mostra)$('i-cnpj').textContent=cj.txt;
   const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';

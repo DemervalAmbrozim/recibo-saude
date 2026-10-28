@@ -224,6 +224,7 @@ function fech(){
   $('f-faixa').textContent=tot<=LIM?`Dentro da isenção de 2026: faltam ${brl(LIM-tot)} para ${brl(LIM)}.`
     :tot<=LIM2?`Passou de ${brl(LIM)}: imposto com redução parcial.`:`Acima de ${brl(LIM2)}: imposto sem redução.`;
   $('f-ano').textContent=`No ano ${ano}: ${brl(tano)} recebidos. `+reforma(tano,ano).txt;
+  const cj=cnpjAviso(pagos(),S.desp,mes);$('f-cnpj').hidden=!cj;if(cj)$('f-cnpj').textContent=(cj.mostra?'Vale conversar sobre CNPJ. ':`CNPJ ainda não compensa (diferença de ${brl(cj.eco)} por mês). `)+cj.txt;
   const c=S.prof, rs=recibos(mes), erros=[];
   if(!cpfOk(c.cpf))erros.push('Preencha o CPF da profissional em Ajustes.');
   if(!(c.registro||'').trim())erros.push('Preencha o registro no conselho (CREFITO) em Ajustes.');

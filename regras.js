@@ -65,3 +65,23 @@ function reforma(recAno,ano){const lim=nano(ano),p=recAno/lim,a1=Math.max(+ano+1
     :`Acima de ${L} no ano: pela reforma tributária, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia). A Assessoria vai orientar.`)
     +' Limite novo (LC 238/2026), a confirmar com o contador.'};
 }
+
+// Pessoa física × CNPJ (comparativo de 28/10/2026, projeto/pf-x-cnpj-e-nfse.html e ferramentas/comparativo-pf-cnpj.py).
+// Usa a média dos 3 meses fechados antes de `mes` (os 3 precisam ter receita). PF: INSS de autônoma (20% da receita, do mínimo
+// ao teto) + Carnê-Leão. CNPJ: Simples Anexo III com pró-labore de 28% (Fator R, LC 123 art. 18 §§ 5º-J, 5º-M e 24), INSS de 11%
+// e IR do pró-labore, mais o contador. Fica de fora o ISS (a PF paga à parte; no Simples vem no DAS), então a conta favorece a PF.
+// Só sugere conversar com o contador quando a economia passa de R$ 300 por mês.
+const SM=1621, TETO=8475.55, CONTADOR=400; // salário mínimo e teto do INSS 2026 (Decreto 12.797/2025, Portaria MPS/MF 13/2026)
+const A3=[[180e3,.06,0],[360e3,.112,9360],[720e3,.135,17640],[1.8e6,.16,35640]];
+function cnpjAviso(ats,ds,mes){
+  const [a,m]=mes.split('-').map(Number), ms=[1,2,3].map(k=>dISO(new Date(a,m-1-k,1)).slice(0,7));
+  const rs=ms.map(k=>({rec:soma(ats.filter(x=>x.data.startsWith(k))),lc:soma(ds.filter(x=>x.data.startsWith(k)&&x.codigo!==INSS))}));
+  if(rs.some(r=>!r.rec))return null;
+  const R=rs.reduce((s,r)=>s+r.rec,0)/3, lc=Math.min(R,rs.reduce((s,r)=>s+r.lc,0)/3);
+  const inss=.2*Math.min(Math.max(R,SM),TETO), pf=inss+carneLeao(R,lc+inss).devido;
+  const P=Math.max(SM,.28*R), ip=.11*Math.min(P,TETO), rbt=12*R, [,al,pd]=A3.find(f=>rbt<=f[0])||A3[A3.length-1];
+  const cnpj=(rbt*al-pd)/rbt*R+ip+carneLeao(P,ip).devido+CONTADOR, eco=Math.round(pf-cnpj);
+  const B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  return {R,pf,cnpj,eco,mostra:eco>=300,
+    txt:`Pela média de ${B(R)} por mês nos últimos 3 meses, você paga cerca de ${B(pf)} de INSS e Carnê-Leão. Com um CNPJ no Simples seriam cerca de ${B(cnpj)}, já com contador: ${B(eco)} a menos por mês. Com CNPJ o INSS é menor, e a aposentadoria também. Converse com a Assessoria e o contador antes de decidir.`};
+}

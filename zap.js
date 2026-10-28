@@ -54,6 +54,7 @@ const AJUDA=`É só escrever como fala:
 • *Maria recebi 90* (recebeu tudo ou parte)
 • *aluguel 1200* (despesa do consultório)
 • *resumo* (o mês até agora)
+• *cnpj* (pessoa física ou CNPJ: o que sai mais barato)
 • *darf* (Carnê-Leão a pagar)
 • *a receber* (quem está devendo)
 • *novo Maria Silva 123.456.789-09* (paciente nova)
@@ -68,7 +69,8 @@ function zResumo(D,hoje){const mes=hoje.slice(0,7),[a,m]=mes.split('-').map(Numb
   return `*${ZAP_MESES[m-1]} até ${zDBR(hoje)}*\nRecebido: ${zBrl(soma(noMes))} em ${noMes.length} atendimento${noMes.length===1?'':'s'}`
     +(abertos.length?`\nA receber: ${zBrl(soma(abertos))} (${abertos.length})`:'')
     +(ds.length?`\nDespesas lançadas: ${zBrl(soma(ds))}`:'')
-    +`\nCarnê-Leão estimado deste mês: ${r.darf.pagar?zBrl(r.darf.pagar)+`, vence ${ultimoDiaUtil(m===12?a+1:a,m%12).toLocaleDateString('pt-BR')}`:'nada a pagar até agora'}.`}
+    +`\nCarnê-Leão estimado deste mês: ${r.darf.pagar?zBrl(r.darf.pagar)+`, vence ${ultimoDiaUtil(m===12?a+1:a,m%12).toLocaleDateString('pt-BR')}`:'nada a pagar até agora'}.`
+    +((c=>c?.mostra?`\nPela sua média, um CNPJ pode sair ${zBrl(c.eco)} por mês mais barato. Mande *cnpj* para ver.`:'')(cnpjAviso(pagos,D.despesas,mes)))}
 
 // DARF do mês passado (vence no último dia útil deste mês)
 function zDarf(D,hoje){const h=new Date(hoje+'T12:00'),p=new Date(h.getFullYear(),h.getMonth()-1,1),mes=zISO(p).slice(0,7);
@@ -90,6 +92,8 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(!t)return null;
   if(/^(oi|ola|bom dia|boa tarde|boa noite|ajuda|menu|\?)\b/.test(t)&&t.split(' ').length<=3)return `Olá, ${(D.nome||'').split(' ')[0]}! `+AJUDA;
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
+  if(/^(cnpj|empresa|pj)$/.test(t)){const c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7));
+    return !c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: a diferença seria de ${zBrl(c.eco)} por mês. Eu aviso se isso mudar.`}
   if(/^(darf|imposto|carne[ -]?leao)$/.test(t))return zDarf(D,hoje);
   if(/^(a receber|receber|pendentes?|devendo)$/.test(t))return zReceber(D);
   // Perguntas do jeito que se fala, sem número: "quanto já recebi esse mês?", "quanto pago de imposto?", "quem me deve?"
