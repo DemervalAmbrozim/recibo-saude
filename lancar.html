@@ -205,6 +205,17 @@ a{color:var(--accent)}
         <button class="pri" type="button" id="b-imp" hidden>Importar</button>
       </div>
     </details>
+    <details class="card" id="ag-card">
+      <summary><b>Trazer da agenda</b> (Google Agenda)</summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">As consultas da sua agenda viram atendimentos para você conferir e salvar. Vale o evento com o nome da paciente no título. Uma vez só: no Google Agenda do computador, Configurações → a sua agenda → <b>Endereço secreto no formato iCal</b> → copie e cole aqui. Ele fica guardado só neste aparelho.</div>
+        <input id="ag-url" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" autocomplete="off">
+        <div class="row"><button type="button" id="b-ag" class="small">Trazer dos últimos 14 dias</button></div>
+        <div class="sub">Ou escolha o arquivo .ics exportado da agenda: <input type="file" id="ag-arq" accept=".ics,text/calendar"></div>
+        <div class="list" id="ag-prev"></div>
+        <button class="pri" type="button" id="b-ag-salvar" hidden>Salvar os marcados</button>
+      </div>
+    </details>
     <div class="card" id="pacotes-card" hidden>
       <h2>Pacotes com saldo</h2>
       <div class="list" id="pacotes"></div>

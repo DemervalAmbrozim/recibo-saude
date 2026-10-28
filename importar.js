@@ -38,3 +38,24 @@ function impLer(txt,ja){const brutos=/BEGIN:VCARD/i.test(txt)?impVcf(txt):impTab
     if(!impCpfOk(p.cpf_pagador)||p.cpf_pagador===p.cpf)p.cpf_pagador='';r.ok.push(p)}
   return r}
 if(typeof module!=='undefined')module.exports={impLer,impVcf,impTabela};
+
+// Agenda (revisão item 11): eventos do .ics (Google Agenda: endereço secreto iCal ou arquivo exportado) viram atendimentos para confirmar.
+// Casa o título do evento com a paciente pelo nome inteiro, ou 1º nome + sobrenome; sem casar (ou com 2 iguais) fica de fora.
+// Pula o que já foi lançado (mesma paciente, mesmo dia) e evento cancelado. Valor e forma sugeridos = os do último atendimento dela.
+function impIcs(txt,pacientes,ats,desde,ate){const out=[],ja=new Set(ats.map(a=>a.paciente+'|'+a.data)); // link_dados traz o nome da paciente, não o id
+  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/\s+/).filter(w=>w.length>2)}));
+  for(const b of String(txt).replace(/\r?\n[ \t]/g,'').split(/BEGIN:VEVENT/i).slice(1)){
+    const v=k=>{const l=b.split(/\r?\n/).find(x=>new RegExp('^'+k+'[;:]','i').test(x));return l?l.slice(l.indexOf(':')+1).trim():''};
+    if(/CANCELLED/i.test(v('STATUS')))continue;
+    const d=v('DTSTART').match(/^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2}).*?(Z)?)?$/);if(!d)continue;
+    let dt=`${d[1]}-${d[2]}-${d[3]}`;
+    if(d[7]){const u=new Date(Date.UTC(+d[1],d[2]-1,+d[3],+d[5],+d[6])-3*36e5);dt=u.toISOString().slice(0,10)} // hora UTC → Brasília
+    if(dt<desde||dt>ate)continue;
+    const tit=impNorm(v('SUMMARY').replace(/\\,/g,',')),ws=tit.split(/[^a-z0-9]+/);
+    const cs=ps.filter(({t})=>t.length&&(t.every(w=>ws.includes(w))||(ws.includes(t[0])&&t.slice(1).some(w=>ws.includes(w)))));
+    const c=cs.length===1?cs[0]:cs.length>1?(cs.filter(({t})=>t.every(w=>ws.includes(w))).length===1?cs.find(({t})=>t.every(w=>ws.includes(w))):null):null;
+    if(!c||ja.has(c.p.nome+'|'+dt))continue;ja.add(c.p.nome+'|'+dt);
+    const ult=ats.filter(a=>a.paciente===c.p.nome).sort((x,y)=>x.data<y.data?1:-1)[0];
+    out.push({data:dt,paciente_id:c.p.id,nome:c.p.nome,valor:ult?+ult.valor:null,forma:ult?ult.forma:'pix'})}
+  return out.sort((x,y)=>x.data<y.data?-1:1)}
+if(typeof module!=='undefined')module.exports={...(module.exports||{}),impIcs};

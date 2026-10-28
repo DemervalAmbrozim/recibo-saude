@@ -415,6 +415,28 @@ function impPrevia(txt){IMP=impLer(txt); /* quem já está cadastrado (mesmo CPF
     +(r.semCpf.length?`<br>${r.semCpf.length} sem CPF válido (ficam de fora): ${esc(r.semCpf.slice(0,8).join(', '))}${r.semCpf.length>8?'...':''}`:'');
   $('b-imp').hidden=!r.ok.length;$('b-imp').textContent=`Importar ${r.ok.length} paciente${r.ok.length>1?'s':''}`}
 $('imp-txt').oninput=e=>impPrevia(e.target.value);
+// ---------- Trazer da agenda (revisão item 11): .ics do Google pela função zap (o navegador não lê direto) ou arquivo; ela confere e salva ----------
+let AGE=[];const AG_CHAVE='rs-agenda-ics';
+$('ag-url').value=localStorage.getItem(AG_CHAVE)||'';
+function agPrevia(txt){const ate=hojeISO(),d=new Date();d.setDate(d.getDate()-14);
+  AGE=impIcs(txt,D.pacientes,D.atendimentos,dISO(d),ate);
+  $('ag-prev').innerHTML=AGE.length?AGE.map((x,i)=>`<label class="item" style="grid-template-columns:auto 1fr auto;align-items:center"><input type="checkbox" data-ag="${i}" ${x.valor?'checked':''} style="width:auto">
+    <span>${dBR(x.data)} · ${esc(x.nome)}</span><input data-agv="${i}" inputmode="decimal" value="${x.valor?String(x.valor).replace('.',','):''}" placeholder="valor" style="width:90px"></label>`).join('')
+    :'<div class="sub">Nenhuma consulta nova com o nome de uma paciente cadastrada nos últimos 14 dias.</div>';
+  $('b-ag-salvar').hidden=!AGE.length}
+$('b-ag').onclick=async()=>{const url=$('ag-url').value.trim();if(!/^https:\/\/calendar\.google\.com\/calendar\/ical\/\S+\.ics$/.test(url)){avisa('Cole o endereço secreto iCal do Google Agenda (termina em .ics).',true);return}
+  localStorage.setItem(AG_CHAVE,url);$('ag-prev').innerHTML='<div class="sub">Lendo a agenda...</div>';
+  try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
+    const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'agenda',tok:TOK,url})}),j=await f.json();
+    if(!f.ok||!j.ics)throw new Error(j.erro||f.status);agPrevia(j.ics)}
+  catch(e){console.error(e);$('ag-prev').innerHTML='';avisa('Não consegui ler a agenda. Confira o endereço ou use o arquivo .ics.',true)}};
+$('ag-arq').onchange=async e=>{const f=e.target.files[0];if(f)agPrevia(await f.text())};
+$('b-ag-salvar').onclick=async()=>{const b=$('b-ag-salvar');b.disabled=true;let feitos=0,erro=0;
+  for(const ck of document.querySelectorAll('[data-ag]:checked')){const i=+ck.dataset.ag,x=AGE[i],v=+String(document.querySelector(`[data-agv="${i}"]`).value).replace(/\./g,'').replace(',','.');
+    if(!(v>0)){erro++;continue}
+    const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:x.paciente_id,p_data:x.data,p_valor:v,p_forma:x.forma||'pix',p_local:null,p_pago:true});r.error?erro++:feitos++}
+  b.disabled=false;$('ag-arq').value='';$('ag-prev').innerHTML='';b.hidden=true;AGE=[];
+  avisa(`${feitos} atendimento${feitos===1?'':'s'} salvo${feitos===1?'':'s'}`+(erro?`; ${erro} sem valor ou com erro, confira.`:'.'),!!erro);await carrega()};
 $('imp-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();$('imp-txt').value=t;impPrevia(t)};
 $('b-imp').onclick=async()=>{if(!IMP||!IMP.ok.length)return;const b=$('b-imp');b.disabled=true;let feitos=0,erro=0;
   for(const p of IMP.ok){b.textContent=`Importando ${feitos+erro+1} de ${IMP.ok.length}...`;
