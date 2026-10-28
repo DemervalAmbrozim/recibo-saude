@@ -184,8 +184,14 @@ a{color:var(--accent)}
         <select id="forma"><option>Pix</option><option>Dinheiro</option><option>Cartão</option><option>Transferência</option></select></label>
       <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pago" checked style="width:auto"> Já recebi o pagamento</label>
       <div class="sub" id="pago-dica" hidden>Fica em "A receber" no Início. O recibo só sai quando você marcar que recebeu.</div>
+      <label>Pacote: quantas sessões? (deixe vazio se for avulsa) <input id="pac-n" inputmode="numeric" placeholder="ex.: 10"></label>
+      <div class="sub">Pacote pago de uma vez gera um recibo só, na data do pagamento. As sessões depois só abatem do saldo.</div>
       <button class="pri" type="submit">Salvar atendimento</button>
     </form>
+    <div class="card" id="pacotes-card" hidden>
+      <h2>Pacotes com saldo</h2>
+      <div class="list" id="pacotes"></div>
+    </div>
     <div class="card">
       <h2>Últimos atendimentos</h2>
       <div class="list" id="feitos"></div>

@@ -59,6 +59,7 @@ const AJUDA=`É só escrever como fala:
 • *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
 • *a receber* (quem está devendo)
+• *Maria pacote 10 1500 pix* e depois *Maria sessão* (pacotes)
 • *novo Maria Silva 123.456.789-09* (paciente nova)
 • *desfazer* (apaga o último lançamento)
 • *suporte* e o que aconteceu (fala com uma pessoa)
@@ -141,7 +142,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(/^(desfazer|desfaz|apagar|apaga|cancela|cancelar)$/.test(t)){const u=est.ultimo;
     if(!u)return 'Não tenho lançamento recente seu para desfazer. Para apagar outro, use o app (aba Lançar).';
     if(u.tipo==='rec')return `O último foi um ${u.txt}: esse se corrige no app (aba Lançar). Nada foi apagado.`;
-    try{await api[u.tipo==='desp'?'apagaDespesa':'apaga'](u.id)}catch(e){return zErro(String(e.message||e))}
+    try{await api[{desp:'apagaDespesa',sess:'apagaSessao'}[u.tipo]||'apaga'](u.id)}catch(e){return zErro(String(e.message||e))}
     est.ultimo=null;return `Desfeito: ${u.txt}.`}
   // Escolha entre homônimas: "2"
   if(/^\d$/.test(t)&&est.escolha){const e=est.escolha,p=e.opcoes[+t-1];if(!p)return `Responda com um número de 1 a ${e.opcoes.length}.`;
@@ -154,6 +155,26 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
     try{const id=await api.paciente(nome,cpf);D.pacientes.push({id,nome});return `Cadastrada: ${nome}. Agora é só lançar: *${nome.split(' ')[0]} 180 pix*`}
     catch(e){return zErro(String(e.message||e))}}
   if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar: *novo Nome Sobrenome 123.456.789-09* (o CPF de quem é atendido).';
+  // Pacotes (revisão item 9): "Maria pacote 10 1500 pix" (1 recibo, na data do pagamento), "Maria sessão" (abate 1), "pacotes" (saldos)
+  if(/^pacotes?$/.test(t)){if(!api.pacotes)return 'Pacotes ainda não disponíveis.';let l;try{l=await api.pacotes()}catch(e){return zErro(String(e.message||e))}
+    return l.length?'*Pacotes com saldo*\n'+l.map(k=>`• ${k.paciente}: ${k.sessoes-k.usadas} de ${k.sessoes} (pago ${zDBR(k.data)})`).join('\n'):'Nenhum pacote com saldo. Para lançar: *Maria pacote 10 1500 pix*'}
+  m=t.match(/^(.+?) pacote (?:de )?(\d{1,2})(?: sessoes| sessao)?(?: (.*))?$/);
+  if(m){const q=zPartes(m[1]+' '+(m[3]||''),hoje),n=+m[2];
+    if(n<2||n>60)return 'O pacote vai de 2 a 60 sessões.';if(!q.valor)return `Faltou o valor pago. Ex.: *${m[1]} pacote ${n} 1500 pix*`;
+    const c=zAcha(D.pacientes,q.nome);if(c.length!==1)return c.length?`Tem mais de uma ${q.nome.join(' ')}. Mande com o nome completo.`:`Não achei "${q.nome.join(' ')}". Para cadastrar: *novo Nome Sobrenome CPF*`;
+    const data=q.data||hoje,forma=q.forma||'Pix';if(data>hoje)return 'Essa data ainda não chegou. Lance no dia do pagamento.';
+    let r;try{r=await api.pacote(c[0].id,data,q.valor,forma,n)}catch(e){return zErro(String(e.message||e))}
+    D.atendimentos.unshift({id:r.atendimento,data,valor:q.valor,forma,paciente:c[0].nome,pago:true,emitido:false});
+    const txt=`pacote de ${n} sessões de ${c[0].nome} · ${zBrl(q.valor)} · ${forma} · ${data===hoje?'hoje':zDBR(data)}`;est.ultimo={tipo:'at',id:r.atendimento,txt};
+    return `✅ ${txt.replace(/^./,x=>x.toUpperCase())}\nUm recibo só, na data do pagamento. A cada sessão mande *${c[0].nome.split(' ')[0]} sessão*. Errou? *desfazer*`}
+  m=t.match(/^(.+?) sessao(?: (.*))?$/);
+  if(m&&api.sessao){const c=zAcha(D.pacientes,m[1].split(' ')),data=m[2]?zData(m[2].replace(/^dia /,''),hoje,m[2].startsWith('dia ')?'dia':''):hoje;
+    if(!data)return 'Não entendi a data. Ex.: *Maria sessão ontem* ou *Maria sessão 25/10*';
+    if(c.length!==1)return c.length?`Tem mais de uma ${m[1]}. Mande com o nome completo.`:`Não achei "${m[1]}" entre seus pacientes.`;
+    let r;try{r=await api.sessao(c[0].id,data)}catch(e){const s=String(e.message||e);
+      return /sem pacote/.test(s)?`${c[0].nome} não tem pacote com saldo. Se ela pagou a sessão, mande *${c[0].nome.split(' ')[0]} 180 pix*.`:zErro(s)}
+    est.ultimo={tipo:'sess',id:r.sessao,txt:`sessão de ${c[0].nome} em ${zDBR(data)}`};
+    return `✅ Sessão de ${c[0].nome} (${zDBR(data)}): ${r.usadas} de ${r.sessoes}. `+(r.restam?`Restam ${r.restam}.`:'Pacote encerrado.')+' Errou? *desfazer*'}
   const p=zPartes(linha,hoje);
   // Recebeu: "Maria recebi 90" ou "recebi Maria"
   const iR=p.nome.findIndex(x=>/^(recebi|recebido|pagou|quitou)$/.test(x));
@@ -191,10 +212,10 @@ async function zLanca(p,D,api,est,hoje){const data=p.data||hoje,forma=p.forma||'
   const mes=hoje.slice(0,7),noMes=D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(mes));
   return `✅ ${txt}\nNo mês: ${zBrl(soma(noMes))} em ${noMes.length}. Errou? *desfazer*`}
 
-// Mensagem inteira (pode ter várias linhas). Devolve o texto da resposta; est é alterado no lugar.
 // Suporte (revisão item 26, projeto/manual-suporte.md): "suporte ..." vira pedido no Admin, com o texto inteiro
 const SUPORTE=/^(suporte|atendente|atendimento|falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|reclamacao|problema)\b/;
 const SUPORTE_OK='Recebido. Uma pessoa da Assessoria responde aqui em até 1 dia útil (segunda a sexta, 8h às 18h). Se for erro num recibo já emitido, a correção é sem custo.';
+// Mensagem inteira (pode ter várias linhas). Devolve o texto da resposta; est é alterado no lugar.
 async function zapResponde(texto,D,api,est,hoje){const out=[];
   if(SUPORTE.test(zNorm(String(texto||'').split(/\n/)[0]))){const resto=String(texto).replace(/^\s*\S+\s*/,'').trim();
     if(!resto)return 'Escreva *suporte* e, na mesma mensagem, o que aconteceu. Ex.: *suporte o recibo da Maria saiu com o valor errado*.';

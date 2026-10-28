@@ -42,8 +42,17 @@ async function carrega(){
   contaTela();
   $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
-  telaIni();telaLan();telaDesp();telaAg();
+  telaIni();telaLan();telaDesp();telaAg();pacotesTela();
 }
+// Pacotes (supabase/018): saldo por paciente e "+1 sessão hoje"; sem a função no banco, o cartão fica escondido
+async function pacotesTela(){const r=await sb.rpc('link_pacotes',{tok:TOK});const l=r.error?[]:r.data||[];
+  $('pacotes-card').hidden=!l.length;
+  $('pacotes').innerHTML=l.map(k=>`<div class="item"><div><b>${esc(k.paciente)}</b><div class="meta">${k.sessoes-k.usadas} de ${k.sessoes} sessões · pago ${dBR(k.data)} · ${brl(+k.valor)}</div></div>
+    <div><button class="small" type="button" data-sess="${k.paciente_id}">+1 sessão hoje</button></div></div>`).join('')}
+document.addEventListener('click',async e=>{const id=e.target.dataset&&e.target.dataset.sess;if(!id)return;e.target.disabled=true;
+  const r=await sb.rpc('link_sessao',{tok:TOK,p_paciente:id,p_data:new Date().toLocaleDateString('sv')});
+  if(r.error){e.target.disabled=false;avisa('Não consegui marcar a sessão. Tente de novo.',true);return}
+  avisa(r.data.restam?`Sessão marcada. Restam ${r.data.restam}.`:'Sessão marcada. Pacote encerrado.');pacotesTela()});
 // Situação da conta (supabase/010): teste com prazo, só leitura quando vence; sem a função no banco, segue como antes
 async function contaTela(){
   const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();extrasTela(r.data.plano);
@@ -234,8 +243,13 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
       const r=await sb.rpc('link_paciente_contato',{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em});
       if(r.error){avisa('Não consegui salvar o contato do paciente. Tente de novo.',true);return}}
   }
-  const r=await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked});
+  const pn=+so($('pac-n').value);
+  if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
+  if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
+  const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
+    :await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked});
   if(r.error){avisa('Não consegui salvar. Confira a data e tente de novo.',true);return}
+  if(pn){$('pac-n').value='';$('valor').value='';await carrega();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
   const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa(pg?'Atendimento salvo.':'Salvo em "A receber". Marque quando o paciente pagar.');
 };
 
