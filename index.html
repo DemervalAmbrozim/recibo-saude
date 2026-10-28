@@ -194,6 +194,13 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
       <button id="b-devol" type="button">Copiar mensagem de devolução (vai com os PDFs)</button>
     </div>
     <div class="card">
+      <h2>Confirmar com a lista da Receita</h2>
+      <div class="sub">"Marcar como emitidos" quer dizer arquivo gerado. Depois de Importar, o Carnê-Leão mostra a lista dos recibos gerados: selecione a lista toda, copie e cole aqui. O painel confere se a quantidade bate e guarda só os números.</div>
+      <div id="f-lotes"></div>
+      <textarea id="f-receita" placeholder="Cole aqui a lista de recibos gerados (084.009.26.00033 ...)"></textarea>
+      <button id="b-confirmar" type="button">Confirmar recibos</button>
+    </div>
+    <div class="card">
       <h2>PDFs pelo WhatsApp</h2>
       <div class="sub">Escolha os PDFs dos recibos deste mês baixados do Receita Saúde. Eles ficam guardados na pasta privada da profissional e vão pelo zap da Assessoria, com a mensagem do mês.</div>
       <input type="file" id="f-pdfs" accept="application/pdf" multiple>

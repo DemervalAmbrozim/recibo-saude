@@ -88,7 +88,7 @@ function render(){
   const mes=$('a-mes').value;
   const at=S.at.filter(a=>a.data.startsWith(mes)).sort((a,b)=>b.data.localeCompare(a.data));
   $('l-atend').innerHTML=at.length?at.map(a=>`<div class="item"><div><b>${esc(pacDe(a.paciente_id).nome)}</b><div class="meta">${dBR(a.data)} · ${esc(a.forma)}${a.local_id&&localDe(a.local_id)?' · '+esc(localDe(a.local_id).nome):''}</div></div>
-    <div style="text-align:right"><div class="num">${brl(a.valor)}</div><span class="pill ${a.lote_id?'':'pend'}">${a.lote_id?'recibo emitido':a.pago===false?'a receber':'falta recibo'}</span></div>
+    <div style="text-align:right"><div class="num">${brl(a.valor)}</div><span class="pill ${a.lote_id?'':'pend'}">${a.lote_id?(loteDe(a)?.confirmado_em?'recibo confirmado':'arquivo gerado'):a.pago===false?'a receber':'falta recibo'}</span></div>
     <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
     :'<div class="sub">Nenhum atendimento neste mês. Registre o primeiro acima.</div>';
   $('l-pac').innerHTML=pacs.length?pacs.map(p=>`<div class="item"><div><b>${esc(p.nome)}</b>
@@ -237,7 +237,7 @@ function fech(){
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
   $('f-erros').innerHTML=[...new Set(erros)].map(t=>`<div class="msg err">${esc(t)}</div>`).join('');
   $('f-csv').value=falta?'':linhas.join('\r\n');
-  envioTela(mes);
+  envioTela(mes);loteTela(mes);
 }
 // Envio do recibo ao paciente (ponto 3 do Daniel): por enquanto abre o WhatsApp ou o e-mail com o texto pronto
 function msgPaciente(p,mes,valor){const [aa,mm]=mes.split('-').map(Number);
@@ -269,6 +269,21 @@ $('b-devol').onclick=()=>{const mes=$('f-mes').value,[aa,mm]=mes.split('-').map(
     +(dv.pagar>0?`Carnê-Leão a pagar: ${brl(dv.pagar)}, vence em ${venc.toLocaleDateString('pt-BR')}. O DARF vai em seguida.`
       :dv.adia?`Carnê-Leão de ${brl(dv.total)}: abaixo de R$ 10 a Receita não gera DARF, o valor soma ao do mês seguinte.`
       :tot<=LIM?`Dentro da isenção: nada de Carnê-Leão este mês.`:`Carnê-Leão zerado pela redução de 2026.`));};
+// F5 (supabase/015): o lote só vira "confirmado" com a lista de recibos gerados que a Receita mostra depois de importar
+const loteDe=a=>a.lote_id&&S.lotes.find(l=>l.id===a.lote_id);
+function loteTela(mes){const ls=S.lotes.filter(l=>l.tipo==='recibos'&&l.mes===mes);
+  $('f-lotes').innerHTML=ls.length?ls.map(l=>`<div class="item"><span>${new Date(l.criado_em).toLocaleDateString('pt-BR')} · ${l.linhas} recibo(s)</span>
+    <span class="pill ${l.confirmado_em?'':'pend'}">${l.confirmado_em?'confirmado pela Receita em '+new Date(l.confirmado_em).toLocaleDateString('pt-BR'):'arquivo gerado, falta confirmar'}</span></div>`).join('')
+    :'<div class="sub">Nenhum arquivo gerado neste mês.</div>';}
+const numerosRecibo=t=>[...new Set(String(t).match(/\b\d{3}\.\d{3}\.\d{2}\.\d{5}\b/g)||[])];
+$('b-confirmar').onclick=async()=>{const mes=$('f-mes').value, ns=numerosRecibo($('f-receita').value);
+  const l=S.lotes.filter(x=>x.tipo==='recibos'&&x.mes===mes&&!x.confirmado_em).sort((a,b)=>a.criado_em.localeCompare(b.criado_em))[0];
+  if(!l){avisa('Não há arquivo deste mês esperando confirmação.',true);return}
+  if(!ns.length){avisa('Não achei números de recibo no texto colado (formato 084.009.26.00033).',true);return}
+  if(ns.length!==l.linhas&&!confirm(`A lista da Receita tem ${ns.length} recibo(s), mas o arquivo tinha ${l.linhas}. Confira no Carnê-Leão antes. Confirmar mesmo assim?`))return;
+  const r=await sb.from('lotes').update({confirmado_em:new Date().toISOString(),recibos:ns}).eq('id',l.id).select().single();
+  if(falhou(r,'confirmar os recibos'))return;
+  Object.assign(l,r.data);$('f-receita').value='';render();loteTela(mes);avisa(`${ns.length} recibo(s) confirmado(s) pela Receita.`);};
 $('b-emitidos').onclick=()=>fechaLote('recibos',$('f-mes').value,recibos($('f-mes').value).flatMap(r=>r.ids));
 
 // ---------- Ajustes ----------
