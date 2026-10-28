@@ -85,3 +85,28 @@ function cnpjAviso(ats,ds,mes){
   return {R,pf,cnpj,eco,mostra:eco>=300,
     txt:`Pela média de ${B(R)} por mês nos últimos 3 meses, você paga cerca de ${B(pf)} de INSS e Carnê-Leão. Com um CNPJ no Simples seriam cerca de ${B(cnpj)}, já com contador: ${B(eco)} a menos por mês. Com CNPJ o INSS é menor, e a aposentadoria também. Converse com a Assessoria e o contador antes de decidir.`};
 }
+
+// Modo Empresa, 1ª parte (revisão item 34, supabase/020). Estimativas para ela se organizar; quem apura e assina é o contador.
+// RBT12 (Res. CGSN 140/2018, art. 22): no 1º mês de atividade, a receita do mês × 12; até o 12º, a média dos meses anteriores × 12;
+// depois, a soma dos 12 meses anteriores. DAS = receita do mês × alíquota efetiva do Anexo III (com Fator R de 28%, A3 acima).
+// Pró-labore do Fator R: 28% da receita do mês (mínimo de 1 salário mínimo), com INSS de 11% retido e IR pela tabela mensal.
+// DAS e INSS do pró-labore vencem no dia 20 do mês seguinte (LC 123, art. 21, III); dia sem expediente: confirmar com o contador.
+const SERVICO={'231':['4.08','Fisioterapia'],'230':['4.08','Fonoaudiologia'],'232':['4.08','Terapia ocupacional'],'255':['4.16','Psicologia'],
+  '225':['4.01','Medicina'],'226':['4.12','Odontologia']}; // item da lista da LC 116/2003 para a nota fiscal
+function empresaMes(ats,mes,desde){const pagos=ats.filter(x=>x.pago!==false&&x.data>=desde),rec=k=>soma(pagos.filter(x=>x.data.startsWith(k)));
+  const [a,m]=mes.split('-').map(Number),ini=desde.slice(0,7);if(mes<ini)return null;
+  const ant=[];for(let k=1;k<=12;k++){const x=dISO(new Date(a,m-1-k,1)).slice(0,7);if(x>=ini)ant.push(rec(x))}
+  const R=rec(mes),rbt=!ant.length?R*12:ant.length<12?ant.reduce((s,v)=>s+v,0)/ant.length*12:ant.reduce((s,v)=>s+v,0);
+  const [,al,pd]=A3.find(f=>rbt<=f[0])||A3[A3.length-1],ef=rbt>0?Math.max(0,(rbt*al-pd)/rbt):A3[0][1];
+  const P=R>0?Math.max(SM,Math.round(.28*R*100)/100):0,inss=Math.round(.11*Math.min(P,TETO)*100)/100,ir=P?carneLeao(P,inss).devido:0;
+  const venc=dISO(new Date(a,m,20));
+  return {R,rbt,ef,das:Math.round(R*ef*100)/100,venc,P,inss,ir,liquido:Math.round((P-inss-ir)*100)/100,primeiroAno:ant.length<12};
+}
+// Linhas da nota fiscal do mês (uma por pagamento) e da DMED do ano (total por paciente e responsável), a partir do link_exportar
+function notasMes(X,mes,ocup){const [cod,nome]=SERVICO[ocup]||['4.08','Serviço de saúde'];
+  return (X.atendimentos||[]).filter(x=>x.pago!==false&&x.data.startsWith(mes)).map(x=>({data:x.data,tomador:x.paciente,cpf:x.cpf_pagador||x.cpf,
+    paciente_cpf:x.cpf,valor:x.valor,servico:cod,descricao:`${nome}: atendimento de ${x.paciente} em ${x.data.split('-').reverse().join('/')}`}))}
+function dmedAno(X,ano,desde){const t={};
+  for(const x of (X.atendimentos||[]).filter(x=>x.pago!==false&&x.data.startsWith(String(ano))&&x.data>=desde)){
+    const k=(x.cpf_pagador||x.cpf)+'|'+x.cpf;t[k]=t[k]||{responsavel_cpf:x.cpf_pagador||x.cpf,paciente:x.paciente,paciente_cpf:x.cpf,valor:0};t[k].valor+=+x.valor}
+  return Object.values(t).sort((a,b)=>a.paciente.localeCompare(b.paciente))}

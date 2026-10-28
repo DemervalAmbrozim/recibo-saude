@@ -93,7 +93,7 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
 
 // ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
 let EX=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;
+async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;empTela();
   // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
   $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
   const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
@@ -409,3 +409,27 @@ async function indTela(){const r=await sb.rpc('minha_indicacao',{tok:TOK});if(r.
   $('ind-cod').textContent=x.codigo;$('aj-ind').hidden=false;
   $('ind-num').textContent=x.indicadas?`${x.indicadas} colega${x.indicadas>1?'s':''} usou seu código · ${x.pagaram} já assinou`+(x.meses_bonus?` · ${x.meses_bonus} mês grátis guardado`:''):'';
   $('ind-zap').href='https://wa.me/?text='+encodeURIComponent(`Uso o Lado a Lado Saúde para os recibos do Receita Saúde e o Carnê-Leão, tudo pelo WhatsApp. Com o meu código ${x.codigo} você testa 60 dias: ${link}`)}
+
+// ---------- Modo Empresa, 1ª parte (revisão item 34, supabase/020, regras.js empresaMes) ----------
+const cnpjFmt=c=>c?c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'):'';
+function empTela(){const tem=!!(EX&&EX.cnpj);$('i-emp').hidden=!tem;
+  if(EX){$('emp-c').value=cnpjFmt(EX.cnpj||'');$('emp-d').value=EX.cnpj_desde||''}
+  if(!tem)return;$('emp-cnpj').textContent='CNPJ '+cnpjFmt(EX.cnpj);
+  if(!$('emp-mes').value)$('emp-mes').value=new Date().toLocaleDateString('sv').slice(0,7);
+  const e=empresaMes(D.atendimentos||[],$('emp-mes').value,EX.cnpj_desde);
+  $('emp-num').innerHTML=!e?'<div class="sub">Esse mês é de antes da abertura do CNPJ.</div>':[
+    ['Recebido no mês',brl(e.R)],[`DAS estimado (${(e.ef*100).toFixed(2).replace('.',',')}%), vence ${dBR(e.venc)}`,brl(e.das)],
+    ['Pró-labore para o Fator R (28%)',brl(e.P)],[`INSS retido (11%), vence ${dBR(e.venc)}`,brl(e.inss)],['IR do pró-labore',brl(e.ir)],['Você recebe de pró-labore',brl(e.liquido)]]
+    .map(([a,b])=>`<div class="item"><div>${a}</div><div class="num">${b}</div></div>`).join('')
+    +(e.primeiroAno?'<div class="sub">Primeiro ano da empresa: a faixa do Simples é proporcional aos meses de atividade.</div>':'')}
+$('emp-mes').onchange=empTela;
+$('b-emp').onclick=async()=>{const r=await sb.rpc('link_empresa',{tok:TOK,p_cnpj:$('emp-c').value,p_desde:$('emp-d').value||null});
+  if(r.error){avisa(/cnpj/.test(r.error.message)?'CNPJ inválido. Confira os números.':'Confira a data de abertura.',true);return}
+  EX.cnpj=r.data.cnpj;EX.cnpj_desde=r.data.cnpj_desde||null;empTela();avisa(EX.cnpj?'CNPJ salvo. O Início mostra o modo Empresa.':'CNPJ retirado.')};
+function baixaCsv(nome,dados){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([dados],{type:'text/csv'}));a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+$('b-emp-notas').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error){avisa('Não consegui juntar os dados. Tente de novo.',true);return}
+  const m=$('emp-mes').value,l=notasMes(r.data,m,EX.ocupacao);
+  baixaCsv(`notas-${m}.csv`,csv(['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Descrição'],l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,+x.valor,x.servico,x.descricao])))};
+$('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error){avisa('Não consegui juntar os dados. Tente de novo.',true);return}
+  const a=+$('emp-mes').value.slice(0,4),l=dmedAno(r.data,a,EX.cnpj_desde);
+  baixaCsv(`dmed-${a}.csv`,csv(['CPF do responsável (quem pagou)','Paciente','CPF do paciente','Total pago no ano'],l.map(x=>[x.responsavel_cpf,x.paciente,x.paciente_cpf,x.valor])))};

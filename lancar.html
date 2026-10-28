@@ -110,6 +110,13 @@ a{color:var(--accent)}
 
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
   <section id="t-ini" hidden style="display:grid;gap:16px">
+    <div class="card" id="i-emp" hidden>
+      <h2>Sua empresa <span class="sub" id="emp-cnpj"></span></h2>
+      <label>Mês <input type="month" id="emp-mes"></label>
+      <div class="list" id="emp-num"></div>
+      <div class="sub">Estimativa para você se organizar, pelo Simples (Anexo III) com o Fator R. Quem apura e emite as guias é o seu contador.</div>
+      <div class="row"><button type="button" id="b-emp-notas">Notas do mês (planilha)</button><button type="button" id="b-emp-dmed">DMED do ano (planilha)</button></div>
+    </div>
     <div class="card" id="i-proc" hidden>
       <h2>Falta a sua procuração no e-CAC</h2>
       <div class="sub" id="proc-sit">Com ela a Assessoria emite os seus recibos no Receita Saúde. Leva 5 minutos e não precisa passar senha.</div>
@@ -273,6 +280,15 @@ a{color:var(--accent)}
 
   <!-- AJUDA -->
   <section id="t-aj" hidden style="display:grid;gap:16px">
+    <details class="card" id="aj-emp">
+      <summary><b>Tenho CNPJ</b> (modo Empresa)</summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">Com o CNPJ, o Início mostra o DAS estimado do mês, o pró-labore que mantém o Fator R e as planilhas da nota fiscal e da DMED. Os atendimentos a partir da abertura contam como da empresa.</div>
+        <div class="row"><label>CNPJ <input id="emp-c" inputmode="numeric" placeholder="00.000.000/0001-00"></label>
+          <label>Aberto em <input id="emp-d" type="date"></label></div>
+        <button class="pri" type="button" id="b-emp">Salvar</button>
+      </div>
+    </details>
     <div class="card" id="aj-ind" hidden>
       <h2>Indique uma colega</h2>
       <div class="sub">Ela ganha 60 dias de teste em vez de 30. Quando ela assinar, você ganha 1 mês.</div>
