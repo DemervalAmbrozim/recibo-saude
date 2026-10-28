@@ -95,6 +95,16 @@ body.leitura [data-rec],body.leitura [data-del],body.leitura [data-ddesp],body.l
   <div id="ruim" class="card" hidden><h2>Abra pelo seu link ou entre com seu e-mail</h2><div class="sub">Este link não vale mais ou você ainda não entrou. Tem conta com e-mail? Entre abaixo. Usa o link do WhatsApp? Peça um novo à Assessoria: 27 99971-2727.</div>
     <a href="entrar.html" style="text-align:center;padding:11px;border-radius:8px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:600">Entrar com e-mail</a></div>
 
+  <!-- PIN do link (supabase/014, auditoria S4): o link sozinho não abre o app depois que ela cria o PIN -->
+  <form id="pin" class="card" hidden autocomplete="off">
+    <h2 id="pin-tit">Crie seu PIN</h2>
+    <div class="sub" id="pin-sub">Escolha 4 números. Eles protegem os dados dos seus pacientes se alguém abrir este link ou pegar seu celular. Não encaminhe este link.</div>
+    <label>PIN <input id="pin-1" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required></label>
+    <label id="l-pin-2">Repita o PIN <input id="pin-2" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4"></label>
+    <button class="pri" type="submit">Entrar</button>
+    <div class="sub">Esqueceu o PIN? Peça à Assessoria para zerar: 27 99971-2727.</div>
+  </form>
+
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
   <section id="t-ini" hidden style="display:grid;gap:16px">
     <div class="card">
@@ -238,7 +248,7 @@ body.leitura [data-rec],body.leitura [data-del],body.leitura [data-ddesp],body.l
     <div class="card">
       <h2>Ficou alguma dúvida?</h2>
       <button class="pri" id="b-duvida" type="button">Perguntar à Assessoria pelo WhatsApp</button>
-      <button id="b-sair" type="button" hidden>Sair desta conta</button>
+      <button id="b-sair" type="button" hidden>Sair deste aparelho</button>
     </div>
   </section>
 </main>

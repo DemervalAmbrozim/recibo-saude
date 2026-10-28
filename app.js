@@ -352,6 +352,7 @@ function admTela(){
         <button class="small" data-conselho="${p.id}" type="button">${p.conselho_ok?'Desfazer conferência':'Conselho conferido'}</button>
         <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
         <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op(PLANO,p.plano||'')}</select>
+        <button class="small" data-pin="${p.id}" type="button">Zerar PIN</button>
         <button class="small" data-fundadora="${p.id}" type="button">${p.fundadora?'Tirar fundadora':'Fundadora −30%'}</button>
         ${s==='teste'||s==='leitura'?`<button class="small" data-mais30="${p.id}" type="button">+30 dias de teste</button>`:''}</div></div>`}).join('')
     :'<div class="sub">Nenhuma profissional neste filtro.</div>';
@@ -368,6 +369,8 @@ document.addEventListener('click',e=>{const t=e.target.dataset||{};
     if(!/^\d{10,11}$/.test(f)){avisa('WhatsApp com DDD, ex.: 27 99999-9999.',true);return}
     sb.rpc('prof_whatsapp',{p_prof:t.fone,p_fone:f}).then(r=>{if(falhou(r,'salvar o WhatsApp'))return;
       PROFS.filter(p=>p.id===t.fone).forEach(p=>p.telefone=f);admTela();avisa('WhatsApp salvo: o zap já reconhece este número.')})}
+  if(t.pin&&confirm('Zerar o PIN desta profissional? Os aparelhos dela saem e ela cria outro PIN pelo link.'))
+    sb.rpc('pin_zerar',{p_prof:t.pin}).then(r=>{if(!falhou(r,'zerar o PIN'))avisa('PIN zerado: no próximo acesso pelo link ela cria outro.')});
   if(t.mais30){const d=new Date(Math.max(Date.now(),new Date(PROFS.find(x=>x.id===t.mais30).teste_ate+'T12:00')));d.setDate(d.getDate()+30);
     admMuda(t.mais30,{situacao:'teste',teste_ate:d.toISOString().slice(0,10)},`Teste até ${d.toLocaleDateString('pt-BR')}.`)}});
 document.addEventListener('change',e=>{const t=e.target.dataset||{};
@@ -392,7 +395,7 @@ $('b-link').onclick=async()=>{const r=await sb.rpc('gerar_link',{prof:S.prof.id}
   if(falhou(r,'gerar o link'))return;$('lk-url').value=urlLink(r.data);avisa('Link novo gerado. O anterior parou de funcionar.');};
 $('b-link-copiar').onclick=()=>$('lk-url').value&&copia($('lk-url').value,$('lk-url'));
 $('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
-  location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link do Recibo Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos:\n${$('lk-url').value}`);};
+  location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link do Recibo Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos. No primeiro acesso você cria um PIN de 4 números. Não encaminhe este link:\n${$('lk-url').value}`);};
 
 // ---------- Início ----------
 const h=hojeISO();$('a-data').value=h;$('a-mes').value=h.slice(0,7);$('f-mes').value=h.slice(0,7);$('d-data').value=h;$('d-mes').value=h.slice(0,7);{const d=new Date(h+'T12:00');d.setMonth(d.getMonth()-1);$('d-comp').value=d.toISOString().slice(0,7)}

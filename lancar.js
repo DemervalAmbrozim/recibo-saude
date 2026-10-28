@@ -53,7 +53,7 @@ async function contaTela(){
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
   $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
     :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Assessoria.'}`:'';
-  $('b-sair').hidden=!c.logada;
+  $('b-sair').hidden=!c.logada&&!TOK;
 }
 // Plano e cobrança (supabase/013 + função cobranca). Sem a função no banco, o cartão fica escondido.
 let PL=null;
@@ -279,7 +279,23 @@ const opCod=CONTAS.map(([c,n])=>`<option value="${c}">${n}</option>`).join('');$
 $('data').value=$('d-data').value=hojeISO();{const d=new Date();d.setMonth(d.getMonth()-1);$('d-comp').value=iso(d).slice(0,7)}$('i-mes').value=$('d-mes').value=hojeISO().slice(0,7);$('o-regra').textContent=TIPOS.consultorio[2];
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 // Link válido primeiro; sem link, a conta logada; sem nenhum dos dois, o aviso com o caminho para entrar
-(async()=>{if(TOK.length>=20)return carrega();
+// PIN (supabase/014): o código do link vira uma chave deste aparelho depois do PIN; sem a função no banco, segue como antes
+let PIN='';
+async function partida(){const r=await sb.rpc('link_pin_estado',{tok:TOK});
+  if(r.error||!r.data||['aparelho','invalido'].includes(r.data.estado))return carrega();
+  PIN=r.data.estado;$('pin').hidden=false;$('l-pin-2').hidden=PIN!=='criar';$('pin-2').required=PIN==='criar';
+  $('pin-tit').textContent=PIN==='criar'?'Crie seu PIN':'Digite seu PIN';
+  if(PIN==='pin')$('pin-sub').textContent='Primeira vez neste aparelho: digite o PIN de 4 números que você criou.';
+  if(r.data.bloqueio_ate)avisa('Muitas tentativas. Tente de novo às '+new Date(r.data.bloqueio_ate).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.',true);}
+$('pin').onsubmit=async e=>{e.preventDefault();const p=$('pin-1').value;
+  if(!/^\d{4}$/.test(p)){avisa('O PIN tem 4 números.',true);return}
+  if(PIN==='criar'&&p!==$('pin-2').value){avisa('Os dois PIN não são iguais.',true);return}
+  const r=await sb.rpc(PIN==='criar'?'link_pin_criar':'link_entrar',{tok:TOK,p_pin:p});$('pin-1').value=$('pin-2').value='';
+  if(r.error){const m=r.error.message;avisa(/facil/.test(m)?'PIN fácil demais. Evite 1234 e números repetidos.':/bloqueado ate (\S+)/.test(m)?'Muitas tentativas. Tente de novo às '+m.match(/bloqueado ate (\S+)/)[1]+'.':/ja existe/.test(m)?'Este link já tem PIN. Digite o PIN que você criou.':'Este link não vale mais. Peça um novo à Assessoria.',true);if(/ja existe/.test(m))partida();return}
+  if(!r.data){avisa('PIN errado.',true);return}
+  TOK=r.data;guarda.set(TOK);$('pin').hidden=true;carrega();};
+(async()=>{if(TOK.length>=20)return partida();
   const {data}=await sb.auth.getSession();if(data.session){TOK='';return carrega()}
   $('ruim').hidden=false})();
-$('b-sair').onclick=async()=>{await sb.auth.signOut();location.replace('entrar.html')};
+$('b-sair').onclick=async()=>{if(TOK){if(!confirm('Sair deste aparelho? Para voltar, abra o link e digite o PIN.'))return;await sb.rpc('link_sair',{tok:TOK});guarda.set('');location.replace('lancar.html');return}
+  await sb.auth.signOut();location.replace('entrar.html')};
