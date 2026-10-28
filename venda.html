@@ -50,6 +50,14 @@ ul.ok li::before{content:"✓ ";color:var(--accent);font-weight:700}
 .ciclo button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600}
 details{border-top:1px solid var(--line);padding:12px 0}
 summary{cursor:pointer;font-weight:600}
+.cnpj{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.conta{display:grid;gap:10px}
+.conta label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.conta input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.res{font-size:15px}
+.res b{font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+ol.passos{margin:6px 0;padding-left:20px;display:grid;gap:4px}
+@media (max-width:760px){.cnpj{grid-template-columns:1fr}}
 .faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
 footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
 @media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
@@ -98,7 +106,28 @@ No mês: R$ 4.320,00 em 24.</div>
       <div class="card plano" data-p="contador"><h3>Completo + Contador</h3><div class="preco"><span>R$ 249</span><small>/mês</small></div><p class="sub">Com contador parceiro.</p>
         <ul class="ok"><li>Tudo do Completo</li><li>Declaração do IR anual</li><li>Revisão do ano e PF × CNPJ</li><li>Orientação da reforma de 2027</li></ul></div>
     </div>
-    <p class="sub" style="margin-top:14px">Todos com 30 dias grátis e, de bônus, revisão do seu Instagram e LinkedIn com 4 posts prontos por mês da sua especialidade. <b>Fundadoras:</b> as 10 primeiras têm 30% de desconto por 12 meses.</p>
+    <p class="sub" style="margin-top:14px">Todos com 30 dias grátis e, de bônus, revisão do seu Instagram e LinkedIn (entregue em até 7 dias da assinatura) com 4 posts prontos por mês da sua especialidade; no teste grátis vai 1 post de amostra. <b>Fundadoras:</b> as 10 primeiras têm 30% de desconto por 12 meses.</p>
+  </section>
+
+  <section id="cnpj">
+    <h2>Vire CNPJ em 2027, sem trocar de serviço</h2>
+    <div class="cnpj">
+      <div>
+        <p class="sub">Em 2027, quem recebe como pessoa física mais de R$ 55 mil no ano passa a pagar os novos impostos da reforma e a emitir nota fiscal. Para muitas profissionais, a empresa no Simples Nacional sai mais barata. Quem abrir o CNPJ até 31/12/2026 escolhe o Simples na abertura e já começa 2027 inteiro como empresa.</p>
+        <p class="sub">O app compara todo mês, com os seus números, e avisa quando a diferença passa de R$ 300 por mês. Se fizer sentido, a gente cuida da mudança com o contador parceiro:</p>
+        <ol class="passos sub"><li>Conversa de 20 minutos com o contador, com a conta na tela.</li><li>Você manda os documentos pelo WhatsApp.</li><li>O contador abre a empresa e faz a opção pelo Simples.</li><li>A gente acompanha cada etapa: prefeitura, conselho, certificado digital.</li><li>Fechamos o lado pessoa física: últimos recibos e último Carnê-Leão.</li><li>No mês seguinte: nota fiscal, pró-labore e DAS, tudo lembrado no WhatsApp.</li></ol>
+        <div class="card plano destaque" data-p="empresa" style="margin-top:14px"><span class="tag">abertura sem custo</span><h3>Plano Empresa</h3><div class="preco"><span>R$ 299</span><small>/mês</small></div>
+          <ul class="ok"><li>Abertura do CNPJ sem custo de serviço, com 12 meses de plano</li><li>Contador parceiro: Simples, pró-labore, DAS, balanço e IR</li><li>Rotina pelo WhatsApp, como hoje</li><li>Instagram e LinkedIn continuam no bônus</li></ul>
+          <p class="sub" style="font-size:13px">Taxas públicas (Junta Comercial, prefeitura, conselho e certificado digital) são pagas por você, com o valor mostrado antes.</p></div>
+      </div>
+      <form class="card conta" id="f-conta" onsubmit="return false">
+        <h3>Faça a conta</h3>
+        <label>Quanto você recebe por mês, em média? <input id="cj-rec" inputmode="decimal" placeholder="ex.: 6.000" autocomplete="off"></label>
+        <label>Despesas do consultório por mês (aluguel, contas) <input id="cj-desp" inputmode="decimal" placeholder="ex.: 800" autocomplete="off"></label>
+        <div class="res" id="cj-res" aria-live="polite"><span class="sub">Digite a sua média para ver a estimativa.</span></div>
+        <p class="sub" style="font-size:13px">Estimativa de 2026: INSS e Carnê-Leão como pessoa física × Simples Nacional (Anexo III, pró-labore de 28%) com contador. Não conta o ISS. É uma conta para conversar: quem decide o regime é você com o contador.</p>
+      </form>
+    </div>
   </section>
 
   <section>
@@ -109,7 +138,7 @@ No mês: R$ 4.320,00 em 24.</div>
     <details><summary>E se eu parar de pagar?</summary><p>A conta fica só para consulta: você vê e baixa tudo, nada é apagado. Pagou, volta na hora.</p></details>
     <details><summary>Atendo em mais de um lugar, ou em casa. Funciona?</summary><p>Sim. Cada local tem as suas despesas, e o app aplica a regra da Receita (em casa, abate 1/5 das contas).</p></details>
     <details><summary>Quais profissões?</summary><p>As obrigadas ao Receita Saúde que atendem como pessoa física: fisioterapia, psicologia, fonoaudiologia, terapia ocupacional, odontologia e medicina.</p></details>
-    <details><summary>E se eu tiver CNPJ?</summary><p>Hoje o Lado a Lado Saúde é feito para quem atende como pessoa física (recibo do Receita Saúde e Carnê-Leão). Com CNPJ quem emite é a empresa, com nota fiscal de serviço, e a contabilidade fica com o seu contador: chame a gente no WhatsApp e avisamos quando abrir para CNPJ. Se você ainda é pessoa física, o app compara todo mês, pela sua média, se um CNPJ sairia mais barato, e avisa quando a diferença passa de R$ 300 por mês.</p></details>
+    <details><summary>E se eu tiver CNPJ?</summary><p>Se você ainda é pessoa física, o app compara todo mês, pela sua média, se um CNPJ sairia mais barato, e avisa quando a diferença passa de R$ 300 por mês. Quando fizer sentido, o plano Empresa abre o CNPJ com o contador parceiro e continua a rotina pelo WhatsApp (veja "Vire CNPJ em 2027", acima). Se você já tem CNPJ com outro contador, chame a gente no WhatsApp para conversar.</p></details>
   </section>
 
   <section class="faixa">
@@ -120,16 +149,27 @@ No mês: R$ 4.320,00 em 24.</div>
 </main>
 <footer>Lado a Lado Saúde é um serviço da Lado a Lado Assessoria · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="termos.html">Termos e privacidade</a></footer>
 <script src="config.js"></script>
+<script src="regras.js"></script>
 <script>
 // Preços: tabela planos do banco (pública); se não responder, ficam os escritos na página
-let PRECOS={essencial:79,completo:149,contador:249},CICLO='mensal';
+let PRECOS={essencial:79,completo:149,contador:249,empresa:299},CICLO='mensal';
 const brl=v=>'R$ '+(Number.isInteger(+v)?(+v).toLocaleString('pt-BR'):(+v).toLocaleString('pt-BR',{minimumFractionDigits:2}));
 function mostra(){document.querySelectorAll('.plano').forEach(c=>{const m=PRECOS[c.dataset.p];if(!m)return;
-  c.querySelector('.preco span').textContent=brl(CICLO==='anual'?m*10:m);c.querySelector('.preco small').textContent=CICLO==='anual'?'/ano':'/mês'})}
+  const an=CICLO==='anual'&&c.dataset.p!=='empresa'; // Empresa: mensal, com 12 meses de plano
+  c.querySelector('.preco span').textContent=brl(an?m*10:m);c.querySelector('.preco small').textContent=an?'/ano':'/mês'})}
 document.querySelectorAll('.ciclo button').forEach(b=>b.onclick=()=>{CICLO=b.dataset.c;
   document.querySelectorAll('.ciclo button').forEach(x=>x.setAttribute('aria-pressed',x===b));mostra()});
 fetch(CONFIG.url+'/rest/v1/planos?select=codigo,mensal',{headers:{apikey:CONFIG.chave}}).then(r=>r.ok?r.json():[])
   .then(l=>{if(Array.isArray(l)&&l.length){l.forEach(p=>PRECOS[p.codigo]=+p.mensal);mostra()}}).catch(()=>{});
+// Conta PF × CNPJ: a mesma regra do app (cnpjAviso, regras.js), com 3 meses iguais à média digitada
+const numBR=v=>parseFloat(String(v).replace(/[^\d,.]/g,'').replace(/\./g,'').replace(',','.'))||0;
+function conta(){const R=numBR(document.getElementById('cj-rec').value),dp=numBR(document.getElementById('cj-desp').value),el=document.getElementById('cj-res');
+  if(!(R>0)){el.innerHTML='<span class="sub">Digite a sua média para ver a estimativa.</span>';return}
+  const ms=['2026-07-15','2026-08-15','2026-09-15'],c=cnpjAviso(ms.map(d=>({data:d,valor:R})),dp>0?ms.map(d=>({data:d,valor:dp,codigo:'P10.01.00002'})):[],'2026-10');
+  const B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+  el.innerHTML=c.eco>0?`Pessoa física: cerca de <b>${B(c.pf)}</b> por mês de INSS e Carnê-Leão.<br>CNPJ no Simples, com contador: cerca de <b>${B(c.cnpj)}</b>.<br>${c.mostra?'Diferença':'Diferença pequena'}: <b>${B(c.eco)}</b> por mês${c.mostra?'. Vale conversar.':'; por enquanto a pessoa física compensa.'}`
+    :`Com essa média, a pessoa física ainda sai mais barata (cerca de ${B(c.pf)} × ${B(c.cnpj)} por mês). O app avisa se isso mudar.`}
+['cj-rec','cj-desp'].forEach(i=>document.getElementById(i).oninput=conta);
 </script>
 </body>
 </html>

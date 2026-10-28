@@ -49,6 +49,7 @@ button{font:inherit;font-weight:600;border-radius:8px;padding:11px 14px;border:1
 button.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 button.small{padding:6px 10px;font-size:13px}
 .btns{display:flex;flex-wrap:wrap;gap:8px}
+ol.passos{margin:8px 0;padding-left:20px;display:grid;gap:6px}
 .list{display:grid;gap:0}
 .item{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
 .item:first-child{border-top:0}
@@ -109,6 +110,21 @@ a{color:var(--accent)}
 
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
   <section id="t-ini" hidden style="display:grid;gap:16px">
+    <div class="card" id="i-proc" hidden>
+      <h2>Falta a sua procuração no e-CAC</h2>
+      <div class="sub" id="proc-sit">Com ela a Assessoria emite os seus recibos no Receita Saúde. Leva 5 minutos e não precisa passar senha.</div>
+      <details id="proc-passos"><summary>Ver o passo a passo</summary>
+        <ol class="passos">
+          <li>Entre no <b>e-CAC</b> (cav.receita.fazenda.gov.br) com o seu gov.br. A conta precisa ser nível prata ou ouro.</li>
+          <li>Abra <b>Senhas e Procurações</b> → <b>Cadastro, Consulta e Cancelamento - Procuração para e-CAC</b> → <b>Cadastrar Procuração</b>.</li>
+          <li>Em procurador, escolha CNPJ e digite <b class="mono">34.114.180/0001-54</b> (Lado a Lado Assessoria).</li>
+          <li>Validade: pode deixar a que o e-CAC sugere. Você cancela quando quiser, no mesmo menu.</li>
+          <li>Marque <b>só</b> o serviço <b>IRPF - Carnê Leão Web</b> e confirme.</li>
+        </ol>
+        <div class="sub">Não pedimos outro serviço nem a sua senha. Se aparecer algo diferente na tela, toque em "Perguntar à Assessoria" na aba Ajuda.</div>
+      </details>
+      <button class="pri" id="b-proc" type="button">Já fiz a procuração</button>
+    </div>
     <div class="card">
       <div class="head"><h2>Seu mês</h2><input id="i-mes" type="month" style="width:auto;padding:6px 8px"></div>
       <div class="grid3">
@@ -124,7 +140,9 @@ a{color:var(--accent)}
       <div class="sub" style="margin-top:4px"><b>Reforma tributária</b></div>
       <div class="meter" id="i-rmeter"><i style="width:0"></i></div>
       <div class="sub" id="i-reforma"></div>
-      <div class="msg" id="i-cnpj" hidden></div>
+      <div class="msg" id="i-cnpj" hidden><div id="cj-txt"></div>
+        <div class="btns" id="cj-btns" style="margin-top:8px"><button class="small pri" id="b-cj-quero" type="button">Quero conversar</button><button class="small" id="b-cj-conta" type="button">Ver a conta</button><button class="small" id="b-cj-nao" type="button">Agora não</button></div>
+        <div class="sub" id="cj-conta" hidden style="margin-top:8px"></div></div>
     </div>
     <div class="card">
       <h2>Próximos compromissos</h2>
@@ -246,6 +264,13 @@ a{color:var(--accent)}
         <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="pl-ciclo" value="anual" style="width:auto"> Anual (paga 10, leva 12)</label></div>
       <div class="list" id="pl-lista"></div>
       <div class="sub">Pix, boleto ou cartão, na página segura do Asaas. Cancela quando quiser, sem multa no mensal. <a href="termos.html" target="_blank" rel="noopener">Termos e privacidade</a></div>
+    </div>
+    <div class="card" id="aj-dados">
+      <h2>Seus dados</h2>
+      <div class="sub">Baixe tudo num arquivo só: planilhas (pacientes, atendimentos, despesas, livro-caixa de cada mês) e os PDFs dos recibos. Os dados são seus: leve quando quiser.</div>
+      <button id="b-exportar" type="button">Baixar todos os meus dados</button>
+      <div class="sub" id="exp-st" aria-live="polite"></div>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-novidades" style="width:auto"> Quero receber pelo WhatsApp avisos de novidades, como a conta para virar CNPJ</label>
     </div>
     <div class="card" id="aj-lista"></div>
     <div class="card">

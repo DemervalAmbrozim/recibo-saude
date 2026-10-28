@@ -55,6 +55,8 @@ const AJUDA=`É só escrever como fala:
 • *aluguel 1200* (despesa do consultório)
 • *resumo* (o mês até agora)
 • *cnpj* (pessoa física ou CNPJ: o que sai mais barato)
+• *procuração* (passo a passo para a Assessoria emitir por você)
+• *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
 • *a receber* (quem está devendo)
 • *novo Maria Silva 123.456.789-09* (paciente nova)
@@ -87,6 +89,15 @@ function zReceber(D){const ab=D.atendimentos.filter(x=>x.pago===false);
 const zErro=e=>/somente leitura/.test(e)?'Sua conta está só para consulta e não aceita lançamentos. Fale com a Assessoria para continuar.'
   :/data invalida/.test(e)?'Essa data não dá: lance até um ano para trás e nunca no futuro.':'Não consegui gravar agora. Tente de novo em instantes.';
 
+// Procuração no e-CAC (revisão item 5): o mesmo passo a passo do app (lancar.js, PROC_PASSOS)
+const PROCURACAO=`Procuração no e-CAC (5 minutos, no computador ou no celular):
+1. Entre no e-CAC (cav.receita.fazenda.gov.br) com o seu gov.br (nível prata ou ouro).
+2. Menu *Senhas e Procurações* → *Cadastro, Consulta e Cancelamento - Procuração para e-CAC* → *Cadastrar Procuração*.
+3. Procurador: CNPJ *34.114.180/0001-54* (Lado a Lado Assessoria).
+4. Validade: pode deixar a que o e-CAC sugere; você cancela quando quiser, no mesmo menu.
+5. Marque só o serviço *IRPF - Carnê Leão Web* e confirme.
+Pronto? Responda *fiz a procuração* que a Assessoria confere.`;
+
 // Uma linha da mensagem. est = memória da conversa (escolha entre homônimas, último lançamento).
 async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(!t)return null;
@@ -94,6 +105,19 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
   if(/^(cnpj|empresa|pj)$/.test(t)){const c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7));
     return !c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: a diferença seria de ${zBrl(c.eco)} por mês. Eu aviso se isso mudar.`}
+  // Pacote Vire CNPJ: "quero" (resposta ao aviso) ou "quero conversar" vira pedido no Admin
+  if(/^(quero|quero conversar|quero cnpj|quero abrir( o)? cnpj|conversar)$/.test(t)){if(!api.pedido)return 'Anotado. A Assessoria vai chamar você aqui.';
+    const c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7));
+    try{await api.pedido('cnpj',c?Math.round(c.R):null,c?c.eco:null)}catch(e){return zErro(String(e.message||e))}
+    return 'Pedido anotado ✅ A Assessoria vai chamar você aqui para marcar 20 minutos com o contador parceiro, com a sua conta na tela. É uma conversa: a decisão é sua.'}
+  if(/^(procuracao|como faco a procuracao|procuracao e-?cac)$/.test(t))return PROCURACAO;
+  if(/^(fiz|feita|pronto|ja fiz)( a)? procuracao$|^procuracao (feita|pronta|ok)$/.test(t)){if(!api.pedido)return 'Recebido! A Assessoria confere no e-CAC.';
+    try{await api.pedido('procuracao',null,null)}catch(e){return zErro(String(e.message||e))}
+    return 'Recebido ✅ A Assessoria confere no e-CAC em até 1 dia útil e avisa aqui.'}
+  if(/^(posts?|meus posts|bonus)$/.test(t)){if(!api.posts)return 'Os posts do mês chegam aqui assim que ficarem prontos.';
+    let l;try{l=await api.posts()}catch(e){return zErro(String(e.message||e))}
+    return l&&l.length?`Seus posts de ${l.mes}:\n`+l.map((x,i)=>`${i+1}. ${x.nome}: ${x.url}`).join('\n')+'\nOs links valem 7 dias. Cada post vem com a legenda pronta; confira antes de publicar.'
+      :'Os posts deste mês ainda estão em preparo. Eu mando aqui assim que ficarem prontos.'}
   if(/^(darf|imposto|carne[ -]?leao)$/.test(t))return zDarf(D,hoje);
   if(/^(a receber|receber|pendentes?|devendo)$/.test(t))return zReceber(D);
   // Perguntas do jeito que se fala, sem número: "quanto já recebi esse mês?", "quanto pago de imposto?", "quem me deve?"
@@ -160,4 +184,4 @@ async function zapResponde(texto,D,api,est,hoje){const out=[];
   for(const l of linhas){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r)}
   return out.join('\n\n')||AJUDA}
 
-if(typeof module!=='undefined')module.exports={zapResponde,zPartes,zAcha,zData,zValor,AJUDA};
+if(typeof module!=='undefined')module.exports={zapResponde,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};

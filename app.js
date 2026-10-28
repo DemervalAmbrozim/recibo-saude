@@ -1,4 +1,4 @@
-// Lado a Lado Saúde (antes Recibo Saúde Fácil), fase 2: os dados ficam no Supabase, protegidos por RLS (ver supabase/001_esquema.sql).
+// Painel da Lado a Lado Saúde (equipe e contadores): os dados ficam no Supabase, protegidos por RLS (ver supabase/001_esquema.sql).
 const sb = supabase.createClient(CONFIG.url, CONFIG.chave);
 const $=id=>document.getElementById(id);
 const so=s=>String(s||'').replace(/\D/g,'');
@@ -76,7 +76,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tab').forEach(s=>s.hidden=s.id!==b.dataset.t);
   document.querySelectorAll('nav button').forEach(x=>x===b?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));
   if(b.dataset.t==='t-fech')S.prof?abrir(S.prof.id):fech();
-  if(b.dataset.t==='t-adm')cobsCarrega().then(admTela);}); // recarrega: a profissional pode ter lançado pelo link
+  if(b.dataset.t==='t-adm'){cobsCarrega().then(admTela);pedTela()}}); // recarrega: a profissional pode ter lançado pelo link
 // Ao voltar para o app (celular), traz o que entrou pelo link enquanto ele estava aberto
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.prof)abrir(S.prof.id);});
 
@@ -347,11 +347,11 @@ async function cobsCarrega(){const r=await sb.from('cobrancas').select('profissi
   if(!r.error){COBS={};r.data.forEach(c=>COBS[c.profissional_id]=c)}}
 const cobAberta=p=>{const c=COBS[p.id],d=new Date(Date.now()-10*864e5).toISOString().slice(0,10);return c&&['pendente','vencida'].includes(c.status)&&c.vencimento>=d};
 const sitEf=p=>p.situacao==='teste'&&p.teste_ate&&p.teste_ate<hojeISO()&&!cobAberta(p)?'leitura':p.situacao||'ativa'; // igual a situacao_efetiva do banco
-const PLANO={'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'Com contador'};
+const PLANO={'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'Com contador',empresa:'Empresa'};
 const profsUnicos=()=>[...new Map(PROFS.map(p=>[p.id,p])).values()];
 function admTela(){
   const em7=new Date(Date.now()+7*864e5).toISOString().slice(0,10), todos=profsUnicos();
-  const F={conferir:p=>!p.conselho_ok&&sitEf(p)!=='cancelada',teste:p=>sitEf(p)==='teste',vence:p=>sitEf(p)==='teste'&&p.teste_ate<=em7,
+  const F={conferir:p=>!p.conselho_ok&&sitEf(p)!=='cancelada',procuracao:p=>p.procuracao!=='conferida'&&p.plano!=='essencial'&&sitEf(p)!=='cancelada',teste:p=>sitEf(p)==='teste',vence:p=>sitEf(p)==='teste'&&p.teste_ate<=em7,
     ativa:p=>sitEf(p)==='ativa',leitura:p=>sitEf(p)==='leitura',cancelada:p=>sitEf(p)==='cancelada'};
   $('adm-kpi').innerHTML=[['Em teste','teste'],['Ativas','ativa'],['Conselho a conferir','conferir']]
     .map(([n,k])=>`<div class="kpi"><span class="sub">${n}</span><b>${todos.filter(F[k]).length}</b></div>`).join('');
@@ -362,12 +362,14 @@ function admTela(){
       <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div>
       ${p.plano_pedido||COBS[p.id]||p.fundadora?`<div class="meta">${[p.plano_pedido&&`pediu ${PLANO[p.plano_pedido]} (${p.ciclo||'mensal'})`,p.fundadora&&'fundadora −30%',
         COBS[p.id]&&`cobrança ${brl(+COBS[p.id].valor)} · vence ${dBR(COBS[p.id].vencimento).slice(0,5)} · ${COBS[p.id].status}`].filter(Boolean).join(' · ')}</div>`:''}</div>
-      <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div></div>
+      ${p.pretende_cnpj||p.aceita_novidades?`<div class="meta">${[p.pretende_cnpj&&`CNPJ em 2027: ${{sim:'pretende',talvez:'talvez',nao:'não pretende'}[p.pretende_cnpj]}`,p.aceita_novidades&&'aceita novidades no zap'].filter(Boolean).join(' · ')}</div>`:''}</div>
+      <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div><div class="meta">${PROC[p.procuracao||'pendente']}</div></div>
       <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`
           :`<input data-fone-in="${p.id}" inputmode="tel" placeholder="WhatsApp com DDD" style="width:auto;max-width:170px;padding:6px 8px"><button class="small" data-fone="${p.id}" type="button">Salvar WhatsApp</button>`}
         <button class="small" data-conselho="${p.id}" type="button">${p.conselho_ok?'Desfazer conferência':'Conselho conferido'}</button>
         <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
         <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op(PLANO,p.plano||'')}</select>
+        <button class="small" data-proc="${p.id}" type="button">${p.procuracao==='conferida'?'Desfazer procuração':'Procuração conferida'}</button>
         <button class="small" data-pin="${p.id}" type="button">Zerar PIN</button>
         <button class="small" data-fundadora="${p.id}" type="button">${p.fundadora?'Tirar fundadora':'Fundadora −30%'}</button>
         ${s==='teste'||s==='leitura'?`<button class="small" data-mais30="${p.id}" type="button">+30 dias de teste</button>`:''}</div></div>`}).join('')
@@ -375,11 +377,25 @@ function admTela(){
   $('ct-prof').innerHTML=todos.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}</option>`).join('');
 }
 $('adm-filtro').onchange=admTela;
+// Pedidos (supabase/016): quero conversar sobre CNPJ e aviso de procuração feita
+const PROC={pendente:'procuração pendente',enviada:'procuração a conferir',conferida:'procuração conferida'};
+const PSIT={novo:'novo',conversando:'conversando',feito:'feito',desistiu:'desistiu'},PTIPO={cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração'};
+async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedidos').select('*').order('criado_em',{ascending:false}).limit(100);
+  if(f==='aberto')q=q.in('situacao',['novo','conversando']);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
+  const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
+  $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
+      ${x.media?`<div class="meta">média ${brl(+x.media)}/mês · economia estimada ${brl(+x.economia||0)}/mês</div>`:''}</div>
+      <div><select data-ped="${x.id}" style="width:auto;padding:6px 8px" aria-label="Situação do pedido">${op(x.situacao)}</select></div></div>`).join('')
+    :'<div class="sub">Nenhum pedido aberto.</div>'}
+$('adm-ped-filtro').onchange=pedTela;
 async function admMuda(id,novo,msg){
   if(falhou(await sb.from('profissionais').update(novo).eq('id',id),'mudar a conta'))return;
   PROFS.filter(p=>p.id===id).forEach(p=>Object.assign(p,novo));admTela();avisa(msg);}
 document.addEventListener('click',e=>{const t=e.target.dataset||{};
   if(t.fundadora){const p=PROFS.find(x=>x.id===t.fundadora);admMuda(p.id,{fundadora:!p.fundadora},p.fundadora?'Desconto de fundadora retirado.':'Fundadora: 30% de desconto na próxima assinatura.')}
+  if(t.proc){const p=PROFS.find(x=>x.id===t.proc),conf=p.procuracao!=='conferida';
+    admMuda(p.id,{procuracao:conf?'conferida':'pendente'},conf?'Procuração conferida: já dá para emitir por ela.':'Procuração voltou para pendente.');
+    if(conf)sb.from('pedidos').update({situacao:'feito',atualizado:new Date().toISOString()}).eq('profissional_id',p.id).eq('tipo','procuracao').in('situacao',['novo','conversando']).then(pedTela)}
   if(t.conselho){const p=PROFS.find(x=>x.id===t.conselho);admMuda(p.id,{conselho_ok:!p.conselho_ok},p.conselho_ok?'Conferência desfeita.':'Conselho marcado como conferido.')}
   if(t.fone){const f=so(document.querySelector(`[data-fone-in="${t.fone}"]`).value).replace(/^55(?=\d{10,11}$)/,'');
     if(!/^\d{10,11}$/.test(f)){avisa('WhatsApp com DDD, ex.: 27 99999-9999.',true);return}
@@ -391,7 +407,8 @@ document.addEventListener('click',e=>{const t=e.target.dataset||{};
     admMuda(t.mais30,{situacao:'teste',teste_ate:d.toISOString().slice(0,10)},`Teste até ${d.toLocaleDateString('pt-BR')}.`)}});
 document.addEventListener('change',e=>{const t=e.target.dataset||{};
   if(t.sit)admMuda(t.sit,{situacao:e.target.value},`Situação: ${SIT[e.target.value]}.`);
-  if(t.plano!==undefined)admMuda(t.plano,{plano:e.target.value||null},'Plano salvo.');});
+  if(t.plano!==undefined)admMuda(t.plano,{plano:e.target.value||null},'Plano salvo.');
+  if(t.ped)sb.from('pedidos').update({situacao:e.target.value,atualizado:new Date().toISOString()}).eq('id',t.ped).then(r=>{if(!falhou(r,'mudar o pedido')){avisa('Pedido: '+PSIT[e.target.value]+'.');pedTela()}});});
 $('b-convidar').onclick=async()=>{const em=$('cv-email').value.trim();if(!mailOk(em)){avisa('E-mail inválido.',true);return}
   const r=await sb.rpc('convidar',{p_email:em,p_papel:$('cv-papel').value});if(falhou(r,'convidar'))return;
   $('cv-email').value='';avisa(r.data.replace(/^./,c=>c.toUpperCase())+'.');};

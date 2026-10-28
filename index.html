@@ -266,9 +266,14 @@ a{color:var(--accent)}
   <!-- ADMINISTRAÇÃO: só a equipe (supabase/010) -->
   <section id="t-adm" class="tab" hidden style="display:grid;gap:16px">
     <div class="msg err" id="adm-mfa" hidden>Ligue o 2º fator em Ajustes: com ele, quem descobrir sua senha do e-mail não entra no painel.</div>
+    <div class="card" id="adm-ped-card">
+      <div class="head"><h2>Pedidos</h2><select id="adm-ped-filtro" style="width:auto;padding:6px 8px"><option value="aberto">Abertos</option><option value="">Todos</option></select></div>
+      <div class="list" id="adm-ped"></div>
+      <div class="sub">"Quero conversar" sobre CNPJ (app, zap ou cadastro) e "já fiz a procuração". CNPJ: marque 20 min com o contador parceiro e leve a conta da média. Procuração: confira no e-CAC e marque na profissional.</div>
+    </div>
     <div class="card">
       <div class="head"><h2>Profissionais</h2><select id="adm-filtro" style="width:auto;padding:6px 8px">
-        <option value="">Todas</option><option value="conferir">Conselho a conferir</option><option value="teste">Em teste</option><option value="vence">Teste vence em 7 dias</option><option value="ativa">Ativas</option><option value="leitura">Só leitura</option><option value="cancelada">Canceladas</option></select></div>
+        <option value="">Todas</option><option value="conferir">Conselho a conferir</option><option value="procuracao">Procuração a conferir</option><option value="teste">Em teste</option><option value="vence">Teste vence em 7 dias</option><option value="ativa">Ativas</option><option value="leitura">Só leitura</option><option value="cancelada">Canceladas</option></select></div>
       <div class="grid3" id="adm-kpi"></div>
       <div class="list" id="adm-lista"></div>
       <div class="sub">Conselho: confira o nome e o registro no site do conselho regional (CREFITO, CRP, CRFa, CRO, CRM) antes de marcar.</div>

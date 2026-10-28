@@ -46,7 +46,7 @@ async function carrega(){
 }
 // Situação da conta (supabase/010): teste com prazo, só leitura quando vence; sem a função no banco, segue como antes
 async function contaTela(){
-  const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();
+  const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();extrasTela(r.data.plano);
   const c=r.data, leitura=['leitura','cancelada'].includes(c.situacao), teste=c.situacao==='teste'&&c.teste_ate;
   const dias=teste?Math.round((new Date(c.teste_ate)-new Date(hojeISO()))/864e5):0;
   document.body.classList.toggle('leitura',leitura);
@@ -65,7 +65,7 @@ async function planoTela(){const r=await sb.rpc('minha_cobranca',{tok:TOK});if(r
     :'Escolha um plano para voltar a lançar. Nada foi apagado.';
   if(PL.fundadora)$('pl-sit').innerHTML+=' <b>Fundadora: 30% de desconto.</b>';
   const ciclo=(document.querySelector('[name=pl-ciclo]:checked')||{}).value||'mensal';
-  $('pl-lista').innerHTML=PL.planos.map(p=>{const atual=PL.situacao==='ativa'&&PL.plano===p.codigo,v=ciclo==='anual'?p.anual:p.mensal;
+  $('pl-lista').innerHTML=PL.planos.filter(p=>p.codigo!=='empresa').map(p=>{const atual=PL.situacao==='ativa'&&PL.plano===p.codigo,v=ciclo==='anual'?p.anual:p.mensal;
     return `<div class="item" style="grid-template-columns:1fr;gap:6px"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p.nome)}</b><b class="num">${brl(v)}<span class="sub">/${ciclo==='anual'?'ano':'mês'}</span></b></div>
       <div class="sub">${esc(p.resumo)}</div>${atual?'<div class="sub"><b>Seu plano atual</b></div>':`<button type="button" data-plano="${p.codigo}">${PL.plano_pedido===p.codigo&&c&&c.status!=='paga'?'Ver cobrança':'Quero este'}</button>`}</div>`}).join('')}
 document.querySelectorAll('[name=pl-ciclo]').forEach(r=>r.onchange=planoTela);
@@ -81,6 +81,78 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
     await planoTela()}
   catch(err){if(w)w.close();avisa('Não consegui abrir o pagamento agora. Tente de novo ou fale com a Assessoria.',true)}
   e.target.disabled=false});
+
+// ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
+let EX=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;
+  // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
+  $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
+  const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
+  $('proc-sit').textContent=env?`Recebemos o seu aviso${EX.procuracao_em?' em '+new Date(EX.procuracao_em).toLocaleDateString('pt-BR'):''}. A Assessoria confere no e-CAC em até 1 dia útil.`
+    :'Com ela a Assessoria emite os seus recibos no Receita Saúde. Leva 5 minutos e não precisa passar senha.';
+  $('i-proc').querySelector('h2').textContent=env?'Procuração em conferência':'Falta a sua procuração no e-CAC';
+  $('pf-novidades').checked=!!EX.aceita_novidades;if(D)cnpjTela($('i-mes').value)}
+$('proc-passos').ontoggle=()=>$('proc-passos').dataset.visto=1;
+$('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-CAC para o CNPJ 34.114.180/0001-54, com o serviço IRPF - Carnê Leão Web?'))return;
+  const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'procuracao',p_media:null,p_economia:null,p_origem:'app'});
+  if(r.error){avisa('Não consegui avisar agora. Tente de novo ou fale com a Assessoria.',true);return}
+  avisa('Obrigado pelo aviso! A Assessoria confere no e-CAC.');extrasTela(PL&&PL.plano)};
+// Aviso de CNPJ: Quero conversar (pedido no Admin) · Ver a conta · Agora não (some por 30 dias)
+let CJ=null;
+function cnpjTela(m){CJ=cnpjAviso(pagos(),D.despesas,m);const ate=+guardaLocal.get('rs_cnpj_nao')||0,pedido=EX&&EX.pedido_cnpj;
+  $('i-cnpj').hidden=!(CJ?.mostra||pedido)||(!pedido&&Date.now()<ate);if($('i-cnpj').hidden)return;
+  $('cj-txt').textContent=pedido?'Pedido recebido: a Assessoria vai chamar você no WhatsApp para marcar 20 minutos com o contador parceiro.'
+    :`Talvez compense virar empresa em 2027. Pela sua média dos últimos 3 meses (${brl(CJ.R)}), como CNPJ no Simples você pagaria cerca de ${brl(CJ.eco)} a menos por mês, já contando o contador. É uma estimativa: quem decide é você com o contador.`;
+  $('cj-btns').hidden=!!pedido;$('cj-conta').textContent=CJ?CJ.txt+' Quem abre o CNPJ até 31/12/2026 escolhe o Simples na abertura e já começa 2027 como empresa.':''}
+$('b-cj-conta').onclick=()=>$('cj-conta').hidden=!$('cj-conta').hidden;
+$('b-cj-nao').onclick=()=>{guardaLocal.set('rs_cnpj_nao',String(Date.now()+30*864e5));$('i-cnpj').hidden=true};
+$('b-cj-quero').onclick=async()=>{$('b-cj-quero').disabled=true;
+  const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'cnpj',p_media:CJ?Math.round(CJ.R):null,p_economia:CJ?CJ.eco:null,p_origem:'app'});
+  $('b-cj-quero').disabled=false;if(r.error){avisa('Não consegui mandar o pedido. Tente de novo ou fale com a Assessoria.',true);return}
+  if(EX)EX.pedido_cnpj='novo';cnpjTela($('i-mes').value);avisa('Pedido enviado. A Assessoria chama você no WhatsApp.')};
+$('pf-novidades').onchange=async e=>{const r=await sb.rpc('link_preferencias',{tok:TOK,p_cnpj:null,p_novidades:e.target.checked});
+  if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar a preferência.',true);return}avisa(e.target.checked?'Combinado: avisamos as novidades no WhatsApp.':'Pronto: sem avisos de novidades.')};
+
+// ---------- Levar os dados (revisão item 7): planilhas + PDFs num .zip, montado aqui no aparelho ----------
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+function zip(arqs){const enc=new TextEncoder(),partes=[],dir=[];let pos=0;
+  const u16=v=>[v&255,(v>>8)&255],u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255];
+  for(const a of arqs){const nome=enc.encode(a.nome),d=a.dados,c=crc32(d);
+    const cab=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(d.length),...u32(d.length),...u16(nome.length),...u16(0)]);
+    partes.push(cab,nome,d);
+    dir.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(d.length),...u32(d.length),...u16(nome.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(pos)]),nome);
+    pos+=cab.length+nome.length+d.length}
+  const tam=dir.reduce((s,x)=>s+x.length,0);
+  return new Blob([...partes,...dir,new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(arqs.length),...u16(arqs.length),...u32(tam),...u32(pos),...u16(0)])],{type:'application/zip'})}
+// CSV para o Excel em português: ponto e vírgula, vírgula decimal, acentos (BOM)
+const csv=(cab,linhas)=>new TextEncoder().encode('﻿'+[cab,...linhas].map(l=>l.map(v=>{v=v==null?'':typeof v==='number'?String(v.toFixed(2)).replace('.',','):String(v);
+  return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\r\n'));
+$('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disabled=true;st.textContent='Juntando os seus dados...';
+  try{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error)throw r.error;const X=r.data,pr=X.profissional||{};
+    const loc=id=>(X.locais.find(l=>l.id===id)||{}).nome||'',sim=v=>v?'sim':'não',n=v=>v==null?null:+v;
+    const ats=X.atendimentos.map(a=>({...a,valor:+a.valor})),pg=ats.filter(a=>a.pago!==false),ds=X.despesas.map(d=>({...d,valor:+d.valor}));
+    const meses=[...new Set([...pg.map(a=>a.data.slice(0,7)),...ds.map(d=>d.data.slice(0,7))])].sort();
+    const arqs=[
+      {nome:'LEIA-ME.txt',dados:new TextEncoder().encode(`Lado a Lado Saúde: dados de ${pr.nome||''} (CPF ${pr.cpf||''}), baixados em ${new Date().toLocaleString('pt-BR')}.\r\n\r\nAs planilhas (.csv) abrem no Excel ou no Google Planilhas.\r\n- atendimentos.csv: cada atendimento, com o paciente, o valor e o recibo.\r\n- livro-caixa-mensal.csv: o que entrou, as despesas que abatem e o Carnê-Leão de cada mês.\r\n- pacientes.csv, despesas.csv e recibos-emitidos.csv.\r\n- recibos/ e posts/: os PDFs guardados pela Assessoria.\r\n\r\nGuarde os comprovantes por 5 anos. O livro-caixa oficial é o do Carnê-Leão Web (gov.br).`)},
+      {nome:'pacientes.csv',dados:csv(['Nome','CPF','CPF de quem paga','WhatsApp','E-mail','Ativo'],X.pacientes.map(p=>[p.nome,p.cpf,p.cpf_pagador,p.telefone,p.email,sim(p.ativo)]))},
+      {nome:'atendimentos.csv',dados:csv(['Data','Paciente','CPF','CPF de quem paga','Valor','Forma','Recebido','Local','Recibo do mês','Recibo confirmado na Receita'],
+        ats.map(a=>[dBR(a.data),a.paciente,a.cpf,a.cpf_pagador,a.valor,a.forma,sim(a.pago!==false),loc(a.local_id),a.recibo_mes||'',sim(a.recibo_confirmado)]))},
+      {nome:'despesas.csv',dados:csv(['Data','Conta','Valor que abate','Valor da conta','Local','Competência','Observação'],
+        ds.map(d=>[dBR(d.data),nomeCod(d.codigo),d.valor,n(d.valor_pago),loc(d.local_id),d.competencia,d.obs]))},
+      {nome:'livro-caixa-mensal.csv',dados:csv(['Mês','Recebido','Despesas usadas','INSS','Carnê-Leão devido','DARF a pagar','Sobra para os meses seguintes'],
+        meses.map(m=>{const ap=apura(pg,ds,m);return [m.split('-').reverse().join('/'),ap.rec,ap.usado,ap.inss,ap.darf.total,ap.darf.pagar,ap.sobra]}))},
+      {nome:'recibos-emitidos.csv',dados:csv(['Tipo','Mês','Linhas','Gerado em','Confirmado na Receita em','Números dos recibos'],
+        X.lotes.map(l=>[l.tipo,l.mes,l.linhas,l.gerado_em&&new Date(l.gerado_em).toLocaleDateString('pt-BR'),l.confirmado_em&&new Date(l.confirmado_em).toLocaleDateString('pt-BR'),(l.recibos||[]).join(' ')]))}];
+    // PDFs: links de 1 h da função zap; sem a função (ou sem PDFs), seguem só as planilhas
+    let pdfs=[];try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
+      const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'exportar',tok:TOK})});if(f.ok)pdfs=(await f.json()).pdfs||[]}catch(e){}
+    let k=0;for(const p of pdfs){st.textContent=`Baixando os PDFs: ${++k} de ${pdfs.length}...`;
+      try{const f=await fetch(p.url);if(f.ok)arqs.push({nome:p.nome,dados:new Uint8Array(await f.arrayBuffer())})}catch(e){}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(zip(arqs));a.download=`lado-a-lado-saude-${hojeISO()}.zip`;document.body.appendChild(a);a.click();a.remove();
+    st.textContent=`Pronto: ${ats.length} atendimentos, ${ds.length} despesas e ${arqs.filter(x=>/\.pdf$/i.test(x.nome)).length} PDF(s).`}
+  catch(e){console.error(e);st.textContent='';avisa('Não consegui juntar os dados agora. Tente de novo.',true)}
+  b.disabled=false};
 
 function mostra(t){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
   document.querySelectorAll('nav button').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));scrollTo(0,0)}
@@ -103,7 +175,7 @@ function telaIni(){
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
   const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0),ano);
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';$('i-reforma').textContent=rf.txt;
-  const cj=cnpjAviso(pagos(),D.despesas,m);$('i-cnpj').hidden=!cj?.mostra;if(cj?.mostra)$('i-cnpj').textContent=cj.txt;
+  cnpjTela(m);
   const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';

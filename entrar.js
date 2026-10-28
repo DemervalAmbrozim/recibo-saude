@@ -47,6 +47,8 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   const r=await sb.rpc('cadastrar_profissional',{p_nome:nome,p_cpf:cpf,p_ocupacao:$('c-ocup').value,p_registro:$('c-reg').value,
     p_telefone:tel,p_cidade:$('c-cid').value,p_aceite:TERMOS});
   if(r.error){avisa(traduz(r.error.message),true);return}
+  // Pacote Vire CNPJ (supabase/016): "sim" já vira pedido no Admin; sem a função no banco, segue sem
+  if($('c-cnpj').value||$('c-novidades').checked)await sb.rpc('link_preferencias',{tok:'',p_cnpj:$('c-cnpj').value||null,p_novidades:$('c-novidades').checked});
   const c=await sb.rpc('minha_conta',{tok:''});
   $('ok-ate').textContent=c.data&&c.data.teste_ate?c.data.teste_ate.split('-').reverse().join('/'):'daqui a 30 dias';
   mostra('e-ok');
