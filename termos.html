@@ -36,7 +36,7 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
   <header>
     <div class="sub">Lado a Lado Saúde · Lado a Lado Assessoria</div>
     <h1>Termos de uso, privacidade e contrato de dados</h1>
-    <div class="sub">Minuta de 28/10/2026 (versão <code>minuta-2026-10-28</code>): plano Empresa e prazo do bônus.</div>
+    <div class="sub">Minuta de 28/10/2026 (versão <code>minuta-2026-10-28b</code>): plano Empresa, prazo do bônus e privacidade completa (novidades, foto do comprovante, nota fiscal, menores, prazos de guarda).</div>
   </header>
   <div class="minuta">Minuta em revisão pelo contador parceiro e por advogado. Até a versão final, vale o resumo aceito no cadastro. A versão final chega a você antes de qualquer cobrança, e o seu aceite é pedido de novo.</div>
   <nav class="indice card" aria-label="Partes">
@@ -120,21 +120,29 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
       <tr><td>Recebimentos, despesas, impostos</td><td>Livro-caixa, Carnê-Leão, recibos</td><td>Execução do contrato e obrigação legal sua (art. 7º, II e V)</td></tr>
       <tr><td>Dados de pagamento do plano</td><td>Cobrança e nota fiscal</td><td>Execução do contrato e obrigação legal nossa</td></tr>
       <tr><td>Registros de acesso (data, hora, IP)</td><td>Segurança</td><td>Obrigação legal (Marco Civil, art. 15: 6 meses)</td></tr>
+      <tr><td>Aceite de novidades pelo WhatsApp</td><td>Avisos comerciais (por exemplo, a conta PF × CNPJ)</td><td>Consentimento (art. 7º, I): você desliga quando quiser em Ajuda &gt; Seus dados</td></tr>
+      <tr><td>Foto ou PDF do comprovante de despesa</td><td>Livro-caixa e, se ligada, leitura automática do valor</td><td>Execução do contrato (art. 7º, V)</td></tr>
+      <tr><td>CNPJ, faturamento e dados da nota (modo Empresa)</td><td>DAS estimado, Fator R, nota fiscal, DMED</td><td>Execução do contrato e obrigação legal sua (art. 7º, II e V)</td></tr>
+      <tr><td>Código de indicação</td><td>Dar o mês grátis a quem indicou e à indicada</td><td>Execução do contrato (art. 7º, V)</td></tr>
     </table>
     <h3>Com quem compartilhamos</h3>
     <ul>
       <li><b>Supabase</b> (banco de dados, servidor em São Paulo) e <b>GitHub</b> (só o código do app, sem dados).</li>
       <li><b>Meta / WhatsApp</b> (mensagens): pode haver transferência internacional, feita com as garantias do art. 33 da LGPD. O registro das mensagens no nosso banco guarda só o tipo, nunca o texto.</li>
       <li><b>Asaas</b> (cobrança): só os seus dados, nunca os dos pacientes.</li>
+      <li><b>Anthropic</b> (leitura automática da foto do comprovante de despesa, só se estiver ligada): transferência internacional com as garantias do art. 33; o fornecedor não usa as imagens para treinar modelos.</li>
+      <li><b>Emissor Nacional da NFS-e</b> (só no modo Empresa, para a nota fiscal que você pedir): o certificado digital da sua empresa nunca fica no banco nem no código.</li>
       <li><b>Receita Federal</b> (recibos e DARF) e o <b>contador parceiro</b>, só no plano com contador.</li>
       <li>Não vendemos dados e não usamos dados de pacientes para publicidade.</li>
     </ul>
     <h3>Segurança</h3>
     <p>Acesso separado por profissional no próprio banco, login por link no e-mail, segundo fator para a equipe, backup diário criptografado, e a equipe técnica trabalha com contagens, sem ler nome nem CPF de paciente. Em caso de incidente com risco, avisamos você e a ANPD em até 3 dias úteis (Resolução CD/ANPD 15/2024).</p>
     <h3>Por quanto tempo</h3>
-    <p>Enquanto a conta existir e, depois do cancelamento, pelo prazo de guarda fiscal (5 anos do fim do ano do recibo). Depois disso, apagamos. Você pode pedir antes a cópia e a exclusão do que não tiver guarda obrigatória.</p>
+    <p>Enquanto a conta existir e, depois do cancelamento, pelo prazo de guarda fiscal (5 anos do fim do ano do recibo). Depois disso, apagamos. Alguns dados saem antes, sozinhos: registro das mensagens do WhatsApp em 6 meses, memória da conversa em 30 dias sem uso, texto de pedido resolvido em 1 ano, cópias de segurança em 30 dias. Você pode pedir antes a cópia e a exclusão do que não tiver guarda obrigatória.</p>
     <h3>Seus direitos (art. 18)</h3>
-    <p>Confirmar, acessar, corrigir, levar para outro serviço, apagar, saber com quem compartilhamos e revogar o consentimento. Peça pelo contato da parte 6; respondemos em até 15 dias.</p>
+    <p>Confirmar, acessar, corrigir, levar para outro serviço, apagar, saber com quem compartilhamos e revogar o consentimento. Peça pelo contato da parte 6; respondemos em até 15 dias. A cópia de tudo você mesma baixa a qualquer hora em Ajuda &gt; Seus dados.</p>
+    <h3>No seu aparelho</h3>
+    <p>O app guarda no navegador só o necessário para você continuar entrando (a chave do seu link) e preferências da tela. Não usamos cookies de propaganda nem rastreadores. "Sair" na Ajuda tira a chave do aparelho.</p>
   </section>
 
   <section class="card" id="operador">
@@ -144,6 +152,9 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
       <li><b>Objeto:</b> guardar e usar nome, CPF (do paciente e de quem paga), data e valor dos pagamentos e, se você informar, WhatsApp e e-mail do paciente, só para emitir os recibos do Receita Saúde, montar o livro-caixa, calcular o Carnê-Leão e entregar os PDFs.</li>
       <li><b>Dado sensível:</b> o recibo revela que a pessoa recebeu atendimento de saúde. Tratamos tudo como dado sensível (art. 11), com base no cumprimento de obrigação legal sua (art. 11, II, "a"): a emissão do recibo é exigida pela Receita.</li>
       <li><b>Só por instrução sua:</b> não usamos esses dados para nada além do objeto, não vendemos, não cruzamos e não falamos com seus pacientes sem você pedir.</li>
+      <li><b>Pacientes menores de idade:</b> o recibo exige o CPF da criança e do responsável que paga. Usamos só para isso, no melhor interesse da criança (art. 14; Enunciado CD/ANPD 1/2023).</li>
+      <li><b>Nota fiscal (modo Empresa):</b> quando você pedir, nome, CPF e valor do paciente vão à nota fiscal pelo Emissor Nacional, como a lei exige.</li>
+      <li><b>Não guarde dado clínico aqui:</b> o sistema não tem campo para diagnóstico, CID ou evolução. Não escreva isso nas observações nem no suporte.</li>
       <li><b>Suboperadores:</b> Supabase (banco, São Paulo) e Meta/WhatsApp (envio dos PDFs, se você pedir). Avisamos você antes de trocar ou incluir algum.</li>
       <li><b>Sigilo:</b> só a equipe da Assessoria e, no plano com contador, o contador parceiro acessam, com o mesmo dever de sigilo.</li>
       <li><b>Segurança e incidente:</b> as medidas da parte 4. Em incidente que envolva seus pacientes, avisamos você em até 48 horas, com o que aconteceu, quem foi afetado e o que fizemos, para você decidir a comunicação.</li>

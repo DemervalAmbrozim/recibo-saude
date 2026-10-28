@@ -231,7 +231,7 @@ const SUPORTE_OK='Recebido. Uma pessoa da Assessoria responde aqui em até 1 dia
 // Mensagem inteira (pode ter várias linhas). Devolve o texto da resposta; est é alterado no lugar.
 async function zapResponde(texto,D,api,est,hoje){const out=[];
   if(SUPORTE.test(zNorm(String(texto||'').split(/\n/)[0]))){const resto=String(texto).replace(/^\s*\S+\s*/,'').trim();
-    if(!resto)return 'Escreva *suporte* e, na mesma mensagem, o que aconteceu. Ex.: *suporte o recibo da Maria saiu com o valor errado*.';
+    if(!resto)return 'Escreva *suporte* e, na mesma mensagem, o que aconteceu. Ex.: *suporte o recibo da Maria saiu com o valor errado*. Não escreva diagnóstico nem dado de saúde do paciente.';
     if(!api.suporte)return SUPORTE_OK;
     try{await api.suporte(String(texto).trim())}catch(e){return zErro(String(e.message||e))}
     return SUPORTE_OK}
