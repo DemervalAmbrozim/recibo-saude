@@ -38,6 +38,10 @@ $('e-email').onsubmit=async e=>{e.preventDefault();
     :'Não consegui enviar o link. Confira o e-mail e tente de novo.';
 };
 
+// Indicação (supabase/019): ?ind=CODIGO na venda ou no link da colega; guardado porque o e-mail de entrada volta sem ele
+const IND=(()=>{const q=(new URLSearchParams(location.search).get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  try{if(q)localStorage.setItem('rs-ind',q);return q||localStorage.getItem('rs-ind')||''}catch(e){return q}})();
+if(IND)$('c-ind').value=IND;
 $('e-cad').onsubmit=async e=>{e.preventDefault();
   const nome=$('c-nome').value.trim().replace(/\s+/g,' '), cpf=so($('c-cpf').value), tel=telLimpo($('c-tel').value);
   if(nome.split(' ').length<2){avisa('Escreva o nome completo, como no CPF.',true);return}
@@ -49,6 +53,8 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   if(r.error){avisa(traduz(r.error.message),true);return}
   // Pacote Vire CNPJ (supabase/016): "sim" já vira pedido no Admin; sem a função no banco, segue sem
   if($('c-cnpj').value||$('c-novidades').checked)await sb.rpc('link_preferencias',{tok:'',p_cnpj:$('c-cnpj').value||null,p_novidades:$('c-novidades').checked});
+  const ind=$('c-ind').value.trim().toUpperCase();
+  if(ind){const u=await sb.rpc('usar_indicacao',{p_codigo:ind});if(u.error)avisa('Código de indicação não encontrado. Sua conta foi criada com 30 dias.',true);try{localStorage.removeItem('rs-ind')}catch(e){}}
   const c=await sb.rpc('minha_conta',{tok:''});
   $('ok-ate').textContent=c.data&&c.data.teste_ate?c.data.teste_ate.split('-').reverse().join('/'):'daqui a 30 dias';
   mostra('e-ok');

@@ -171,5 +171,7 @@ function conta(){const R=numBR(document.getElementById('cj-rec').value),dp=numBR
     :`Com essa média, a pessoa física ainda sai mais barata (cerca de ${B(c.pf)} × ${B(c.cnpj)} por mês). O app avisa se isso mudar.`}
 ['cj-rec','cj-desp'].forEach(i=>document.getElementById(i).oninput=conta);
 </script>
+<script>// Indicação: leva o ?ind= da venda para o cadastro
+(()=>{const i=new URLSearchParams(location.search).get('ind');if(i)document.querySelectorAll('a[href="entrar.html"]').forEach(a=>a.href='entrar.html?ind='+encodeURIComponent(i))})();</script>
 </body>
 </html>

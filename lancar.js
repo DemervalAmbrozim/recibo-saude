@@ -42,7 +42,7 @@ async function carrega(){
   contaTela();
   $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
-  telaIni();telaLan();telaDesp();telaAg();pacotesTela();
+  telaIni();telaLan();telaDesp();telaAg();pacotesTela();indTela();
 }
 // Pacotes (supabase/018): saldo por paciente e "+1 sessão hoje"; sem a função no banco, o cartão fica escondido
 async function pacotesTela(){const r=await sb.rpc('link_pacotes',{tok:TOK});const l=r.error?[]:r.data||[];
@@ -402,3 +402,10 @@ $('b-imp').onclick=async()=>{if(!IMP||!IMP.ok.length)return;const b=$('b-imp');b
     if(r.error)erro++;else feitos++}
   b.disabled=false;$('imp-txt').value='';$('imp-arq').value='';$('imp-prev').textContent='';b.hidden=true;IMP=null;await carrega();
   avisa(`${feitos} paciente${feitos===1?'':'s'} importado${feitos===1?'':'s'} ou atualizado${feitos===1?'':'s'}.`+(erro?` ${erro} não foram (tente de novo).`:''),!!erro)};
+
+// ---------- Indicação (revisão item 19, supabase/019) ----------
+async function indTela(){const r=await sb.rpc('minha_indicacao',{tok:TOK});if(r.error||!r.data){$('aj-ind').hidden=true;return}const x=r.data;
+  const link=new URL('venda.html?ind='+x.codigo,location.href).href;
+  $('ind-cod').textContent=x.codigo;$('aj-ind').hidden=false;
+  $('ind-num').textContent=x.indicadas?`${x.indicadas} colega${x.indicadas>1?'s':''} usou seu código · ${x.pagaram} já assinou`+(x.meses_bonus?` · ${x.meses_bonus} mês grátis guardado`:''):'';
+  $('ind-zap').href='https://wa.me/?text='+encodeURIComponent(`Uso o Lado a Lado Saúde para os recibos do Receita Saúde e o Carnê-Leão, tudo pelo WhatsApp. Com o meu código ${x.codigo} você testa 60 dias: ${link}`)}

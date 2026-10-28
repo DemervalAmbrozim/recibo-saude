@@ -63,6 +63,7 @@ const AJUDA=`É só escrever como fala:
 • *novo Maria Silva 123.456.789-09* (paciente nova)
 • *desfazer* (apaga o último lançamento)
 • foto ou PDF de uma conta paga (guardo o comprovante e lanço a despesa)
+• *indicar* (seu código para indicar uma colega)
 • *suporte* e o que aconteceu (fala com uma pessoa)
 Pode mandar vários de uma vez, um por linha.`;
 
@@ -156,6 +157,10 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
     try{const id=await api.paciente(nome,cpf);D.pacientes.push({id,nome});return `Cadastrada: ${nome}. Agora é só lançar: *${nome.split(' ')[0]} 180 pix*`}
     catch(e){return zErro(String(e.message||e))}}
   if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar: *novo Nome Sobrenome 123.456.789-09* (o CPF de quem é atendido).';
+  // Indicação (revisão item 19): código e link para mandar à colega
+  if(/^(indicar|indicacao|indique|codigo)$/.test(t)){if(!api.indicacao)return 'Em breve.';let x;try{x=await api.indicacao()}catch(e){return zErro(String(e.message||e))}
+    return `Seu código: *${x.codigo}*. A colega ganha 60 dias de teste e você ganha 1 mês quando ela assinar.\nEncaminhe este link para ela: https://demervalambrozim.github.io/recibo-saude/venda.html?ind=${x.codigo}`
+      +(x.indicadas?`\n${x.indicadas} já usaram seu código, ${x.pagaram} assinaram.`:'')}
   // Foto do comprovante lida (revisão item 14): "sim" lança o que foi lido
   if(/^(sim|s|ok|isso|pode|confirmo)$/.test(t)&&est.foto&&est.foto.lido){const l=est.foto.lido;
     return zLinha(`despesa ${l.tipo} ${l.valor.toFixed(2).replace('.',',')} ${l.data.split('-').reverse().join('/')}`,D,api,est,hoje)}
