@@ -248,7 +248,7 @@ function envioTela(mes){const g={};
   S.at.filter(a=>a.data.startsWith(mes)&&a.lote_id).forEach(a=>{g[a.paciente_id]=(g[a.paciente_id]||0)+a.valor});
   const ids=Object.keys(g);
   $('f-envio').innerHTML=ids.length?ids.map(id=>{const p=pacDe(id),t=msgPaciente(p,mes,g[id]);
-    const zap=p.telefone?`<a class="small btn" target="_blank" rel="noopener" href="https://wa.me/55${p.telefone}?text=${encodeURIComponent(t)}">WhatsApp</a>`:'';
+    const zap=p.telefone?`<a class="small btn" target="_blank" rel="noopener" href="https://wa.me/55${so(p.telefone)}?text=${encodeURIComponent(t)}">WhatsApp</a>`:'';
     const mail=p.email?`<a class="small btn" href="mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent('Recibo '+mes.split('-').reverse().join('/'))}&body=${encodeURIComponent(t)}">E-mail</a>`:'';
     return `<div class="item"><div><b>${esc(p.nome)}</b><div class="meta">${brl(g[id])}${zap||mail?'':' · sem contato: cadastre em Pacientes'}</div></div><div class="btns">${zap}${mail}</div></div>`}).join('')
     :'<div class="sub">Nenhum recibo emitido neste mês ainda.</div>';
@@ -357,7 +357,7 @@ function admTela(){
     .map(([n,k])=>`<div class="kpi"><span class="sub">${n}</span><b>${todos.filter(F[k]).length}</b></div>`).join('');
   const ps=todos.filter(F[$('adm-filtro').value]||(()=>true)).sort((a,b)=>(b.criado_em||'').localeCompare(a.criado_em||''));
   const op=(o,v)=>Object.entries(o).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
-  $('adm-lista').innerHTML=ps.length?ps.map(p=>{const s=sitEf(p), zap=p.telefone?`https://wa.me/55${p.telefone}?text=${encodeURIComponent(`Olá, ${(p.nome||'').split(' ')[0]}! Aqui é da Assessoria Lado a Lado, da Lado a Lado Saúde.`)}`:'';
+  $('adm-lista').innerHTML=ps.length?ps.map(p=>{const s=sitEf(p), zap=p.telefone?`https://wa.me/55${so(p.telefone)}?text=${encodeURIComponent(`Olá, ${(p.nome||'').split(' ')[0]}! Aqui é da Assessoria Lado a Lado, da Lado a Lado Saúde.`)}`:'';
     return `<div class="item"><div><b>${esc(p.nome||'(sem nome)')}</b><div class="meta">${esc(OCUP[p.ocupacao]||'')}${p.registro?' · '+esc(p.registro):''}${p.cidade?' · '+esc(p.cidade):''}</div>
       <div class="meta">${[p.email&&esc(p.email),p.telefone&&fmtTel(p.telefone)].filter(Boolean).join(' · ')||'sem contato'}</div>
       ${p.plano_pedido||COBS[p.id]||p.fundadora?`<div class="meta">${[p.plano_pedido&&`pediu ${PLANO[p.plano_pedido]} (${p.ciclo||'mensal'})`,p.fundadora&&'fundadora −30%',
