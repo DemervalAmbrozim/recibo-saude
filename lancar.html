@@ -188,6 +188,16 @@ a{color:var(--accent)}
       <div class="sub">Pacote pago de uma vez gera um recibo só, na data do pagamento. As sessões depois só abatem do saldo.</div>
       <button class="pri" type="submit">Salvar atendimento</button>
     </form>
+    <details class="card" id="imp-card">
+      <summary><b>Importar pacientes</b> (planilha ou contatos)</summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">Copie as colunas da sua planilha (nome, CPF e, se tiver, WhatsApp e e-mail) e cole abaixo. Ou escolha um arquivo .csv ou de contatos (.vcf). O CPF é obrigatório: é ele que vai no recibo.</div>
+        <textarea id="imp-txt" rows="5" placeholder="Maria Silva	529.982.247-25	27 99999-1111"></textarea>
+        <input type="file" id="imp-arq" accept=".csv,.txt,.vcf,text/csv,text/vcard">
+        <div class="sub" id="imp-prev" aria-live="polite"></div>
+        <button class="pri" type="button" id="b-imp" hidden>Importar</button>
+      </div>
+    </details>
     <div class="card" id="pacotes-card" hidden>
       <h2>Pacotes com saldo</h2>
       <div class="list" id="pacotes"></div>
@@ -296,6 +306,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="regras.js"></script>
+<script src="importar.js"></script>
 <script src="lancar.js"></script>
 </body>
 </html>

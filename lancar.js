@@ -387,3 +387,18 @@ $('pin').onsubmit=async e=>{e.preventDefault();const p=$('pin-1').value;
   $('ruim').hidden=false})();
 $('b-sair').onclick=async()=>{if(TOK){if(!confirm('Sair deste aparelho? Para voltar, abra o link e digite o PIN.'))return;await sb.rpc('link_sair',{tok:TOK});guarda.set('');location.replace('lancar.html');return}
   await sb.auth.signOut();location.replace('entrar.html')};
+
+// ---------- Importar pacientes (revisão item 10, importar.js): prévia antes de gravar, um por um pelo link_paciente ----------
+let IMP=null;
+function impPrevia(txt){IMP=impLer(txt); /* quem já está cadastrado (mesmo CPF) só completa o contato, no banco */const r=IMP;
+  $('imp-prev').innerHTML=!txt.trim()?'':`<b>${r.ok.length}</b> para importar (quem já está cadastrado só ganha o contato)`+(r.repetidos?` · ${r.repetidos} repetido${r.repetidos>1?'s':''} na lista`:'')
+    +(r.semCpf.length?`<br>${r.semCpf.length} sem CPF válido (ficam de fora): ${esc(r.semCpf.slice(0,8).join(', '))}${r.semCpf.length>8?'...':''}`:'');
+  $('b-imp').hidden=!r.ok.length;$('b-imp').textContent=`Importar ${r.ok.length} paciente${r.ok.length>1?'s':''}`}
+$('imp-txt').oninput=e=>impPrevia(e.target.value);
+$('imp-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();$('imp-txt').value=t;impPrevia(t)};
+$('b-imp').onclick=async()=>{if(!IMP||!IMP.ok.length)return;const b=$('b-imp');b.disabled=true;let feitos=0,erro=0;
+  for(const p of IMP.ok){b.textContent=`Importando ${feitos+erro+1} de ${IMP.ok.length}...`;
+    const r=await sb.rpc('link_paciente',{tok:TOK,p_nome:p.nome,p_cpf:p.cpf,p_cpf_pagador:p.cpf_pagador,p_telefone:p.telefone,p_email:p.email});
+    if(r.error)erro++;else feitos++}
+  b.disabled=false;$('imp-txt').value='';$('imp-arq').value='';$('imp-prev').textContent='';b.hidden=true;IMP=null;await carrega();
+  avisa(`${feitos} paciente${feitos===1?'':'s'} importado${feitos===1?'':'s'} ou atualizado${feitos===1?'':'s'}.`+(erro?` ${erro} não foram (tente de novo).`:''),!!erro)};
