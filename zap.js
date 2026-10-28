@@ -55,6 +55,7 @@ const AJUDA=`É só escrever como fala:
 • *aluguel 1200* (despesa do consultório)
 • *resumo* (o mês até agora)
 • *cnpj* (pessoa física ou CNPJ: o que sai mais barato)
+• *reforma* (os novos impostos de 2027 e o que muda para você)
 • *procuração* (passo a passo para a Assessoria emitir por você)
 • *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
@@ -119,6 +120,13 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(!t)return null;
   if(/^(oi|ola|bom dia|boa tarde|boa noite|ajuda|menu|\?)\b/.test(t)&&t.split(' ').length<=3)return `Olá, ${(D.nome||'').split(' ')[0]}! `+AJUDA;
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
+  if(/^(reforma|reforma tributaria|cbs|ibs|2027)$/.test(t)){const ano=hoje.slice(0,4),rec=soma(D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(ano))),r=reforma(rec,ano);
+    return `*Reforma tributária*: PIS, Cofins e ISS viram CBS (federal) e IBS. O Carnê-Leão não muda.
+• *2026*: só teste, você não paga nada.
+• *2027*: quem recebe mais de ${zBrl(r.lim)} no ano como pessoa física passa a emitir nota fiscal e pagar CBS. Saúde tem 60% de desconto: perto de 3,5% do recebido (estimativa, a alíquota ainda não saiu).
+• *2029 a 2032*: o ISS da prefeitura cai aos poucos e o IBS sobe. *2033*: ISS acaba; perto de 10,6% no total (estimativa).
+• Abaixo da linha: nada muda, segue o recibo do Receita Saúde.
+Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.p<0.8?'Folgada.':'Perto ou acima: mande *cnpj* para comparar com empresa.'}`}
   if(/^(cnpj|empresa|pj)$/.test(t)){const c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7));
     return !c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: a diferença seria de ${zBrl(c.eco)} por mês. Eu aviso se isso mudar.`}
   // Pacote Vire CNPJ: "quero" (resposta ao aviso) ou "quero conversar" vira pedido no Admin
