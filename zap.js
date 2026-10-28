@@ -62,6 +62,7 @@ const AJUDA=`É só escrever como fala:
 • *Maria pacote 10 1500 pix* e depois *Maria sessão* (pacotes)
 • *novo Maria Silva 123.456.789-09* (paciente nova)
 • *desfazer* (apaga o último lançamento)
+• foto ou PDF de uma conta paga (guardo o comprovante e lanço a despesa)
 • *suporte* e o que aconteceu (fala com uma pessoa)
 Pode mandar vários de uma vez, um por linha.`;
 
@@ -155,6 +156,9 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
     try{const id=await api.paciente(nome,cpf);D.pacientes.push({id,nome});return `Cadastrada: ${nome}. Agora é só lançar: *${nome.split(' ')[0]} 180 pix*`}
     catch(e){return zErro(String(e.message||e))}}
   if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar: *novo Nome Sobrenome 123.456.789-09* (o CPF de quem é atendido).';
+  // Foto do comprovante lida (revisão item 14): "sim" lança o que foi lido
+  if(/^(sim|s|ok|isso|pode|confirmo)$/.test(t)&&est.foto&&est.foto.lido){const l=est.foto.lido;
+    return zLinha(`despesa ${l.tipo} ${l.valor.toFixed(2).replace('.',',')} ${l.data.split('-').reverse().join('/')}`,D,api,est,hoje)}
   // Pacotes (revisão item 9): "Maria pacote 10 1500 pix" (1 recibo, na data do pagamento), "Maria sessão" (abate 1), "pacotes" (saldos)
   if(/^pacotes?$/.test(t)){if(!api.pacotes)return 'Pacotes ainda não disponíveis.';let l;try{l=await api.pacotes()}catch(e){return zErro(String(e.message||e))}
     return l.length?'*Pacotes com saldo*\n'+l.map(k=>`• ${k.paciente}: ${k.sessoes-k.usadas} de ${k.sessoes} (pago ${zDBR(k.data)})`).join('\n'):'Nenhum pacote com saldo. Para lançar: *Maria pacote 10 1500 pix*'}
@@ -192,7 +196,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   const n0=p.nome[0]==='despesa'||p.nome[0]==='paguei'?p.nome.slice(1):p.nome;
   if(DESP[n0[0]]&&p.valor&&(n0!==p.nome||!zAcha(D.pacientes,p.nome).length)){const cod=DESP[n0[0]];
     const locs=D.locais.filter(l=>TIPOS[l.tipo]&&TIPOS[l.tipo][1]>0),loc=IMOVEL.includes(cod)&&locs[0]||null;
-    try{const id=await api.despesa(cod,p.data||hoje,p.valor,loc&&loc.id);
+    const fo=est.foto;try{const id=await api.despesa(cod,p.data||hoje,p.valor,loc&&loc.id,fo?'pelo WhatsApp · comprovante '+fo.caminho:undefined);est.foto=null;
       const txt=`${nomeCod(cod)}: ${zBrl(p.valor)} em ${zDBR(p.data||hoje)}`;est.ultimo={tipo:'desp',id,txt};
       return `✅ Despesa lançada. ${txt}`+(loc&&TIPOS[loc.tipo][1]<1?` (abate ${Math.round(TIPOS[loc.tipo][1]*100)}% por ser ${TIPOS[loc.tipo][0].toLowerCase()}).`:'.')+' Errou? *desfazer*'}
     catch(e){return zErro(String(e.message||e))}}
@@ -212,6 +216,10 @@ async function zLanca(p,D,api,est,hoje){const data=p.data||hoje,forma=p.forma||'
   const mes=hoje.slice(0,7),noMes=D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(mes));
   return `✅ ${txt}\nNo mês: ${zBrl(soma(noMes))} em ${noMes.length}. Errou? *desfazer*`}
 
+// Resposta à foto do comprovante: o que foi lido (confirmar com "sim") ou o pedido do tipo e do valor
+function zFotoPergunta(l){return l?`📎 Comprovante guardado. Li: *${nomeCod(DESP[l.tipo])}*, ${zBrl(l.valor)}, ${l.data.split('-').reverse().join('/')}.\nEstá certo? Responda *sim*. Se não, mande do jeito certo, ex.: *luz 230,45*.`
+  :'📎 Comprovante guardado. Agora mande o tipo e o valor, ex.: *luz 230,45* ou *aluguel 1200 05/10*, que eu lanço com a foto junto.'}
+
 // Suporte (revisão item 26, projeto/manual-suporte.md): "suporte ..." vira pedido no Admin, com o texto inteiro
 const SUPORTE=/^(suporte|atendente|atendimento|falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|reclamacao|problema)\b/;
 const SUPORTE_OK='Recebido. Uma pessoa da Assessoria responde aqui em até 1 dia útil (segunda a sexta, 8h às 18h). Se for erro num recibo já emitido, a correção é sem custo.';
@@ -226,4 +234,4 @@ async function zapResponde(texto,D,api,est,hoje){const out=[];
   for(const l of linhas){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r)}
   return out.join('\n\n')||AJUDA}
 
-if(typeof module!=='undefined')module.exports={zapResponde,zSemana1,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};
+if(typeof module!=='undefined')module.exports={zapResponde,zFotoPergunta,zSemana1,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};
