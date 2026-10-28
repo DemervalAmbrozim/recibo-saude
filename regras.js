@@ -72,7 +72,7 @@ function reforma(recAno,ano){const lim=nano(ano),p=recAno/lim,a1=Math.max(+ano+1
 // e IR do pró-labore, mais o contador. Fica de fora o ISS (a PF paga à parte; no Simples vem no DAS), então a conta favorece a PF.
 // Só sugere conversar com o contador quando a economia passa de R$ 300 por mês.
 const SM=1621, TETO=8475.55, CONTADOR=400; // salário mínimo e teto do INSS 2026 (Decreto 12.797/2025, Portaria MPS/MF 13/2026)
-const A3=[[180e3,.06,0],[360e3,.112,9360],[720e3,.135,17640],[1.8e6,.16,35640]];
+const A3=[[180e3,.06,0],[360e3,.112,9360],[720e3,.135,17640],[1.8e6,.16,35640],[3.6e6,.21,125640],[4.8e6,.33,648000]]; // Anexo III, LC 155/2016, conferido no Planalto em 28/10
 function cnpjAviso(ats,ds,mes){
   const [a,m]=mes.split('-').map(Number), ms=[1,2,3].map(k=>dISO(new Date(a,m-1-k,1)).slice(0,7));
   const rs=ms.map(k=>({rec:soma(ats.filter(x=>x.data.startsWith(k))),lc:soma(ds.filter(x=>x.data.startsWith(k)&&x.codigo!==INSS))}));
