@@ -34,24 +34,28 @@ $('f-login').onsubmit=async e=>{e.preventDefault();
   $('l-msg').textContent=r.error?'Não foi possível enviar: '+r.error.message:'Link enviado. Abra seu e-mail neste aparelho e toque no link.';};
 $('b-sair').onclick=$('mfa-sair').onclick=async()=>{await sb.auth.signOut();location.reload();};
 
-let entrando=false, EQUIPE=false, ADMIN=false;
+let entrando=false, EQUIPE=false, ADMIN=false, SEC=false;
 async function entrar(again){
   if(entrando&&!again)return; entrando=true;
   // 2º fator ligado: a sessão só abre os dados depois do código (o banco também cobra, supabase/011)
   const aal=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
   if(aal.data&&aal.data.nextLevel==='aal2'&&aal.data.currentLevel!=='aal2'){$('t-login').hidden=true;$('t-mfa').hidden=false;$('mfa-cod').focus();entrando=false;return}
   $('t-mfa').hidden=true;
-  const [ac,eq,ad]=await Promise.all([sb.from('acessos').select('papel, profissionais(*)'),sb.rpc('e_equipe'),sb.rpc('e_admin')]);
+  const [ac,eq,ad,cl]=await Promise.all([sb.from('acessos').select('papel, profissionais(*)'),sb.rpc('e_equipe'),sb.rpc('e_admin'),sb.rpc('minhas_clinicas')]);
   if(falhou(ac,'abrir seus dados'))return;
   EQUIPE=eq.data===true;ADMIN=ad.data===true;
   PROFS=ac.data.map(x=>({...x.profissionais,papel:x.papel}));
-  // O painel é da equipe e dos contadores. A profissional usa o app dela; cadastro novo só por entrar.html (auditoria S2)
-  if(!EQUIPE&&!PROFS.some(p=>p.papel==='assessor')){location.replace(PROFS.length?'lancar.html':'entrar.html');return}
+  const clis=Array.isArray(cl.data)?cl.data:[]; // 8i: secretária da clínica também entra no painel
+  // O painel é da equipe, dos contadores e das secretárias de clínica. A profissional usa o app dela; cadastro novo só por entrar.html (auditoria S2)
+  if(!EQUIPE&&!clis.length&&!PROFS.some(p=>p.papel==='assessor'||p.papel==='secretaria')){location.replace(PROFS.length?'lancar.html':'entrar.html');return}
+  SEC=!EQUIPE&&!PROFS.some(p=>p.papel!=='secretaria');
   $('nav-adm').hidden=!EQUIPE;document.querySelectorAll('.adm-so').forEach(c=>c.hidden=!ADMIN);mfaTela();
   PROFS.sort((a,b)=>(a.papel==='dono'?0:1)-(b.papel==='dono'?0:1)||a.nome.localeCompare(b.nome));
-  $('prof-sel').innerHTML=PROFS.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}${p.papel==='assessor'?' (cliente)':''}</option>`).join('');
+  $('prof-sel').innerHTML=PROFS.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}${p.papel==='assessor'?' (cliente)':p.papel==='secretaria'?' (clínica)':''}</option>`).join('');
   $('prof-sel').hidden=PROFS.length<2;
   $('t-login').hidden=true;document.querySelector('nav').hidden=false;
+  cliEntrar(clis);
+  if(!PROFS.length){$('nav-cli').click();return} // clínica ainda sem profissional no grupo
   document.querySelector('nav button').click();
   await abrir(PROFS[0].id);
 }

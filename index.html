@@ -170,7 +170,7 @@ a{color:var(--accent)}
 
   <!-- FECHAMENTO -->
   <section id="t-fech" class="tab" hidden style="display:grid;gap:16px">
-    <div class="card">
+    <div class="card nao-sec">
       <div class="head"><h2>Imposto do mês</h2><input id="f-mes" type="month" style="width:auto"></div>
       <div><span class="big num" id="f-total"></span> <span class="sub">recebidos no mês</span></div>
       <div class="meter" id="f-meter"><i></i></div>
@@ -203,7 +203,7 @@ a{color:var(--accent)}
       <textarea id="f-receita" placeholder="Cole aqui a lista de recibos gerados (084.009.26.00033 ...)"></textarea>
       <button id="b-confirmar" type="button">Confirmar recibos</button>
     </div>
-    <div class="card">
+    <div class="card nao-sec">
       <h2>PDFs pelo WhatsApp</h2>
       <div class="sub">Escolha os PDFs dos recibos deste mês baixados do Receita Saúde. Eles ficam guardados na pasta privada da profissional e vão pelo zap da Assessoria, com a mensagem do mês.</div>
       <input type="file" id="f-pdfs" accept="application/pdf" multiple>
@@ -214,6 +214,35 @@ a{color:var(--accent)}
       <h2>Enviar aos pacientes</h2>
       <div class="sub">Recibos já emitidos neste mês. O botão abre o WhatsApp ou o e-mail com a mensagem pronta: anexe o PDF do paciente antes de enviar.</div>
       <div class="list" id="f-envio"></div>
+    </div>
+  </section>
+
+  <!-- CLÍNICA (8i: secretária da clínica importa o relatório e fecha o mês de cada profissional; supabase/025, app/clinica.js) -->
+  <section id="t-cli" class="tab" hidden style="display:grid;gap:16px">
+    <div class="card">
+      <div class="head"><h2 id="cli-nome">Clínica</h2><select id="cli-sel" style="width:auto;padding:6px 8px" hidden aria-label="Clínica"></select></div>
+      <div class="msg err" id="cli-cnpj" hidden>Nesta clínica quem recebe do paciente é a clínica (CNPJ). Aí a receita é da clínica: nota fiscal e repasse ao profissional, não recibo do Receita Saúde. A importação fica parada até a Assessoria conversar com vocês.</div>
+      <div class="head"><span class="sub">Quem falta emitir</span><input id="cli-mes" type="month" style="width:auto" aria-label="Mês"></div>
+      <div class="list" id="cli-painel"></div>
+      <div class="sub" id="cli-preco"></div>
+    </div>
+    <div class="card" id="cli-imp-card">
+      <h2>Importar do sistema da clínica</h2>
+      <div class="sub">No sistema de agenda, abra o relatório de recebimentos (ou de caixa) do mês, com data do pagamento, paciente, CPF, valor e profissional. Exporte para Excel, selecione tudo, copie e cole aqui. Ou escolha o arquivo .csv.</div>
+      <textarea id="cli-txt" placeholder="Cole aqui o relatório de recebimentos"></textarea>
+      <input type="file" id="cli-arq" accept=".csv,.txt,text/csv,text/plain" aria-label="Arquivo do relatório">
+      <details id="cli-molde" hidden><summary>Qual coluna é o quê</summary>
+        <div class="sub">Confira só na 1ª vez: fica guardado para os próximos meses.</div>
+        <div class="row" id="cli-cols" style="flex-wrap:wrap"></div>
+      </details>
+      <div id="cli-prev"></div>
+      <div class="list" id="cli-pend"></div>
+      <button class="pri" id="b-cli-imp" type="button" hidden>Importar</button>
+      <div class="sub">A mesma linha não entra duas vezes, mesmo colando o relatório de novo. Convênio não entra: é pago pela operadora, não pelo paciente.</div>
+    </div>
+    <div class="card">
+      <h2>Como emitir</h2>
+      <div class="sub" id="cli-emissao"></div>
     </div>
   </section>
 
@@ -278,6 +307,27 @@ a{color:var(--accent)}
       <div class="list" id="adm-lista"></div>
       <div class="sub">Conselho: confira o nome e o registro no site do conselho regional (CREFITO, CRP, CRFa, CRO, CRM) antes de marcar.</div>
     </div>
+    <div class="card" id="adm-cli">
+      <h2>Clínicas</h2>
+      <div class="sub">Plano Clínica: R$ 249 com até 3 profissionais e R$ 59 por profissional a mais. Cada profissional tem a conta dela (cadastro pelo entrar.html) e entra no grupo por aqui.</div>
+      <div class="list" id="adm-cli-lista"></div>
+      <details><summary>Nova clínica</summary>
+        <div class="row"><label>Nome <input id="nc-nome"></label><label>CNPJ (se tiver) <input id="nc-cnpj" inputmode="numeric"></label><label>Cidade <input id="nc-cidade"></label></div>
+        <label>Quem recebe do paciente? <select id="nc-recebe"><option value="">Escolha</option><option value="profissional">O profissional (no CPF dele: Pix, cartão, dinheiro)</option><option value="clinica">A clínica (no CNPJ, e repassa ao profissional)</option></select></label>
+        <div class="msg err" id="nc-aviso" hidden>Se a clínica recebe no CNPJ, a receita é dela: nota fiscal e DMED da clínica, e o repasse não é recibo do Receita Saúde. Leve ao contador antes de vender; a importação fica parada.</div>
+        <label>Quem emite os recibos <select id="nc-emissao"><option value="secretaria">A secretária da clínica (procuração para o CPF dela)</option><option value="assessoria">A Assessoria (procuração para o CPF do responsável)</option></select></label>
+        <label>Sistema de agenda da clínica <input id="nc-sistema" placeholder="ex.: Clinicorp, Simples Dental, Codental, Feegow"></label>
+        <button class="pri" id="b-nc" type="button">Criar clínica</button>
+      </details>
+      <details><summary>Profissionais e secretária</summary>
+        <label>Clínica <select id="gc-cli"></select></label>
+        <label>Profissional <select id="gc-prof"></select></label>
+        <div class="btns"><button id="b-gc-por" type="button">Pôr no grupo</button><button id="b-gc-tirar" type="button">Tirar do grupo</button></div>
+        <div class="row"><label>E-mail da secretária <input id="gs-email" type="email"></label><label>Nome <input id="gs-nome"></label><label>CPF (vai na procuração) <input id="gs-cpf" inputmode="numeric"></label></div>
+        <div class="btns"><button id="b-gs-por" type="button">Cadastrar secretária</button><button id="b-gs-tirar" type="button">Tirar secretária</button></div>
+        <div class="sub">A secretária entra pelo painel com o e-mail cadastrado aqui. Ela vê e lança atendimentos e pacientes do grupo; não vê despesas, imposto nem a conta das profissionais.</div>
+      </details>
+    </div>
     <div class="card adm-so">
       <h2>Convidar para o painel</h2>
       <div class="sub">Só quem foi convidado entra no painel. Assessoria vê todas as profissionais; contador vê só a carteira dele.</div>
@@ -303,6 +353,7 @@ a{color:var(--accent)}
   <button data-t="t-pac">Pacientes</button>
   <button data-t="t-desp">Despesas</button>
   <button data-t="t-fech">Fechamento</button>
+  <button data-t="t-cli" id="nav-cli" hidden>Clínica</button>
   <button data-t="t-aj">Ajustes</button>
   <button data-t="t-adm" id="nav-adm" hidden>Admin</button>
 </nav>
@@ -311,5 +362,7 @@ a{color:var(--accent)}
 <script src="config.js"></script>
 <script src="regras.js"></script>
 <script src="app.js"></script>
+<script src="clinica.js"></script>
+<script src="clinica-tela.js"></script>
 </body>
 </html>
