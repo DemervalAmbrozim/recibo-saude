@@ -33,16 +33,49 @@ const totMes=m=>D.atendimentos.filter(a=>a.pago!==false&&a.data.startsWith(m)).r
 const pagos=()=>D.atendimentos.filter(a=>a.pago!==false); // regime de caixa: só o que já entrou
 const despMes=m=>D.despesas.filter(d=>d.data.startsWith(m));
 
+// ---------- Sem internet (8h, 28/10: "dar opção para qd não tiver internet... descarregado quando tiver internet") ----------
+// O app guarda a última cópia dos dados e uma fila de lançamentos (atendimento e despesa) no aparelho; com a internet de volta, envia sozinho.
+// Paciente nova, pacote e exclusão de lançamento já enviado precisam de internet (o banco cria o código). Sair do aparelho apaga cópia e fila.
+const CACHE_D='rs-dados',FILA='rs-fila';
+const semRede=e=>!navigator.onLine||/fetch|network|load failed|timed? ?out/i.test(String(e&&e.message||e||''));
+const fila={get(){try{return JSON.parse(localStorage.getItem(FILA)||'[]')}catch(e){return []}},set(l){try{localStorage.setItem(FILA,JSON.stringify(l))}catch(e){}}};
+async function grava(fn,args,extra){if(navigator.onLine){const r=await sb.rpc(fn,args);if(!r.error||!semRede(r.error))return r}
+  fila.set(fila.get().concat({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),fn,args,...extra,quando:new Date().toISOString()}));return {fila:true}}
+const naFila=(x,D)=>x.fn==='link_atendimento'?D.atendimentos.some(a=>a.paciente===x.nome&&a.data===x.args.p_data&&+a.valor===x.args.p_valor)
+  :D.despesas.some(d=>d.codigo===x.args.p_codigo&&d.data===x.args.p_data&&+d.valor===x.args.p_valor);
+async function envia(){if(envia.rodando||!navigator.onLine||!fila.get().length)return;envia.rodando=true;let ok=0;const ruim=[];
+  try{for(const x of fila.get()){
+      if(x.tentou&&naFila(x,D)){fila.set(fila.get().filter(y=>y.id!==x.id));ok++;continue} // caiu a rede no meio do envio, mas chegou
+      fila.set(fila.get().map(y=>y.id===x.id?{...y,tentou:true}:y));
+      const r=await sb.rpc(x.fn,x.args);if(r.error&&semRede(r.error))break;
+      fila.set(fila.get().filter(y=>y.id!==x.id));r.error?ruim.push(`${x.nome||nomeCod(x.args.p_codigo)} ${dBR(x.args.p_data)}`):ok++}}
+  finally{envia.rodando=false}
+  if(ok||ruim.length){await carrega();avisa((ok?`${ok} lançamento${ok>1?'s':''} feito${ok>1?'s':''} sem internet ${ok>1?'foram enviados':'foi enviado'}.`:'')
+    +(ruim.length?` Não entrou: ${ruim.join(', ')}. Confira e lance de novo.`:''),!!ruim.length)}}
+// O que está na fila aparece nas listas e nas contas, marcado "aguardando internet"
+function filaAplica(){for(const x of fila.get()){const a=x.args;
+  if(x.fn==='link_atendimento')D.atendimentos.unshift({id:'fila-'+x.id,data:a.p_data,valor:a.p_valor,forma:a.p_forma,local_id:a.p_local,paciente:x.nome,emitido:false,pago:a.p_pago,fila:true});
+  else D.despesas.unshift({id:'fila-'+x.id,data:a.p_data,codigo:a.p_codigo,valor:a.p_valor,local_id:a.p_local,fixa_id:a.p_fixa,obs:a.p_obs,competencia:a.p_competencia,fila:true})}}
+function redeTela(off,em){const n=fila.get().length,el=$('semrede');el.hidden=!off&&!n;
+  el.textContent=off?`Sem internet. Dados de ${new Date(em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}. Pode lançar: fica guardado no celular e vai sozinho quando a internet voltar.${n?` Aguardando envio: ${n}.`:''}`
+    :`Enviando ${n} lançamento${n>1?'s':''} feito${n>1?'s':''} sem internet...`}
+addEventListener('online',()=>{if(D)carrega()});addEventListener('offline',()=>{if(D)redeTela(true,D.em||new Date())});
+
 async function carrega(){
-  const r=await sb.rpc('link_dados',{tok:TOK});
+  let r=await sb.rpc('link_dados',{tok:TOK}),off=false;
+  if(r.error&&semRede(r.error)){let c=null;try{c=JSON.parse(localStorage.getItem(CACHE_D)||'null')}catch(e){}
+    if(c&&c.tok===TOK){r={data:{...c.D,em:c.em}};off=true}}
   if(r.error&&!TOK){location.replace('entrar.html');return} // logada sem cadastro: termina o cadastro
   if(r.error){$('ruim').hidden=false;['t-ini','t-lan','t-desp','t-ag','t-aj','nav'].forEach(i=>$(i).hidden=true);return}
   D=r.data;D.locais=D.locais||[];D.fixas=D.fixas||[];D.despesas=D.despesas||[];
+  if(!off)try{localStorage.setItem(CACHE_D,JSON.stringify({em:new Date().toISOString(),tok:TOK,D}))}catch(e){}
+  filaAplica();redeTela(off,D.em);
   if(TOK)guarda.set(TOK);if(location.hash)history.replaceState(null,'',location.pathname);
-  contaTela();
+  if(!off)contaTela();
   $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
   telaIni();telaLan();telaDesp();telaAg();pacotesTela();indTela();irAnos();
+  if(!off)envia();
 }
 // Pacotes (supabase/018): saldo por paciente e "+1 sessão hoje"; sem a função no banco, o cartão fica escondido
 async function pacotesTela(){const r=await sb.rpc('link_pacotes',{tok:TOK});const l=r.error?[]:r.data||[];
@@ -241,7 +274,7 @@ function telaLan(){
   const lsel=$('a-local').value;$('a-local').innerHTML=opLocais(false,D.locais.length?'':'Cadastre seus locais na aba Despesas');
   if(lsel)$('a-local').value=lsel;$('l-local').hidden=!D.locais.length;
   $('feitos').innerHTML=D.atendimentos.slice(0,30).map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)}${x.local_id&&localDe(x.local_id)?' · '+esc(localDe(x.local_id).nome):''}</div></div>
-    <span class="pill ${x.emitido?'':'pend'}">${x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
+    <span class="pill ${x.emitido?'':'pend'}">${x.fila?'⏳ aguardando internet':x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
 }
 // WhatsApp e e-mail do paciente, para a Assessoria mandar o recibo (ponto 3 do Daniel)
 function contatoTela(){const v=$('pac').value,p=D.pacientes.find(x=>x.id===v);
@@ -266,7 +299,7 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   if(em&&!mailOk(em)){avisa('E-mail do paciente inválido.',true);return}
   if(pac==='novo'){
     const r=await sb.rpc('link_paciente',{tok:TOK,p_nome:$('n-nome').value.trim(),p_cpf:so($('n-cpf').value),p_cpf_pagador:so($('n-pag').value),p_telefone:tel?telLimpo(tel):'',p_email:em});
-    if(r.error){avisa('Não consegui salvar o paciente. Tente de novo.',true);return}
+    if(r.error){avisa(semRede(r.error)?'Paciente nova precisa de internet para o cadastro. Sem internet, lance os pacientes que já estão na lista.':'Não consegui salvar o paciente. Tente de novo.',true);return}
     pac=r.data;$('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';
   }else{const p=D.pacientes.find(x=>x.id===pac);
     if(p&&((p.telefone||'')!==(tel?telLimpo(tel):'')||(p.email||'')!==em)){
@@ -277,8 +310,9 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
   if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
   const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
-    :await sb.rpc('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked});
-  if(r.error){avisa('Não consegui salvar. Confira a data e tente de novo.',true);return}
+    :await grava('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
+  if(r.error){avisa(pn&&semRede(r.error)?'Pacote precisa de internet. Sem internet, lance a sessão como atendimento comum.':'Não consegui salvar. Confira a data e tente de novo.',true);return}
+  if(r.fila){$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa('Sem internet: guardado no celular. Vai sozinho quando a internet voltar.');return}
   if(pn){$('pac-n').value='';$('valor').value='';await carrega();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
   const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa(pg?'Atendimento salvo.':'Salvo em "A receber". Marque quando o paciente pagar.');
 };
@@ -313,9 +347,9 @@ $('f-desp').onsubmit=async e=>{e.preventDefault();
   const v=num($('d-valor').value), cod=$('d-cod').value, loc=cod===INSS?null:$('d-local').value||null, comp=$('d-comp').value;
   if(!(v>0)){avisa('Valor inválido. Use, por exemplo, 312,40.',true);return}
   if(IMOVEL.includes(cod)&&!loc){avisa('Escolha de qual local é essa conta: a regra muda se for a sua casa.',true);return}
-  const r=await sb.rpc('link_despesa',{tok:TOK,p_codigo:cod,p_data:$('d-data').value,p_valor:v,p_local:loc,p_obs:$('d-obs').value.trim(),p_fixa:fixaAtual,p_competencia:cod===INSS&&comp?comp.split('-').reverse().join('/'):null});
+  const r=await grava('link_despesa',{tok:TOK,p_codigo:cod,p_data:$('d-data').value,p_valor:v,p_local:loc,p_obs:$('d-obs').value.trim(),p_fixa:fixaAtual,p_competencia:cod===INSS&&comp?comp.split('-').reverse().join('/'):null},{});
   if(r.error){avisa('Não consegui salvar a despesa. Confira a data e tente de novo.',true);return}
-  fixaAtual=null;$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);await carrega();avisa('Despesa salva.');
+  fixaAtual=null;$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);await carrega();avisa(r.fila?'Sem internet: despesa guardada no celular. Vai sozinha quando a internet voltar.':'Despesa salva.');
 };
 $('f-fixa').onsubmit=async e=>{e.preventDefault();
   const v=num($('x-valor').value), dia=+$('x-dia').value, cod=$('x-cod').value, loc=$('x-local').value||null;
@@ -372,12 +406,14 @@ $('b-duvida').onclick=()=>location.href=`https://wa.me/${ZAP}?text=${encodeURICo
 
 // ---------- Ações nas listas ----------
 document.addEventListener('click',async e=>{const t=e.target.dataset||{};
+  if(Object.values(t).some(v=>/^fila-/.test(v))&&!t.del&&!t.ddesp){avisa('Este lançamento ainda está no celular. Espere a internet voltar.',true);return}
   if(t.rec){const a=D.atendimentos.find(x=>x.id===t.rec);
     const v=num(prompt(`Quanto ${a.paciente} pagou hoje? (total ${brl(a.valor)}; se foi uma parcela, escreva só o valor dela)`,String(a.valor).replace('.',','))||'');
     if(!(v>0)||v>+a.valor){if(v)avisa('Valor inválido.',true);return}
     const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:t.rec,p_valor:v,p_data:hojeISO()});if(r.error){avisa('Não consegui registrar o pagamento.',true);return}
     await carrega();avisa(v<+a.valor?`Parcela de ${brl(v)} registrada. Faltam ${brl(a.valor-v)}.`:'Pagamento registrado. Já está em Aguardando recibo.');return}
   if(t.del&&!confirm('Apagar este lançamento? Use só se foi lançado errado.'))return;
+  const fx=String(t.del||t.ddesp||'').match(/^fila-(.+)$/);if(fx){fila.set(fila.get().filter(y=>y.id!==fx[1]));carrega();return} // ainda no celular: só tira da fila
   if(t.del){const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:t.del});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
   if(t.ddesp){const r=await sb.rpc('link_excluir_despesa',{tok:TOK,p_despesa:t.ddesp});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
   if(t.dfixa){if(!confirm('Remover esta conta fixa? As despesas já lançadas continuam.'))return;
@@ -415,7 +451,9 @@ $('pin').onsubmit=async e=>{e.preventDefault();const p=$('pin-1').value;
 (async()=>{if(TOK.length>=20)return partida();
   const {data}=await sb.auth.getSession();if(data.session){TOK='';return carrega()}
   $('ruim').hidden=false})();
-$('b-sair').onclick=async()=>{if(TOK){if(!confirm('Sair deste aparelho? Para voltar, abra o link e digite o PIN.'))return;await sb.rpc('link_sair',{tok:TOK});guarda.set('');location.replace('lancar.html');return}
+$('b-sair').onclick=async()=>{const n=fila.get().length;if(n&&!confirm(`Há ${n} lançamento(s) feito(s) sem internet que ainda não foram enviados. Sair apaga esses lançamentos. Sair mesmo assim?`))return;
+  try{localStorage.removeItem(CACHE_D);localStorage.removeItem(FILA)}catch(e){} // LGPD: a cópia dos dados não fica no aparelho depois de sair
+  if(TOK){if(!confirm('Sair deste aparelho? Para voltar, abra o link e digite o PIN.'))return;await sb.rpc('link_sair',{tok:TOK});guarda.set('');location.replace('lancar.html');return}
   await sb.auth.signOut();location.replace('entrar.html')};
 
 // ---------- Importar pacientes (revisão item 10, importar.js): prévia antes de gravar, um por um pelo link_paciente ----------
