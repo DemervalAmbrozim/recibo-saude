@@ -88,6 +88,7 @@ document.addEventListener('click',async e=>{const id=e.target.dataset&&e.target.
   avisa(r.data.restam?`Sessão marcada. Restam ${r.data.restam}.`:'Sessão marcada. Pacote encerrado.');pacotesTela()});
 // Situação da conta (supabase/010): teste com prazo, só leitura quando vence; sem a função no banco, segue como antes
 async function contaTela(){
+  cliTela();
   const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();extrasTela(r.data.plano);
   const c=r.data, leitura=['leitura','cancelada'].includes(c.situacao), teste=c.situacao==='teste'&&c.teste_ate;
   const dias=teste?Math.round((new Date(c.teste_ate)-new Date(hojeISO()))/864e5):0;
@@ -97,6 +98,16 @@ async function contaTela(){
     :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Assessoria.'}`:'';
   $('b-sair').hidden=!c.logada&&!TOK;
 }
+// 8i: clínica do grupo. A secretária (ou a Assessoria) emite por procuração para o CPF de quem emite; sem o 025, o cartão fica escondido.
+async function cliTela(){const r=await sb.rpc('minha_clinica',{tok:TOK}),l=r.error?[]:r.data||[];$('aj-cli').hidden=!l.length;
+  $('aj-cli').innerHTML=l.map(c=>{const s=c.secretaria,quem=c.emissao==='secretaria'&&s&&s.cpf
+      ?`a secretária ${esc(s.nome||'')} (CPF ${esc(s.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'))})`:'a Assessoria Lado a Lado (veja o CPF em Ajuda > Procuração)';
+    return `<h2>Clínica ${esc(c.nome)}</h2><div class="sub">Seus atendimentos desta clínica entram pelo relatório da secretária. Quem emite seus recibos no Receita Saúde: ${quem}.${c.procuracao_ok?' Procuração conferida.':' Falta a procuração no e-CAC para esse CPF, com o serviço IRPF - Carnê Leão Web.'}</div>
+      <button type="button" class="small" data-sair-cli="${esc(c.id)}">Sair desta clínica</button>`}).join('<hr>')}
+$('aj-cli').onclick=async e=>{const id=e.target.dataset.sairCli;if(!id)return;
+  if(!confirm('Sair desta clínica? A secretária deixa de ver e lançar seus atendimentos. O que já foi lançado continua seu.'))return;
+  const r=await sb.rpc('sair_clinica',{tok:TOK,p_clinica:id});if(r.error){avisa('Não foi possível sair: '+r.error.message,true);return}
+  avisa('Você saiu da clínica.');cliTela()};
 // Plano e cobrança (supabase/013 + função cobranca). Sem a função no banco, o cartão fica escondido.
 let PL=null;
 async function planoTela(){const r=await sb.rpc('minha_cobranca',{tok:TOK});if(r.error||!r.data)return;PL=r.data;$('aj-plano').hidden=false;
