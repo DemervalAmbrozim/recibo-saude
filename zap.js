@@ -116,11 +116,12 @@ function zReceber(D){const ab=D.atendimentos.filter(x=>x.pago===false);
 const zErro=e=>/somente leitura/.test(e)?'Sua conta está só para consulta e não aceita lançamentos. Fale com a Assessoria para continuar.'
   :/data invalida/.test(e)?'Essa data não dá: lance até um ano para trás e nunca no futuro.':'Não consegui gravar agora. Tente de novo em instantes.';
 
-// Procuração no e-CAC (revisão item 5): o mesmo passo a passo do app (lancar.js, PROC_PASSOS)
+// Procuração no e-CAC (revisão item 5): o mesmo passo a passo do app (lancar.html, proc-passos). Ressalva 4 (29/10): o manual Receita Saúde 2.1,
+// pergunta 10, pede o CPF do representante; procurador CNPJ exige e-CNPJ. O CPF não fica no código público: vem do segredo PROCURADOR_CPF (api.procurador).
 const PROCURACAO=`Procuração no e-CAC (5 minutos, no computador ou no celular):
 1. Entre no e-CAC (cav.receita.fazenda.gov.br) com o seu gov.br (nível prata ou ouro).
 2. Menu *Senhas e Procurações* → *Cadastro, Consulta e Cancelamento - Procuração para e-CAC* → *Cadastrar Procuração*.
-3. Procurador: CNPJ *34.114.180/0001-54* (Lado a Lado Assessoria).
+3. Procurador: escolha *CPF* e digite {CPF} (responsável pela Lado a Lado Assessoria). É CPF, não CNPJ: assim o Receita Saúde abre o perfil Representante.
 4. Validade: pode deixar a que o e-CAC sugere; você cancela quando quiser, no mesmo menu.
 5. Marque só o serviço *IRPF - Carnê Leão Web* e confirme.
 Pronto? Responda *fiz a procuração* que a Assessoria confere.`;
@@ -163,7 +164,7 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
     const c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7));
     try{await api.pedido('cnpj',c?Math.round(c.R):null,c?c.eco:null)}catch(e){return zErro(String(e.message||e))}
     return 'Pedido anotado ✅ A Assessoria vai chamar você aqui para marcar 20 minutos com o contador parceiro, com a sua conta na tela. É uma conversa: a decisão é sua.'}
-  if(/^(procuracao|como faco a procuracao|procuracao e-?cac)$/.test(t))return PROCURACAO;
+  if(/^(procuracao|como faco a procuracao|procuracao e-?cac)$/.test(t))return PROCURACAO.replace('{CPF}',api.procurador?'*'+api.procurador+'*':'o CPF que a Assessoria te manda aqui em seguida');
   if(/^(fiz|feita|pronto|ja fiz)( a)? procuracao$|^procuracao (feita|pronta|ok)$/.test(t)){if(!api.pedido)return 'Recebido! A Assessoria confere no e-CAC.';
     try{await api.pedido('procuracao',null,null)}catch(e){return zErro(String(e.message||e))}
     return 'Recebido ✅ A Assessoria confere no e-CAC em até 1 dia útil e avisa aqui.'}

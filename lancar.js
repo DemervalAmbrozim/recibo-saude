@@ -135,7 +135,7 @@ async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});i
   $('i-proc').querySelector('h2').textContent=env?'Procuração em conferência':'Falta a sua procuração no e-CAC';
   $('pf-novidades').checked=!!EX.aceita_novidades;if(D)cnpjTela($('i-mes').value)}
 $('proc-passos').ontoggle=()=>$('proc-passos').dataset.visto=1;
-$('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-CAC para o CNPJ 34.114.180/0001-54, com o serviço IRPF - Carnê Leão Web?'))return;
+$('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-CAC para o CPF do responsável pela Assessoria, com o serviço IRPF - Carnê Leão Web?'))return;
   const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'procuracao',p_media:null,p_economia:null,p_origem:'app'});
   if(r.error){avisa('Não consegui avisar agora. Tente de novo ou fale com a Assessoria.',true);return}
   avisa('Obrigado pelo aviso! A Assessoria confere no e-CAC.');extrasTela(PL&&PL.plano)};
