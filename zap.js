@@ -59,6 +59,7 @@ const AJUDA=`É só escrever como fala:
 • *procuração* (passo a passo para a Assessoria emitir por você)
 • *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
+• *paguei* (marca o DARF do mês passado como pago)
 • *posso deduzir o curso?* (o que abate no livro-caixa)
 • *a receber* (quem está devendo)
 • *Maria pacote 10 1500 pix* e depois *Maria sessão* (pacotes)
@@ -92,10 +93,18 @@ function zSemana1(D,d){const at=D.atendimentos||[],ds=D.despesas||[],q=n=>`${n} 
     +`. Mande *resumo* para ver o mês e *darf* para saber o Carnê-Leão. No último dia do mês eu aviso para conferir, e os recibos saem sem você digitar nada de novo.`;
   return ''}
 
+// "paguei" (8f ressalva 2): marca o DARF do mês passado como pago hoje, pelo valor calculado ou o que ela disser ("paguei 126,42")
+async function zPaguei(t,D,api,hoje){const h=new Date(hoje+'T12:00'),p=new Date(h.getFullYear(),h.getMonth()-1,1),mes=zISO(p).slice(0,7),nome=`${ZAP_MESES[p.getMonth()]}/${p.getFullYear()}`;
+  const v=t.match(/([\d.]+(,\d{1,2})?)$/),calc=apura(D.atendimentos.filter(x=>x.pago!==false),D.despesas,mes).darf.pagar,val=v?+v[1].replace(/\./g,'').replace(',','.'):calc;
+  if(!(val>0))return `Não há DARF de ${nome} para pagar. Se você pagou outro valor, mande *paguei* e o valor, ex.: *paguei 126,42*.`;
+  if(!api.darfPago)return 'Anotado.';try{await api.darfPago(mes,val,hoje)}catch(e){return zErro(String(e.message||e))}
+  D.darfs=(D.darfs||[]).filter(x=>x.mes!==mes).concat({mes,valor:val,pago_em:hoje});
+  return `Anotado ✅ DARF de ${nome}: ${zBrl(val)}, pago hoje. Entra como pago no relatório do IR. Guarde o comprovante do banco.`+(calc&&Math.abs(calc-val)>0.009?`\nObs.: o valor calculado era ${zBrl(calc)}. Se pagou com multa ou outro valor, está certo assim.`:'')}
 // DARF do mês passado (vence no último dia útil deste mês)
 function zDarf(D,hoje){const h=new Date(hoje+'T12:00'),p=new Date(h.getFullYear(),h.getMonth()-1,1),mes=zISO(p).slice(0,7);
   const r=apura(D.atendimentos.filter(x=>x.pago!==false),D.despesas,mes),venc=ultimoDiaUtil(h.getFullYear(),h.getMonth());
   const nome=`${ZAP_MESES[p.getMonth()]}/${p.getFullYear()}`;
+  const pg=(D.darfs||[]).find(x=>x.mes===mes);if(pg)return `Carnê-Leão de ${nome}: ${zBrl(+pg.valor)}, pago em ${new Date(pg.pago_em+'T12:00').toLocaleDateString('pt-BR')} ✅`;
   return r.darf.pagar?`Carnê-Leão de ${nome}: *${zBrl(r.darf.pagar)}*, vence em ${venc.toLocaleDateString('pt-BR')}. A Assessoria gera o DARF e manda aqui.`
     :r.darf.adia?`Carnê-Leão de ${nome}: ${zBrl(r.darf.total)}. Abaixo de R$ 10 a Receita não gera DARF: soma ao mês seguinte.`
     :`Carnê-Leão de ${nome}: nada a pagar (recebido ${zBrl(r.rec)}).`}
@@ -162,6 +171,7 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
     return l&&l.length?`Seus posts de ${l.mes}:\n`+l.map((x,i)=>`${i+1}. ${x.nome}: ${x.url}`).join('\n')+'\nOs links valem 7 dias. Cada post vem com a legenda pronta; confira antes de publicar.'
       :'Os posts deste mês ainda estão em preparo. Eu mando aqui assim que ficarem prontos.'}
   if(/^(darf|imposto|carne[ -]?leao)$/.test(t))return zDarf(D,hoje);
+  if(/^(ja )?paguei( o)?( darf| carne[ -]?leao| imposto)?( r?\$? ?[\d.,]+)?$|^darf pago$/.test(t))return zPaguei(t,D,api,hoje);
   if(/^(a receber|receber|pendentes?|devendo)$/.test(t))return zReceber(D);
   // Perguntas do jeito que se fala, sem número: "quanto já recebi esse mês?", "quanto pago de imposto?", "quem me deve?"
   if(!/\d/.test(t)){if(/\b(imposto|carne|darf|leao)\b/.test(t)&&/\b(quanto|qual|tenho|vou|devo|pagar|pago)\b/.test(t))return zDarf(D,hoje);

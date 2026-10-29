@@ -140,22 +140,22 @@ const csv=(cab,linhas)=>new TextEncoder().encode('﻿'+[cab,...linhas].map(l=>l.
 // ---------- Relatório do ano para o IR (revisão item 8): planilha e PDF (página de impressão do aparelho) ----------
 function irAnos(){const as=[...new Set(D.atendimentos.map(a=>a.data.slice(0,4)))].sort().reverse(),s=$('ir-ano');if(!s)return;
   const v=s.value;s.innerHTML=(as.length?as:[hojeISO().slice(0,4)]).map(a=>`<option>${a}</option>`).join('');if(as.includes(v))s.value=v}
-const irDados=()=>relatorioIR(D.atendimentos.map(a=>({...a,valor:+a.valor})),D.despesas.map(d=>({...d,valor:+d.valor})),$('ir-ano').value);
+const irDados=()=>relatorioIR(D.atendimentos.map(a=>({...a,valor:+a.valor})),D.despesas.map(d=>({...d,valor:+d.valor})),$('ir-ano').value,D.darfs||[]);
 const mesBR=m=>m.split('-').reverse().join('/');
 $('b-ir-csv').onclick=()=>{const R=irDados(),a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv(['Mês','Recebido de pessoas físicas','Pacientes','Livro-caixa usado','INSS','Carnê-Leão devido','DARF a pagar'],
-    [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf]),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf],[],['Despesas do ano por conta'],
+  a.href=URL.createObjectURL(new Blob([csv(['Mês','Recebido de pessoas físicas','Pacientes','Livro-caixa usado','INSS','Carnê-Leão devido','DARF a pagar','DARF pago','Pago em'],
+    [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf,x.pago?+x.pago.valor:'',x.pago?dBR(x.pago.pago_em):'']),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf,R.tot.pago,''],[],['Despesas do ano por conta'],
     ...Object.entries(R.porConta).map(([n,v])=>[n,v])])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
 $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){avisa('Libere a janela nova para gerar o PDF.',true);return}
   const td=v=>`<td style="text-align:right">${brl(v)}</td>`;
   w.document.write(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Relatório IR ${R.ano}</title><style>body{font:13px system-ui,sans-serif;margin:24px;color:#1b2b26}
     h1{font-size:18px;color:#0f6b55}table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border-bottom:1px solid #d6e2dd;padding:5px 6px;text-align:left}tfoot td{font-weight:700}.s{color:#5b6b66;font-size:12px}</style>
     <h1>Relatório do ano ${R.ano} para a declaração do IR</h1><div>${esc(D.nome||'')}</div><div class="s">Gerado em ${new Date().toLocaleDateString('pt-BR')} pela Lado a Lado Saúde</div>
-    <table><thead><tr><th>Mês</th><th style="text-align:right">Recebido (PF)</th><th style="text-align:right">Pacientes</th><th style="text-align:right">Livro-caixa usado</th><th style="text-align:right">INSS</th><th style="text-align:right">Carnê-Leão devido</th><th style="text-align:right">DARF a pagar</th></tr></thead>
-    <tbody>${R.meses.map(x=>`<tr><td>${mesBR(x.mes)}</td>${td(x.rec)}<td style="text-align:right">${x.pacientes}</td>${td(x.lc)}${td(x.inss)}${td(x.devido)}${td(x.darf)}</tr>`).join('')}</tbody>
-    <tfoot><tr><td>Total</td>${td(R.tot.rec)}<td></td>${td(R.tot.lc)}${td(R.tot.inss)}${td(R.tot.devido)}${td(R.tot.darf)}</tr></tfoot></table>
+    <table><thead><tr><th>Mês</th><th style="text-align:right">Recebido (PF)</th><th style="text-align:right">Pacientes</th><th style="text-align:right">Livro-caixa usado</th><th style="text-align:right">INSS</th><th style="text-align:right">Carnê-Leão devido</th><th style="text-align:right">DARF a pagar</th><th style="text-align:right">DARF pago</th></tr></thead>
+    <tbody>${R.meses.map(x=>`<tr><td>${mesBR(x.mes)}</td>${td(x.rec)}<td style="text-align:right">${x.pacientes}</td>${td(x.lc)}${td(x.inss)}${td(x.devido)}${td(x.darf)}<td style="text-align:right">${x.pago?brl(+x.pago.valor)+' em '+dBR(x.pago.pago_em):x.darf?'não marcado':''}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td>${td(R.tot.rec)}<td></td>${td(R.tot.lc)}${td(R.tot.inss)}${td(R.tot.devido)}${td(R.tot.darf)}${td(R.tot.pago)}</tr></tfoot></table>
     ${Object.keys(R.porConta).length?`<h1>Despesas do ano por conta</h1><table>${Object.entries(R.porConta).map(([n,v])=>`<tr><td>${esc(n)}</td>${td(v)}</tr>`).join('')}</table>`:''}
-    <p class="s">Na declaração: importe os dados do Carnê-Leão Web (menu Declaração), que levam os rendimentos, o livro-caixa e o imposto de cada mês. Os recibos do Receita Saúde já aparecem na declaração pré-preenchida. "DARF a pagar" é o calculado: confira os pagos no e-CAC (Pagamentos). Valores a conferir com o seu contador.</p>
+    <p class="s">Na declaração: importe os dados do Carnê-Leão Web (menu Declaração), que levam os rendimentos, o livro-caixa e o imposto de cada mês. Os recibos do Receita Saúde já aparecem na declaração pré-preenchida. "DARF a pagar" é o calculado; "DARF pago" é o que você marcou como pago no app ou no WhatsApp. O comprovante oficial fica no e-CAC (Pagamentos). Valores a conferir com o seu contador.</p>
     <script>onload=()=>print()<\/script>`);w.document.close()};
 $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disabled=true;st.textContent='Juntando os seus dados...';
   try{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error)throw r.error;const X=r.data,pr=X.profissional||{};
@@ -188,7 +188,17 @@ function mostra(t){document.querySelectorAll('main>section').forEach(s=>s.hidden
 $('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
 
 // ---------- Início ----------
-function telaIni(){
+// DARF do mês passado (8f ressalva 2): vence no último dia útil deste mês; "Já paguei" grava o pago (relatório do IR e zap)
+function telaDarf(){const h=new Date(),ant=new Date(h.getFullYear(),h.getMonth()-1,1),mes=mesDe(ant.getFullYear(),ant.getMonth()),el=$('i-darf');
+  const dv=apura(pagos(),D.despesas,mes).darf,pg=(D.darfs||[]).find(x=>x.mes===mes),nome=NOMES_MES[ant.getMonth()];
+  el.hidden=!(dv.pagar>0||pg);if(el.hidden)return;
+  el.innerHTML=pg?`DARF de ${nome}: ${brl(+pg.valor)}, pago em ${dBR(pg.pago_em)} ✅ <button type="button" class="small" id="b-darf-x">Desfazer</button>`
+    :`DARF de ${nome}: ${brl(dv.pagar)}, vence em ${ultimoDiaUtil(h.getFullYear(),h.getMonth()).toLocaleDateString('pt-BR')}. <button type="button" class="small" id="b-darf">Já paguei</button>`;
+  const b=$('b-darf'),x=$('b-darf-x');
+  if(b)b.onclick=async()=>{b.disabled=true;const r=await sb.rpc('link_darf_pago',{tok:TOK,p_mes:mes,p_valor:dv.pagar,p_pago_em:hojeISO()});
+    if(r.error){b.disabled=false;avisa('Não consegui marcar. Tente de novo.',true);return}avisa('DARF marcado como pago. Guarde o comprovante do banco.');await carrega()};
+  if(x)x.onclick=async()=>{x.disabled=true;const r=await sb.rpc('link_darf_desfazer',{tok:TOK,p_mes:mes});if(r.error){x.disabled=false;avisa('Não consegui desfazer.',true);return}await carrega()}}
+function telaIni(){telaDarf();
   const m=$('i-mes').value, ap=apura(pagos(),D.despesas,m), tot=ap.rec, cl=ap.cl, desp=ap.usado+ap.inss;
   $('i-rec').textContent=brl(tot);$('i-desp').textContent=brl(desp);$('i-imp').textContent=brl(ap.darf.pagar);
   const me=$('i-meter');me.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');me.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
@@ -329,7 +339,7 @@ function agenda(){
     it.push({d:d1,t:'Fechamento do mês',s:`A Assessoria emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
     D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
     const ant=new Date(a,m-1,1), dv=apura(pagos(),D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).darf;
-    if(dv.pagar>0)it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(dv.pagar)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
+    if(dv.pagar>0&&!(D.darfs||[]).some(x=>x.mes===mesDe(ant.getFullYear(),ant.getMonth())))it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(dv.pagar)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
     // Auditoria F8: o cadastro no Carnê-Leão Web vale um ano; sem ele o Receita Saúde não emite
     if(d1.getMonth()===0)it.push({d:new Date(d1.getFullYear(),0,2),t:'Cadastro do ano no Carnê-Leão',s:'A Assessoria atualiza o seu cadastro do ano no Carnê-Leão Web. Sem ele, o recibo do Receita Saúde não sai.'});
     if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Assessoria prepara o resumo do ano para cada paciente declarar no IR dele.'});
