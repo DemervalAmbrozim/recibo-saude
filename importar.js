@@ -42,16 +42,39 @@ if(typeof module!=='undefined')module.exports={impLer,impVcf,impTabela};
 // Agenda (revisão item 11): eventos do .ics (Google Agenda: endereço secreto iCal ou arquivo exportado) viram atendimentos para confirmar.
 // Casa o título do evento com a paciente pelo nome inteiro, ou 1º nome + sobrenome; sem casar (ou com 2 iguais) fica de fora.
 // Pula o que já foi lançado (mesma paciente, mesmo dia) e evento cancelado. Valor e forma sugeridos = os do último atendimento dela.
+// 8f ressalva 1 (28/10, teste com agenda real do Google): consulta fixa "repetir toda semana" vem como 1 evento com RRULE;
+// a série é aberta aqui (DAILY/WEEKLY/MONTHLY/YEARLY, INTERVAL, BYDAY, COUNT, UNTIL), tira EXDATE e troca a sessão remarcada (RECURRENCE-ID).
+function impIcsDia(x){const d=String(x).trim().match(/^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2}).*?(Z)?)?$/);if(!d)return '';
+  if(d[7])return new Date(Date.UTC(+d[1],d[2]-1,+d[3],+d[5],+d[6])-3*36e5).toISOString().slice(0,10); // hora UTC → Brasília
+  return `${d[1]}-${d[2]}-${d[3]}`}
+function impIcsSerie(ini,rr,ex,ate){const r={};rr.split(';').forEach(x=>{const [k,v]=x.split('=');r[k]=v});
+  const passo=Math.max(1,+r.INTERVAL||1),cnt=+r.COUNT||0,ult=r.UNTIL?impIcsDia(r.UNTIL):'',lim=ult&&ult<ate?ult:ate,out=[];
+  const dd=s=>new Date(s+'T12:00:00Z'),iso=d=>d.toISOString().slice(0,10),dias=['SU','MO','TU','WE','TH','FR','SA'];
+  const bd=r.FREQ==='WEEKLY'&&r.BYDAY?r.BYDAY.split(',').map(x=>dias.indexOf(x.slice(-2))).filter(x=>x>=0):null;
+  let n=0;for(let i=0;i<2000;i++){let ds=[];const d=dd(ini);
+    if(r.FREQ==='DAILY')d.setUTCDate(d.getUTCDate()+i*passo);
+    else if(r.FREQ==='WEEKLY')d.setUTCDate(d.getUTCDate()+i*7*passo);
+    else if(r.FREQ==='MONTHLY')d.setUTCMonth(d.getUTCMonth()+i*passo);
+    else if(r.FREQ==='YEARLY')d.setUTCFullYear(d.getUTCFullYear()+i*passo);else return [ini];
+    if(bd){const dom=new Date(d);dom.setUTCDate(d.getUTCDate()-d.getUTCDay());ds=bd.map(w=>{const x=new Date(dom);x.setUTCDate(dom.getUTCDate()+w);return iso(x)}).sort().filter(x=>x>=ini)}
+    else ds=[iso(d)];
+    for(const x of ds){if(x>lim||(cnt&&n>=cnt))return out;n++;if(!ex.has(x))out.push(x)}
+    if(ds.length&&ds[0]>lim)return out}
+  return out}
 function impIcs(txt,pacientes,ats,desde,ate){const out=[],ja=new Set(ats.map(a=>a.paciente+'|'+a.data)); // link_dados traz o nome da paciente, não o id
   const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/\s+/).filter(w=>w.length>2)}));
-  for(const b of String(txt).replace(/\r?\n[ \t]/g,'').split(/BEGIN:VEVENT/i).slice(1)){
-    const v=k=>{const l=b.split(/\r?\n/).find(x=>new RegExp('^'+k+'[;:]','i').test(x));return l?l.slice(l.indexOf(':')+1).trim():''};
-    if(/CANCELLED/i.test(v('STATUS')))continue;
-    const d=v('DTSTART').match(/^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2}).*?(Z)?)?$/);if(!d)continue;
-    let dt=`${d[1]}-${d[2]}-${d[3]}`;
-    if(d[7]){const u=new Date(Date.UTC(+d[1],d[2]-1,+d[3],+d[5],+d[6])-3*36e5);dt=u.toISOString().slice(0,10)} // hora UTC → Brasília
+  const evs=String(txt).replace(/\r?\n[ \t]/g,'').split(/BEGIN:VEVENT/i).slice(1).map(b=>{const ls=b.split(/\r?\n/);
+    const v=k=>{const l=ls.find(x=>new RegExp('^'+k+'[;:]','i').test(x));return l?l.slice(l.indexOf(':')+1).trim():''};
+    const ex=new Set(ls.filter(x=>/^EXDATE[;:]/i.test(x)).flatMap(x=>x.slice(x.indexOf(':')+1).split(',').map(impIcsDia)));
+    return {uid:v('UID'),rid:v('RECURRENCE-ID')?impIcsDia(v('RECURRENCE-ID')):'',dt:impIcsDia(v('DTSTART')),rr:v('RRULE'),ex,
+      tit:v('SUMMARY'),cancel:/CANCELLED/i.test(v('STATUS'))}}).filter(e=>e.dt);
+  const troca=new Set(evs.filter(e=>e.rid&&e.uid).map(e=>e.uid+'|'+e.rid)),ocs=[];
+  for(const e of evs){if(e.cancel)continue;
+    if(e.rr&&!e.rid)impIcsSerie(e.dt,e.rr,e.ex,ate).forEach(d=>{if(!troca.has(e.uid+'|'+d))ocs.push({dt:d,tit:e.tit})});
+    else ocs.push({dt:e.dt,tit:e.tit})}
+  for(const {dt,tit:t0} of ocs){
     if(dt<desde||dt>ate)continue;
-    const tit=impNorm(v('SUMMARY').replace(/\\,/g,',')),ws=tit.split(/[^a-z0-9]+/);
+    const tit=impNorm(t0.replace(/\\,/g,',')),ws=tit.split(/[^a-z0-9]+/);
     const cs=ps.filter(({t})=>t.length&&(t.every(w=>ws.includes(w))||(ws.includes(t[0])&&t.slice(1).some(w=>ws.includes(w)))));
     const c=cs.length===1?cs[0]:cs.length>1?(cs.filter(({t})=>t.every(w=>ws.includes(w))).length===1?cs.find(({t})=>t.every(w=>ws.includes(w))):null):null;
     if(!c||ja.has(c.p.nome+'|'+dt))continue;ja.add(c.p.nome+'|'+dt);
