@@ -33,10 +33,17 @@ $('e-email').onsubmit=async e=>{e.preventDefault();
   const r=await sb.auth.signInWithOtp({email:$('email').value.trim(),options:{emailRedirectTo:new URL('entrar.html',location.href).href}});
   const ok=$('email-ok');ok.hidden=false;ok.className='msg'+(r.error?' err':'');
   // Sem servidor de e-mail próprio o Supabase manda poucos e-mails por hora: o erro de limite vira orientação
-  ok.textContent=!r.error?'Link enviado. Abra seu e-mail neste celular e toque no link (veja também o spam).'
+  if(!r.error&&CONFIG.codigo){$('cod-box').hidden=false;$('cod').focus()}
+  ok.textContent=!r.error?(CONFIG.codigo?'E-mail enviado. Digite o código de 6 números ou toque no link do e-mail (veja também o spam).':'Link enviado. Abra seu e-mail neste celular e toque no link (veja também o spam).')
     :/rate|limit|seconds/i.test(r.error.message)?'Muitos pedidos agora. Espere alguns minutos e tente de novo, ou fale com a Assessoria pelo WhatsApp.'
     :'Não consegui enviar o link. Confira o e-mail e tente de novo.';
 };
+
+// Código do e-mail (Resend no domínio): serve quando o link abre em outro navegador, como o do app do Gmail
+$('b-cod').onclick=async()=>{const t=so($('cod').value);if(t.length<6){avisa('Digite os 6 números do e-mail.',true);return}
+  const r=await sb.auth.verifyOtp({email:$('email').value.trim(),token:t,type:'email'});
+  if(r.error){avisa(/expired|invalid/i.test(r.error.message)?'Código vencido ou errado. Peça um e-mail novo.':'Não consegui entrar. Confira a internet e tente de novo.',true);return}
+  $('cod-box').hidden=true;$('email-ok').hidden=true;inicio()};
 
 // Indicação (supabase/019): ?ind=CODIGO na venda ou no link da colega; guardado porque o e-mail de entrada volta sem ele
 const IND=(()=>{const q=(new URLSearchParams(location.search).get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
