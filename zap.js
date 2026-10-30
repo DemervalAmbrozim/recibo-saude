@@ -157,7 +157,7 @@ function zPergunta(t){if(!/(posso|pode|da pra|da para|consigo).{0,20}(deduz|abat
 const G_NOVA='novo',zLista=(est,itens)=>{est.lista=itens.map(x=>String(x).slice(0,24))};
 const G_FORMAS=[['Pix',true],['Dinheiro',true],['Cartão',true],['Transferência',true],['a receber',false]];
 const G_SAIR=/^(sair|cancela|cancelar|parar|desisto)$/,G_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer)$/;
-const gNome=(D,id)=>id===G_NOVA?'➕ Incluir nova paciente':D.pacientes.find(x=>x.id===id).nome;
+const gNome=(D,id)=>id===G_NOVA?'+ Incluir nova paciente':D.pacientes.find(x=>x.id===id).nome;
 function gPergunta(g,D,hoje,est){const pac=D.pacientes.find(x=>x.id===g.pac),L=it=>{if(est)zLista(est,it)};
   if(g.passo==='pac'&&g.ops.length===2&&g.ops[1]===G_NOVA){L(['Sim',gNome(D,G_NOVA)]);
     return `*Lançar atendimento* (1 de 4)\nÉ *${gNome(D,g.ops[0])}*?\n1. Sim\n2. ${gNome(D,G_NOVA)}\nou escreva outro nome. Para sair: *sair*`}
@@ -272,7 +272,7 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar: *novo Nome Sobrenome 123.456.789-09* (o CPF de quem é atendido).';
   // Indicação (revisão item 19): código e link para mandar à colega
   if(/^(indicar|indicacao|indique|codigo)$/.test(t)){if(!api.indicacao)return 'Em breve.';let x;try{x=await api.indicacao()}catch(e){return zErro(String(e.message||e))}
-    return `Seu código: *${x.codigo}*. A colega ganha 60 dias de teste e você ganha 1 mês quando ela assinar.\nEncaminhe este link para ela: https://demervalambrozim.github.io/recibo-saude/venda.html?ind=${x.codigo}`
+    return `Seu código: *${x.codigo}*. A colega ganha 60 dias de teste e você ganha 1 mês quando ela assinar.\nEncaminhe este link para ela: ${SITE}/venda.html?ind=${x.codigo}`
       +(x.indicadas?`\n${x.indicadas} já usaram seu código, ${x.pagaram} assinaram.`:'')}
   // Foto do comprovante lida (revisão item 14): "sim" lança o que foi lido
   if(/^(sim|s|ok|isso|pode|confirmo)$/.test(t)&&est.foto&&est.foto.lido){const l=est.foto.lido;
@@ -307,7 +307,7 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
     const data=p.data||hoje,desc=p.resto.concat(p.nome).some(x=>/^(desconto|descontei|abati)$/.test(x));
     // Sem valor e mais de um em aberto: mostra as datas para ela escolher (obs. 10 e 11)
     if(!p.valor&&dela.length>1){est.escolha=null;est.receber={ids:dela.slice(0,8).map(x=>x.id),data};const ops=dela.slice(0,8).map(x=>`${zDBR(x.data)} · ${zBrl(x.valor)}`).concat(`Todos · ${zBrl(soma(dela.slice(0,8)))}`);
-      zLista(est,ops);return `*${dela[0].paciente}* tem ${dela.length} em aberto. O que ela pagou?\n`+ops.map((o,i)=>`${i+1}. ${o}`).join('\n')+'\nOu escreva o valor, ex.: *'+nome[0]+' recebi 360*'}
+      zLista(est,ops);return `*${dela[0].paciente}* tem ${dela.length} em aberto. O que ela pagou?\n`+ops.map((o,i)=>`${i+1}. ${o}`).join('\n')+`\nOu escreva o valor, ex.: *${dela[0].paciente.split(' ')[0]} recebi ${String(dela[0].valor*2).replace('.',',')}*`}
     // Um pagamento que fecha vários atendimentos (obs. 7): o valor bate com a soma dos mais antigos
     if(p.valor&&!desc&&dela.length>1){let t=0,k=0;while(k<dela.length&&t+0.005<p.valor)t+=+dela[k++].valor;
       if(k>1&&Math.abs(t-p.valor)<0.01)return zRecebeVarios(dela.slice(0,k),data,api,est)}

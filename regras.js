@@ -6,6 +6,9 @@ const P10=[['00002','Aluguel do consultório'],['00003','Condomínio do consult�
   ['00011','Material de limpeza do consultório'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
   ['00005','Cópias e autenticações'],['00006','Emolumentos pagos a terceiros']].map(([c,n])=>['P10.01.'+c,n]);
 const INSS='P20.01.00001';
+// Endereço do app (ensaio 29/10, obs. 48: o nome pessoal não aparece para a cliente). Troca para https://saude.assessorialadoalado.com.br
+// quando o DNS da Assessoria apontar (README, Pendências); o GitHub Pages segue servindo pelo CNAME.
+const SITE='https://demervalambrozim.github.io/recibo-saude';
 const CONTAS=[...P10,[INSS,'Seu INSS (carnê ou GPS)']];
 const IMOVEL=['00001','00002','00003','00007','00008','00009','00014'].map(c=>'P10.01.'+c); // contas que dependem do local
 const nomeCod=c=>(CONTAS.find(x=>x[0]===c)||[c,c])[1];
