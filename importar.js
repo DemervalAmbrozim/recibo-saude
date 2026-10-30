@@ -62,7 +62,7 @@ function impIcsSerie(ini,rr,ex,ate){const r={};rr.split(';').forEach(x=>{const [
     if(ds.length&&ds[0]>lim)return out}
   return out}
 function impIcs(txt,pacientes,ats,desde,ate){const out=[],ja=new Set(ats.map(a=>a.paciente+'|'+a.data)); // link_dados traz o nome da paciente, não o id
-  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/\s+/).filter(w=>w.length>2)}));
+  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/[^a-z0-9]+/).filter(w=>w.length>2)}));
   const evs=String(txt).replace(/\r?\n[ \t]/g,'').split(/BEGIN:VEVENT/i).slice(1).map(b=>{const ls=b.split(/\r?\n/);
     const v=k=>{const l=ls.find(x=>new RegExp('^'+k+'[;:]','i').test(x));return l?l.slice(l.indexOf(':')+1).trim():''};
     const ex=new Set(ls.filter(x=>/^EXDATE[;:]/i.test(x)).flatMap(x=>x.slice(x.indexOf(':')+1).split(',').map(impIcsDia)));
@@ -95,7 +95,7 @@ function impAgendaCsv(txt,pacientes,ats,desde,ate){const ls=String(txt).split(/\
   const sep=impSep(ls[0]),cab=impCels(ls[0],sep).map(impNorm),acha=re=>cab.findIndex(h=>re.test(h));
   let iD=acha(/^(data|dia|date)/),iN=acha(/paciente|cliente|nome/),iV=acha(/valor|preco|total/),iS=acha(/status|situacao/);const temCab=iD>=0&&iN>=0;
   if(!temCab){const c=impCels(ls[0],sep);iD=c.findIndex(x=>impDia(x));iN=c.findIndex(x=>/[a-zà-ú]{3}/i.test(x)&&!impDia(x));iV=c.findIndex((x,i)=>i!==iD&&impReal(x)>0&&!/\//.test(x))}
-  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/\s+/).filter(w=>w.length>2)})),ja=new Set(ats.map(a=>a.paciente+'|'+a.data)),out=[];
+  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/[^a-z0-9]+/).filter(w=>w.length>2)})),ja=new Set(ats.map(a=>a.paciente+'|'+a.data)),out=[];
   for(const l of temCab?ls.slice(1):ls){const c=impCels(l,sep),dt=impDia(c[iD]);if(!dt||dt<desde||dt>ate)continue;
     if(iS>=0&&/cancel|falt|desmarc|nao compareceu/.test(impNorm(c[iS])))continue;
     const ws=impNorm(c[iN]).split(/[^a-z0-9]+/),cs=ps.filter(({t})=>t.length&&t[0]===ws[0]&&t.slice(1).every(w=>ws.includes(w))||(t.length&&t.every(w=>ws.includes(w))));
@@ -121,7 +121,9 @@ function impConcilia(movs,ats,ds){const dif=(a,b)=>Math.abs((new Date(a+'T12:00'
   if(!movs.length)return r;const ini=movs.reduce((m,x)=>x.data<m?x.data:m,movs[0].data),fim=movs.reduce((m,x)=>x.data>m?x.data:m,movs[0].data);
   const pagos=ats.filter(a=>a.pago!==false&&a.data>=ini&&a.data<=fim&&!/dinheiro/i.test(a.forma||'')),abertos=ats.filter(a=>a.pago===false);
   for(const m of movs.filter(x=>x.valor>0)){
-    let a=pagos.find(x=>!usados.has(x.id)&&Math.abs(+x.valor-m.valor)<0.01&&dif(x.data,m.data)<=3);
+    // O mais provável, não o primeiro: nome da paciente na descrição do Pix, depois o dia mais próximo (senão um Pix "rouba" o atendimento de outra)
+    const nd=impNorm(m.desc),nome=x=>{const t=impNorm(x.paciente).split(/[^a-z0-9]+/).filter(w=>w.length>2);return t.length&&t.every(w=>nd.includes(w))?0:1};
+    let a=pagos.filter(x=>!usados.has(x.id)&&Math.abs(+x.valor-m.valor)<0.01&&dif(x.data,m.data)<=3).sort((x,y)=>nome(x)-nome(y)||dif(x.data,m.data)-dif(y.data,m.data))[0];
     if(!a){const g={};pagos.filter(x=>!usados.has(x.id)&&dif(x.data,m.data)<=3).forEach(x=>{const k=x.paciente+'|'+x.data;(g[k]=g[k]||[]).push(x)});
       const k=Object.keys(g).find(k=>Math.abs(g[k].reduce((s,x)=>s+ +x.valor,0)-m.valor)<0.01);if(k){g[k].forEach(x=>usados.add(x.id));r.confere.push({mov:m,paciente:g[k][0].paciente});continue}}
     if(a){usados.add(a.id);r.confere.push({mov:m,paciente:a.paciente});continue}
