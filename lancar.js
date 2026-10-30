@@ -210,6 +210,11 @@ $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){a
     <tbody>${R.meses.map(x=>`<tr><td>${mesBR(x.mes)}</td>${td(x.rec)}<td style="text-align:right">${x.pacientes}</td>${td(x.lc)}${td(x.inss)}${td(x.devido)}${td(x.darf)}<td style="text-align:right">${x.pago?brl(+x.pago.valor)+' em '+dBR(x.pago.pago_em):x.darf?'não marcado':''}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>Total</td>${td(R.tot.rec)}<td></td>${td(R.tot.lc)}${td(R.tot.inss)}${td(R.tot.devido)}${td(R.tot.darf)}${td(R.tot.pago)}</tr></tfoot></table>
     ${Object.keys(R.porConta).length?`<h1>Despesas do ano por conta</h1><table>${Object.entries(R.porConta).map(([n,v])=>`<tr><td>${esc(n)}</td>${td(v)}</tr>`).join('')}</table>`:''}
+    <h1>Conferir mês a mês no Carnê-Leão Web</h1><p class="s">No gov.br, Meu Imposto de Renda &gt; Carnê-Leão &gt; Demonstrativo de Apuração, escolha o mês e compare linha a linha (ensaio 29/10, obs. 39):</p>
+    <table><tr><th>No Carnê-Leão Web</th><th>Neste relatório</th></tr><tr><td>Rendimentos: Trabalho não assalariado</td><td>Recebido (PF)</td></tr><tr><td>Deduções: Previdência Oficial</td><td>INSS</td></tr>
+    <tr><td>Deduções: Livro Caixa</td><td>Livro-caixa usado (limitado ao recebido do mês)</td></tr><tr><td>Base de cálculo</td><td>Recebido − INSS − Livro-caixa (− dependentes e pensão, se você lançou lá)</td></tr>
+    <tr><td>Imposto devido / a pagar</td><td>Carnê-Leão devido / DARF a pagar</td></tr><tr><td>Pagamentos</td><td>DARF pago</td></tr></table>
+    <p class="s">Diferença em algum mês? Use "Prévia para validar" no app ou mande <b>suporte</b> no WhatsApp.</p>
     <p class="s">Na declaração: importe os dados do Carnê-Leão Web (menu Declaração), que levam os rendimentos, o livro-caixa e o imposto de cada mês. Os recibos do Receita Saúde já aparecem na declaração pré-preenchida. "DARF a pagar" é o calculado; "DARF pago" é o que você marcou como pago no app ou no WhatsApp. O comprovante oficial fica no e-CAC (Pagamentos). Valores a conferir com o seu contador.</p>
     <script>onload=()=>print()<\/script>`);w.document.close()};
 $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disabled=true;st.textContent='Juntando os seus dados...';
@@ -479,7 +484,9 @@ $('pin').onsubmit=async e=>{e.preventDefault();const p=$('pin-1').value;
   const r=await sb.rpc(PIN==='criar'?'link_pin_criar':'link_entrar',{tok:TOK,p_pin:p});$('pin-1').value=$('pin-2').value='';
   if(r.error){const m=r.error.message;avisa(/facil/.test(m)?'PIN fácil demais. Evite 1234 e números repetidos.':/bloqueado ate (\S+)/.test(m)?'Muitas tentativas. Tente de novo às '+m.match(/bloqueado ate (\S+)/)[1]+'.':/ja existe/.test(m)?'Este link já tem PIN. Digite o PIN que você criou.':'Este link não vale mais. Peça um novo à Assessoria.',true);if(/ja existe/.test(m))partida();return}
   if(!r.data){avisa('PIN errado.',true);return}
-  TOK=r.data;guarda.set(TOK);$('pin').hidden=true;carrega();};
+  TOK=r.data;guarda.set(TOK);$('pin').hidden=true;carrega();
+  // obs. 32: aparelho novo avisa no zap dela (com "bloquear" se não foi ela); sem internet ou sem zap ligado, segue sem aviso
+  if(PIN!=='criar')fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.chave},body:JSON.stringify({acao:'aparelho_novo',tok:TOK})}).catch(()=>{});};
 (async()=>{if(TOK.length>=20)return partida();
   const {data}=await sb.auth.getSession();if(data.session){TOK='';return carrega()}
   $('ruim').hidden=false})();

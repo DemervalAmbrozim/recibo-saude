@@ -262,6 +262,12 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
 async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(!t)return null;
   if(est.receber&&!/^\d{1,2}$/.test(t))est.receber=null;
+  // Bloquear (obs. 32): aviso de aparelho novo que não foi ela; confirma antes porque desliga também o celular dela
+  if(est.bloq){est.bloq=false;if(/^(1|sim|sim, bloquear|bloquear)$/.test(t)){if(!api.bloquear)return 'Anotado.';try{await api.bloquear()}catch(e){return zErro(String(e.message||e))}
+      return '🔒 Bloqueado. Todos os aparelhos e o link foram desligados, e o PIN foi zerado. A Assessoria manda um link novo aqui; nele você cria um PIN novo. Não repasse o PIN a ninguém.'}
+    if(/^(2|nao|não)$/.test(t))return 'Certo, nada foi bloqueado.'}
+  if(/^(bloquear|bloqueia|bloqueio|nao fui eu|não fui eu)$/.test(t)){est.bloq=true;zLista(est,['Sim, bloquear','Não']);
+    return 'Bloquear desliga *todos* os aparelhos, inclusive o seu, e o link. Você recebe um link novo da Assessoria e cria outro PIN. Bloquear agora?\n1. Sim, bloquear\n2. Não'}
   if(est.confirma){const r=await zConfirma(t,D,api,est,hoje);if(r!==undefined)return r}
   if(est.guia){const r=await gResponde(t,linha,D,api,est,hoje);if(r!==undefined)return r}
   if(/^(lancar|lanca|lancamento|novo atendimento|atendimento)$/.test(t))return gInicio(D,est,hoje);
