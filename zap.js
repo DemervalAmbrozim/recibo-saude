@@ -48,6 +48,7 @@ function zAcha(pacs,nome){const q=nome.filter(Boolean);if(!q.length)return[];
   return ini.length?ini:pacs.filter(p=>seq(p))}
 
 const AJUDA=`É só escrever como fala:
+• *lançar* (passo a passo com opções: paciente, valor, forma e dia)
 • *Maria 180 pix* (lança o atendimento de hoje)
 • *Maria 180 ontem* ou *Maria 180 25/10*
 • *Maria 180 a receber* (ainda não pagou)
@@ -144,9 +145,47 @@ function zPergunta(t){if(!/(posso|pode|da pra|da para|consigo).{0,20}(deduz|abat
   const r=PERGUNTAS.find(([re])=>re.test(t));
   return r?r[1]:`Pela lei, abate o que é necessário para receber e manter a sua atividade: aluguel e contas do consultório, material, salário de quem tem carteira ${ART68}.`+CONTADOR_Q}
 
+// Lançamento guiado (pedido do ensaio de 29/10: "didático, com opções"): *lançar* → paciente → valor → forma → dia.
+// est.guia guarda só ids e números (LGPD): {passo, ops:[ids], pac, valor, forma, pago}
+const G_FORMAS=[['Pix',true],['Dinheiro',true],['Cartão',true],['Transferência',true],['a receber',false]];
+const G_SAIR=/^(sair|cancela|cancelar|parar|desisto)$/,G_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer)$/;
+function gPergunta(g,D,hoje){const pac=D.pacientes.find(x=>x.id===g.pac);
+  if(g.passo==='pac')return `*Lançar atendimento* (1 de 4)\nQual paciente?\n`+g.ops.map((id,i)=>`${i+1}. ${D.pacientes.find(x=>x.id===id).nome}`).join('\n')
+    +'\nResponda com o número ou escreva o nome. Para sair: *sair*';
+  if(g.passo==='valor'){const u=D.atendimentos.filter(x=>pac&&zNorm(x.paciente)===zNorm(pac.nome)).sort((a,b)=>a.data<b.data?1:-1)[0];g.ult=u?+u.valor:null;
+    return `*${pac.nome}* (2 de 4)\nQual o valor?\n`+(u?`1. ${zBrl(u.valor)} (o último lançado)\nou escreva outro valor, ex.: *180*`:'Escreva o valor, ex.: *180*')}
+  if(g.passo==='forma')return `*${pac.nome} · ${zBrl(g.valor)}* (3 de 4)\nComo pagou?\n`+G_FORMAS.map(([f,pg],i)=>`${i+1}. ${pg?f:'Ainda não pagou (a receber)'}`).join('\n');
+  const o=new Date(hoje+'T12:00');o.setDate(o.getDate()-1);
+  return `*${pac.nome} · ${zBrl(g.valor)} · ${g.pago?g.forma:'a receber'}* (4 de 4)\nQuando foi o atendimento?\n1. Hoje (${zDBR(hoje)})\n2. Ontem (${zDBR(zISO(o))})\nou escreva a data, ex.: *25/10*`}
+function gInicio(D,est,hoje){const vistos=[];
+  for(const a of [...D.atendimentos].sort((a,b)=>a.data<b.data?1:-1)){const p=D.pacientes.find(x=>zNorm(x.nome)===zNorm(a.paciente));if(p&&!vistos.includes(p.id))vistos.push(p.id)}
+  for(const p of D.pacientes)if(!vistos.includes(p.id))vistos.push(p.id);
+  if(!vistos.length)return 'Você ainda não tem pacientes cadastrados. Primeiro: *novo Nome Sobrenome 123.456.789-09*';
+  est.escolha=null;est.guia={passo:'pac',ops:vistos.slice(0,8)};return gPergunta(est.guia,D,hoje)}
+async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d$/.test(t)?+t:0,de_novo=x=>`${x}\n\n`+gPergunta(g,D,hoje);
+  if(G_SAIR.test(t)){est.guia=null;return 'Lançamento cancelado. Nada foi gravado.'}
+  if(G_FORA.test(t)){est.guia=null;return undefined}
+  if(g.passo==='pac'){if(n){if(!g.ops[n-1])return de_novo(`Responda com um número de 1 a ${g.ops.length}.`);g.pac=g.ops[n-1]}
+    else{const q=zPartes(linha,hoje);if(q.valor){est.guia=null;return undefined}  // escreveu a frase inteira: segue o jeito rápido
+      const c=zAcha(D.pacientes,q.nome);
+      if(!c.length)return `Não achei "${linha.trim()}" entre seus pacientes. Escreva de novo, ou *sair* e cadastre: *novo Nome Sobrenome CPF*`;
+      if(c.length>1){g.ops=c.slice(0,8).map(x=>x.id);return gPergunta(g,D,hoje)}g.pac=c[0].id}
+    g.passo='valor';return gPergunta(g,D,hoje)}
+  if(g.passo==='valor'){const v=n===1&&g.ult?g.ult:zValor(t.replace(/\s/g,''));if(!v)return de_novo('Não entendi o valor.');
+    g.valor=v;g.passo='forma';return gPergunta(g,D,hoje)}
+  if(g.passo==='forma'){const f=n?G_FORMAS[n-1]:FORMAS[t]?[FORMAS[t],true]:A_RECEBER.some(x=>t.includes(x))?G_FORMAS[4]:null;
+    if(!f)return de_novo(`Responda com um número de 1 a ${G_FORMAS.length}.`);g.forma=f[1]?f[0]:'Pix';g.pago=f[1];g.passo='data';return gPergunta(g,D,hoje)}
+  const o=new Date(hoje+'T12:00');o.setDate(o.getDate()-1);
+  const data=n===1?hoje:n===2?zISO(o):zData(t.replace(/^dia /,''),hoje,/^dia /.test(t)?'dia':'');
+  if(!data)return de_novo('Não entendi a data.');
+  const pac=D.pacientes.find(x=>x.id===g.pac);est.guia=null;
+  return zLanca({pac,valor:g.valor,forma:g.forma,receber:!g.pago,data},D,api,est,hoje)}
+
 // Uma linha da mensagem. est = memória da conversa (escolha entre homônimas, último lançamento).
 async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(!t)return null;
+  if(est.guia){const r=await gResponde(t,linha,D,api,est,hoje);if(r!==undefined)return r}
+  if(/^(lancar|lanca|lancamento|novo atendimento|atendimento)$/.test(t))return gInicio(D,est,hoje);
   if(/^(oi|ola|bom dia|boa tarde|boa noite|ajuda|menu|\?)\b/.test(t)&&t.split(' ').length<=3)return `Olá, ${(D.nome||'').split(' ')[0]}! `+AJUDA;
   {const q=zPergunta(t);if(q)return q}
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
