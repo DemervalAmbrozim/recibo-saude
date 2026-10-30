@@ -82,3 +82,56 @@ function impIcs(txt,pacientes,ats,desde,ate){const out=[],ja=new Set(ats.map(a=>
     out.push({data:dt,paciente_id:c.p.id,nome:c.p.nome,valor:ult?+ult.valor:null,forma:ult?ult.forma:'pix'})}
   return out.sort((x,y)=>x.data<y.data?-1:1)}
 if(typeof module!=='undefined')module.exports={...(module.exports||{}),impIcs};
+
+// Sistema da clínica (ensaio 29/10, obs. 26 e 27): exportação em planilha com data, paciente e, se tiver, valor. Sai no mesmo formato da agenda.
+// Datas 25/10/2026, 25/10/26 ou 2026-10-25; valor 180, 180,00 ou R$ 1.200,00. Paciente casa pelo nome como na agenda.
+const impDia=s=>{s=String(s||'').trim();let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);if(!m)return '';const a=m[3].length===2?'20'+m[3]:m[3];return `${a}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`};
+const impReal=s=>{s=String(s||'').replace(/r\$|\s/gi,'');if(!/^-?[\d.,]+$/.test(s))return null;
+  const v=/,\d{1,2}$/.test(s)?+s.replace(/\./g,'').replace(',','.'):/\.\d{1,2}$/.test(s)?+s.replace(/,/g,''):+s.replace(/[.,]/g,'');return isNaN(v)?null:v};
+function impSep(l){return l.includes('\t')?'\t':(l.split(';').length>=l.split(',').length?';':',')}
+function impCels(l,sep){const r=[];let c='',q=false;for(const ch of l){if(ch==='"'){q=!q;continue}if(ch===sep&&!q){r.push(c);c='';continue}c+=ch}r.push(c);return r.map(x=>x.trim())}
+function impAgendaCsv(txt,pacientes,ats,desde,ate){const ls=String(txt).split(/\r?\n/).filter(l=>l.trim());if(!ls.length)return [];
+  const sep=impSep(ls[0]),cab=impCels(ls[0],sep).map(impNorm),acha=re=>cab.findIndex(h=>re.test(h));
+  let iD=acha(/^(data|dia|date)/),iN=acha(/paciente|cliente|nome/),iV=acha(/valor|preco|total/),iS=acha(/status|situacao/);const temCab=iD>=0&&iN>=0;
+  if(!temCab){const c=impCels(ls[0],sep);iD=c.findIndex(x=>impDia(x));iN=c.findIndex(x=>/[a-zà-ú]{3}/i.test(x)&&!impDia(x));iV=c.findIndex((x,i)=>i!==iD&&impReal(x)>0&&!/\//.test(x))}
+  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/\s+/).filter(w=>w.length>2)})),ja=new Set(ats.map(a=>a.paciente+'|'+a.data)),out=[];
+  for(const l of temCab?ls.slice(1):ls){const c=impCels(l,sep),dt=impDia(c[iD]);if(!dt||dt<desde||dt>ate)continue;
+    if(iS>=0&&/cancel|falt|desmarc|nao compareceu/.test(impNorm(c[iS])))continue;
+    const ws=impNorm(c[iN]).split(/[^a-z0-9]+/),cs=ps.filter(({t})=>t.length&&t[0]===ws[0]&&t.slice(1).every(w=>ws.includes(w))||(t.length&&t.every(w=>ws.includes(w))));
+    if(cs.length!==1||ja.has(cs[0].p.nome+'|'+dt))continue;const p=cs[0].p;ja.add(p.nome+'|'+dt);
+    const ult=ats.filter(a=>a.paciente===p.nome).sort((x,y)=>x.data<y.data?1:-1)[0],v=iV>=0?impReal(c[iV]):null;
+    out.push({data:dt,paciente_id:p.id,nome:p.nome,valor:v>0?v:ult?+ult.valor:null,forma:ult?ult.forma:'pix'})}
+  return out.sort((x,y)=>x.data<y.data?-1:1)}
+
+// Extrato do banco (ensaio 29/10, obs. 25): OFX (todo banco exporta) ou planilha com data, descrição e valor.
+// Confere o que entrou com o que ela lançou: crédito casado com atendimento pago, crédito que pode ser um "a receber",
+// crédito sem lançamento (atendimento esquecido? ou transferência entre contas dela) e despesa do consultório que saiu e não foi lançada.
+function impExtrato(txt){txt=String(txt||'');const out=[];
+  if(/<STMTTRN>/i.test(txt)){for(const b of txt.split(/<STMTTRN>/i).slice(1)){const v=k=>{const m=b.match(new RegExp('<'+k+'>([^<\\r\\n]*)','i'));return m?m[1].trim():''};
+      const d=v('DTPOSTED'),valor=impReal(v('TRNAMT').replace(/^\+/,''));if(!/^\d{8}/.test(d)||valor===null)continue;
+      out.push({data:`${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`,valor,desc:(v('NAME')+' '+v('MEMO')).trim()})}return out}
+  const ls=txt.split(/\r?\n/).filter(l=>l.trim());if(!ls.length)return out;const sep=impSep(ls[0]);
+  for(const l of ls){const c=impCels(l,sep),iD=c.findIndex(x=>impDia(x));if(iD<0)continue;
+    const vs=c.map((x,i)=>i!==iD&&/\d/.test(x)&&!/[a-z]{3}/i.test(x.replace(/r\$/i,''))?impReal(x):null).filter(x=>x!==null&&x!==0);if(!vs.length)continue;
+    out.push({data:impDia(c[iD]),valor:vs[0],desc:c.filter((x,i)=>i!==iD&&/[a-zà-ú]{3}/i.test(x)).join(' ')})}
+  return out}
+const IMP_CONTA=/aluguel|condominio|energia|\bedp\b|enel|cemig|light|cesan|sabesp|saneamento|agua|vivo|claro|\btim\b|\boi\b|internet|telefon|crefito|crp|cref|conselho|anuidade|iptu/;
+function impConcilia(movs,ats,ds){const dif=(a,b)=>Math.abs((new Date(a+'T12:00')-new Date(b+'T12:00'))/864e5),usados=new Set(),r={confere:[],receber:[],semLanc:[],despOk:[],despFalta:[],semExtrato:[]};
+  if(!movs.length)return r;const ini=movs.reduce((m,x)=>x.data<m?x.data:m,movs[0].data),fim=movs.reduce((m,x)=>x.data>m?x.data:m,movs[0].data);
+  const pagos=ats.filter(a=>a.pago!==false&&a.data>=ini&&a.data<=fim&&!/dinheiro/i.test(a.forma||'')),abertos=ats.filter(a=>a.pago===false);
+  for(const m of movs.filter(x=>x.valor>0)){
+    let a=pagos.find(x=>!usados.has(x.id)&&Math.abs(+x.valor-m.valor)<0.01&&dif(x.data,m.data)<=3);
+    if(!a){const g={};pagos.filter(x=>!usados.has(x.id)&&dif(x.data,m.data)<=3).forEach(x=>{const k=x.paciente+'|'+x.data;(g[k]=g[k]||[]).push(x)});
+      const k=Object.keys(g).find(k=>Math.abs(g[k].reduce((s,x)=>s+ +x.valor,0)-m.valor)<0.01);if(k){g[k].forEach(x=>usados.add(x.id));r.confere.push({mov:m,paciente:g[k][0].paciente});continue}}
+    if(a){usados.add(a.id);r.confere.push({mov:m,paciente:a.paciente});continue}
+    const ab=abertos.find(x=>!usados.has(x.id)&&Math.abs(+x.valor-m.valor)<0.01&&x.data<=m.data);
+    if(ab){usados.add(ab.id);r.receber.push({mov:m,at:ab});continue}
+    r.semLanc.push({mov:m})}
+  const dsU=new Set();
+  for(const m of movs.filter(x=>x.valor<0)){const v=-m.valor,d=ds.find(x=>!dsU.has(x.id)&&Math.abs(+(x.valor_pago||x.valor)-v)<0.01&&dif(x.data,m.data)<=7);
+    if(d){dsU.add(d.id);r.despOk.push({mov:m,desp:d});continue}
+    if(IMP_CONTA.test(impNorm(m.desc)))r.despFalta.push({mov:m})}
+  r.semExtrato=pagos.filter(x=>!usados.has(x.id)&&/pix|transf/i.test(x.forma||''));
+  return r}
+if(typeof module!=='undefined')module.exports={...(module.exports||{}),impAgendaCsv,impExtrato,impConcilia};

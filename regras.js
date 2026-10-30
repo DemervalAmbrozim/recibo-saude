@@ -78,6 +78,10 @@ function relatorioIR(ats,ds,ano,darfs=[]){const pg=ats.filter(a=>a.pago!==false)
   ds.filter(d=>d.data.startsWith(ano)).forEach(d=>{const n=nomeCod(d.codigo);porConta[n]=(porConta[n]||0)+ +d.valor});
   return {ano,meses,tot:{rec:T('rec'),lc:T('lc'),inss:T('inss'),devido:T('devido'),darf:T('darf'),pago:Math.round(meses.reduce((s,x)=>s+(x.pago?+x.pago.valor:0),0)*100)/100},porConta}}
 
+// Prévia do IR para validar (ensaio 29/10, obs. 38): o que o sistema tem × o que está no gov.br dela. Ela digita o número do gov.br; diferença acima de R$ 1 é aviso.
+function irPrevia(R,gov){const L=[['rec','Rendimentos de pessoas físicas (recibos do Receita Saúde no ano)',R.tot.rec],['lc','Livro-caixa usado no Carnê-Leão',R.tot.lc],['pago','Carnê-Leão pago (DARFs)',R.tot.pago]];
+  return L.map(([k,nome,nosso])=>{const g=gov&&gov[k]!=null&&gov[k]!==''?+gov[k]:null;return {k,nome,nosso,gov:g,dif:g==null?null:Math.round((nosso-g)*100)/100,ok:g==null?null:Math.abs(nosso-g)<=1}})}
+
 // Gatilho da linha da reforma (revisão item 33, 28/10): o ritmo dos meses fechados do ano, levado a 12 meses. Avisa a partir de 80% da linha.
 function reformaRitmo(ats,ano,meses){if(meses<1)return null;const rec=soma(ats.filter(x=>x.data.startsWith(ano)&&+x.data.slice(5,7)<=meses)),
   proj=rec/meses*12,lim=nano(ano),a1=Math.max(+ano+1,2027),B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});

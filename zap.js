@@ -70,6 +70,9 @@ const AJUDA=`É só escrever como fala:
 • *desfazer* (apaga o último lançamento)
 • foto ou PDF de uma conta paga (guardo o comprovante e lanço a despesa)
 • *comprovantes* (despesas que ainda não têm a foto guardada)
+• *recibos* ou *recibo Maria* (o PDF de novo, para encaminhar)
+• o código do boleto (confiro se não é adulterado)
+• *conferir* (o que olhar no gov.br a cada trimestre)
 • *indicar* (seu código para indicar uma colega)
 • *suporte* e o que aconteceu (fala com uma pessoa)
 Pode mandar vários de uma vez, um por linha.`;
@@ -158,6 +161,44 @@ const PERGUNTAS=[
 function zPergunta(t){if(!/(posso|pode|da pra|da para|consigo).{0,20}(deduz|abat|descont|lancar)|^(deduz|abate)|\b(e dedutivel|abate\?|deduz\?)/.test(t))return null;
   const r=PERGUNTAS.find(([re])=>re.test(t));
   return r?r[1]:`Pela lei, abate o que é necessário para receber e manter a sua atividade: aluguel e contas do consultório, material, salário de quem tem carteira ${ART68}.`+CONTADOR_Q}
+
+// Boleto conferido pelo código (ensaio 29/10, obs. 23): a conta de verificação pega erro de digitação e código adulterado.
+// Boleto de banco = 47 números; conta de consumo (luz, água, telefone, tributo) = 48, começando por 8. Não substitui conferir o beneficiário.
+const BANCOS={'001':'Banco do Brasil','021':'Banestes','033':'Santander','041':'Banrisul','070':'BRB','077':'Inter','104':'Caixa','197':'Stone','212':'Original','237':'Bradesco','260':'Nubank','290':'PagSeguro','323':'Mercado Pago','336':'C6','341':'Itaú','380':'PicPay','422':'Safra','748':'Sicredi','756':'Sicoob'};
+const SEGMENTOS={1:'prefeitura',2:'água e esgoto',3:'energia e gás',4:'telefone e internet',5:'órgão do governo',6:'carnê ou empresa',7:'multa de trânsito',9:'uso do banco'};
+function bMod10(s){let t=0,p=2;for(let i=s.length-1;i>=0;i--){let x=+s[i]*p;t+=x>9?x-9:x;p=p===2?1:2}return (10-t%10)%10}
+function bMod11(s,conta){let t=0,p=2;for(let i=s.length-1;i>=0;i--){t+=+s[i]*p;p=p===9?2:p+1}const r=t%11;
+  if(conta)return r===0||r===1?0:r===10?1:11-r;const d=11-r;return d===0||d>9?1:d}
+function zBoleto(cod,hoje){const c=String(cod).replace(/\D/g,'');
+  const fala=(ok,info)=>ok?`✅ Código válido: ${info}.\nAntes de pagar, confira no app do banco se o *beneficiário* é a empresa da conta e o CNPJ dela. Boleto falso costuma ter código certo com outro beneficiário. Na dúvida, pegue a 2ª via no site oficial da empresa.`
+    :'⚠️ Esse código *não fecha* a conta de verificação: pode ser erro de digitação ou boleto adulterado. Não pague. Confira os números ou pegue a 2ª via no site oficial da empresa.';
+  if(c.length===48&&c[0]==='8'){const mod=['6','7'].includes(c[2])?bMod10:['8','9'].includes(c[2])?s=>bMod11(s,true):null;if(!mod)return fala(false);
+    const bl=[0,1,2,3].map(i=>c.slice(i*12,i*12+11)),dv=[0,1,2,3].map(i=>+c[i*12+11]);if(bl.some((b,i)=>mod(b)!==dv[i]))return fala(false);
+    const bar=bl.join(''),geral=mod(bar.slice(0,3)+bar.slice(4));if(geral!==+bar[3])return fala(false);
+    const val=['6','8'].includes(c[2])?+bar.slice(4,15)/100:0;
+    return fala(true,`conta de ${SEGMENTOS[c[1]]||'consumo'}`+(val?`, valor ${zBrl(val)}`:''))}
+  if(c.length===47){const f=[[0,9],[10,20],[21,31]];if(f.some(([a,b])=>bMod10(c.slice(a,b))!==+c[b]))return fala(false);
+    const bar=c.slice(0,4)+c.slice(32,47)+c.slice(4,9)+c.slice(10,20)+c.slice(21,31);if(bMod11(bar.slice(0,4)+bar.slice(5))!==+bar[4])return fala(false);
+    const fat=+c.slice(33,37),val=+c.slice(37,47)/100,banco=BANCOS[c.slice(0,3)]||'banco '+c.slice(0,3);let venc='';
+    if(fat){const d=new Date('2025-02-22T12:00');d.setDate(d.getDate()+fat-1000);venc=zISO(d);
+      if(hoje&&venc<zISO(new Date(new Date(hoje+'T12:00').getTime()-3*365*864e5))){const o=new Date('1997-10-07T12:00');o.setDate(o.getDate()+fat);venc=zISO(o)}}
+    return fala(true,`${banco}`+(val?`, valor ${zBrl(val)}`:'')+(venc?`, vence em ${venc.split('-').reverse().join('/')}`:''))}
+  return null}
+
+// Conferência do trimestre no gov.br (obs. 21 e 22): os recibos que ela emitiu e os que estão no CPF dela como paciente
+function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMonth()/3),a=q?h.getFullYear():h.getFullYear()-1,qi=q?(q-1)*3:9;
+  const de=`${a}-${String(qi+1).padStart(2,'0')}`,ate=`${a}-${String(qi+3).padStart(2,'0')}`;
+  const pg=(D.atendimentos||[]).filter(x=>x.pago!==false&&x.data.slice(0,7)>=de&&x.data.slice(0,7)<=ate),n=new Set(pg.map(x=>x.paciente+'|'+x.data)).size;
+  return `*Conferência do trimestre* (${ZAP_MESES[qi]} a ${ZAP_MESES[qi+2]} de ${a}), 5 minutos no gov.br > Receita Saúde:
+1. *Recibos que você emitiu*: pelo que está lançado aqui, ${n} recibo${n===1?'':'s'}, ${zBrl(soma(pg))}. Se faltar ou sobrar algum, mande *suporte*.
+2. *Recibos em que você é a paciente* (sua consulta, dentista, terapia): não entram no livro-caixa, mas abatem na sua declaração anual como despesa médica. Viu um que você não reconhece? Mande *suporte* com o print.`}
+
+// Dica na 1ª despesa de cada tipo (obs. 20): o que vale no IR e o que muda se um dia virar CNPJ
+function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-Leão como dedução (Previdência Oficial), não como despesa do consultório.';
+  if(cod==='P10.01.00004')return 'Dica: a anuidade abate 100%. Guarde o boleto pago por 5 anos.';
+  if(cod==='P10.01.00013')return 'Dica: abate o salário com carteira assinada e os encargos (INSS, FGTS). Guarde a folha e as guias.';
+  if(IMOVEL.includes(cod))return 'Dica: abate pelo local do atendimento. Guarde a conta paga por 5 anos. Se um dia abrir CNPJ, o ideal é a conta já sair no nome da empresa.';
+  return 'Dica: guarde o comprovante por 5 anos. Se um dia abrir CNPJ, a despesa passa a ser da empresa, com nota no CNPJ dela.'}
 
 // Lançamento guiado (pedido do ensaio de 29/10: "didático, com opções"): *lançar* → paciente → valor → forma → dia.
 // est.guia guarda só ids e números (LGPD): {passo, ops:[ids], pac, valor, forma, pago}
@@ -256,7 +297,16 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   if(!/\d/.test(t)){if(/\b(imposto|carne|darf|leao)\b/.test(t)&&/\b(quanto|qual|tenho|vou|devo|pagar|pago)\b/.test(t))return zDarf(D,hoje);
     if(/\bquem\b.*\b(deve|devendo|falta|pagou)\b|\b(falta|ainda) receber\b/.test(t))return zReceber(D);
     if(/\bquanto\b.*\b(recebi|ganhei|faturei|entrou|fiz|tirei)\b|\bcomo (esta|ta) (o|meu) mes\b/.test(t))return zResumo(D,hoje)}
-  if(/^(recibos?|pdfs?)$/.test(t))return 'Os PDFs dos recibos chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês. O paciente também vê no app Receita Saúde (gov.br).';
+  // Entrega do recibo (obs. 14 e 15): ela pede de novo a qualquer hora e encaminha à paciente ou a quem a paciente pedir (filha, plano)
+  {const m=t.match(/^(?:recibos?|pdfs?)(?: (?:da|do|de))?(?: (.+))?$/);if(m){const nome=m[1]&&!/^(do mes|deste mes|mes)$/.test(m[1])?m[1]:'';
+    const ps=nome?zAcha(D.pacientes,nome.split(' ')):[];if(nome&&!ps.length)return `Não achei paciente com o nome "${nome}". Mande *recibos* para receber todos do mês.`;
+    if(!api.recibos)return 'Os PDFs dos recibos chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês.';
+    let r;try{r=await api.recibos(ps.length===1?ps[0]:null)}catch(e){return zErro(String(e.message||e))}
+    if(!r||!r.enviados)return r&&r.mes?`Não achei o PDF ${ps.length===1?'de '+ps[0].nome+' ':''}em ${r.mes}. Se ele já foi emitido, mande *suporte* que a Assessoria reenvia.`
+      :'Ainda não há recibo emitido para mandar. Eles chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês.';
+    return `Mandei ${r.enviados} PDF${r.enviados>1?'s':''} de ${r.mes}. Para entregar: toque e segure no PDF > *Encaminhar* > escolha a paciente, ou quem ela pediu (filha, plano de saúde). O recibo também fica no app Receita Saúde da paciente (gov.br).`}}
+  if(/^(conferir|conferencia|trimestre|conferir gov|conferir recibos)$/.test(t))return zTrimestre(D,hoje);
+  {const so=linha.replace(/[\s.\-]/g,'');if(/^(boleto\s*)?\d{44,48}$/i.test(so)){const r=zBoleto(so.replace(/\D/g,''),hoje);if(r)return r}}
   if(/^(desfazer|desfaz|apagar|apaga|cancela|cancelar)$/.test(t)){const u=est.ultimo;
     if(!u)return 'Não tenho lançamento recente seu para desfazer. Para apagar outro, use o app (aba Lançar).';
     if(u.tipo==='rec')return `O último foi um ${u.txt}: esse se corrige no app (aba Lançar). Nada foi apagado.`;
@@ -393,10 +443,10 @@ async function zDespesa(cod,valor,data,D,api,est,hoje,ok){
     return zPedeConfirma(est,{tipo:'desp',cod,valor,data},`${nomeCod(cod)} ${zBrl(valor)}`,`você já lançou ${ja.length===1?'uma conta':ja.length+' contas'} disso em ${ZAP_MESES[+data.slice(5,7)-1]} (${ja.map(x=>zBrl(x.valor_pago||x.valor)).join(', ')}) para ${Math.max(1,locs0.length)===1?'1 local':locs0.length+' locais'}. É de outro local ou foi lançada duas vezes`);
   const fora=!ok&&zForaDesp(D,cod,valor);if(fora)return zPedeConfirma(est,{tipo:'desp',cod,valor,data},`${nomeCod(cod)} ${zBrl(valor)}`,fora);
   const locs=D.locais.filter(l=>TIPOS[l.tipo]&&TIPOS[l.tipo][1]>0),loc=IMOVEL.includes(cod)&&locs[0]||null;
-  const fo=est.foto;try{const id=await api.despesa(cod,data,valor,loc&&loc.id,fo?'pelo WhatsApp · comprovante '+fo.caminho:undefined);est.foto=null;
+  const primeira=!D.despesas.some(x=>x.codigo===cod),fo=est.foto;try{const id=await api.despesa(cod,data,valor,loc&&loc.id,fo?'pelo WhatsApp · comprovante '+fo.caminho:undefined);est.foto=null;
     D.despesas.unshift({id,data,codigo:cod,valor});
     const txt=`${nomeCod(cod)}: ${zBrl(valor)} em ${zDBR(data)}`;est.ultimo={tipo:'desp',id,txt};
-    return `✅ Despesa lançada. ${txt}`+(loc&&TIPOS[loc.tipo][1]<1?` (abate ${Math.round(TIPOS[loc.tipo][1]*100)}% por ser ${TIPOS[loc.tipo][0].toLowerCase()}).`:'.')+' Errou? *desfazer*'}
+    return `✅ Despesa lançada. ${txt}`+(loc&&TIPOS[loc.tipo][1]<1?` (abate ${Math.round(TIPOS[loc.tipo][1]*100)}% por ser ${TIPOS[loc.tipo][0].toLowerCase()}).`:'.')+' Errou? *desfazer*'+(primeira?'\n'+zDicaDesp(cod):'')}
   catch(e){return zErro(String(e.message||e))}}
 
 // Resposta à foto do comprovante: o que foi lido (confirmar com "sim") ou o pedido do tipo e do valor
@@ -429,4 +479,4 @@ async function zapResponde(texto,D,api,est,hoje){const out=[];delete est.lista;c
   for(const l of linhas){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r)}
   return out.join('\n\n')||AJUDA}
 
-if(typeof module!=='undefined')module.exports={zAtrasados,zapResponde,zFotoPergunta,zSemana1,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};
+if(typeof module!=='undefined')module.exports={zAtrasados,zBoleto,zTrimestre,zapResponde,zFotoPergunta,zSemana1,zPartes,zAcha,zData,zValor,AJUDA,PROCURACAO};

@@ -208,14 +208,22 @@ a{color:var(--accent)}
       </div>
     </details>
     <details class="card" id="ag-card">
-      <summary><b>Trazer da agenda</b> (Google Agenda)</summary>
+      <summary><b>Trazer da agenda</b> (Google Agenda ou sistema da clínica)</summary>
       <div style="display:grid;gap:12px;margin-top:12px">
         <div class="sub">As consultas da sua agenda viram atendimentos para você conferir e salvar. Vale o evento com o nome da paciente no título. Uma vez só: no Google Agenda do computador, Configurações → a sua agenda → <b>Endereço secreto no formato iCal</b> → copie e cole aqui. Ele fica guardado só neste aparelho.</div>
         <input id="ag-url" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" autocomplete="off">
         <div class="row"><button type="button" id="b-ag" class="small">Trazer dos últimos 14 dias</button></div>
-        <div class="sub">Ou escolha o arquivo .ics exportado da agenda: <input type="file" id="ag-arq" accept=".ics,text/calendar"></div>
+        <div class="sub">Ou escolha o arquivo exportado: .ics da agenda, ou a planilha (.csv) do sistema da clínica com data, paciente e valor. Falta e desmarcação ficam de fora. <input type="file" id="ag-arq" accept=".ics,.csv,.txt,text/calendar,text/csv"></div>
         <div class="list" id="ag-prev"></div>
         <button class="pri" type="button" id="b-ag-salvar" hidden>Salvar os marcados</button>
+      </div>
+    </details>
+    <details class="card" id="ex-card">
+      <summary><b>Conferir com o extrato do banco</b></summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">No app ou no site do seu banco, exporte o extrato do mês em <b>OFX</b> (ou planilha) e escolha o arquivo aqui. Eu comparo o que entrou e saiu com o que você lançou. O extrato é lido só neste aparelho: nada dele é guardado.</div>
+        <input type="file" id="ex-arq" accept=".ofx,.csv,.txt,application/x-ofx,text/csv">
+        <div class="list" id="ex-res" aria-live="polite"></div>
       </div>
     </details>
     <div class="card" id="pacotes-card" hidden>
@@ -338,7 +346,16 @@ a{color:var(--accent)}
       <h2 style="margin-top:14px">Relatório do ano para o IR</h2>
       <div class="sub">Mês a mês: o que recebeu, as despesas que abateram, o INSS e o Carnê-Leão. Leve para quem faz a sua declaração.</div>
       <div class="row" style="align-items:center"><select id="ir-ano" style="width:auto"></select>
-        <button id="b-ir-pdf" type="button" class="small">PDF</button><button id="b-ir-csv" type="button" class="small">Planilha</button></div>
+        <button id="b-ir-pdf" type="button" class="small">PDF</button><button id="b-ir-csv" type="button" class="small">Planilha</button><button id="b-ir-prev" type="button" class="small pri">Prévia para validar</button></div>
+      <div id="ir-prev" hidden style="display:grid;gap:10px;margin-top:6px">
+        <div class="sub">Confira cada número com o que está no seu gov.br (Receita Saúde e Carnê-Leão Web, menu Pagamentos). Digite o número de lá: eu mostro a diferença. Depois marque o que já está no gov.br e entra na declaração, e envie à Assessoria. A declaração só é fechada depois da sua validação.</div>
+        <div class="list" id="ir-prev-l"></div>
+        <label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" class="ir-ck" style="width:auto"> Baixei os recibos em que eu sou a paciente (consultas, dentista, terapia): despesa médica da declaração</label>
+        <label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" class="ir-ck" style="width:auto"> Baixei o informe de rendimentos do banco e da previdência privada, se tiver</label>
+        <label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" class="ir-ck" style="width:auto"> Conferi as despesas do ano por conta (no PDF do relatório)</label>
+        <textarea id="ir-obs" rows="2" placeholder="Algo que não bate ou que a Assessoria precisa saber"></textarea>
+        <button id="b-ir-ok" type="button" class="pri">Validar e enviar à Assessoria</button>
+      </div>
       <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-novidades" style="width:auto"> Quero receber pelo WhatsApp avisos de novidades, como a conta para virar CNPJ</label>
     </div>
     <div class="card" id="aj-lista"></div>

@@ -190,6 +190,17 @@ $('b-ir-csv').onclick=()=>{const R=irDados(),a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv(['Mês','Recebido de pessoas físicas','Pacientes','Livro-caixa usado','INSS','Carnê-Leão devido','DARF a pagar','DARF pago','Pago em'],
     [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf,x.pago?+x.pago.valor:'',x.pago?dBR(x.pago.pago_em):'']),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf,R.tot.pago,''],[],['Despesas do ano por conta'],
     ...Object.entries(R.porConta).map(([n,v])=>[n,v])])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
+// Prévia do IR para ela validar (ensaio 29/10, obs. 38): relatório × gov.br, com a validação registrada como pedido de prioridade
+function irPrevTela(){const R=irDados(),gov={};document.querySelectorAll('[data-irg]').forEach(i=>{if(i.value.trim())gov[i.dataset.irg]=+i.value.replace(/\./g,'').replace(',','.')});
+  const L=irPrevia(R,gov);$('ir-prev-l').innerHTML=L.map(x=>`<div class="item" style="grid-template-columns:1fr auto;align-items:center"><span>${x.nome}<br><b>${brl(x.nosso)}</b> aqui${x.ok===null?'':x.ok?' · <span style="color:#0b7a55">confere com o gov.br ✓</span>':` · <span style="color:#b3261e">diferença de ${brl(x.dif)}</span>`}</span>
+    <input data-irg="${x.k}" inputmode="decimal" placeholder="no gov.br" value="${x.gov===null?'':String(x.gov).replace('.',',')}" style="width:110px"></div>`).join('');
+  document.querySelectorAll('[data-irg]').forEach(i=>i.onchange=irPrevTela);return L}
+$('b-ir-prev').onclick=()=>{$('ir-prev').hidden=false;irPrevTela()};
+$('b-ir-ok').onclick=async()=>{const L=irPrevTela(),ano=$('ir-ano').value,falta=L.filter(x=>x.ok===null).length,cks=[...document.querySelectorAll('.ir-ck')].filter(c=>c.checked).length;
+  if(falta){avisa(`Digite os ${falta} número${falta>1?'s':''} do gov.br antes de validar.`,true);return}
+  const t=`[Imposto · PRIORIDADE] Prévia do IR ${ano} validada no app. `+L.map(x=>`${x.nome}: ${brl(x.nosso)} (gov.br ${brl(x.gov)}${x.ok?', confere':', DIFERENÇA '+brl(x.dif)})`).join('; ')+`. Itens do gov.br marcados: ${cks} de 3.`+($('ir-obs').value.trim()?' Obs.: '+$('ir-obs').value.trim():'');
+  const r=await sb.rpc('link_suporte',{tok:TOK,p_texto:t.slice(0,1900)});if(r.error){avisa('Não consegui enviar. Tente de novo.',true);return}
+  avisa(L.every(x=>x.ok)?'Prévia validada e enviada. A Assessoria fecha a declaração e avisa você.':'Enviada com as diferenças. A Assessoria confere com você antes de fechar.')};
 $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){avisa('Libere a janela nova para gerar o PDF.',true);return}
   const td=v=>`<td style="text-align:right">${brl(v)}</td>`;
   w.document.write(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Relatório IR ${R.ano}</title><style>body{font:13px system-ui,sans-serif;margin:24px;color:#1b2b26}
@@ -487,11 +498,11 @@ $('imp-txt').oninput=e=>impPrevia(e.target.value);
 // ---------- Trazer da agenda (revisão item 11): .ics do Google pela função zap (o navegador não lê direto) ou arquivo; ela confere e salva ----------
 let AGE=[];const AG_CHAVE='rs-agenda-ics';
 $('ag-url').value=localStorage.getItem(AG_CHAVE)||'';
-function agPrevia(txt){const ate=hojeISO(),d=new Date();d.setDate(d.getDate()-14);
-  AGE=impIcs(txt,D.pacientes,D.atendimentos,dISO(d),ate);
+function agPrevia(txt,csv){const ate=hojeISO(),d=new Date();d.setDate(d.getDate()-(csv?62:14));
+  AGE=(csv?impAgendaCsv:impIcs)(txt,D.pacientes,D.atendimentos,dISO(d),ate);
   $('ag-prev').innerHTML=AGE.length?AGE.map((x,i)=>`<label class="item" style="grid-template-columns:auto 1fr auto;align-items:center"><input type="checkbox" data-ag="${i}" ${x.valor?'checked':''} style="width:auto">
     <span>${dBR(x.data)} · ${esc(x.nome)}</span><input data-agv="${i}" inputmode="decimal" value="${x.valor?String(x.valor).replace('.',','):''}" placeholder="valor" style="width:90px"></label>`).join('')
-    :'<div class="sub">Nenhuma consulta nova com o nome de uma paciente cadastrada nos últimos 14 dias.</div>';
+    :`<div class="sub">Nenhuma consulta nova com o nome de uma paciente cadastrada nos últimos ${csv?'2 meses':'14 dias'}.</div>`;
   $('b-ag-salvar').hidden=!AGE.length}
 $('b-ag').onclick=async()=>{const url=$('ag-url').value.trim();if(!/^https:\/\/calendar\.google\.com\/calendar\/ical\/\S+\.ics$/.test(url)){avisa('Cole o endereço secreto iCal do Google Agenda (termina em .ics).',true);return}
   localStorage.setItem(AG_CHAVE,url);$('ag-prev').innerHTML='<div class="sub">Lendo a agenda...</div>';
@@ -499,7 +510,22 @@ $('b-ag').onclick=async()=>{const url=$('ag-url').value.trim();if(!/^https:\/\/c
     const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'agenda',tok:TOK,url})}),j=await f.json();
     if(!f.ok||!j.ics)throw new Error(j.erro||f.status);agPrevia(j.ics)}
   catch(e){console.error(e);$('ag-prev').innerHTML='';avisa('Não consegui ler a agenda. Confira o endereço ou use o arquivo .ics.',true)}};
-$('ag-arq').onchange=async e=>{const f=e.target.files[0];if(f)agPrevia(await f.text())};
+$('ag-arq').onchange=async e=>{const f=e.target.files[0];if(f){const t=await f.text();agPrevia(t,!/BEGIN:VCALENDAR/i.test(t))}};
+
+// Conferir com o extrato do banco (ensaio 29/10, obs. 25): só lê no aparelho, nada do extrato vai para o banco de dados
+$('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const mv=impExtrato(await f.text()),o=$('ex-res');
+  if(!mv.length){o.innerHTML='<div class="sub">Não achei movimentos nesse arquivo. Exporte o extrato em OFX ou em planilha (data, descrição, valor).</div>';return}
+  const k=impConcilia(mv,D.atendimentos,D.despesas||[]),li=(x,t)=>`<div class="item"><span>${dBR(x.mov?x.mov.data:x.data)} · ${t}</span></div>`,bl=(tit,l)=>l.length?`<h3 style="margin:10px 0 4px">${tit} (${l.length})</h3>`+l.join(''):'';
+  o.innerHTML=`<div class="sub">${mv.length} movimentos lidos, de ${dBR(mv.reduce((m,x)=>x.data<m?x.data:m,mv[0].data))} a ${dBR(mv.reduce((m,x)=>x.data>m?x.data:m,mv[0].data))}. Confere: <b>${k.confere.length}</b> recebimento${k.confere.length===1?'':'s'} e <b>${k.despOk.length}</b> despesa${k.despOk.length===1?'':'s'}.</div>`
+    +bl('Pode ser pagamento de um "a receber"',k.receber.map(x=>`<div class="item"><span>${dBR(x.mov.data)} · ${brl(x.mov.valor)} · ${esc(x.mov.desc)}<br><span class="sub">${esc(x.at.paciente)}, atendimento de ${dBR(x.at.data)}</span></span><button type="button" class="small" data-exr="${x.at.id}" data-exd="${x.mov.data}" data-exv="${x.mov.valor}">Marcar recebido</button></div>`))
+    +bl('Entrou e não está lançado (atendimento esquecido? se for transferência entre contas suas, ignore)',k.semLanc.map(x=>li(x,`${brl(x.mov.valor)} · ${esc(x.mov.desc)}`)))
+    +bl('Parece conta do consultório e não está nas despesas',k.despFalta.map(x=>li(x,`${brl(-x.mov.valor)} · ${esc(x.mov.desc)}`)))
+    +bl('Lançado como Pix ou transferência e não está no extrato (outra conta?)',k.semExtrato.map(x=>li(x,`${esc(x.paciente)} · ${brl(x.valor)}`)))
+    +(k.receber.length+k.semLanc.length+k.despFalta.length+k.semExtrato.length?'':'<div class="sub">Tudo bate. 👏</div>');
+  e.target.value=''};
+$('ex-res').onclick=async e=>{const b=e.target.closest('[data-exr]');if(!b)return;b.disabled=true;
+  const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:b.dataset.exr,p_valor:+b.dataset.exv,p_data:b.dataset.exd});
+  if(r.error){b.disabled=false;avisa('Não consegui registrar o pagamento.',true);return}b.textContent='Recebido ✓';avisa('Pagamento registrado na data do extrato.');await carrega()};
 $('b-ag-salvar').onclick=async()=>{const b=$('b-ag-salvar');b.disabled=true;let feitos=0,erro=0;
   for(const ck of document.querySelectorAll('[data-ag]:checked')){const i=+ck.dataset.ag,x=AGE[i],v=+String(document.querySelector(`[data-agv="${i}"]`).value).replace(/\./g,'').replace(',','.');
     if(!(v>0)){erro++;continue}
