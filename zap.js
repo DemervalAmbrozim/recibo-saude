@@ -171,7 +171,8 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d$/.test(
       if(!c.length)return `Não achei "${linha.trim()}" entre seus pacientes. Escreva de novo, ou *sair* e cadastre: *novo Nome Sobrenome CPF*`;
       if(c.length>1){g.ops=c.slice(0,8).map(x=>x.id);return gPergunta(g,D,hoje)}g.pac=c[0].id}
     g.passo='valor';return gPergunta(g,D,hoje)}
-  if(g.passo==='valor'){const v=n===1&&g.ult?g.ult:zValor(t.replace(/\s/g,''));if(!v)return de_novo('Não entendi o valor.');
+  if(g.passo==='valor'){if(n&&!(n===1&&g.ult))return de_novo('Escreva o valor em reais, ex.: *180*.');  // "2" no menu não vira R$ 2,00
+    const v=n===1&&g.ult?g.ult:zValor(t.replace(/\s/g,''));if(!v)return de_novo('Não entendi o valor.');
     g.valor=v;g.passo='forma';return gPergunta(g,D,hoje)}
   if(g.passo==='forma'){const f=n?G_FORMAS[n-1]:FORMAS[t]?[FORMAS[t],true]:A_RECEBER.some(x=>t.includes(x))?G_FORMAS[4]:null;
     if(!f)return de_novo(`Responda com um número de 1 a ${G_FORMAS.length}.`);g.forma=f[1]?f[0]:'Pix';g.pago=f[1];g.passo='data';return gPergunta(g,D,hoje)}
