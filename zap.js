@@ -69,6 +69,7 @@ const AJUDA=`É só escrever como fala:
 • *novo Maria Silva 123.456.789-09* (paciente nova)
 • *desfazer* (apaga o último lançamento)
 • foto ou PDF de uma conta paga (guardo o comprovante e lanço a despesa)
+• *comprovantes* (despesas que ainda não têm a foto guardada)
 • *indicar* (seu código para indicar uma colega)
 • *suporte* e o que aconteceu (fala com uma pessoa)
 Pode mandar vários de uma vez, um por linha.`;
@@ -76,6 +77,13 @@ Pode mandar vários de uma vez, um por linha.`;
 // A receber há mais de 30 dias (ensaio 29/10, obs. 9): acumular pagamento atrasa o recibo e embola o Carnê-Leão do mês em que o dinheiro entra
 function zAtrasados(D,hoje){const h=new Date(hoje+'T12:00');h.setDate(h.getDate()-30);const lim=zISO(h),v=D.atendimentos.filter(x=>x.pago===false&&x.data<lim);
   return v.length?`⚠️ ${v.length} atendimento${v.length===1?'':'s'} a receber há mais de 30 dias (${zBrl(soma(v))}). Cobre e, quando entrar, mande *nome recebi*: o recibo sai na data do pagamento. Mande *a receber* para ver quem.`:''}
+const zSemComprovante=D=>(D.despesas||[]).filter(x=>!/comprovante /.test(x.obs||'')&&x.codigo!==INSS).sort((a,b)=>a.data<b.data?-1:1);
+// Por local de atendimento (obs. 17): só quando ela atende em mais de um lugar
+function zPorLocal(D,mes){if((D.locais||[]).length<2)return '';
+  const l=D.locais.map(lo=>{const r=soma(D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(mes)&&x.local_id===lo.id)),d=soma(D.despesas.filter(x=>x.data.startsWith(mes)&&x.local_id===lo.id));
+    return r||d?`• ${lo.nome}: ${zBrl(r)} recebidos`+(d?`, ${zBrl(d)} em despesas`:''):''}).filter(Boolean);
+  const sem=soma(D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(mes)&&!x.local_id));
+  return l.length?'\n*Por local*\n'+l.join('\n')+(sem?`\n• Sem local: ${zBrl(sem)}`:''):''}
 // Resumo do mês: recebido, atendimentos, a receber, despesas e Carnê-Leão estimado
 function zResumo(D,hoje){const mes=hoje.slice(0,7),[a,m]=mes.split('-').map(Number);
   const pagos=D.atendimentos.filter(x=>x.pago!==false), noMes=pagos.filter(x=>x.data.startsWith(mes)),
@@ -83,7 +91,8 @@ function zResumo(D,hoje){const mes=hoje.slice(0,7),[a,m]=mes.split('-').map(Numb
   const r=apura(pagos,D.despesas,mes);
   return `*${ZAP_MESES[m-1]} até ${zDBR(hoje)}*\nRecebido: ${zBrl(soma(noMes))} em ${noMes.length} atendimento${noMes.length===1?'':'s'}`
     +(abertos.length?`\nA receber: ${zBrl(soma(abertos))} (${abertos.length})`:'')+((a=>a?'\n'+a:'')(zAtrasados(D,hoje)))
-    +(ds.length?`\nDespesas lançadas: ${zBrl(soma(ds))}`:'')
+    +(ds.length?`\nDespesas lançadas: ${zBrl(soma(ds))}`:'')+((n=>n?` (${n} sem comprovante: *comprovantes*)`:'')(zSemComprovante({despesas:ds}).length))
+    +zPorLocal(D,mes)
     +`\nCarnê-Leão estimado deste mês: ${r.darf.pagar?zBrl(r.darf.pagar)+`, vence ${ultimoDiaUtil(m===12?a+1:a,m%12).toLocaleDateString('pt-BR')}`:'nada a pagar até agora'}.`
     +((c=>c?.mostra?`\nPela sua média, um CNPJ pode sair ${zBrl(c.eco)} por mês mais barato. Mande *cnpj* para ver.`:'')(cnpjAviso(pagos,D.despesas,mes)))}
 
@@ -163,7 +172,7 @@ function gPergunta(g,D,hoje,est){const pac=D.pacientes.find(x=>x.id===g.pac),L=i
     return `*Lançar atendimento* (1 de 4)\nÉ *${gNome(D,g.ops[0])}*?\n1. Sim\n2. ${gNome(D,G_NOVA)}\nou escreva outro nome. Para sair: *sair*`}
   if(g.passo==='pac'){L(g.ops.map(id=>gNome(D,id)));return `*Lançar atendimento* (1 de 4)\nQual paciente?\n`+g.ops.map((id,i)=>`${i+1}. ${gNome(D,id)}`).join('\n')
     +(g.mais?'\nNão está na lista? Escreva o começo do nome.':'')+'\nToque na opção ou escreva o nome. Para sair: *sair*'}
-  if(g.passo==='novo')return '*Paciente nova*\nMande o nome completo e o CPF de quem é atendido, como vai no recibo. Ex.: *Maria Silva 123.456.789-09*';
+  if(g.passo==='novo')return '*Paciente nova*\nMande o nome completo e o CPF de quem é atendido, como vai no recibo. Ex.: *Maria Silva 123.456.789-09*\nSe outra pessoa paga (mãe, filho), acrescente: *paga 987.654.321-00*';
   if(g.passo==='valor'){const u=D.atendimentos.filter(x=>pac&&zNorm(x.paciente)===zNorm(pac.nome)).sort((a,b)=>a.data<b.data?1:-1)[0];g.ult=u?+u.valor:null;
     if(u)L([`${zBrl(u.valor)}`]);
     return `*${pac.nome}* (2 de 4)\nQual o valor?\n`+(u?`1. ${zBrl(u.valor)} (o último lançado)\nou escreva outro valor, ex.: *180*`:'Escreva o valor, ex.: *180*')}
@@ -191,10 +200,10 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
       // Uma só parecida: segue direto com ela, o nome completo aparece no passo seguinte (obs. 49)
       if(c.length>1){Object.assign(g,gOps(D,c.map(x=>x.id)));return gPergunta(g,D,hoje,est)}g.pac=c[0].id}
     g.passo='valor';return gPergunta(g,D,hoje,est)}
-  if(g.passo==='novo'){const m=linha.match(/^\s*(.+?)\s+(?:cpf\s*)?([\d.\-\s]{11,14})\s*$/i);
-    if(!m)return de_novo('Faltou o CPF.');const cpf=m[2].replace(/\D/g,''),nome=m[1].replace(/\bcpf\b/i,'').trim();
-    if(!zCpf(cpf))return de_novo('Esse CPF não confere.');if(nome.split(/\s+/).length<2)return de_novo('Mande o nome completo.');
-    let id;try{id=await api.paciente(nome,cpf)}catch(e){return zErro(String(e.message||e))}
+  if(g.passo==='novo'){const m=linha.match(/^\s*(.+?)\s+(?:cpf\s*)?([\d.\-\s]{11,14}?)(?:\s+(?:paga|pagador|quem paga|pago por)\s*:?\s*(?:cpf\s*)?([\d.\-\s]{11,14}))?\s*$/i);
+    if(!m)return de_novo('Faltou o CPF.');const cpf=m[2].replace(/\D/g,''),nome=m[1].replace(/\bcpf\b/i,'').trim(),pag=(m[3]||'').replace(/\D/g,'');
+    if(!zCpf(cpf))return de_novo('Esse CPF não confere.');if(pag&&!zCpf(pag))return de_novo('O CPF de quem paga não confere.');if(nome.split(/\s+/).length<2)return de_novo('Mande o nome completo.');
+    let id;try{id=await api.paciente(nome,cpf,pag&&pag!==cpf?pag:null)}catch(e){return zErro(String(e.message||e))}
     const ja=D.pacientes.find(x=>x.id===id);if(!ja)D.pacientes.push({id,nome});g.pac=id;g.passo='valor';
     return (ja?`Esse CPF já é de *${ja.nome}*: segui com ela, sem cadastrar de novo.`:`Cadastrada: ${nome} ✅`)+'\n\n'+gPergunta(g,D,hoje,est)}
   if(g.passo==='valor'){if(n&&n<10&&!(n===1&&g.ult))return de_novo('Escreva o valor em reais, ex.: *180*.');  // "2" no menu não vira R$ 2,00
@@ -253,6 +262,15 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
     if(u.tipo==='rec')return `O último foi um ${u.txt}: esse se corrige no app (aba Lançar). Nada foi apagado.`;
     try{await api[{desp:'apagaDespesa',sess:'apagaSessao'}[u.tipo]||'apaga'](u.id)}catch(e){return zErro(String(e.message||e))}
     est.ultimo=null;return `Desfeito: ${u.txt}.`}
+  // Comprovantes pendentes (obs. 24): toda despesa sem foto fica na lista até chegar a cópia; foto + número prende à despesa
+  if(/^(comprovantes?|comprovantes? pendentes?|pendencias?)$/.test(t)){const l=zSemComprovante(D);
+    if(!l.length)return 'Todas as despesas lançadas têm comprovante guardado. 👏';est.comprov=l.slice(0,10).map(x=>x.id);
+    return `*Despesas sem comprovante* (${l.length})\n`+l.slice(0,10).map((x,i)=>`${i+1}. ${nomeCod(x.codigo)} · ${zBrl(x.valor_pago||x.valor)} · ${zDBR(x.data)}`).join('\n')
+      +'\nMande a foto ou o PDF de cada uma com o número na legenda, ex.: foto com *1*. Guarde por 5 anos.'}
+  if(/^\d{1,2}$/.test(t)&&est.comprov&&est.foto){const id=est.comprov[+t-1];if(!id)return `Responda com um número de 1 a ${est.comprov.length}.`;
+    if(!api.comprovante)return 'Anotado.';try{await api.comprovante(id,est.foto.caminho)}catch(e){return zErro(String(e.message||e))}
+    const d=D.despesas.find(x=>x.id===id);if(d)d.obs=(d.obs?d.obs+' · ':'')+'comprovante '+est.foto.caminho;est.foto=null;
+    const r=zSemComprovante(D).length;return `📎 Comprovante preso à despesa ${d?nomeCod(d.codigo)+' de '+zBrl(d.valor_pago||d.valor):''}. `+(r?`Faltam ${r}: mande *comprovantes* para ver.`:'Nenhuma pendente agora. 👏')}
   // Escolha do que ela recebeu: "2" ou o último número = todos
   if(/^\d{1,2}$/.test(t)&&est.receber){const r=est.receber,ab=r.ids.map(id=>D.atendimentos.find(x=>x.id===id&&x.pago===false)).filter(Boolean);est.receber=null;
     if(!ab.length)return 'Esses já foram recebidos.';const i=+t;if(i<1||i>r.ids.length+1)return `Responda com um número de 1 a ${r.ids.length+1}.`;
@@ -260,16 +278,17 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   // Escolha entre homônimas: "2"
   if(/^\d$/.test(t)&&est.escolha){const e=est.escolha,p=e.opcoes[+t-1];if(!p)return `Responda com um número de 1 a ${e.opcoes.length}.`;
     est.escolha=null;return zLanca(Object.assign(e.pedido,{pac:p}),D,api,est,hoje)}
-  // Paciente nova: novo Maria Silva 12345678909
-  let m=linha.match(/^\s*(novo|nova|cadastrar|cadastra)\s+(.+?)\s+(?:cpf\s*)?([\d.\-\s]{11,14})\s*$/i);
-  if(m){const cpf=m[3].replace(/\D/g,''),nome=m[2].replace(/\bcpf\b/i,'').trim();
+  // Paciente nova: novo Maria Silva 12345678909 [paga 98765432100] (quem paga diferente do paciente, ensaio 29/10 obs. 16: a mãe, o filho)
+  let m=linha.match(/^\s*(novo|nova|cadastrar|cadastra)\s+(.+?)\s+(?:cpf\s*)?([\d.\-\s]{11,14}?)(?:\s+(?:paga|pagador|quem paga|pago por)\s*:?\s*(?:cpf\s*)?([\d.\-\s]{11,14}))?\s*$/i);
+  if(m){const cpf=m[3].replace(/\D/g,''),nome=m[2].replace(/\bcpf\b/i,'').trim(),pag=(m[4]||'').replace(/\D/g,'');
     if(!zCpf(cpf))return 'Esse CPF não confere. Mande de novo: *novo Nome Sobrenome 123.456.789-09*';
+    if(pag&&!zCpf(pag))return 'O CPF de quem paga não confere. Mande de novo: *novo Nome Sobrenome CPF paga CPF de quem paga*';
     if(nome.split(/\s+/).length<2)return 'Mande o nome completo, como vai no recibo: *novo Nome Sobrenome CPF*';
-    try{const id=await api.paciente(nome,cpf),ja=D.pacientes.find(x=>x.id===id);  // o banco devolve a que já tem o CPF (obs. 5)
+    try{const id=await api.paciente(nome,cpf,pag&&pag!==cpf?pag:null),ja=D.pacientes.find(x=>x.id===id);  // o banco devolve a que já tem o CPF (obs. 5)
       if(ja)return `Esse CPF já é de *${ja.nome}*: não cadastrei de novo. Para lançar: *${ja.nome.split(' ')[0]} 180 pix*`;
-      D.pacientes.push({id,nome});return `Cadastrada: ${nome}. Agora é só lançar: *${nome.split(' ')[0]} 180 pix*`}
+      D.pacientes.push({id,nome});return `Cadastrada: ${nome}`+(pag&&pag!==cpf?'. O recibo sai no CPF dela, com quem paga no campo do pagador':'')+`. Agora é só lançar: *${nome.split(' ')[0]} 180 pix*`}
     catch(e){return zErro(String(e.message||e))}}
-  if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar: *novo Nome Sobrenome 123.456.789-09* (o CPF de quem é atendido).';
+  if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar: *novo Nome Sobrenome 123.456.789-09* (o CPF de quem é atendido). Se outra pessoa paga (mãe, filho), acrescente: *paga 987.654.321-00*.';
   // Indicação (revisão item 19): código e link para mandar à colega
   if(/^(indicar|indicacao|indique|codigo)$/.test(t)){if(!api.indicacao)return 'Em breve.';let x;try{x=await api.indicacao()}catch(e){return zErro(String(e.message||e))}
     return `Seu código: *${x.codigo}*. A colega ganha 60 dias de teste e você ganha 1 mês quando ela assinar.\nEncaminhe este link para ela: ${SITE}/venda.html?ind=${x.codigo}`
@@ -354,9 +373,11 @@ async function zLanca(p,D,api,est,hoje){const data=p.data||hoje,forma=p.forma||'
     return `Já está lançado: ${qual}. Não gravei de novo.\nSe foram duas sessões no mesmo dia, mande *${p.pac.nome.split(' ')[0]} ${String(p.valor).replace('.',',')} ${zDBR(data)} outra*.`;
   if(!p.dobro&&!p.ok&&mesmo.length){c.dobro=true;return zPedeConfirma(est,c,qual,`ela já tem ${mesmo.length===1?'um atendimento':mesmo.length+' atendimentos'} neste dia (${mesmo.map(x=>zBrl(x.valor)).join(', ')}). É mais um`)}
   const fora=!p.ok&&zForaAt(D,p.pac,p.valor);if(fora){c.dobro=p.dobro;return zPedeConfirma(est,c,qual,fora)}
-  let id;try{id=await api.lanca(p.pac.id,data,p.valor,forma,pago)}catch(e){return zErro(String(e.message||e))}
-  D.atendimentos.unshift({id,data,valor:p.valor,forma,paciente:p.pac.nome,pago,emitido:false});
-  const txt=`${p.pac.nome} · ${zBrl(p.valor)} · ${pago?forma:'a receber'} · ${data===hoje?'hoje':zDBR(data)}`;est.ultimo={tipo:'at',id,txt};
+  // Local (obs. 17): o mesmo do último atendimento dela; com um local só, ele
+  const ult=D.atendimentos.find(x=>zNorm(x.paciente)===zNorm(p.pac.nome)&&x.local_id),lo=(D.locais||[]).length===1?D.locais[0]:ult&&(D.locais||[]).find(l=>l.id===ult.local_id)||null;
+  let id;try{id=await api.lanca(p.pac.id,data,p.valor,forma,pago,lo&&lo.id)}catch(e){return zErro(String(e.message||e))}
+  D.atendimentos.unshift({id,data,valor:p.valor,forma,paciente:p.pac.nome,pago,emitido:false,local_id:lo&&lo.id});
+  const txt=`${p.pac.nome} · ${zBrl(p.valor)} · ${pago?forma:'a receber'} · ${data===hoje?'hoje':zDBR(data)}`+(lo&&D.locais.length>1?` · ${lo.nome}`:'');est.ultimo={tipo:'at',id,txt};
   const mes=hoje.slice(0,7),noMes=D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(mes));
   return `✅ ${txt}\nNo mês: ${zBrl(soma(noMes))} em ${noMes.length}. Errou? *desfazer*`}
 
@@ -366,6 +387,10 @@ async function zRecebeVarios(itens,data,api,est){
   est.ultimo={tipo:'rec',txt:`recebimento de ${itens[0].paciente}`};
   return `✅ Recebido de ${itens[0].paciente}: ${zBrl(soma(itens))} `+(itens.length>1?` por ${itens.length} atendimentos (${itens.map(x=>zDBR(x.data)).join(', ')}). Sai um recibo só, na data do pagamento, com os dias na descrição.`:` (atendimento de ${zDBR(itens[0].data)}).`)}
 async function zDespesa(cod,valor,data,D,api,est,hoje,ok){
+  // Contas amarradas aos locais (obs. 19): 2 locais com 3 contas de energia no mês está errado; pergunta antes
+  const locs0=D.locais.filter(l=>TIPOS[l.tipo]&&TIPOS[l.tipo][1]>0),ja=D.despesas.filter(x=>x.codigo===cod&&x.data.slice(0,7)===data.slice(0,7));
+  if(!ok&&IMOVEL.includes(cod)&&ja.length>=Math.max(1,locs0.length))
+    return zPedeConfirma(est,{tipo:'desp',cod,valor,data},`${nomeCod(cod)} ${zBrl(valor)}`,`você já lançou ${ja.length===1?'uma conta':ja.length+' contas'} disso em ${ZAP_MESES[+data.slice(5,7)-1]} (${ja.map(x=>zBrl(x.valor_pago||x.valor)).join(', ')}) para ${Math.max(1,locs0.length)===1?'1 local':locs0.length+' locais'}. É de outro local ou foi lançada duas vezes`);
   const fora=!ok&&zForaDesp(D,cod,valor);if(fora)return zPedeConfirma(est,{tipo:'desp',cod,valor,data},`${nomeCod(cod)} ${zBrl(valor)}`,fora);
   const locs=D.locais.filter(l=>TIPOS[l.tipo]&&TIPOS[l.tipo][1]>0),loc=IMOVEL.includes(cod)&&locs[0]||null;
   const fo=est.foto;try{const id=await api.despesa(cod,data,valor,loc&&loc.id,fo?'pelo WhatsApp · comprovante '+fo.caminho:undefined);est.foto=null;
@@ -382,12 +407,24 @@ function zFotoPergunta(l){return l?`📎 Comprovante guardado. Li: *${nomeCod(DE
 const SUPORTE=/^(suporte|atendente|atendimento|falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|reclamacao|problema)\b/;
 const SUPORTE_OK='Recebido. Uma pessoa da Assessoria responde aqui em até 1 dia útil (segunda a sexta, 8h às 18h). Se for erro num recibo já emitido, a correção é sem custo.';
 // Mensagem inteira (pode ter várias linhas). Devolve o texto da resposta; est é alterado no lugar.
-async function zapResponde(texto,D,api,est,hoje){const out=[];delete est.lista;
-  if(SUPORTE.test(zNorm(String(texto||'').split(/\n/)[0]))){const resto=String(texto).replace(/^\s*\S+\s*/,'').trim();
-    if(!resto)return 'Escreva *suporte* e, na mesma mensagem, o que aconteceu. Ex.: *suporte o recibo da Maria saiu com o valor errado*. Não escreva diagnóstico nem dado de saúde do paciente.';
-    if(!api.suporte)return SUPORTE_OK;
-    try{await api.suporte(String(texto).trim())}catch(e){return zErro(String(e.message||e))}
-    return SUPORTE_OK}
+// Triagem antes da pessoa (ensaio 29/10, obs. 42): o assunto vem primeiro; emissão e imposto são prioridade (prazo e multa)
+const S_TEMAS=[['Recibo ou emissão',true],['Imposto, DARF ou apuração',true],['Lançar ou usar o app',false],['Plano ou pagamento',false],['Outra dúvida',false]];
+const S_AJUDA={2:'Antes, veja se resolve: *lançar* faz passo a passo, *desfazer* apaga o último, *ajuda* mostra tudo.',3:'Antes, veja se resolve: no app, Ajuda > Seu plano mostra o plano e a cobrança em aberto.'};
+const zTema=t=>/recibo|emiss|emitir|receita saude|pdf/.test(t)?0:/darf|imposto|carne|leao|apura|multa|declara/.test(t)?1:/plano|pagamento|cobranca|boleto|cartao|assinatura/.test(t)?3:/lanc|app|senha|pin|link|entrar/.test(t)?2:4;
+async function zSuporte(tema,texto,api){const [nome,pri]=S_TEMAS[tema];if(!api.suporte)return SUPORTE_OK;
+  try{await api.suporte(`[${nome}${pri?' · PRIORIDADE':''}] ${texto}`)}catch(e){return zErro(String(e.message||e))}
+  return pri?'Recebido, com prioridade: emissão e imposto têm prazo. Uma pessoa da Assessoria responde aqui hoje, até as 18h (segunda a sexta; no fim de semana, segunda cedo). Se for erro num recibo já emitido, a correção é sem custo.':SUPORTE_OK}
+async function zapResponde(texto,D,api,est,hoje){const out=[];delete est.lista;const t0=zNorm(String(texto||'').split(/\n/)[0]);
+  if(est.suporte){const sp=est.suporte;est.suporte=null;
+    if(sp.passo==='tema'){const n=/^\d$/.test(t0)?+t0:0;if(n>=1&&n<=S_TEMAS.length){est.suporte={passo:'texto',tema:n-1};
+        return `*${S_TEMAS[n-1][0]}*\n`+(S_AJUDA[n-1]?S_AJUDA[n-1]+'\nSe não resolver, ':'')+'Escreva numa mensagem só o que aconteceu. Não escreva diagnóstico nem dado de saúde do paciente. Para sair: *sair*'}
+      if(!G_SAIR.test(t0))est.suporte=sp}
+    else if(!G_SAIR.test(t0))return zSuporte(sp.tema,String(texto).trim(),api);
+    if(G_SAIR.test(t0))return 'Certo, não abri o pedido.'}
+  if(SUPORTE.test(t0)){const resto=String(texto).replace(/^\s*(falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|\S+)\s*/i,'').trim();
+    if(!resto){est.suporte={passo:'tema'};zLista(est,S_TEMAS.map(x=>x[0]));
+      return '*Falar com a Assessoria*\nQual o assunto?\n'+S_TEMAS.map(([n,p],i)=>`${i+1}. ${n}${p?' (prioridade)':''}`).join('\n')}
+    return zSuporte(zTema(zNorm(resto)),String(texto).trim(),api)}
   const linhas=String(texto||'').split(/\n+/).filter(l=>l.trim()).slice(0,20);
   for(const l of linhas){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r)}
   return out.join('\n\n')||AJUDA}
