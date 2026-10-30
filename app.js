@@ -197,17 +197,21 @@ const pagos=()=>S.at.filter(a=>a.pago!==false);
 function recibos(mes){
   const pend=pagos().filter(a=>a.data.startsWith(mes)&&!a.lote_id).sort((a,b)=>a.data.localeCompare(b.data));
   // Auditoria F1 (IN 2.240, art. 3º): cada pagamento tem o seu recibo. Juntar só quando o paciente pagou as sessões de uma vez.
-  if(!$('f-agrupa').checked)return pend.map(a=>({pac:a.paciente_id,data:a.data,valor:a.valor,datas:[a.data],ids:[a.id]}));
-  const g={};pend.forEach(a=>{const r=g[a.paciente_id]||(g[a.paciente_id]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
-    r.valor+=a.valor;r.datas.push(a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
+  // Ensaio 29/10 (obs. 7 e 8): o que foi recebido depois (data_atend, 026) no mesmo dia e do mesmo paciente é um pagamento só: junta sozinho,
+  // com os dias das sessões na descrição. A caixa "Juntar" segue para quem recebe tudo no fim do mês sem lançar como "a receber".
+  const g={};pend.forEach(a=>{const k=$('f-agrupa').checked?a.paciente_id:a.data_atend?a.paciente_id+a.data:a.id;
+    const r=g[k]||(g[k]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
+    r.valor+=a.valor;r.datas.push(a.data_atend||a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
   return Object.values(g);
 }
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+// Sessões de meses diferentes (recebidas depois, obs. 9): "nos dias 28 e 30 de Setembro e 02 de Outubro de 2026"
 function descRecibo(base,datas){
-  const dias=[...new Set(datas.map(d=>d.slice(8)))].sort();
-  const lista=dias.length>1?dias.slice(0,-1).join(', ')+' e '+dias.at(-1):dias[0];
-  const [a,m]=datas[0].split('-'), nm=MESES[+m-1];
-  return `${base||'Servicos de Fisioterapia'} ${dias.length>1?'nos dias':'no dia'} ${lista} de ${nm[0].toUpperCase()+nm.slice(1)} de ${a}.`;
+  const ds=[...new Set(datas)].sort(), e=l=>l.length>1?l.slice(0,-1).join(', ')+' e '+l.at(-1):l[0], g=[];
+  ds.forEach(d=>{const k=d.slice(0,7),u=g.at(-1);u&&u.k===k?u.dias.push(d.slice(8)):g.push({k,dias:[d.slice(8)]})});
+  const partes=g.map((x,i)=>{const [a,m]=x.k.split('-'),nm=MESES[+m-1];const ano=i===g.length-1||g[i+1].k.slice(0,4)!==a?` de ${a}`:'';
+    return `${e(x.dias)} de ${nm[0].toUpperCase()+nm.slice(1)}${ano}`});
+  return `${base||'Servicos de Fisioterapia'} ${ds.length>1?'nos dias':'no dia'} ${e(partes)}.`;
 }
 function fech(){
   const mes=$('f-mes').value, ano=mes.slice(0,4);

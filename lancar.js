@@ -311,6 +311,8 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   if(pac==='novo'){
     const r=await sb.rpc('link_paciente',{tok:TOK,p_nome:$('n-nome').value.trim(),p_cpf:so($('n-cpf').value),p_cpf_pagador:so($('n-pag').value),p_telefone:tel?telLimpo(tel):'',p_email:em});
     if(r.error){avisa(semRede(r.error)?'Paciente nova precisa de internet para o cadastro. Sem internet, lance os pacientes que já estão na lista.':'Não consegui salvar o paciente. Tente de novo.',true);return}
+    const ja=D.pacientes.find(x=>x.id===r.data);  // ensaio 29/10, obs. 5: o banco devolve quem já tem esse CPF
+    if(ja&&!confirm(`Esse CPF já é de ${ja.nome}: não vou cadastrar de novo. Lançar o atendimento para ${ja.nome}?`))return;
     pac=r.data;$('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';
   }else{const p=D.pacientes.find(x=>x.id===pac);
     if(p&&((p.telefone||'')!==(tel?telLimpo(tel):'')||(p.email||'')!==em)){
@@ -318,6 +320,12 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
       if(r.error){avisa('Não consegui salvar o contato do paciente. Tente de novo.',true);return}}
   }
   const pn=+so($('pac-n').value);
+  // Travas do ensaio 29/10 (obs. 3 e 6): lançamento em dobro e valor fora do padrão, as mesmas do zap
+  {const nomeP=(D.pacientes.find(x=>x.id===pac)||{}).nome||$('n-nome').value.trim(),dt=$('data').value,
+     mesmo=D.atendimentos.filter(a=>a.paciente===nomeP&&a.data===dt),f=foraAt(D.atendimentos,nomeP,v);
+   if(mesmo.some(a=>Math.abs(a.valor-v)<0.01)){if(!confirm(`Já está lançado: ${nomeP} · ${brl(v)} em ${dBR(dt)}.\nSó lance de novo se foram duas sessões no mesmo dia. Lançar mesmo assim?`))return}
+   else if(mesmo.length&&!confirm(`${nomeP} já tem ${mesmo.length===1?'um atendimento':mesmo.length+' atendimentos'} em ${dBR(dt)} (${mesmo.map(a=>brl(a.valor)).join(', ')}). É mais um?`))return;
+   if(f&&!confirm(`${brl(v)} ${f.media?`está bem ${f.acima?'acima':'abaixo'} do que você costuma lançar (${brl(f.media)})`:'é um valor alto para um atendimento'}. Está certo?`))return}
   if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
   if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
   const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
@@ -358,6 +366,8 @@ $('f-desp').onsubmit=async e=>{e.preventDefault();
   const v=num($('d-valor').value), cod=$('d-cod').value, loc=cod===INSS?null:$('d-local').value||null, comp=$('d-comp').value;
   if(!(v>0)){avisa('Valor inválido. Use, por exemplo, 312,40.',true);return}
   if(IMOVEL.includes(cod)&&!loc){avisa('Escolha de qual local é essa conta: a regra muda se for a sua casa.',true);return}
+  {const f=foraDesp(D.despesas,D.fixas,cod,v);  // ensaio 29/10, obs. 3
+   if(f&&!confirm(`${nomeCod(cod)} de ${brl(v)} ${f.media?`está bem ${f.acima?'acima':'abaixo'} do que você costuma lançar (${brl(f.media)})`:f.baixo?'parece baixo para essa conta':'é um valor alto para essa conta'}. Está certo?`))return}
   const r=await grava('link_despesa',{tok:TOK,p_codigo:cod,p_data:$('d-data').value,p_valor:v,p_local:loc,p_obs:$('d-obs').value.trim(),p_fixa:fixaAtual,p_competencia:cod===INSS&&comp?comp.split('-').reverse().join('/'):null},{});
   if(r.error){avisa('Não consegui salvar a despesa. Confira a data e tente de novo.',true);return}
   fixaAtual=null;$('d-valor').value='';$('d-obs').value='';$('d-mes').value=$('d-data').value.slice(0,7);await carrega();avisa(r.fila?'Sem internet: despesa guardada no celular. Vai sozinha quando a internet voltar.':'Despesa salva.');

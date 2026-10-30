@@ -126,3 +126,15 @@ function dmedAno(X,ano,desde){const t={};
   for(const x of (X.atendimentos||[]).filter(x=>x.pago!==false&&x.data.startsWith(String(ano))&&x.data>=desde)){
     const k=(x.cpf_pagador||x.cpf)+'|'+x.cpf;t[k]=t[k]||{responsavel_cpf:x.cpf_pagador||x.cpf,paciente:x.paciente,paciente_cpf:x.cpf,valor:0};t[k].valor+=+x.valor}
   return Object.values(t).sort((a,b)=>a.paciente.localeCompare(b.paciente))}
+
+// Valor fora do padrão (ensaio 29/10, obs. 3): "aluguel 150" ou "15 mil" no lugar de 1.500. Mais de 4 vezes acima ou abaixo da mediana
+// do que ela costuma lançar pede confirmação; sem histórico, só os extremos. Serve ao app e ao zap. norm = como comparar nomes.
+const mediana=l=>{const v=l.filter(x=>x>0).sort((a,b)=>a-b),k=v.length>>1;return v.length?(v.length%2?v[k]:(v[k-1]+v[k])/2):null};
+function foraAt(ats,nome,valor,norm=x=>String(x||'').toLowerCase()){const dela=ats.filter(x=>norm(x.paciente)===norm(nome)).map(x=>+x.valor),
+    m=dela.length>=3?mediana(dela):ats.length>=3?mediana(ats.map(x=>+x.valor)):null;
+  if(m&&(valor>m*4||valor<m/4))return {media:m,acima:valor>m,dela:dela.length>=3};
+  return !m&&valor>=5000?{alto:'at'}:null}
+const D_MIN={'P10.01.00002':300};  // aluguel abaixo de R$ 300 quase sempre é zero a menos
+function foraDesp(ds,fixas,cod,valor){const m=mediana(ds.filter(x=>x.codigo===cod).map(x=>+(x.valor_pago||x.valor)).concat((fixas||[]).filter(x=>x.codigo===cod).map(x=>+x.valor)));
+  if(m&&(valor>m*4||valor<m/4))return {media:m,acima:valor>m};
+  return !m&&D_MIN[cod]&&valor<D_MIN[cod]?{baixo:true}:!m&&valor>=10000?{alto:'desp'}:null}
