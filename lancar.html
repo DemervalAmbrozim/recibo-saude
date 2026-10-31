@@ -372,6 +372,14 @@ a{color:var(--accent)}
       <div class="list" id="pl-lista"></div>
       <div class="sub">Pix, boleto ou cartão, na página segura do Asaas. Cancela quando quiser, sem multa no mensal. <a href="termos.html" target="_blank" rel="noopener">Termos e privacidade</a></div>
     </div>
+    <div class="card" id="aj-seg" hidden>
+      <h2>Segurança do acesso</h2>
+      <div class="sub">Você entrou com o seu e-mail. Bloqueou pelo zap, trocou de celular ou esqueceu o PIN? Gere aqui um link novo: os aparelhos e o PIN antigos param de funcionar, e no link novo você cria outro PIN. Sem esperar ninguém.</div>
+      <button type="button" class="small" id="b-meu-link">Gerar link e PIN novos</button>
+      <div id="meu-link" class="sub" aria-live="polite"></div>
+      <label>Trocou de número? Seu WhatsApp novo <input id="meu-zap" inputmode="tel" placeholder="27 99999-9999"></label>
+      <button type="button" class="small" id="b-meu-zap">Salvar o número novo</button>
+    </div>
     <div class="card" id="aj-dados">
       <h2>Seus dados</h2>
       <div class="sub">Baixe tudo num arquivo só: planilhas (pacientes, atendimentos, despesas, livro-caixa de cada mês) e os PDFs dos recibos. Os dados são seus: leve quando quiser.</div>

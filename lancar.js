@@ -96,7 +96,7 @@ async function contaTela(){
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
   $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
     :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Assessoria.'}`:'';
-  $('b-sair').hidden=!c.logada&&!TOK;
+  $('b-sair').hidden=!c.logada&&!TOK;$('aj-seg').hidden=!c.logada||!!TOK;
 }
 // 8i: clínica do grupo. A secretária (ou a Assessoria) emite por procuração para o CPF de quem emite; sem o 025, o cartão fica escondido.
 async function cliTela(){const r=await sb.rpc('minha_clinica',{tok:TOK}),l=r.error?[]:r.data||[];$('aj-cli').hidden=!l.length;
@@ -163,6 +163,13 @@ $('b-cj-quero').onclick=async()=>{$('b-cj-quero').disabled=true;
   const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'cnpj',p_media:CJ?Math.round(CJ.R):null,p_economia:CJ?CJ.eco:null,p_origem:'app'});
   $('b-cj-quero').disabled=false;if(r.error){avisa('Não consegui mandar o pedido. Tente de novo ou fale com a Assessoria.',true);return}
   if(EX)EX.pedido_cnpj='novo';cnpjTela($('i-mes').value);avisa('Pedido enviado. A Assessoria chama você no WhatsApp.')};
+// Desbloqueio sem pessoa (reunião Daniel 31/10, item 42, supabase/032): só com a conta logada pelo e-mail (código de 6 números)
+$('b-meu-link').onclick=async()=>{if(!confirm('Gerar link novo? Os aparelhos e o PIN antigos param de funcionar.'))return;
+  const r=await sb.rpc('meu_link_novo');if(r.error){avisa('Não consegui. Saia e entre de novo com o e-mail.',true);return}
+  const u=new URL('lancar.html#'+r.data,location.href).href;$('meu-link').innerHTML=`Link novo: <a href="${esc(u)}">abrir e criar o PIN</a>. Salve no seu WhatsApp; não repasse.`;avisa('Link novo gerado.')};
+$('b-meu-zap').onclick=async()=>{const r=await sb.rpc('meu_whatsapp',{p_fone:$('meu-zap').value});
+  if(r.error){avisa(/invalido/.test(r.error.message)?'WhatsApp com DDD, ex.: 27 99999-9999.':'Não consegui salvar. Esse número pode já estar em outra conta.',true);return}
+  $('meu-zap').value='';avisa('Número salvo: o zap já reconhece. A Assessoria confere a troca por segurança.')};
 $('pf-recpac').onchange=async e=>{const r=await sb.rpc('link_recibo_paciente',{tok:TOK,p_ok:e.target.checked});  // reunião Daniel 31/10, item 50
   if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar.',true);return}EX.recibo_paciente=e.target.checked;
   avisa(e.target.checked?'Autorizado: o recibo vai direto ao paciente. Cadastre o WhatsApp de cada um na ficha.':'Desligado: os recibos voltam a vir só para você.')};

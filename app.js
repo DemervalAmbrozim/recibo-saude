@@ -489,6 +489,12 @@ $('b-link').onclick=async()=>{const r=await sb.rpc('gerar_link',{prof:S.prof.id}
 $('b-link-copiar').onclick=()=>$('lk-url').value&&copia($('lk-url').value,$('lk-url'));
 // Reunião Daniel 31/10 (item 40): link de acesso (pessoal) separado do link de indicação (para divulgar)
 const indTelaP=()=>{$('ind-url').value=S.prof&&S.prof.codigo_indicacao?`${SITE}/venda.html?ind=${S.prof.codigo_indicacao}`:''};
+// Acesso master (reunião Daniel 31/10, item 43, supabase/032): só o administrador com o 2º fator dele
+$('b-master').onclick=async()=>{const em=$('ms-email').value.trim().toLowerCase();if(!mailOk(em)){avisa('E-mail inválido.',true);return}
+  if(!confirm(`Zerar o 2º fator de ${em}? Confirme antes que é a própria pessoa.`))return;
+  const r=await sb.rpc('admin_zerar_fator',{p_email:em});
+  if(r.error){avisa(/nao encontrado/.test(r.error.message)?'Esse e-mail não tem conta.':/proprio/.test(r.error.message)?'Não dá para zerar o seu próprio.':'Só o administrador, com o 2º fator dele confirmado.',true);return}
+  $('ms-email').value='';avisa(r.data?`2º fator zerado (${r.data}). Ela entra com o código do e-mail e liga um novo.`:'Esse e-mail não tinha 2º fator ligado.')};
 $('b-ind-copiar').onclick=()=>$('ind-url').value?copia($('ind-url').value,$('ind-url')):avisa('Ela ainda não tem código: aparece quando abrir a aba Ajuda do app.',true);
 $('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
   location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link da Lado a Lado Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos. No primeiro acesso você cria um PIN de 4 números. Não encaminhe este link:\n${$('lk-url').value}`);};
