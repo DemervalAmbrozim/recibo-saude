@@ -125,15 +125,26 @@ function cnpjAviso(ats,ds,mes){
 // DAS e INSS do pró-labore vencem no dia 20 do mês seguinte (LC 123, art. 21, III); dia sem expediente: confirmar com o contador.
 const SERVICO={'231':['4.08','Fisioterapia'],'230':['4.08','Fonoaudiologia'],'232':['4.08','Terapia ocupacional'],'255':['4.16','Psicologia'],
   '225':['4.01','Medicina'],'226':['4.12','Odontologia']}; // item da lista da LC 116/2003 para a nota fiscal
-function empresaMes(ats,mes,desde){const pagos=ats.filter(x=>x.pago!==false&&x.data>=desde),rec=k=>soma(pagos.filter(x=>x.data.startsWith(k)));
+// hist (reunião Daniel 31/10, item 47): receita e folha mês a mês vindas do sistema da contabilidade; vale mais que o lançado no app.
+// Com a folha, calcula o Fator R de verdade (folha 12 meses ÷ RBT12) e o pró-labore deste mês que mantém 28% (Anexo III).
+function empresaMes(ats,mes,desde,hist){const pagos=ats.filter(x=>x.pago!==false&&x.data>=desde),H={};(hist||[]).forEach(x=>{H[x.mes]=x});
+  const rec=k=>H[k]&&H[k].receita!=null?+H[k].receita:soma(pagos.filter(x=>x.data.startsWith(k)));
   const [a,m]=mes.split('-').map(Number),ini=desde.slice(0,7);if(mes<ini)return null;
-  const ant=[];for(let k=1;k<=12;k++){const x=dISO(new Date(a,m-1-k,1)).slice(0,7);if(x>=ini)ant.push(rec(x))}
+  const ant=[],meses=[];for(let k=1;k<=12;k++){const x=dISO(new Date(a,m-1-k,1)).slice(0,7);if(x>=ini){ant.push(rec(x));meses.push(x)}}
   const R=rec(mes),rbt=!ant.length?R*12:ant.length<12?ant.reduce((s,v)=>s+v,0)/ant.length*12:ant.reduce((s,v)=>s+v,0);
   const [,al,pd]=A3.find(f=>rbt<=f[0])||A3[A3.length-1],ef=rbt>0?Math.max(0,(rbt*al-pd)/rbt):A3[0][1];
   const P=R>0?Math.max(SM,Math.round(.28*R*100)/100):0,inss=Math.round(.11*Math.min(P,TETO)*100)/100,ir=P?carneLeao(P,inss).devido:0;
   const venc=dISO(new Date(a,m,20));
-  return {R,rbt,ef,das:Math.round(R*ef*100)/100,venc,P,inss,ir,liquido:Math.round((P-inss-ir)*100)/100,primeiroAno:ant.length<12};
+  const comFolha=meses.filter(x=>H[x]&&H[x].folha!=null),folha12=comFolha.reduce((t,x)=>t+ +H[x].folha,0),fr=comFolha.length&&rbt>0?folha12/(rbt*comFolha.length/12):null;
+  const folha11=meses.slice(0,11).reduce((t,x)=>t+(H[x]&&H[x].folha!=null?+H[x].folha:0),0),Pfr=comFolha.length>=11?Math.max(SM,Math.round((.28*rbt-folha11)*100)/100):null;
+  return {R,rbt,ef,das:Math.round(R*ef*100)/100,venc,P,inss,ir,liquido:Math.round((P-inss-ir)*100)/100,primeiroAno:ant.length<12,
+    rbtFonte:meses.some(x=>H[x]&&H[x].receita!=null)?'contador':'app',fatorR:fr===null?null:Math.round(fr*1000)/1000,anexo:fr===null?null:fr>=.28?'III':'V',Pfr};
 }
+// Histórico do contador (item 47): cola a planilha do sistema da contabilidade: competência; receita; folha (pró-labore + salários + encargos)
+function empHist(txt){const out={};for(const l of String(txt||'').split(/\r?\n/)){const m=l.match(/\b(\d{1,2})\/(\d{4})\b|\b(\d{4})-(\d{2})\b/);if(!m)continue;
+    const mes=m[1]?`${m[2]}-${m[1].padStart(2,'0')}`:`${m[3]}-${m[4]}`,vs=(l.replace(m[0],'').match(/\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:\.\d{1,2})?/g)||[]).map(v=>/,/.test(v)||/\.\d{3}$/.test(v)?+v.replace(/\./g,'').replace(',','.'):+v);
+    if(vs.length>=2)out[mes]={mes,receita:vs[0],folha:vs[1]}}
+  return Object.values(out).sort((a,b)=>a.mes<b.mes?-1:1).slice(-36)}
 // Linhas da nota fiscal do mês (uma por pagamento) e da DMED do ano (total por paciente e responsável), a partir do link_exportar
 function notasMes(X,mes,ocup){const [cod,nome]=SERVICO[ocup]||['4.08','Serviço de saúde'];
   return (X.atendimentos||[]).filter(x=>x.pago!==false&&x.data.startsWith(mes)).map(x=>({data:x.data,tomador:x.paciente,cpf:x.cpf_pagador||x.cpf,

@@ -115,8 +115,19 @@ a{color:var(--accent)}
       <h2>Sua empresa <span class="sub" id="emp-cnpj"></span></h2>
       <label>Mês <input type="month" id="emp-mes"></label>
       <div class="list" id="emp-num"></div>
-      <div class="sub">Estimativa para você se organizar, pelo Simples (Anexo III) com o Fator R. Quem apura e emite as guias é o seu contador.</div>
-      <div class="row"><button type="button" id="b-emp-notas">Notas do mês (planilha)</button><button type="button" id="b-emp-dmed">DMED do ano (planilha)</button></div>
+      <div class="sub">Estimativa para você se organizar. Quem apura e emite as guias é o seu contador.</div>
+      <details id="emp-mais"><summary>Ver mais (Fator R, nota fiscal, acesso ao Simples)</summary>
+        <div style="display:grid;gap:10px;margin-top:8px">
+          <div class="list" id="emp-fr"></div>
+          <label>Receita e folha mês a mês, do sistema do seu contador (cole a planilha: competência; receita; folha)
+            <textarea id="emp-hist" rows="3" placeholder="09/2026;9.000,00;2.600,00"></textarea></label>
+          <label>Como você emite a nota fiscal (NFS-e)
+            <select id="emp-nfse"><option value="">Ainda não sei</option><option value="gov">Com o meu login gov.br, no Emissor Nacional</option><option value="a1">Com certificado digital A1</option></select></label>
+          <label id="l-emp-cert" hidden>Validade do certificado A1 <input type="date" id="emp-cert"></label>
+          <button type="button" class="small" id="b-emp-acesso">Salvar</button>
+          <div class="sub"><b>Código de acesso do Simples Nacional</b> (saída quando o e-CAC trava): no Portal do Simples Nacional, "Código de Acesso", gere com o CNPJ, o CPF do responsável e o número do recibo do IR (ou o título de eleitor). Não escreva o código no zap nem no app: mande <b>suporte simples</b> no zap e a Assessoria liga para você anotar no cofre dela. <span id="emp-simples"></span></div>
+          <div class="row"><button type="button" id="b-emp-notas">Notas do mês (planilha)</button><button type="button" id="b-emp-dmed">DMED do ano (planilha)</button></div>
+        </div></details>
     </div>
     <div class="card" id="i-proc" hidden>
       <h2>Falta a sua procuração no e-CAC</h2>

@@ -612,12 +612,27 @@ function empTela(){const tem=!!(EX&&EX.cnpj);$('i-emp').hidden=!tem;
   if(EX){$('emp-c').value=cnpjFmt(EX.cnpj||'');$('emp-d').value=EX.cnpj_desde||''}
   if(!tem)return;$('emp-cnpj').textContent='CNPJ '+cnpjFmt(EX.cnpj);
   if(!$('emp-mes').value)$('emp-mes').value=new Date().toLocaleDateString('sv').slice(0,7);
-  const e=empresaMes(D.atendimentos||[],$('emp-mes').value,EX.cnpj_desde);
+  const e=empresaMes(D.atendimentos||[],$('emp-mes').value,EX.cnpj_desde,EX.empresa_hist||[]),it=([a,b])=>`<div class="item"><div>${a}</div><div class="num">${b}</div></div>`;
+  // Reunião Daniel 31/10 (item 49): "ninguém entende nada disso": em cima só o que ela paga e recebe; o resto em "Ver mais"
+  const P=e&&e.Pfr!=null?e.Pfr:e&&e.P;
   $('emp-num').innerHTML=!e?'<div class="sub">Esse mês é de antes da abertura do CNPJ.</div>':[
-    ['Recebido no mês',brl(e.R)],[`DAS estimado (${(e.ef*100).toFixed(2).replace('.',',')}%), vence ${dBR(e.venc)}`,brl(e.das)],
-    ['Pró-labore para o Fator R (28%)',brl(e.P)],[`INSS retido (11%), vence ${dBR(e.venc)}`,brl(e.inss)],['IR do pró-labore',brl(e.ir)],['Você recebe de pró-labore',brl(e.liquido)]]
-    .map(([a,b])=>`<div class="item"><div>${a}</div><div class="num">${b}</div></div>`).join('')
-    +(e.primeiroAno?'<div class="sub">Primeiro ano da empresa: a faixa do Simples é proporcional aos meses de atividade.</div>':'')}
+    [`Imposto da empresa (DAS), vence ${dBR(e.venc)}`,brl(e.das)],[`Seu pró-labore${e.Pfr!=null?' (o que mantém o Fator R)':''}`,brl(P)],[`INSS do pró-labore, vence ${dBR(e.venc)}`,brl(e.inss)]].map(it).join('');
+  $('emp-fr').innerHTML=!e?'':[['Recebido no mês',brl(e.R)],[`Receita dos últimos 12 meses (RBT12, ${e.rbtFonte==='contador'?'do seu contador':'estimada pelo app'})`,brl(e.rbt)],
+    [`Alíquota efetiva do DAS`,(e.ef*100).toFixed(2).replace('.',',')+'%'],
+    ...(e.fatorR!=null?[[`Fator R (folha ÷ receita, 12 meses)`,`${(e.fatorR*100).toFixed(1).replace('.',',')}% · Anexo ${e.anexo}`]]:[]),
+    ['IR do pró-labore',brl(e.ir)],['Você recebe de pró-labore',brl(e.liquido)]].map(it).join('')
+    +(e.fatorR!=null&&e.anexo==='V'?`<div class="sub">⚠️ Abaixo de 28%: o DAS sobe (Anexo V). Ajustar o pró-labore deste mês para <b>${brl(e.Pfr)}</b> leva o Fator R a 28%. Confirme com o seu contador.</div>`:'')
+    +(e.fatorR==null?'<div class="sub">Para o Fator R de verdade, cole abaixo a receita e a folha dos últimos 12 meses do sistema do seu contador.</div>':'')
+    +(e.primeiroAno?'<div class="sub">Primeiro ano da empresa: a faixa do Simples é proporcional aos meses de atividade.</div>':'');
+  $('emp-nfse').value=EX.nfse_acesso||'';$('emp-cert').value=EX.cert_validade||'';$('l-emp-cert').hidden=$('emp-nfse').value!=='a1';
+  $('emp-simples').textContent=EX.simples_codigo_em?`A Assessoria confirmou o código em ${dBR(EX.simples_codigo_em)}.`:'A Assessoria ainda não tem o seu código.'}
+$('emp-nfse').onchange=()=>{$('l-emp-cert').hidden=$('emp-nfse').value!=='a1'};
+$('b-emp-acesso').onclick=async()=>{const h=$('emp-hist').value.trim()?empHist($('emp-hist').value):null;
+  if($('emp-hist').value.trim()&&!h.length){avisa('Não achei meses na planilha. Use: competência; receita; folha (ex.: 09/2026;9.000,00;2.600,00).',true);return}
+  if($('emp-nfse').value==='a1'&&!$('emp-cert').value){avisa('Informe a validade do certificado A1.',true);return}
+  const r=await sb.rpc('link_empresa_acesso',{tok:TOK,p_nfse:$('emp-nfse').value||null,p_cert:$('emp-cert').value||null,p_hist:h});
+  if(r.error){avisa('Não consegui salvar. Confira a planilha e a validade.',true);return}
+  if(h)EX.empresa_hist=h;EX.nfse_acesso=$('emp-nfse').value||null;EX.cert_validade=$('emp-cert').value||null;$('emp-hist').value='';empTela();avisa(h?`Salvo: ${h.length} meses do seu contador.`:'Salvo.')};
 $('emp-mes').onchange=empTela;
 $('b-emp').onclick=async()=>{const r=await sb.rpc('link_empresa',{tok:TOK,p_cnpj:$('emp-c').value,p_desde:$('emp-d').value||null});
   if(r.error){avisa(/cnpj/.test(r.error.message)?'CNPJ inválido. Confira os números.':'Confira a data de abertura.',true);return}

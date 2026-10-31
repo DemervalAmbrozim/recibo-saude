@@ -62,7 +62,7 @@ async function entrar(again){
 $('prof-sel').onchange=()=>abrir($('prof-sel').value);
 
 async function abrir(id){
-  S.prof=PROFS.find(p=>p.id===id);
+  S.prof=PROFS.find(p=>p.id===id);indTelaP();
   const [p,a,d,l,lc]=await Promise.all([
     sb.from('pacientes').select('*').eq('profissional_id',id).eq('ativo',true),
     sb.from('atendimentos').select('*').eq('profissional_id',id),
@@ -220,13 +220,21 @@ function fech(){
   $('f-total').textContent=brl(tot);
   const ap=apura(pagos(),S.desp,mes), cl=ap.cl;
   const [aa,mm]=mes.split('-').map(Number), venc=ultimoDiaUtil(aa,mm), dv=ap.darf;
+  // Analítico (reunião Daniel 31/10, item 36): cada valor abre os lançamentos que o formam
+  const dm=S.desp.filter(d=>d.data.startsWith(mes)),ln=d=>[`${dBR(d.data)} · ${esc(nomeCod(d.codigo))}`,brl(d.valor)];
+  const ANALIT={'Recebido no mês':pagos().filter(a=>a.data.startsWith(mes)).sort((x,y)=>x.data<y.data?-1:1).map(a=>[`${dBR(a.data)} · ${esc((pacDe(a.paciente_id)||{}).nome||'')} · ${esc(a.forma||'')}`,brl(a.valor)]),
+    'Livro-caixa lançado no mês':dm.filter(d=>d.codigo!==INSS).map(ln),'INSS pago no mês':dm.filter(d=>d.codigo===INSS).map(ln),
+    'Livro-caixa usado (até o recebido)':[['Lançado no mês',brl(ap.lc)],['Sobra de meses anteriores',brl(ap.anterior)],['Limite: o recebido no mês',brl(tot)]],
+    'Carnê-Leão do mês':[['Base de cálculo',brl(cl.base)],['Imposto pela tabela',brl(cl.bruto)],['(−) Redução de 2026',brl(cl.red)]],
+    'Carnê-Leão a pagar':[['Carnê-Leão do mês',brl(cl.devido)],['(+) DARF abaixo de R$ 10 de meses anteriores',brl(dv.vem)]]};
   $('f-calc').innerHTML=[['Recebido no mês',brl(tot)],['Livro-caixa lançado no mês',brl(ap.lc)],...(ap.anterior>0?[['Sobra de meses anteriores',brl(ap.anterior)]]:[]),['Livro-caixa usado (até o recebido)',brl(ap.usado)],
     ...(ap.inss>0?[['INSS pago no mês',brl(ap.inss)]]:[]),[cl.usaSimpl?'Desconto simplificado (maior que as deduções)':'Total de deduções',brl(cl.deducao)],
     ...(ap.sobra>0?[['Sobra que passa para o mês seguinte',brl(ap.sobra)]]:[]),
     ['Base de cálculo',brl(cl.base)],['Imposto pela tabela',brl(cl.bruto)],['Redução de 2026',brl(cl.red)],
     ['Carnê-Leão do mês',brl(cl.devido)],...(dv.vem>0?[['Somado de meses anteriores (DARF abaixo de R$ 10)',brl(dv.vem)]]:[]),
     ['<b>Carnê-Leão a pagar</b>',`<b>${brl(dv.pagar)}</b>`],['Vencimento',dv.pagar>0?venc.toLocaleDateString('pt-BR'):dv.adia?`abaixo de R$ 10: ${brl(dv.total)} passam para o mês seguinte`:'nada a pagar']]
-    .map(([a,b])=>`<div class="item"><span>${a}</span><span class="num">${b}</span></div>`).join('')+'<div class="sub">Tabela de 2026 conferida na Receita em 18/10/2026. O valor que vale é o do Carnê-Leão Web.</div>';
+    .map(([a,b])=>{const l=ANALIT[a.replace(/<[^>]+>/g,'')];return l&&l.length?`<details class="item" style="display:block"><summary style="display:flex;justify-content:space-between;cursor:pointer"><span>${a} <small>(${l.length})</small></span><span class="num">${b}</span></summary>${l.map(x=>`<div class="meta" style="display:flex;justify-content:space-between;padding:2px 0 2px 12px"><span>${x[0]}</span><span>${x[1]}</span></div>`).join('')}</details>`
+      :`<div class="item"><span>${a}</span><span class="num">${b}</span></div>`}).join('')+'<div class="sub">Toque num valor para ver os lançamentos que o formam. Tabela de 2026 conferida na Receita em 18/10/2026. O valor que vale é o do Carnê-Leão Web.</div>';
   const m=$('f-meter');m.className='meter'+(tot>LIM2?' bad':tot>LIM*0.9?' warn':'');
   m.firstElementChild.style.width=Math.min(100,tot/LIM2*100)+'%';
   $('f-faixa').textContent=tot<=LIM?`Dentro da isenção de 2026: faltam ${brl(LIM-tot)} para ${brl(LIM)}.`
@@ -285,10 +293,29 @@ function loteTela(mes){const ls=S.lotes.filter(l=>l.tipo==='recibos'&&l.mes===me
     <span class="pill ${l.confirmado_em?'':'pend'}">${l.confirmado_em?'confirmado pela Receita em '+new Date(l.confirmado_em).toLocaleDateString('pt-BR'):'arquivo gerado, falta confirmar'}</span></div>`).join('')
     :'<div class="sub">Nenhum arquivo gerado neste mês.</div>';}
 const numerosRecibo=t=>[...new Set(String(t).match(/\b\d{3}\.\d{3}\.\d{2}\.\d{5}\b/g)||[])];
+// Conferência automática do retorno (reunião Daniel 31/10, item 37): compara o que subiu com a lista da Receita, recibo a recibo,
+// quando a lista traz o valor (e o CPF) de cada um. O que não voltou volta sozinho para "falta recibo" e sai no próximo arquivo;
+// só vai ao contador o que o sistema não resolve (recibo que voltou e não foi enviado, ou lista sem valor que não bate).
+function retornoReceita(txt,l){const ls=String(txt).split(/\r?\n/).map(x=>({n:(x.match(/\b\d{3}\.\d{3}\.\d{2}\.\d{5}\b/)||[])[0],v:(x.replace(/\b\d{3}\.\d{3}\.\d{2}\.\d{5}\b/g,'').match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?!\d)/)||[])[1],
+    c:so((x.match(/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b|(?<![\d.])\d{11}(?![\d.])/)||[])[0])})).filter(x=>x.n);
+  if(!ls.length||ls.some(x=>!x.v))return null;  // lista só com números: confere pela quantidade
+  const g={};S.at.filter(a=>a.lote_id===l.id).forEach(a=>{const k=a.paciente_id+'|'+a.data;(g[k]=g[k]||{ids:[],v:0,p:pacDe(a.paciente_id)}).ids.push(a.id);g[k].v+= +a.valor});
+  const env=Object.values(g),usados=new Set(),sobra=[];
+  for(const x of ls){const v=+x.v.replace(/\./g,'').replace(',','.'),i=env.findIndex((e,k)=>!usados.has(k)&&Math.abs(e.v-v)<0.01&&(!x.c||x.c===so(e.p.cpf)||x.c===so(e.p.cpf_pagador)));
+    if(i<0)sobra.push(x);else usados.add(i)}
+  return {ns:ls.map(x=>x.n),falta:env.filter((e,k)=>!usados.has(k)),sobra}}
 $('b-confirmar').onclick=async()=>{const mes=$('f-mes').value, ns=numerosRecibo($('f-receita').value);
   const l=S.lotes.filter(x=>x.tipo==='recibos'&&x.mes===mes&&!x.confirmado_em).sort((a,b)=>a.criado_em.localeCompare(b.criado_em))[0];
   if(!l){avisa('Não há arquivo deste mês esperando confirmação.',true);return}
   if(!ns.length){avisa('Não achei números de recibo no texto colado (formato 084.009.26.00033).',true);return}
+  const rt=retornoReceita($('f-receita').value,l);
+  if(rt){if(rt.sobra.length){avisa(`${rt.sobra.length} recibo(s) da Receita não batem com nada que foi enviado (${rt.sobra.map(x=>x.n).join(', ')}). Isso o sistema não resolve sozinho: leve ao contador antes de confirmar.`,true);return}
+    const ids=rt.falta.flatMap(e=>e.ids);
+    if(ids.length&&falhou(await sb.from('atendimentos').update({lote_id:null}).in('id',ids),'devolver os que não voltaram'))return;
+    ids.forEach(id=>{const a=S.at.find(x=>x.id===id);if(a)a.lote_id=null});
+    const r=await sb.from('lotes').update({confirmado_em:new Date().toISOString(),recibos:rt.ns,linhas:rt.ns.length}).eq('id',l.id).select().single();
+    if(falhou(r,'confirmar os recibos'))return;Object.assign(l,r.data);$('f-receita').value='';render();loteTela(mes);
+    avisa(`${rt.ns.length} recibo(s) conferidos um a um com a Receita.`+(rt.falta.length?` ${rt.falta.length} não voltaram (${rt.falta.map(e=>e.p.nome.split(' ')[0]+' '+brl(e.v)).join(', ')}): voltaram para "falta recibo" e saem no próximo arquivo.`:''));return}
   if(ns.length!==l.linhas&&!confirm(`A lista da Receita tem ${ns.length} recibo(s), mas o arquivo tinha ${l.linhas}. Confira no Carnê-Leão antes. Confirmar mesmo assim?`))return;
   const r=await sb.from('lotes').update({confirmado_em:new Date().toISOString(),recibos:ns}).eq('id',l.id).select().single();
   if(falhou(r,'confirmar os recibos'))return;
@@ -371,7 +398,7 @@ function admTela(){
       ${p.plano_pedido||COBS[p.id]||p.fundadora?`<div class="meta">${[p.plano_pedido&&`pediu ${PLANO[p.plano_pedido]} (${p.ciclo||'mensal'})`,p.fundadora&&'fundadora −30%',
         COBS[p.id]&&`cobrança ${brl(+COBS[p.id].valor)} · vence ${dBR(COBS[p.id].vencimento).slice(0,5)} · ${COBS[p.id].status}`].filter(Boolean).join(' · ')}</div>`:''}</div>
       ${p.pretende_cnpj||p.aceita_novidades?`<div class="meta">${[p.pretende_cnpj&&`CNPJ em 2027: ${{sim:'pretende',talvez:'talvez',nao:'não pretende'}[p.pretende_cnpj]}`,p.aceita_novidades&&'aceita novidades no zap'].filter(Boolean).join(' · ')}</div>`:''}</div>
-      <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div><div class="meta">${PROC[p.procuracao||'pendente']}</div></div>
+      <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div><div class="meta">${PROC[p.procuracao||'pendente']}</div>${p.cnpj?`<div class="meta">CNPJ · nota: ${p.nfse_acesso==='a1'?(p.cert_validade?`A1 até ${dBR(p.cert_validade)}${p.cert_validade<=dISO(new Date(Date.now()+30*864e5))?' ⚠️ vence':''}`:'A1 sem validade'):p.nfse_acesso==='gov'?'login gov.br':'acesso não informado'}${p.simples_codigo_em?' · código do Simples ok':' · sem código do Simples'}</div>`:''}</div>
       <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`
           :`<input data-fone-in="${p.id}" inputmode="tel" placeholder="WhatsApp com DDD" style="width:auto;max-width:170px;padding:6px 8px"><button class="small" data-fone="${p.id}" type="button">Salvar WhatsApp</button>`}
         ${p.drive_contas&&/^https:\/\/drive\.google\.com\//.test(p.drive_contas)?`<a class="btn" target="_blank" rel="noopener" href="${esc(p.drive_contas)}" title="Pasta do Drive dela com as contas fixas (item 31)">Contas no Drive</a>`:''}
@@ -380,6 +407,7 @@ function admTela(){
         <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op(PLANO,p.plano||'')}</select>
         <button class="small" data-proc="${p.id}" type="button">${p.procuracao==='conferida'?'Desfazer procuração':'Procuração conferida'}</button>
         <button class="small" data-pin="${p.id}" type="button">Zerar PIN</button>
+        ${p.cnpj?`<button class="small" data-simples="${p.id}" type="button">${p.simples_codigo_em?'Desfazer código do Simples':'Código do Simples recebido'}</button>`:''}
         <button class="small" data-fundadora="${p.id}" type="button">${p.fundadora?'Tirar fundadora':'Fundadora −30%'}</button>
         ${s==='teste'||s==='leitura'?`<button class="small" data-mais30="${p.id}" type="button">+30 dias de teste</button>`:''}</div></div>`}).join('')
     :'<div class="sub">Nenhuma profissional neste filtro.</div>';
@@ -427,6 +455,7 @@ document.addEventListener('click',e=>{const t=e.target.dataset||{};
   if(t.proc){const p=PROFS.find(x=>x.id===t.proc),conf=p.procuracao!=='conferida';
     admMuda(p.id,{procuracao:conf?'conferida':'pendente'},conf?'Procuração conferida: já dá para emitir por ela.':'Procuração voltou para pendente.');
     if(conf)sb.from('pedidos').update({situacao:'feito',atualizado:new Date().toISOString()}).eq('profissional_id',p.id).eq('tipo','procuracao').in('situacao',['novo','conversando']).then(pedTela)}
+  if(t.simples){const p=PROFS.find(x=>x.id===t.simples);admMuda(p.id,{simples_codigo_em:p.simples_codigo_em?null:hojeISO()},p.simples_codigo_em?'Código do Simples desmarcado.':'Código do Simples marcado como recebido (guarde no cofre da Assessoria, nunca no Git).')}
   if(t.conselho){const p=PROFS.find(x=>x.id===t.conselho);admMuda(p.id,{conselho_ok:!p.conselho_ok},p.conselho_ok?'Conferência desfeita.':'Conselho marcado como conferido.')}
   if(t.fone){const f=so(document.querySelector(`[data-fone-in="${t.fone}"]`).value).replace(/^55(?=\d{10,11}$)/,'');
     if(!/^\d{10,11}$/.test(f)){avisa('WhatsApp com DDD, ex.: 27 99999-9999.',true);return}
@@ -458,6 +487,9 @@ async function linkTela(){
 $('b-link').onclick=async()=>{const r=await sb.rpc('gerar_link',{prof:S.prof.id});
   if(falhou(r,'gerar o link'))return;$('lk-url').value=urlLink(r.data);avisa('Link novo gerado. O anterior parou de funcionar.');};
 $('b-link-copiar').onclick=()=>$('lk-url').value&&copia($('lk-url').value,$('lk-url'));
+// Reunião Daniel 31/10 (item 40): link de acesso (pessoal) separado do link de indicação (para divulgar)
+const indTelaP=()=>{$('ind-url').value=S.prof&&S.prof.codigo_indicacao?`${SITE}/venda.html?ind=${S.prof.codigo_indicacao}`:''};
+$('b-ind-copiar').onclick=()=>$('ind-url').value?copia($('ind-url').value,$('ind-url')):avisa('Ela ainda não tem código: aparece quando abrir a aba Ajuda do app.',true);
 $('b-link-zap').onclick=()=>{if(!$('lk-url').value)return;
   location.href='https://wa.me/?text='+encodeURIComponent(`Olá! Este é o seu link da Lado a Lado Saúde. Salve esta mensagem. Depois de cada atendimento, abra o link e lance paciente e valor. No fim, toque em "Enviar para a Assessoria pelo WhatsApp" que nós emitimos os recibos. No primeiro acesso você cria um PIN de 4 números. Não encaminhe este link:\n${$('lk-url').value}`);};
 

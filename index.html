@@ -261,10 +261,16 @@ a{color:var(--accent)}
       <button class="pri" type="submit">Salvar</button>
     </form>
     <div class="card">
-      <h2>Link da profissional (WhatsApp)</h2>
-      <div class="sub">A profissional lança os atendimentos por este link, sem login, e manda o resumo para o WhatsApp da Assessoria. Gerar um link novo desliga o anterior.</div>
+      <h2>Link de ACESSO da profissional (pessoal)</h2>
+      <div class="sub"><b>Não é para divulgar:</b> é a chave dela para lançar sem login (protegida pelo PIN). Só ela recebe. Gerar um link novo desliga o anterior. Para trazer clientes, use o link de indicação abaixo.</div>
       <input id="lk-url" readonly class="mono">
       <div class="btns"><button id="b-link" type="button">Gerar link</button><button id="b-link-copiar" type="button">Copiar link</button><button id="b-link-zap" type="button">Mandar link pelo WhatsApp</button></div>
+    </div>
+    <div class="card">
+      <h2>Link de INDICAÇÃO (para divulgar)</h2>
+      <div class="sub">Este pode ir para colegas, grupo da clínica, Instagram: quem entra por ele testa 60 dias e a profissional ganha 1 mês por colega que assinar. O consultório também pode usar.</div>
+      <input id="ind-url" readonly class="mono" placeholder="Aparece depois que ela abre a aba Ajuda do app uma vez">
+      <div class="btns"><button id="b-ind-copiar" type="button">Copiar link de indicação</button></div>
     </div>
     <div class="card">
       <h2>Acesso do assessor</h2>
