@@ -71,6 +71,8 @@ async function abrir(id){
     sb.from('locais').select('*').eq('profissional_id',id).eq('ativo',true).order('criado_em')]);
   if([p,a,d,l,lc].some(r=>falhou(r,'carregar os dados')))return;
   S.locais=lc.data;
+  // pacotes (018): só a equipe lê; contador segue sem a composição do pacote
+  const pk=await sb.from('pacotes').select('atendimento_id,sessoes').eq('profissional_id',id);S.pacotes=pk.error?[]:pk.data;
   S.pac=p.data; S.at=a.data.map(x=>({...x,valor:+x.valor})); S.desp=d.data.map(x=>({...x,valor:+x.valor,valor_pago:x.valor_pago==null?null:+x.valor_pago})); S.lotes=l.data;
   cfgTela();render();locaisTela();despTela();acessosTela();linkTela();if(!$('t-fech').hidden)fech();
 }
@@ -201,11 +203,16 @@ function recibos(mes){
   // com os dias das sessões na descrição. A caixa "Juntar" segue para quem recebe tudo no fim do mês sem lançar como "a receber".
   const g={};pend.forEach(a=>{const k=$('f-agrupa').checked?a.paciente_id:a.data_atend?a.paciente_id+a.data:a.id;
     const r=g[k]||(g[k]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
-    r.valor+=a.valor;r.datas.push(a.data_atend||a.data);r.ids.push(a.id);if(a.data>r.data)r.data=a.data});
+    r.valor+=a.valor;r.datas.push(a.data_atend||a.data);r.ids.push(a.id);(r.itens=r.itens||[]).push({d:a.data_atend||a.data,v:a.valor,pac:(S.pacotes||[]).find(k=>k.atendimento_id===a.id)});if(a.data>r.data)r.data=a.data});
   return Object.values(g);
 }
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 // Sessões de meses diferentes (recebidas depois, obs. 9): "nos dias 28 e 30 de Setembro e 02 de Outubro de 2026"
+// Composição no campo de observação (reunião Daniel 31/10, item 2): pacote = quantas sessões e o valor de cada;
+// várias sessões pagas juntas = o dia e o valor de cada uma. A Receita aceita até 255 caracteres.
+function compRecibo(itens){if(!itens||!itens.length)return '';const k=itens.find(x=>x.pac);
+  if(k)return ` Pacote de ${k.pac.sessoes} sessoes, ${brl(k.v/k.pac.sessoes).replace(/\u00a0/g,' ')} cada.`;
+  if(itens.length<2)return '';return ' Composicao: '+itens.slice().sort((a,b)=>a.d<b.d?-1:1).map(x=>`${dBR(x.d).slice(0,5)} ${brl(x.v).replace(/\u00a0/g,' ')}`).join(' / ')+'.'}
 function descRecibo(base,datas){
   const ds=[...new Set(datas)].sort(), e=l=>l.length>1?l.slice(0,-1).join(', ')+' e '+l.at(-1):l[0], g=[];
   ds.forEach(d=>{const k=d.slice(0,7),u=g.at(-1);u&&u.k===k?u.dias.push(d.slice(8)):g.push({k,dias:[d.slice(8)]})});
@@ -248,7 +255,7 @@ function fech(){
   const antes=S.lotes.filter(l=>l.tipo==='recibos'&&l.mes===mes);
   if(antes.length&&rs.length)erros.push(`Este mês já teve importação em ${new Date(antes[0].criado_em).toLocaleDateString('pt-BR')}. A lista abaixo traz só os atendimentos novos.`);
   const linhas=rs.map(r=>{const p=pacDe(r.pac);
-    const desc=ascii(descRecibo(c.descricao,r.datas)).slice(0,255);
+    const desc=ascii(descRecibo(c.descricao,r.datas)+compRecibo(r.itens)).slice(0,255);
     return [dBR(r.data),'R01.001.001',c.ocupacao,vcsv(r.valor),'',desc,'PF',p.cpf_pagador||p.cpf,p.cpf,'','','','','S',so(c.cpf),ascii(c.registro)].join(';');});
   $('f-lista').innerHTML=rs.length?rs.map(r=>`<div class="item"><div><b>${esc(pacDe(r.pac).nome)}</b><div class="meta">${r.datas.map(dBR).join(', ')}</div></div><div class="num">${brl(r.valor)}</div></div>`).join('')
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
