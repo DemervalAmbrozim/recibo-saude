@@ -370,6 +370,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(est.confirma){const r=await zConfirma(t,D,api,est,hoje);if(r!==undefined)return r}
   if(est.guia){const r=await gResponde(t,linha,D,api,est,hoje);if(r!==undefined)return r}
   if(est.fluxo){const r=await fResponde(t,linha,D,api,est,hoje);if(r!==undefined)return r}
+  if(G_SAIR.test(t))return 'Nada em andamento. Mande *ajuda* para ver as opções.';
   if(/^(lancar|lanca|lancamento|novo atendimento|atendimento)$/.test(t))return gInicio(D,est,hoje);
   if(/^(recebi|recebimento|recebeu|pagou|receber pagamento)$/.test(t))return fInicio('rec',D,api,est,hoje);
   if(/^(despesa|nova despesa|conta|lancar despesa)$/.test(t))return fInicio('desp',D,api,est,hoje);
