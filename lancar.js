@@ -144,7 +144,7 @@ async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});i
   $('proc-sit').textContent=env?`Recebemos o seu aviso${EX.procuracao_em?' em '+new Date(EX.procuracao_em).toLocaleDateString('pt-BR'):''}. A Assessoria confere no e-CAC em até 1 dia útil.`
     :'Com ela a Assessoria emite os seus recibos no Receita Saúde. Leva 5 minutos e não precisa passar senha.';
   $('i-proc').querySelector('h2').textContent=env?'Procuração em conferência':'Falta a sua procuração no e-CAC';
-  $('pf-novidades').checked=!!EX.aceita_novidades;if(D)cnpjTela($('i-mes').value)}
+  $('pf-novidades').checked=!!EX.aceita_novidades;$('pf-recpac').checked=!!EX.recibo_paciente;if(D)cnpjTela($('i-mes').value)}
 $('proc-passos').ontoggle=()=>$('proc-passos').dataset.visto=1;
 $('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-CAC para o CPF do responsável pela Assessoria, com o serviço IRPF - Carnê Leão Web?'))return;
   const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'procuracao',p_media:null,p_economia:null,p_origem:'app'});
@@ -163,6 +163,9 @@ $('b-cj-quero').onclick=async()=>{$('b-cj-quero').disabled=true;
   const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'cnpj',p_media:CJ?Math.round(CJ.R):null,p_economia:CJ?CJ.eco:null,p_origem:'app'});
   $('b-cj-quero').disabled=false;if(r.error){avisa('Não consegui mandar o pedido. Tente de novo ou fale com a Assessoria.',true);return}
   if(EX)EX.pedido_cnpj='novo';cnpjTela($('i-mes').value);avisa('Pedido enviado. A Assessoria chama você no WhatsApp.')};
+$('pf-recpac').onchange=async e=>{const r=await sb.rpc('link_recibo_paciente',{tok:TOK,p_ok:e.target.checked});  // reunião Daniel 31/10, item 50
+  if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar.',true);return}EX.recibo_paciente=e.target.checked;
+  avisa(e.target.checked?'Autorizado: o recibo vai direto ao paciente. Cadastre o WhatsApp de cada um na ficha.':'Desligado: os recibos voltam a vir só para você.')};
 $('pf-novidades').onchange=async e=>{const r=await sb.rpc('link_preferencias',{tok:TOK,p_cnpj:null,p_novidades:e.target.checked});
   if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar a preferência.',true);return}avisa(e.target.checked?'Combinado: avisamos as novidades no WhatsApp.':'Pronto: sem avisos de novidades.')};
 
@@ -445,6 +448,8 @@ function telaAg(){$('ag-lista').innerHTML=agenda().map(itemAg).join('')||'<div c
 
 // ---------- Ajuda ----------
 const AJUDA=[
+  ['Se eu sair, levo meus dados?','Sim, os dados são seus. Em Ajuda > Seus dados, "Baixar todos os meus dados" traz pacientes, atendimentos, despesas, livro-caixa de cada mês e os PDFs dos recibos. Sem custo e a qualquer hora.'],
+  ['Uso no celular ou no computador?','Nos dois. O dia a dia é pelo WhatsApp. O app abre no navegador do celular (Ajuda > Instalar põe o atalho na tela inicial) ou do computador; relatórios e conferências ficam melhores no computador.'],
   ['Até quanto não pago Carnê-Leão?','Em 2026, quem recebe até R$ 5.000 no mês não paga. De R$ 5.000 a R$ 7.350 o imposto tem desconto parcial. A barra no Início mostra onde você está.'],
   ['Quais despesas abatem?','Aluguel, condomínio, energia, água, gás, telefone, internet e IPTU do local onde você atende, anuidade do CREFITO, ISS, material de limpeza e de escritório e salário de funcionário.'],
   ['Atendo na minha casa. Posso abater?','Sim, mas só 1/5 (20%) das contas da casa, porque ela também é moradia. Cadastre a casa como local "Minha casa, que também é consultório" e o app faz a conta.'],
