@@ -392,11 +392,32 @@ async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedido
   if(f==='aberto')q=q.in('situacao',['novo','conversando']);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
-      ${x.obs&&x.tipo==='suporte'?`<div class="meta" style="white-space:pre-wrap">${esc(x.obs)}</div>`:''}
+      ${x.obs&&x.tipo==='suporte'?`<div class="meta" style="white-space:pre-wrap">${esc(x.obs)}</div>`+bibForm(x):''}
       ${x.media?`<div class="meta">média ${brl(+x.media)}/mês · economia estimada ${brl(+x.economia||0)}/mês</div>`:''}</div>
       <div><select data-ped="${x.id}" style="width:auto;padding:6px 8px" aria-label="Situação do pedido">${op(x.situacao)}</select></div></div>`).join('')
     :'<div class="sub">Nenhum pedido aberto.</div>'}
 $('adm-ped-filtro').onchange=pedTela;
+// Biblioteca do zap (reunião Daniel 31/10, itens 18-19, supabase/028): a resposta aprovada aqui passa a valer no zap para todas.
+// Pergunta nova ("Biblioteca nova") é preparada com a fonte; uma pessoa aprova. Nada vai à cliente só com a IA.
+const bibForm=x=>/Biblioteca nova/.test(x.obs)&&!['feito','desistiu'].includes(x.situacao)?`<details style="margin-top:6px"><summary class="meta">Responder e guardar na biblioteca</summary>
+  <input data-bib-p="${x.id}" placeholder="Pergunta, sem nome de paciente" value="${esc((x.obs.match(/\] (.*)$/m)||[])[1]||'').replace(/\d{3,}/g,'…')}">
+  <input data-bib-c="${x.id}" placeholder="Palavras-chave, separadas por vírgula (ex.: domicílio, unimed)">
+  <textarea data-bib-r="${x.id}" rows="4" placeholder="Resposta que vai no zap (curta, com o que fazer)"></textarea>
+  <input data-bib-f="${x.id}" placeholder="Fonte (lei, IN, Perguntas e Respostas IRPF nº)">
+  <button type="button" class="small" data-bib="${x.id}">Aprovar e guardar</button></details>`:'';
+// Lote (item 19): junta as perguntas novas abertas, sem números (CPF, telefone), num pedido para a IA preparar as respostas com a fonte
+async function bibLote(){const r=await sb.from('pedidos').select('obs').eq('tipo','suporte').in('situacao',['novo','conversando']).ilike('obs','%Biblioteca nova%');
+  if(falhou(r,'juntar as perguntas'))return;const qs=r.data.flatMap(x=>x.obs.split('\n').filter(l=>/Biblioteca nova\]/.test(l)).map(l=>l.replace(/^.*?\] /,'').replace(/\d{3,}/g,'…')));
+  if(!qs.length){avisa('Nenhuma pergunta nova aberta.');return}
+  const txt=`Prepare a resposta de cada pergunta abaixo para profissionais da saúde pessoa física (Receita Saúde, Carnê-Leão, livro-caixa). Para cada uma: palavras-chave, resposta curta para o WhatsApp (o que fazer) e a fonte oficial (lei, IN, Perguntas e Respostas IRPF). Se a resposta depender de parecer do contador, diga isso.\n\n`+qs.map((q,i)=>`${i+1}. ${q}`).join('\n');
+  try{await navigator.clipboard.writeText(txt);avisa(`${qs.length} pergunta${qs.length===1?'':'s'} copiada${qs.length===1?'':'s'}: cole na IA, confira a fonte e aprove cada resposta aqui.`)}catch(e){prompt('Copie o texto:',txt)}}
+if($('adm-bib-lote'))$('adm-bib-lote').onclick=bibLote;
+document.addEventListener('click',async e=>{const id=(e.target.dataset||{}).bib;if(!id)return;const v=k=>document.querySelector(`[data-bib-${k}="${id}"]`).value.trim();
+  const chaves=v('c').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean),reg={pergunta:v('p'),chaves,resposta:v('r'),fonte:v('f')||null};
+  if(!chaves.length||reg.resposta.length<10||reg.pergunta.length<3){avisa('Preencha a pergunta, as palavras-chave e a resposta.',true);return}
+  if(falhou(await sb.from('biblioteca').insert(reg),'guardar na biblioteca'))return;
+  await sb.from('pedidos').update({situacao:'feito',atualizado:new Date().toISOString()}).eq('id',id);pedTela();
+  avisa('Guardada: o zap já responde essa pergunta. Mande a resposta a ela pelo WhatsApp.')});
 async function admMuda(id,novo,msg){
   if(falhou(await sb.from('profissionais').update(novo).eq('id',id),'mudar a conta'))return;
   PROFS.filter(p=>p.id===id).forEach(p=>Object.assign(p,novo));admTela();avisa(msg);}

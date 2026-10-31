@@ -71,6 +71,7 @@ const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • o código do boleto (confiro se não é adulterado)
 • *conferir* (o que olhar no gov.br a cada trimestre)
 • *indicar* (seu código para indicar uma colega)
+• pergunte do seu jeito: *como baixo meus dados?*, *quando vence o DARF?*, *onde vejo o relatório do IR?*
 • *suporte* e o que aconteceu (fala com uma pessoa)`;
 
 // A receber há mais de 30 dias (ensaio 29/10, obs. 9): acumular pagamento atrasa o recibo e embola o Carnê-Leão do mês em que o dinheiro entra
@@ -154,6 +155,22 @@ const PERGUNTAS=[
   [/aluguel|condominio|luz|energia|agua|internet|telefone|iptu/,`Abate, se for do lugar onde você atende ${ART68}: consultório ou sala, 100%; casa que também é consultório, 1/5 das contas. Lance em *despesa*.`],
   [/anuidade|crefito|crp\b|conselho|crefono|cro\b|crm\b/,`A anuidade do conselho abate: é obrigatória para trabalhar (Perguntas e Respostas IRPF 2026, nº 439; ${ART68.slice(1,-1)}). Lance em despesas e guarde o boleto pago.`],
   [/plano de saude|escola|faculdade dos filhos|medico|dentista|remedio|farmacia|previdencia privada|pgbl/,`Isso não entra no livro-caixa do mês: é dedução da declaração anual do IR (saúde, educação, PGBL), com regras próprias.`+CONTADOR_Q]];
+// Biblioteca de respostas (reunião Daniel 31/10, itens 18-21): antes de chamar uma pessoa, o zap procura aqui.
+// Fixas (conferidas pelo Hexa, com a fonte) + as aprovadas no painel (tabela biblioteca, D.biblioteca), que entram sozinhas.
+// Tema que não está aqui não se improvisa: vira pedido "Biblioteca nova"; uma pessoa aprova a resposta e ela passa a valer para todas.
+const BIB=[
+  [/baixar|exportar|backup|meus dados|levar (os |meus )?dados|portabilidade|se eu (sair|cancelar)/,'*Seus dados são seus.* No app: Ajuda > Seus dados > *Baixar todos os meus dados*. Vem um arquivo com as planilhas (pacientes, atendimentos, despesas, livro-caixa de cada mês) e os PDFs dos recibos. Se sair, você leva tudo, sem custo.'],
+  [/relatorio|declaracao|imposto de renda|\birp?f?\b|informe|ajuste anual/,'*Relatório do ano para o IR:* no app, Ajuda > Seus dados > Relatório do ano para o IR. Escolha o ano e toque em *PDF* ou *Planilha*. A *Prévia para validar* compara cada número com o gov.br antes de você levar a quem faz a sua declaração.'],
+  [/vence|vencimento|prazo do (darf|carne)|ate quando|dia de pagar|quando (eu )?pago/,'O Carnê-Leão de cada mês vence no *último dia útil do mês seguinte* (ex.: o de outubro vence em 30/11). Mande *darf* para ver o valor e *paguei* depois de pagar.'],
+  [/multa|atrasad|em atraso|esqueci de pagar|esqueci de emitir/,'DARF pago depois do vencimento: multa de 0,33% por dia, até 20%, mais juros Selic (Lei 9.430/1996, art. 61); gere o DARF atualizado no Carnê-Leão Web. Recibo do Receita Saúde: pode ser emitido até o último dia de fevereiro do ano seguinte; quem não emite fica sujeito a multa. Mande *suporte* se precisar de ajuda com um caso.'],
+  [/celular ou computador|computador ou celular|no computador|no notebook|tem app|baixar o app|instalar/,'Os dois. O dia a dia é aqui pelo zap. O app abre no navegador do celular ou do computador, com atalho na tela inicial do celular (no app: Ajuda > Instalar). Painel e relatórios ficam melhores no computador.'],
+  [/recibo errado|emiti errado|errei o recibo|cancelar (o |um )?recibo|corrigir (o |um )?recibo/,'Recibo já emitido com erro: a Assessoria cancela e emite de novo pelo gov.br, sem custo. O cancelamento leva até 10 dias para valer na Receita. Ainda não emitido? Mande *desfazer* (o último) ou corrija na tela Lançar.'],
+  [/esqueci (o |meu )?pin|nao (consigo )?entr|link (nao abre|parou|expirou)|perdi o celular|troquei de (celular|numero)/,'Sem acesso: se acha que outra pessoa usou, mande *bloquear*. Se só esqueceu o PIN ou trocou de celular, mande *suporte acesso*: a Assessoria confere que é você e manda um link novo aqui para criar outro PIN.']];
+// Acha a resposta: primeiro as aprovadas (mais específicas, mais palavras-chave batendo), depois as fixas e as do "posso deduzir"
+function zBib(t,D){let m=null,k=0;for(const b of (D&&D.biblioteca)||[]){const n=(b.chaves||[]).filter(c=>c&&t.includes(zNorm(c))).length;if(n>k){k=n;m=b}}
+  if(m)return m.resposta+(m.fonte?`\n(${m.fonte})`:'');const r=BIB.find(([re])=>re.test(t));if(r)return r[1];
+  const q=PERGUNTAS.find(([re])=>re.test(t));return q&&/deduz|abat|desconta|lanca|despesa/.test(t)?q[1]:null}
+const zEhPergunta=(t,linha)=>/\?\s*$/.test(linha)||/^(como|onde|quando|qual|quais|quanto|o que|oque|posso|preciso|tenho que|tem como|da pra|da para|e se|por que|porque)\b/.test(t);
 function zPergunta(t){if(!/(posso|pode|da pra|da para|consigo).{0,20}(deduz|abat|descont|lancar)|^(deduz|abate)|\b(e dedutivel|abate\?|deduz\?)/.test(t))return null;
   const r=PERGUNTAS.find(([re])=>re.test(t));
   return r?r[1]:`Pela lei, abate o que é necessário para receber e manter a sua atividade: aluguel e contas do consultório, material, salário de quem tem carteira ${ART68}.`+CONTADOR_Q}
@@ -385,6 +402,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(/^(novo|nova|paciente nova|novo paciente|nova paciente|cadastrar|cadastrar paciente)$/.test(t)){est.fluxo=null;est.guia={passo:'novo',so:true,ops:[]};return gPergunta(est.guia,D,hoje,est)}
   if(/^(oi|ola|bom dia|boa tarde|boa noite|ajuda|menu|\?)\b/.test(t)&&t.split(' ').length<=3)return `Olá, ${(D.nome||'').split(' ')[0]}! `+AJUDA;
   {const q=zPergunta(t);if(q)return q}
+  if(zEhPergunta(t,linha)&&!zAcha(D.pacientes,t.split(/\s+/).slice(0,2)).length){const b=zBib(t,D);if(b)return b+'\nNão era isso? Mande *suporte* e a sua dúvida.'}
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
   if(/^(reforma|reforma tributaria|cbs|ibs|2027)$/.test(t)){const ano=hoje.slice(0,4),rec=soma(D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(ano))),r=reforma(rec,ano);
     return `*Reforma tributária*: PIS, Cofins e ISS viram CBS (federal) e IBS. O Carnê-Leão não muda.
@@ -548,20 +566,25 @@ const SUPORTE_OK='Recebido. Uma pessoa da Assessoria responde aqui em até 1 dia
 const S_TEMAS=[['Recibo ou emissão',true],['Imposto, DARF ou apuração',true],['Lançar ou usar o app',false],['Plano ou pagamento',false],['Outra dúvida',false]];
 const S_AJUDA={2:'Antes, veja se resolve: *lançar* faz passo a passo, *desfazer* apaga o último, *ajuda* mostra tudo.',3:'Antes, veja se resolve: no app, Ajuda > Seu plano mostra o plano e a cobrança em aberto.'};
 const zTema=t=>/recibo|emiss|emitir|receita saude|pdf/.test(t)?0:/darf|imposto|carne|leao|apura|multa|declara/.test(t)?1:/plano|pagamento|cobranca|boleto|cartao|assinatura/.test(t)?3:/lanc|app|senha|pin|link|entrar/.test(t)?2:4;
-async function zSuporte(tema,texto,api){const [nome,pri]=S_TEMAS[tema];if(!api.suporte)return SUPORTE_OK;
-  try{await api.suporte(`[${nome}${pri?' · PRIORIDADE':''}] ${texto}`)}catch(e){return zErro(String(e.message||e))}
+// Reunião Daniel 31/10 (item 20): o simples o sistema resolve; só vai a uma pessoa o que precisa. Achou na biblioteca: responde e pergunta se resolveu.
+function zTriagem(tema,texto,D,est){const b=zBib(zNorm(texto),D);if(!b)return null;est.suporte={passo:'resolveu',tema,texto};zLista(est,['Sim, resolveu','Não, falar com alguém']);
+  return `${b}\n\nResolveu?\n1. Sim\n2. Não, quero falar com uma pessoa`}
+async function zSuporte(tema,texto,api,D,novo){const [nome,pri]=S_TEMAS[tema];if(!api.suporte)return SUPORTE_OK;
+  try{await api.suporte(`[${nome}${pri?' · PRIORIDADE':''}${novo?' · Biblioteca nova':''}] ${texto}`)}catch(e){return zErro(String(e.message||e))}
   return pri?'Recebido, com prioridade: emissão e imposto têm prazo. Uma pessoa da Assessoria responde aqui hoje, até as 18h (segunda a sexta; no fim de semana, segunda cedo). Se for erro num recibo já emitido, a correção é sem custo.':SUPORTE_OK}
 async function zapResponde(texto,D,api,est,hoje){const out=[];delete est.lista;const t0=zNorm(String(texto||'').split(/\n/)[0]);
   if(est.suporte){const sp=est.suporte;est.suporte=null;
-    if(sp.passo==='tema'){const n=/^\d$/.test(t0)?+t0:0;if(n>=1&&n<=S_TEMAS.length){est.suporte={passo:'texto',tema:n-1};
+    if(sp.passo==='resolveu'){if(/^(1|sim|s|resolveu|sim, resolveu|obrigad[ao])\b/.test(t0))return 'Que bom! Qualquer coisa, é só chamar.';
+      if(/^(2|nao|n)\b/.test(t0))return zSuporte(sp.tema,sp.texto,api,D,false)}
+    else if(sp.passo==='tema'){const n=/^\d$/.test(t0)?+t0:0;if(n>=1&&n<=S_TEMAS.length){est.suporte={passo:'texto',tema:n-1};
         return `*${S_TEMAS[n-1][0]}*\n`+(S_AJUDA[n-1]?S_AJUDA[n-1]+'\nSe não resolver, ':'')+'Escreva numa mensagem só o que aconteceu. Não escreva diagnóstico nem dado de saúde do paciente. Para sair: *sair*'}
       if(!G_SAIR.test(t0))est.suporte=sp}
-    else if(!G_SAIR.test(t0))return zSuporte(sp.tema,String(texto).trim(),api);
+    else if(!G_SAIR.test(t0)){const tx=String(texto).trim();return zTriagem(sp.tema,tx,D,est)||zSuporte(sp.tema,tx,api,D,zEhPergunta(zNorm(tx),tx))}
     if(G_SAIR.test(t0))return 'Certo, não abri o pedido.'}
   if(SUPORTE.test(t0)){const resto=String(texto).replace(/^\s*(falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|\S+)\s*/i,'').trim();
     if(!resto){est.suporte={passo:'tema'};zLista(est,S_TEMAS.map(x=>x[0]));
       return '*Falar com a Assessoria*\nQual o assunto?\n'+S_TEMAS.map(([n,p],i)=>`${i+1}. ${n}${p?' (prioridade)':''}`).join('\n')}
-    return zSuporte(zTema(zNorm(resto)),String(texto).trim(),api)}
+    const tx=String(texto).trim(),tm=zTema(zNorm(resto));return zTriagem(tm,resto,D,est)||zSuporte(tm,tx,api,D,zEhPergunta(zNorm(resto),resto))}
   const linhas=String(texto||'').split(/\n+/).filter(l=>l.trim()).slice(0,20);
   for(const [i,l] of linhas.entries()){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r);
     if(est.guia&&i<linhas.length-1){out.push('Um lançamento por vez: depois deste, mande o próximo.');break}}
