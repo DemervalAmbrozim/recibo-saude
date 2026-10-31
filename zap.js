@@ -71,8 +71,7 @@ const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • o código do boleto (confiro se não é adulterado)
 • *conferir* (o que olhar no gov.br a cada trimestre)
 • *indicar* (seu código para indicar uma colega)
-• *suporte* e o que aconteceu (fala com uma pessoa)
-Pode mandar vários de uma vez, um por linha.`;
+• *suporte* e o que aconteceu (fala com uma pessoa)`;
 
 // A receber há mais de 30 dias (ensaio 29/10, obs. 9): acumular pagamento atrasa o recibo e embola o Carnê-Leão do mês em que o dinheiro entra
 function zAtrasados(D,hoje){const h=new Date(hoje+'T12:00');h.setDate(h.getDate()-30);const lim=zISO(h),v=D.atendimentos.filter(x=>x.pago===false&&x.data<lim);
@@ -298,7 +297,7 @@ function fPergunta(f,D,hoje,est){const L=it=>zLista(est,it),pac=D.pacientes.find
   if(f.passo==='data'){const o=new Date(hoje+'T12:00');o.setDate(o.getDate()-1);L([`Hoje (${zDBR(hoje)})`,`Ontem (${zDBR(zISO(o))})`]);
     return `${cab}\n${f.tipo==='ses'?'Quando foi a sessão?':f.tipo==='desp'?'Quando pagou?':'Quando ela pagou?'}\n1. Hoje (${zDBR(hoje)})\n2. Ontem (${zDBR(zISO(o))})\nou escreva a data, ex.: *25/10*`+sair}
   L(['Sim, gravar','Corrigir']);const dt=f.data===hoje?'hoje':zDBR(f.data),it=fItens(D,f);
-  const linha=f.tipo==='rec'?`${pac.nome} pagou ${zBrl(f.valor)} em ${dt}`+(it.length>1?` · ${it.length} atendimentos (${it.map(x=>zDBR(x.data)).join(', ')}), um recibo só`:` · atendimento de ${zDBR(it[0].data)}`)+(f.desc?` · o resto (${zBrl(it[0].valor-f.valor)}) com desconto`:'')
+  const linha=f.tipo==='rec'?`${pac.nome} pagou ${zBrl(f.valor)} ${f.data===hoje?'hoje':'em '+dt}`+(it.length>1?` · ${it.length} atendimentos (${it.map(x=>zDBR(x.data)).join(', ')}), um recibo só`:` · atendimento de ${zDBR(it[0].data)}`)+(f.desc?` · o resto (${zBrl(it[0].valor-f.valor)}) com desconto`:'')
     :f.tipo==='desp'?`${nomeCod(f.cod)} · ${zBrl(f.valor)} · paga ${dt}`:f.tipo==='pac'?`${pac.nome} · ${f.n} sessões · ${zBrl(f.valor)} · ${f.forma} · ${dt} · um recibo só`:`${pac.nome} · sessão de ${dt}`;
   return `*Confere ${f.tipo==='desp'?'a despesa':f.tipo==='pac'?'o pacote':f.tipo==='ses'?'a sessão':'o recebimento'}?*\n${linha}\n1. Sim, gravar\n2. Corrigir (passo a passo)`}
 function fSegue(f,D,hoje,est){f.passo=fProx(f,D);return fPergunta(f,D,hoje,est)}
