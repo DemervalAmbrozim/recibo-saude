@@ -137,7 +137,7 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
 
 // ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
 let EX=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;empTela();
+async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();
   // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
   $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
   const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
@@ -188,8 +188,8 @@ const irDados=()=>relatorioIR(D.atendimentos.map(a=>({...a,valor:+a.valor})),D.d
 const mesBR=m=>m.split('-').reverse().join('/');
 $('b-ir-csv').onclick=()=>{const R=irDados(),a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv(['Mês','Recebido de pessoas físicas','Pacientes','Livro-caixa usado','INSS','Carnê-Leão devido','DARF a pagar','DARF pago','Pago em'],
-    [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf,x.pago?+x.pago.valor:'',x.pago?dBR(x.pago.pago_em):'']),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf,R.tot.pago,''],[],['Despesas do ano por conta'],
-    ...Object.entries(R.porConta).map(([n,v])=>[n,v])])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
+    [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf,x.pago?+x.pago.valor:'',x.pago?dBR(x.pago.pago_em):'']),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf,R.tot.pago,''],[],['Despesas do ano por conta','Valor','Conta ITG 1000 (sugestão; o contador confirma)'],
+    ...Object.entries(R.porConta).map(([n,v])=>[n,v,R.itgConta[n]||'']),[],['Receita',R.tot.rec,ITG_RECEITA]])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
 // Prévia do IR para ela validar (ensaio 29/10, obs. 38): relatório × gov.br, com a validação registrada como pedido de prioridade
 function irPrevTela(){const R=irDados(),gov={};document.querySelectorAll('[data-irg]').forEach(i=>{if(i.value.trim())gov[i.dataset.irg]=+i.value.replace(/\./g,'').replace(',','.')});
   const L=irPrevia(R,gov);$('ir-prev-l').innerHTML=L.map(x=>`<div class="item" style="grid-template-columns:1fr auto;align-items:center"><span>${x.nome}<br><b>${brl(x.nosso)}</b> aqui${x.ok===null?'':x.ok?' · <span style="color:#0b7a55">confere com o gov.br ✓</span>':` · <span style="color:#b3261e">diferença de ${brl(x.dif)}</span>`}</span>
@@ -209,7 +209,7 @@ $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){a
     <table><thead><tr><th>Mês</th><th style="text-align:right">Recebido (PF)</th><th style="text-align:right">Pacientes</th><th style="text-align:right">Livro-caixa usado</th><th style="text-align:right">INSS</th><th style="text-align:right">Carnê-Leão devido</th><th style="text-align:right">DARF a pagar</th><th style="text-align:right">DARF pago</th></tr></thead>
     <tbody>${R.meses.map(x=>`<tr><td>${mesBR(x.mes)}</td>${td(x.rec)}<td style="text-align:right">${x.pacientes}</td>${td(x.lc)}${td(x.inss)}${td(x.devido)}${td(x.darf)}<td style="text-align:right">${x.pago?brl(+x.pago.valor)+' em '+dBR(x.pago.pago_em):x.darf?'não marcado':''}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>Total</td>${td(R.tot.rec)}<td></td>${td(R.tot.lc)}${td(R.tot.inss)}${td(R.tot.devido)}${td(R.tot.darf)}${td(R.tot.pago)}</tr></tfoot></table>
-    ${Object.keys(R.porConta).length?`<h1>Despesas do ano por conta</h1><table>${Object.entries(R.porConta).map(([n,v])=>`<tr><td>${esc(n)}</td>${td(v)}</tr>`).join('')}</table>`:''}
+    ${Object.keys(R.porConta).length?`<h1>Despesas do ano por conta</h1><table>${Object.entries(R.porConta).map(([n,v])=>`<tr><td>${esc(n)}<br><small>ITG 1000: ${esc(R.itgConta[n]||'')}</small></td>${td(v)}</tr>`).join('')}</table>`:''}
     <h1>Conferir mês a mês no Carnê-Leão Web</h1><p class="s">No gov.br, Meu Imposto de Renda &gt; Carnê-Leão &gt; Demonstrativo de Apuração, escolha o mês e compare linha a linha (ensaio 29/10, obs. 39):</p>
     <table><tr><th>No Carnê-Leão Web</th><th>Neste relatório</th></tr><tr><td>Rendimentos: Trabalho não assalariado</td><td>Recebido (PF)</td></tr><tr><td>Deduções: Previdência Oficial</td><td>INSS</td></tr>
     <tr><td>Deduções: Livro Caixa</td><td>Livro-caixa usado (limitado ao recebido do mês)</td></tr><tr><td>Base de cálculo</td><td>Recebido − INSS − Livro-caixa (− dependentes e pensão, se você lançou lá)</td></tr>
@@ -227,8 +227,8 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
       {nome:'pacientes.csv',dados:csv(['Nome','CPF','CPF de quem paga','WhatsApp','E-mail','Ativo'],X.pacientes.map(p=>[p.nome,p.cpf,p.cpf_pagador,p.telefone,p.email,sim(p.ativo)]))},
       {nome:'atendimentos.csv',dados:csv(['Data','Paciente','CPF','CPF de quem paga','Valor','Forma','Recebido','Local','Recibo do mês','Recibo confirmado na Receita'],
         ats.map(a=>[dBR(a.data),a.paciente,a.cpf,a.cpf_pagador,a.valor,a.forma,sim(a.pago!==false),loc(a.local_id),a.recibo_mes||'',sim(a.recibo_confirmado)]))},
-      {nome:'despesas.csv',dados:csv(['Data','Conta','Valor que abate','Valor da conta','Local','Competência','Observação'],
-        ds.map(d=>[dBR(d.data),nomeCod(d.codigo),d.valor,n(d.valor_pago),loc(d.local_id),d.competencia,d.obs]))},
+      {nome:'despesas.csv',dados:csv(['Data','Conta','Conta ITG 1000','Valor que abate','Valor da conta','Local','Competência','Observação'],
+        ds.map(d=>[dBR(d.data),nomeCod(d.codigo),itgDe(d.codigo),d.valor,n(d.valor_pago),loc(d.local_id),d.competencia,d.obs]))},
       {nome:'livro-caixa-mensal.csv',dados:csv(['Mês','Recebido','Despesas usadas','INSS','Carnê-Leão devido','DARF a pagar','Sobra para os meses seguintes'],
         meses.map(m=>{const ap=apura(pg,ds,m);return [m.split('-').reverse().join('/'),ap.rec,ap.usado,ap.inss,ap.darf.total,ap.darf.pagar,ap.sobra]}))},
       {nome:'recibos-emitidos.csv',dados:csv(['Tipo','Mês','Linhas','Gerado em','Confirmado na Receita em','Números dos recibos'],
@@ -579,6 +579,9 @@ $('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const mv=i
     +bl('Lançado como Pix ou transferência e não está no extrato (outra conta?)',k.semExtrato.map(x=>li(x,`${esc(x.paciente)} · ${brl(x.valor)}`)))
     +(k.receber.length+k.semLanc.length+k.despFalta.length+k.semExtrato.length?'':'<div class="sub">Tudo bate. 👏</div>');
   e.target.value=''};
+// Contas fixas no Drive dela (reunião Daniel 31/10, item 31a, supabase/030)
+$('b-drive').onclick=async()=>{const u=$('drive-url').value.trim();if(u&&!/^https:\/\/drive\.google\.com\/[A-Za-z0-9/_?=&.-]+$/.test(u)){avisa('Cole o link da pasta do Google Drive (começa com https://drive.google.com/).',true);return}
+  const r=await sb.rpc('link_drive',{tok:TOK,p_url:u||null});if(r.error){avisa('Não consegui salvar o link.',true);return}avisa(u?'Link salvo: a Assessoria confere a pasta todo mês.':'Link retirado.')};
 $('ex-res').onclick=async e=>{const b=e.target.closest('[data-exr]');if(!b)return;b.disabled=true;
   const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:b.dataset.exr,p_valor:+b.dataset.exv,p_data:b.dataset.exd});
   if(r.error){b.disabled=false;avisa('Não consegui registrar o pagamento.',true);return}b.textContent='Recebido ✓';avisa('Pagamento registrado na data do extrato.');await carrega()};

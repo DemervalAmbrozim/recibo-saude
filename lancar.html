@@ -277,6 +277,12 @@ a{color:var(--accent)}
       <h2>Contas fixas</h2>
       <div class="sub">Cadastre uma vez. Todo mês aparece aqui e na agenda; é só tocar em "Lançar" e conferir o valor.</div>
       <div class="list" id="l-fixas"></div>
+      <details id="drive-card"><summary>Guardo as contas no meu Google Drive</summary>
+        <div style="display:grid;gap:8px;margin-top:8px">
+          <div class="sub">Crie uma pasta no <b>seu</b> Drive, ponha nela as contas do mês (PDF ou foto) e compartilhe com a Assessoria ("qualquer pessoa com o link pode ver"). Cole o link aqui: todo mês a Assessoria confere e lança o que faltar. A pasta é sua: você tira o acesso quando quiser.</div>
+          <input id="drive-url" placeholder="https://drive.google.com/drive/folders/..." autocomplete="off">
+          <button type="button" class="small" id="b-drive">Salvar o link</button>
+        </div></details>
       <details><summary>+ Nova conta fixa</summary>
         <form id="f-fixa" style="display:grid;gap:12px;margin-top:10px">
           <label>Tipo <select id="x-cod"></select></label>

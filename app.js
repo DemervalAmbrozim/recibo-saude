@@ -374,6 +374,7 @@ function admTela(){
       <div style="text-align:right"><span class="pill ${s==='ativa'?'':'pend'}">${SIT[s]}${s==='teste'&&p.teste_ate?' até '+dBR(p.teste_ate).slice(0,5):''}</span><div class="meta">${p.conselho_ok?'conselho conferido':'conselho a conferir'}</div><div class="meta">${PROC[p.procuracao||'pendente']}</div></div>
       <div style="grid-column:1/-1" class="btns">${zap?`<a class="btn" target="_blank" rel="noopener" href="${zap}">WhatsApp</a>`
           :`<input data-fone-in="${p.id}" inputmode="tel" placeholder="WhatsApp com DDD" style="width:auto;max-width:170px;padding:6px 8px"><button class="small" data-fone="${p.id}" type="button">Salvar WhatsApp</button>`}
+        ${p.drive_contas&&/^https:\/\/drive\.google\.com\//.test(p.drive_contas)?`<a class="btn" target="_blank" rel="noopener" href="${esc(p.drive_contas)}" title="Pasta do Drive dela com as contas fixas (item 31)">Contas no Drive</a>`:''}
         <button class="small" data-conselho="${p.id}" type="button">${p.conselho_ok?'Desfazer conferência':'Conselho conferido'}</button>
         <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
         <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op(PLANO,p.plano||'')}</select>

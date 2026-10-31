@@ -11,6 +11,16 @@ const SITE='https://ladoaladosaude.com.br';
 const CONTAS=[...P10,[INSS,'Seu INSS (carnê ou GPS)']];
 const IMOVEL=['00001','00002','00003','00007','00008','00009','00014'].map(c=>'P10.01.'+c); // contas que dependem do local
 const nomeCod=c=>(CONTAS.find(x=>x[0]===c)||[c,c])[1];
+// Amarração ao plano de contas da ITG 1000 (reunião Daniel 31/10, item 30): o plano referencial da Receita é genérico,
+// o contador amarra cada despesa ao plano dele. Base: plano simplificado da ITG 1000 (Resolução CFC 1.418/2012, Anexo):
+// 3.1.1.03 Venda de Serviços; 3.2.2.01 Despesas Administrativas; 3.2.2.03 Outras Despesas Gerais. A ITG é modelo-base:
+// a subconta final segue a estrutura que o Daniel usa (pergunta 25 enviada em 31/10); até lá, esta é a sugestão.
+const ITG={'00002':['3.2.2.01.001','Aluguel'],'00003':['3.2.2.01.002','Condomínio'],'00001':['3.2.2.01.003','Água'],'00007':['3.2.2.01.004','Energia elétrica'],
+  '00014':['3.2.2.01.005','Telefone e internet'],'00008':['3.2.2.01.006','Gás'],'00011':['3.2.2.01.007','Material de limpeza'],'00012':['3.2.2.01.008','Material de escritório'],
+  '00005':['3.2.2.01.009','Cópias e autenticações'],'00006':['3.2.2.01.010','Emolumentos'],'00004':['3.2.2.01.011','Anuidade do conselho'],
+  '00013':['3.2.2.01.012','Salários e encargos'],'00009':['3.2.2.03.001','IPTU'],'00010':['3.2.2.03.002','ISS']};
+const ITG_RECEITA='3.1.1.03 Venda de Serviços';
+const itgDe=c=>{const x=ITG[String(c).replace('P10.01.','')];return x?`${x[0]} ${x[1]}`:c===INSS?'fora do resultado (previdência pessoal)':''};
 
 // Locais: a casa que também é consultório abate 1/5 das contas (página oficial do Carnê-Leão, Deduções, conferida em 19/10/2026)
 const TIPOS={consultorio:['Consultório',1,'Abate 100% das contas deste local.'],sala:['Sala dividida',1,'Abate 100% da parte que você paga.'],
@@ -73,9 +83,9 @@ function relatorioIR(ats,ds,ano,darfs=[]){const pg=ats.filter(a=>a.pago!==false)
   for(let k=1;k<=12;k++){const m=`${ano}-${String(k).padStart(2,'0')}`,no=pg.filter(a=>a.data.startsWith(m));
     if(!no.length&&!ds.some(d=>d.data.startsWith(m)))continue;const ap=apura(pg,ds,m);
     meses.push({mes:m,rec:ap.rec,pacientes:new Set(no.map(a=>a.paciente_id||a.paciente)).size,lc:ap.usado,inss:ap.inss,devido:ap.cl.devido,darf:ap.darf.pagar,pago:darfs.find(x=>x.mes===m)||null})}
-  const T=c=>Math.round(meses.reduce((s,x)=>s+x[c],0)*100)/100,porConta={};
-  ds.filter(d=>d.data.startsWith(ano)).forEach(d=>{const n=nomeCod(d.codigo);porConta[n]=(porConta[n]||0)+ +d.valor});
-  return {ano,meses,tot:{rec:T('rec'),lc:T('lc'),inss:T('inss'),devido:T('devido'),darf:T('darf'),pago:Math.round(meses.reduce((s,x)=>s+(x.pago?+x.pago.valor:0),0)*100)/100},porConta}}
+  const T=c=>Math.round(meses.reduce((s,x)=>s+x[c],0)*100)/100,porConta={},itgConta={};
+  ds.filter(d=>d.data.startsWith(ano)).forEach(d=>{const n=nomeCod(d.codigo);porConta[n]=(porConta[n]||0)+ +d.valor;itgConta[n]=itgDe(d.codigo)});
+  return {ano,meses,tot:{rec:T('rec'),lc:T('lc'),inss:T('inss'),devido:T('devido'),darf:T('darf'),pago:Math.round(meses.reduce((s,x)=>s+(x.pago?+x.pago.valor:0),0)*100)/100},porConta,itgConta}}
 
 // Prévia do IR para validar (ensaio 29/10, obs. 38): o que o sistema tem × o que está no gov.br dela. Ela digita o número do gov.br; diferença acima de R$ 1 é aviso.
 function irPrevia(R,gov){const L=[['rec','Rendimentos de pessoas físicas (recibos do Receita Saúde no ano)',R.tot.rec],['lc','Livro-caixa usado no Carnê-Leão',R.tot.lc],['pago','Carnê-Leão pago (DARFs)',R.tot.pago]];
