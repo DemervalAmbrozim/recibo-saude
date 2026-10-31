@@ -142,8 +142,8 @@ function impConcilia(movs,ats,ds){const dif=(a,b)=>Math.abs((new Date(a+'T12:00'
     const nd=impNorm(m.desc),nome=x=>{const t=impNorm(x.paciente).split(/[^a-z0-9]+/).filter(w=>w.length>2);return t.length&&t.every(w=>nd.includes(w))?0:1};
     let a=pagos.filter(x=>!usados.has(x.id)&&Math.abs(+x.valor-m.valor)<0.01&&dif(x.data,m.data)<=3).sort((x,y)=>nome(x)-nome(y)||dif(x.data,m.data)-dif(y.data,m.data))[0];
     if(!a){const g={};pagos.filter(x=>!usados.has(x.id)&&dif(x.data,m.data)<=3).forEach(x=>{const k=x.paciente+'|'+x.data;(g[k]=g[k]||[]).push(x)});
-      const k=Object.keys(g).find(k=>Math.abs(g[k].reduce((s,x)=>s+ +x.valor,0)-m.valor)<0.01);if(k){g[k].forEach(x=>usados.add(x.id));r.confere.push({mov:m,paciente:g[k][0].paciente});continue}}
-    if(a){usados.add(a.id);r.confere.push({mov:m,paciente:a.paciente});continue}
+      const k=Object.keys(g).find(k=>Math.abs(g[k].reduce((s,x)=>s+ +x.valor,0)-m.valor)<0.01);if(k){g[k].forEach(x=>usados.add(x.id));r.confere.push({mov:m,paciente:g[k][0].paciente,ids:g[k].map(x=>x.id)});continue}}
+    if(a){usados.add(a.id);r.confere.push({mov:m,paciente:a.paciente,ids:[a.id]});continue}
     const ab=abertos.find(x=>!usados.has(x.id)&&Math.abs(+x.valor-m.valor)<0.01&&x.data<=m.data);
     if(ab){usados.add(ab.id);r.receber.push({mov:m,at:ab});continue}
     r.semLanc.push({mov:m})}

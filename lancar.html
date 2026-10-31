@@ -162,11 +162,17 @@ a{color:var(--accent)}
       <div class="list" id="receber"></div>
       <div class="sub">O recibo só sai quando o dinheiro entra. Recebeu uma parcela? Toque em Recebi e informe o valor: cada parcela vira um recibo.</div>
     </div>
+    <div class="card" id="i-conccard" hidden>
+      <h2>Conciliação</h2>
+      <div class="sub" id="conc-res"></div>
+      <div class="list" id="conc-lista"></div>
+      <div class="sub">Recebimento sem comprovação no extrato fica <b>pendente de recebimento</b>. Mande o extrato do mês em OFX (aba Lançar, "Conferir com o extrato do banco"): o que bater sai daqui sozinho. Dinheiro, cartão de maquininha ou outra conta: marque aqui como recebeu. Nada é bloqueado.</div>
+    </div>
     <div class="card" id="i-pendcard">
       <h2>Aguardando recibo</h2>
       <div class="list" id="pend"></div>
       <button class="pri" id="b-zap" type="button">Transmitir para a Assessoria emitir os recibos</button>
-      <div class="sub">Abre o WhatsApp com o resumo pronto. A Assessoria emite no Receita Saúde e devolve os PDFs para você encaminhar. O paciente também vê o recibo no app Receita Saúde (gov.br), com o CPF dele. Lançou errado? Toque em Apagar.</div>
+      <div class="sub">Abre o WhatsApp com o resumo pronto. A Assessoria emite no Receita Saúde e devolve os PDFs para você encaminhar. O paciente também vê o recibo no app Receita Saúde (gov.br), com o CPF dele. Lançou errado? Toque em <b>Corrigir</b> ou Apagar <b>antes</b> de transmitir: depois de emitido, o cancelamento na Receita leva até 10 dias.</div>
     </div>
   </section>
 
@@ -198,8 +204,9 @@ a{color:var(--accent)}
       <button class="pri" type="submit">Salvar atendimento</button>
     </form>
     <details class="card" id="imp-card">
-      <summary><b>Importar pacientes</b> (planilha ou contatos)</summary>
+      <summary><b>1. Trazer a sua lista de pacientes</b> (uma vez, ao chegar)</summary>
       <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub"><b>Isto é só o cadastro</b> (nome e CPF): não cria atendimento nem recibo. Os atendimentos vêm no passo 2 ou no Lançar.</div>
         <div class="sub">Copie as colunas da sua planilha (nome, CPF e, se tiver, WhatsApp e e-mail) e cole abaixo. Ou escolha um arquivo .csv ou de contatos (.vcf). O CPF é obrigatório: é ele que vai no recibo.</div>
         <textarea id="imp-txt" rows="5" placeholder="Maria Silva	529.982.247-25	27 99999-1111"></textarea>
         <input type="file" id="imp-arq" accept=".csv,.txt,.vcf,text/csv,text/vcard">
@@ -208,8 +215,9 @@ a{color:var(--accent)}
       </div>
     </details>
     <details class="card" id="ag-card">
-      <summary><b>Trazer da agenda</b> (Google Agenda ou sistema da clínica)</summary>
+      <summary><b>2. Trazer os atendimentos</b> (agenda ou sistema da clínica)</summary>
       <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub"><b>Isto traz atendimentos</b> para você conferir e salvar. A paciente precisa estar cadastrada (passo 1).</div>
         <div class="sub">As consultas da sua agenda viram atendimentos para você conferir e salvar. Vale o evento com o nome da paciente no título. Uma vez só: no Google Agenda do computador, Configurações → a sua agenda → <b>Endereço secreto no formato iCal</b> → copie e cole aqui. Ele fica guardado só neste aparelho.</div>
         <input id="ag-url" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" autocomplete="off">
         <div class="row"><button type="button" id="b-ag" class="small">Trazer dos últimos 14 dias</button></div>
@@ -256,6 +264,11 @@ a{color:var(--accent)}
       <button class="pri" type="submit">Salvar despesa</button>
       <div class="sub">Guarde o comprovante por 5 anos, no seu nome e CPF.</div>
     </form>
+    <div class="card">
+      <h2>Trazer as despesas do extrato</h2>
+      <div class="sub">Duas formas, como nos atendimentos: lançar à mão aqui em cima ou trazer do extrato do banco (OFX ou planilha). As contas do consultório que saíram do banco e não estão lançadas aparecem com o botão <b>Lançar</b>.</div>
+      <button type="button" class="small" id="b-desp-ext">Abrir o extrato do banco</button>
+    </div>
     <div class="card">
       <div class="head"><h2>Despesas do mês</h2><input id="d-mes" type="month" style="width:auto;padding:6px 8px"></div>
       <div class="list" id="l-desp"></div>

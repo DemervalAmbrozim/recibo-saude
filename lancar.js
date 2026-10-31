@@ -281,15 +281,37 @@ function telaIni(){telaDarf();
   $('i-agenda').innerHTML=agenda().slice(0,3).map(itemAg).join('')||'<div class="sub">Nada nos próximos dias.</div>';
   const rec=D.atendimentos.filter(x=>x.pago===false);$('i-recebercard').hidden=!rec.length;
   $('receber').innerHTML=rec.map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">atendido em ${dBR(x.data)} · ${esc(x.forma)}</div></div>
-    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-rec="${x.id}" type="button">Recebi</button> <button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
+    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-rec="${x.id}" type="button">Recebi</button> <button class="small" data-cor="${x.id}" type="button">Corrigir</button> <button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
     +(rec.length?`<div class="item"><b>Total a receber</b><b class="num">${brl(rec.reduce((s,x)=>s+ +x.valor,0))}</b></div>`:'');
   const pend=pagos().filter(x=>!x.emitido);
   $('pend').innerHTML=pend.length?pend.map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">pago em ${dBR(x.data)} · ${esc(x.forma)}</div></div>
-    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
+    <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-cor="${x.id}" type="button">Corrigir</button> <button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
     +`<div class="item"><b>Total</b><b class="num">${brl(pend.reduce((s,x)=>s+ +x.valor,0))}</b></div>`
     :'<div class="sub">Nada aguardando recibo. Lance os atendimentos na aba Lançar.</div>';
   $('b-zap').hidden=!pend.length;
+  telaConc();
 }
+// Conciliação (reunião Daniel 31/10, itens 23-25, supabase/029): recebido sem comprovação = "pendente de recebimento".
+// Só sinaliza (não bloqueia): mostra quantos, quanto, por local, e se está aumentando; ela marca como recebeu.
+const CONC_FORMAS=[['pix','Pix'],['cartao','Cartão'],['dinheiro','Dinheiro'],['outro','Outra conta']];
+function telaConc(){const h=hojeISO(),ini=new Date(h+'T12:00');ini.setDate(ini.getDate()-120);const de=dISO(ini),mes=h.slice(0,7),ant=dISO(new Date(+h.slice(0,4),+h.slice(5,7)-2,15)).slice(0,7);
+  const l=pagos().filter(x=>!x.conferido&&!x.fila&&x.data>=de).sort((a,b)=>a.data<b.data?-1:1),ext=D.extrato_em,dias=ext?Math.round((new Date(h)-new Date(ext))/864e5):null;
+  $('i-conccard').hidden=!l.length&&dias!==null&&dias<=35;if($('i-conccard').hidden)return;
+  const nM=l.filter(x=>x.data.startsWith(mes)).length,nA=l.filter(x=>x.data.startsWith(ant)).length,porL={};l.forEach(x=>{const k=x.local_id||'';porL[k]=(porL[k]||0)+ +x.valor});
+  const ks=Object.keys(porL);
+  $('conc-res').innerHTML=(l.length?`<b>${l.length}</b> recebimento${l.length===1?'':'s'} pendente${l.length===1?'':'s'} de conferência: <b>${brl(l.reduce((s,x)=>s+ +x.valor,0))}</b>.`
+      +(nM>nA&&nA?` ⚠️ A conciliação não está batendo e está aumentando (${nA} no mês passado, ${nM} neste).`:'')
+      +(ks.length>1||ks[0]?' Por local: '+ks.map(k=>`${k?esc((localDe(k)||{}).nome||'Local'):'sem local'} ${brl(porL[k])}`).join(' · ')+'.':''):'Tudo conferido.')
+    +(dias===null?' Você ainda não mandou nenhum extrato: comece pelo do mês passado.':dias>35?` Último extrato conferido há ${dias} dias: mande o do mês.`:'');
+  $('conc-lista').innerHTML=l.slice(0,12).map(x=>`<div class="item" style="flex-wrap:wrap"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)} · lançado como ${esc(x.forma)}</div></div>
+    <div class="row" style="gap:6px;align-items:center"><select data-concf="${x.id}" style="width:auto;padding:6px 8px" aria-label="Como recebeu">${CONC_FORMAS.map(([k,n])=>`<option value="${k}"${zN(x.forma).startsWith(k.slice(0,4))?' selected':''}>${n}</option>`).join('')}</select>
+    <input data-conco="${x.id}" placeholder="de quem / obs." style="width:9em;padding:6px 8px"><button class="small" type="button" data-conc="${x.id}">Conferi</button></div></div>`).join('')
+    +(l.length>12?`<div class="sub">E mais ${l.length-12}. O extrato em OFX confere todos de uma vez.</div>`:'')}
+const zN=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+// Corrigir antes de emitir (item 22): data, valor e forma, só enquanto não virou recibo
+function corEditor(id){const a=D.atendimentos.find(x=>x.id===id),it=document.querySelector(`[data-cor="${id}"]`).closest('.item');if(it.nextElementSibling&&it.nextElementSibling.dataset.cored)return;
+  it.insertAdjacentHTML('afterend',`<div class="item" data-cored="${id}" style="flex-wrap:wrap;gap:6px"><input type="date" data-cord="${id}" value="${a.data}" style="width:auto"><input inputmode="decimal" data-corv="${id}" value="${String(a.valor).replace('.',',')}" style="width:7em">
+    <select data-corf="${id}" style="width:auto">${['Pix','Dinheiro','Cartão','Transferência'].map(f=>`<option${f===a.forma?' selected':''}>${f}</option>`).join('')}</select><button class="small pri" type="button" data-corsalva="${id}">Salvar</button></div>`)}
 $('i-mes').onchange=telaIni;
 
 // ---------- Lançar ----------
@@ -449,6 +471,19 @@ document.addEventListener('click',async e=>{const t=e.target.dataset||{};
     if(!(v>0)||v>+a.valor){if(v)avisa('Valor inválido.',true);return}
     const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:t.rec,p_valor:v,p_data:hojeISO()});if(r.error){avisa('Não consegui registrar o pagamento.',true);return}
     await carrega();avisa(v<+a.valor?`Parcela de ${brl(v)} registrada. Faltam ${brl(a.valor-v)}.`:'Pagamento registrado. Já está em Aguardando recibo.');return}
+  if(t.exdesp){mostra('t-desp');$('d-valor').value=String(t.exdesp).replace('.',',');$('d-data').value=t.exdd;$('d-obs').value=t.exdo;prevDesp();$('d-cod').focus();
+    avisa('Escolha o tipo de despesa e o local, confira e toque em Salvar.');return}
+  if(e.target.id==='b-desp-ext'){mostra('t-lan');$('ex-card').open=true;$('ex-card').scrollIntoView();return}
+  if(t.cor){corEditor(t.cor);return}
+  if(t.corsalva){const id=t.corsalva,v=num(document.querySelector(`[data-corv="${id}"]`).value),d=document.querySelector(`[data-cord="${id}"]`).value;
+    if(!(v>0)||!d){avisa('Confira a data e o valor.',true);return}
+    const r=await sb.rpc('link_corrigir',{tok:TOK,p_atendimento:id,p_data:d,p_valor:v,p_forma:document.querySelector(`[data-corf="${id}"]`).value});
+    if(r.error){avisa(/emitido/.test(r.error.message)?'Esse recibo já foi emitido: peça a correção à Assessoria pelo zap (*suporte*).':'Não consegui corrigir.',true);return}
+    await carrega();avisa('Corrigido.');return}
+  if(t.conc){const id=t.conc,r=await sb.rpc('link_conferir',{tok:TOK,p_ids:[id],p_como:document.querySelector(`[data-concf="${id}"]`).value,p_obs:document.querySelector(`[data-conco="${id}"]`).value});
+    if(r.error){avisa('Não consegui marcar.',true);return}await carrega();avisa('Conferido.');return}
+  if(t.extok){const ids=t.extok.split(',');const r=await sb.rpc('link_conferir',{tok:TOK,p_ids:ids,p_como:'extrato',p_obs:null});
+    if(r.error){avisa('Não consegui marcar.',true);return}e.target.disabled=true;e.target.textContent='Conferidos ✓';await carrega();avisa(`${r.data} recebimento${r.data===1?'':'s'} conferido${r.data===1?'':'s'} pelo extrato.`);return}
   if(t.del&&!confirm('Apagar este lançamento? Use só se foi lançado errado.'))return;
   const fx=String(t.del||t.ddesp||'').match(/^fila-(.+)$/);if(fx){fila.set(fila.get().filter(y=>y.id!==fx[1]));carrega();return} // ainda no celular: só tira da fila
   if(t.del){const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:t.del});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
@@ -537,9 +572,10 @@ $('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const mv=i
   if(!mv.length){o.innerHTML='<div class="sub">Não achei movimentos nesse arquivo. Exporte o extrato em OFX ou em planilha (data, descrição, valor).</div>';return}
   const k=impConcilia(mv,D.atendimentos,D.despesas||[]),li=(x,t)=>`<div class="item"><span>${dBR(x.mov?x.mov.data:x.data)} · ${t}</span></div>`,bl=(tit,l)=>l.length?`<h3 style="margin:10px 0 4px">${tit} (${l.length})</h3>`+l.join(''):'';
   o.innerHTML=`<div class="sub">${mv.length} movimentos lidos, de ${dBR(mv.reduce((m,x)=>x.data<m?x.data:m,mv[0].data))} a ${dBR(mv.reduce((m,x)=>x.data>m?x.data:m,mv[0].data))}. Confere: <b>${k.confere.length}</b> recebimento${k.confere.length===1?'':'s'} e <b>${k.despOk.length}</b> despesa${k.despOk.length===1?'':'s'}.</div>`
+    +(k.confere.some(x=>x.ids)?`<button type="button" class="small pri" data-extok="${k.confere.flatMap(x=>x.ids||[]).join(',')}">Marcar os ${k.confere.length} que bateram como conferidos</button>`:'')
     +bl('Pode ser pagamento de um "a receber"',k.receber.map(x=>`<div class="item"><span>${dBR(x.mov.data)} · ${brl(x.mov.valor)} · ${esc(x.mov.desc)}<br><span class="sub">${esc(x.at.paciente)}, atendimento de ${dBR(x.at.data)}</span></span><button type="button" class="small" data-exr="${x.at.id}" data-exd="${x.mov.data}" data-exv="${x.mov.valor}">Marcar recebido</button></div>`))
     +bl('Entrou e não está lançado (atendimento esquecido? se for transferência entre contas suas, ignore)',k.semLanc.map(x=>li(x,`${brl(x.mov.valor)} · ${esc(x.mov.desc)}`)))
-    +bl('Parece conta do consultório e não está nas despesas',k.despFalta.map(x=>li(x,`${brl(-x.mov.valor)} · ${esc(x.mov.desc)}`)))
+    +bl('Parece conta do consultório e não está nas despesas',k.despFalta.map(x=>`<div class="item"><span>${dBR(x.mov.data)} · ${brl(-x.mov.valor)} · ${esc(x.mov.desc)}</span><button type="button" class="small" data-exdesp="${-x.mov.valor}" data-exdd="${x.mov.data}" data-exdo="${esc(x.mov.desc.slice(0,60))}">Lançar</button></div>`))
     +bl('Lançado como Pix ou transferência e não está no extrato (outra conta?)',k.semExtrato.map(x=>li(x,`${esc(x.paciente)} · ${brl(x.valor)}`)))
     +(k.receber.length+k.semLanc.length+k.despFalta.length+k.semExtrato.length?'':'<div class="sub">Tudo bate. 👏</div>');
   e.target.value=''};
