@@ -51,9 +51,7 @@ function zAcha(pacs,nome){const q=nome.filter(Boolean);if(!q.length)return[];
 
 const AJUDA=`É só escrever como fala:
 • *lançar* (passo a passo com opções: paciente, valor, forma e dia)
-• *Maria 180 pix* (lança o atendimento de hoje)
-• *Maria 180 ontem* ou *Maria 180 25/10*
-• *Maria 180 a receber* (ainda não pagou)
+• atalho, se preferir: *Maria 180 pix*, *Maria 180 ontem* ou *Maria 180 a receber*
 • *Maria recebi 90* (recebeu tudo ou parte)
 • *aluguel 1200* (despesa do consultório)
 • *resumo* (o mês até agora)
@@ -104,8 +102,8 @@ function zResumo(D,hoje){const mes=hoje.slice(0,7),[a,m]=mes.split('-').map(Numb
 function zSemana1(D,d){const at=D.atendimentos||[],ds=D.despesas||[],q=n=>`${n} atendimento${n===1?'':'s'}`;
   if(d===0)return at.length
     ?`Bem-vinda! Você já lançou ${q(at.length)} (${zBrl(soma(at))}). É assim todo dia: mandou aqui, está guardado e o recibo sai pronto no fim do mês.`
-    :`Bem-vinda! Seu primeiro passo leva 10 segundos: mande aqui o último atendimento, ex.: *Maria 180 pix*. O resto (recibo, Carnê-Leão, lembretes) é com a gente. Mande *ajuda* para ver tudo que dá para fazer.`;
-  if(d===2)return (at.length?`Em 3 dias: ${q(at.length)}, ${zBrl(soma(at))} guardados com recibo garantido.`:`Ainda sem atendimentos lançados. Mande o de hoje, ex.: *Maria 180 pix*.`)
+    :`Bem-vinda! Seu primeiro passo leva 10 segundos: escreva *lançar* e eu pergunto passo a passo: paciente, valor, forma e dia, é só tocar nas opções. O resto (recibo, Carnê-Leão, lembretes) é com a gente. Mande *ajuda* para ver tudo que dá para fazer.`;
+  if(d===2)return (at.length?`Em 3 dias: ${q(at.length)}, ${zBrl(soma(at))} guardados com recibo garantido.`:`Ainda sem atendimentos lançados. Escreva *lançar* e eu pergunto passo a passo.`)
     +(ds.length?` Despesas: ${zBrl(soma(ds))}, que já abatem do Carnê-Leão.`:` Próximo passo: a despesa do consultório (ex.: *aluguel 1200*). Ela abate do Carnê-Leão e diminui o imposto.`);
   if(d===6)return `Sua primeira semana: ${q(at.length)} (${zBrl(soma(at))})`+(ds.length?` e ${zBrl(soma(ds))} em despesas`:'')
     +`. Mande *resumo* para ver o mês e *darf* para saber o Carnê-Leão. No último dia do mês eu aviso para conferir, e os recibos saem sem você digitar nada de novo.`;
