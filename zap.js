@@ -202,9 +202,13 @@ function zBoleto(cod,hoje){const c=String(cod).replace(/\D/g,'');
 function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMonth()/3),a=q?h.getFullYear():h.getFullYear()-1,qi=q?(q-1)*3:9;
   const de=`${a}-${String(qi+1).padStart(2,'0')}`,ate=`${a}-${String(qi+3).padStart(2,'0')}`;
   const pg=(D.atendimentos||[]).filter(x=>x.pago!==false&&x.data.slice(0,7)>=de&&x.data.slice(0,7)<=ate),n=new Set(pg.map(x=>x.paciente+'|'+x.data)).size;
-  return `*Conferência do trimestre* (${ZAP_MESES[qi]} a ${ZAP_MESES[qi+2]} de ${a}), 5 minutos no gov.br > Receita Saúde:
+  // Reunião Daniel 31/10 (item 33): gatilho para não acumular 12 meses; fecha os ralos (recibo de despesa que outros emitiram, conta que ficou para trás)
+  const meses=[0,1,2].map(k=>`${a}-${String(qi+1+k).padStart(2,'0')}`),fx=(D.fixas||[]).map(f=>({f,falta:meses.filter(m=>!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&(d.competencia||d.data).slice(0,7)===m))})).filter(x=>x.falta.length&&x.falta.length<3);
+  return `*Conferência do trimestre* (${ZAP_MESES[qi]} a ${ZAP_MESES[qi+2]} de ${a}): 5 minutos agora para não acumular 12 meses na hora do IR. No gov.br > Receita Saúde:
 1. *Recibos que você emitiu*: pelo que está lançado aqui, ${n} recibo${n===1?'':'s'}, ${zBrl(soma(pg))}. Se faltar ou sobrar algum, mande *suporte*.
-2. *Recibos em que você é a paciente* (sua consulta, dentista, terapia): não entram no livro-caixa, mas abatem na sua declaração anual como despesa médica. Viu um que você não reconhece? Mande *suporte* com o print.`}
+2. *Recibos em que você é a paciente* (sua consulta, dentista, terapia), que outros profissionais já emitiram no seu CPF: você nem lembra de pegar, e eles abatem na declaração anual como despesa médica. Viu um que não reconhece? Mande *suporte* com o print.
+3. *Contas que ficaram para trás*: `+(fx.length?fx.map(x=>`${nomeCod(x.f.codigo)} sem lançamento em ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]).join(' e ')}`).join('; ')+'. Pagou? Mande a foto da conta.':'as contas fixas estão lançadas nos 3 meses. 👏')+`
+Este aviso fica registrado: é a sua conferência de ${qi/3+1}º trimestre.`}
 
 // Dica na 1ª despesa de cada tipo (obs. 20): o que vale no IR e o que muda se um dia virar CNPJ
 function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-Leão como dedução (Previdência Oficial), não como despesa do consultório.';
