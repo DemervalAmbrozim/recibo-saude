@@ -216,6 +216,10 @@ a{color:var(--accent)}
         <div class="sub">Ou escolha o arquivo exportado: .ics da agenda, ou a planilha (.csv) do sistema da clínica com data, paciente e valor. Falta e desmarcação ficam de fora. <input type="file" id="ag-arq" accept=".ics,.csv,.txt,text/calendar,text/csv"></div>
         <div class="list" id="ag-prev"></div>
         <button class="pri" type="button" id="b-ag-salvar" hidden>Salvar os marcados</button>
+        <h3 style="margin:8px 0 0">Lembrar os pacientes de amanhã</h3>
+        <div class="sub">Com a mesma agenda, o app monta a mensagem de lembrete de cada consulta de amanhã. Você toca e ela abre no <b>seu</b> WhatsApp, pronta para enviar. Nada sai do nosso número.</div>
+        <div class="row"><button type="button" id="b-lem" class="small">Montar os lembretes de amanhã</button></div>
+        <div class="list" id="lem-lista" aria-live="polite"></div>
       </div>
     </details>
     <details class="card" id="ex-card">

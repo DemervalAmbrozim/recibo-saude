@@ -515,9 +515,22 @@ $('b-ag').onclick=async()=>{const url=$('ag-url').value.trim();if(!/^https:\/\/c
   localStorage.setItem(AG_CHAVE,url);$('ag-prev').innerHTML='<div class="sub">Lendo a agenda...</div>';
   try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
     const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'agenda',tok:TOK,url})}),j=await f.json();
-    if(!f.ok||!j.ics)throw new Error(j.erro||f.status);agPrevia(j.ics)}
+    if(!f.ok||!j.ics)throw new Error(j.erro||f.status);AG_TXT=j.ics;agPrevia(j.ics)}
   catch(e){console.error(e);$('ag-prev').innerHTML='';avisa('Não consegui ler a agenda. Confira o endereço ou use o arquivo .ics.',true)}};
-$('ag-arq').onchange=async e=>{const f=e.target.files[0];if(f){const t=await f.text();agPrevia(t,!/BEGIN:VCALENDAR/i.test(t))}};
+$('ag-arq').onchange=async e=>{const f=e.target.files[0];if(f){const t=await f.text();if(/BEGIN:VCALENDAR/i.test(t))AG_TXT=t;agPrevia(t,!/BEGIN:VCALENDAR/i.test(t))}};
+// Lembrete de consulta (31/10, F5): mensagem pronta por paciente, aberta no WhatsApp DELA (wa.me); nada é gravado nem enviado por nós
+let AG_TXT='';
+async function agLer(url){const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
+  const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'agenda',tok:TOK,url})}),j=await f.json();
+  if(!f.ok||!j.ics)throw new Error(j.erro||f.status);return j.ics}
+$('b-lem').onclick=async()=>{const o=$('lem-lista'),url=$('ag-url').value.trim(),d=new Date();d.setDate(d.getDate()+1);const dia=iso(d);
+  if(!AG_TXT&&!/^https:\/\/calendar\.google\.com\/calendar\/ical\/\S+\.ics$/.test(url)){avisa('Cole o endereço secreto iCal acima (ou escolha o arquivo .ics) e toque de novo.',true);return}
+  o.innerHTML='<div class="sub">Lendo a agenda...</div>';
+  try{if(/^https:/.test(url)){localStorage.setItem(AG_CHAVE,url);AG_TXT=await agLer(url)}}catch(e){console.error(e);if(!AG_TXT){o.innerHTML='';avisa('Não consegui ler a agenda. Confira o endereço ou use o arquivo .ics.',true);return}}
+  const L=impLembretes(AG_TXT,D.pacientes,dia,'amanhã');
+  o.innerHTML=L.length?L.map(x=>`<div class="item"><span>${x.hora?esc(x.hora)+' · ':''}${esc(x.nome)}<br><span class="sub">${esc(x.msg)}</span></span>`
+      +(x.link?`<a class="small" href="${esc(x.link)}" target="_blank" rel="noopener">Abrir no WhatsApp</a>`:`<span class="sub">sem celular na ficha</span>`)+`</div>`).join('')
+    :`<div class="sub">Nenhuma consulta amanhã (${dBR(dia)}) com o nome de uma paciente cadastrada no título.</div>`};
 
 // Conferir com o extrato do banco (ensaio 29/10, obs. 25): só lê no aparelho, nada do extrato vai para o banco de dados
 $('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const mv=impExtrato(await f.text()),o=$('ex-res');

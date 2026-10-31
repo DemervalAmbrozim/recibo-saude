@@ -61,27 +61,44 @@ function impIcsSerie(ini,rr,ex,ate){const r={};rr.split(';').forEach(x=>{const [
     for(const x of ds){if(x>lim||(cnt&&n>=cnt))return out;n++;if(!ex.has(x))out.push(x)}
     if(ds.length&&ds[0]>lim)return out}
   return out}
-function impIcs(txt,pacientes,ats,desde,ate){const out=[],ja=new Set(ats.map(a=>a.paciente+'|'+a.data)); // link_dados traz o nome da paciente, não o id
-  const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/[^a-z0-9]+/).filter(w=>w.length>2)}));
+// Ocorrências do .ics até "ate" (séries abertas, cancelado fora, remarcação trocada), com a hora de Brasília quando houver
+function impIcsHora(x){const d=String(x).trim().match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2}).*?(Z)?$/);if(!d)return '';
+  if(d[6]){const t=new Date(Date.UTC(+d[1],d[2]-1,+d[3],+d[4],+d[5])-3*36e5);return t.toISOString().slice(11,16)}
+  return `${d[4]}:${d[5]}`}
+function impIcsOcs(txt,ate){
   const evs=String(txt).replace(/\r?\n[ \t]/g,'').split(/BEGIN:VEVENT/i).slice(1).map(b=>{const ls=b.split(/\r?\n/);
     const v=k=>{const l=ls.find(x=>new RegExp('^'+k+'[;:]','i').test(x));return l?l.slice(l.indexOf(':')+1).trim():''};
     const ex=new Set(ls.filter(x=>/^EXDATE[;:]/i.test(x)).flatMap(x=>x.slice(x.indexOf(':')+1).split(',').map(impIcsDia)));
-    return {uid:v('UID'),rid:v('RECURRENCE-ID')?impIcsDia(v('RECURRENCE-ID')):'',dt:impIcsDia(v('DTSTART')),rr:v('RRULE'),ex,
+    return {uid:v('UID'),rid:v('RECURRENCE-ID')?impIcsDia(v('RECURRENCE-ID')):'',dt:impIcsDia(v('DTSTART')),hora:impIcsHora(v('DTSTART')),rr:v('RRULE'),ex,
       tit:v('SUMMARY'),cancel:/CANCELLED/i.test(v('STATUS'))}}).filter(e=>e.dt);
   const troca=new Set(evs.filter(e=>e.rid&&e.uid).map(e=>e.uid+'|'+e.rid)),ocs=[];
   for(const e of evs){if(e.cancel)continue;
-    if(e.rr&&!e.rid)impIcsSerie(e.dt,e.rr,e.ex,ate).forEach(d=>{if(!troca.has(e.uid+'|'+d))ocs.push({dt:d,tit:e.tit})});
-    else ocs.push({dt:e.dt,tit:e.tit})}
-  for(const {dt,tit:t0} of ocs){
+    if(e.rr&&!e.rid)impIcsSerie(e.dt,e.rr,e.ex,ate).forEach(d=>{if(!troca.has(e.uid+'|'+d))ocs.push({dt:d,tit:e.tit,hora:e.hora})});
+    else ocs.push({dt:e.dt,tit:e.tit,hora:e.hora})}
+  return ocs}
+// Paciente do título: nome inteiro, ou 1º nome + sobrenome; 2 iguais = nenhuma
+function impCasa(pacientes,t0){const ps=pacientes.filter(p=>p.ativo!==false).map(p=>({p,t:impNorm(p.nome).split(/[^a-z0-9]+/).filter(w=>w.length>2)}));
+  const ws=impNorm(String(t0).replace(/\\,/g,',')).split(/[^a-z0-9]+/);
+  const cs=ps.filter(({t})=>t.length&&(t.every(w=>ws.includes(w))||(ws.includes(t[0])&&t.slice(1).some(w=>ws.includes(w)))));
+  const c=cs.length===1?cs[0]:cs.length>1?(cs.filter(({t})=>t.every(w=>ws.includes(w))).length===1?cs.find(({t})=>t.every(w=>ws.includes(w))):null):null;
+  return c?c.p:null}
+function impIcs(txt,pacientes,ats,desde,ate){const out=[],ja=new Set(ats.map(a=>a.paciente+'|'+a.data)); // link_dados traz o nome da paciente, não o id
+  for(const {dt,tit} of impIcsOcs(txt,ate)){
     if(dt<desde||dt>ate)continue;
-    const tit=impNorm(t0.replace(/\\,/g,',')),ws=tit.split(/[^a-z0-9]+/);
-    const cs=ps.filter(({t})=>t.length&&(t.every(w=>ws.includes(w))||(ws.includes(t[0])&&t.slice(1).some(w=>ws.includes(w)))));
-    const c=cs.length===1?cs[0]:cs.length>1?(cs.filter(({t})=>t.every(w=>ws.includes(w))).length===1?cs.find(({t})=>t.every(w=>ws.includes(w))):null):null;
-    if(!c||ja.has(c.p.nome+'|'+dt))continue;ja.add(c.p.nome+'|'+dt);
-    const ult=ats.filter(a=>a.paciente===c.p.nome).sort((x,y)=>x.data<y.data?1:-1)[0];
-    out.push({data:dt,paciente_id:c.p.id,nome:c.p.nome,valor:ult?+ult.valor:null,forma:ult?ult.forma:'pix'})}
+    const p=impCasa(pacientes,tit);
+    if(!p||ja.has(p.nome+'|'+dt))continue;ja.add(p.nome+'|'+dt);
+    const ult=ats.filter(a=>a.paciente===p.nome).sort((x,y)=>x.data<y.data?1:-1)[0];
+    out.push({data:dt,paciente_id:p.id,nome:p.nome,valor:ult?+ult.valor:null,forma:ult?ult.forma:'pix'})}
   return out.sort((x,y)=>x.data<y.data?-1:1)}
-if(typeof module!=='undefined')module.exports={...(module.exports||{}),impIcs};
+// Lembrete de consulta (concorrência 31/10, F5): consultas de um dia na agenda viram mensagem pronta para a PROFISSIONAL
+// mandar do WhatsApp dela (link wa.me). Nada sai do nosso número e nada vai para o banco: só lê a agenda no aparelho.
+function impLembretes(txt,pacientes,dia,quando){const out=[],ja=new Set(),dd=dia.split('-').reverse().slice(0,2).join('/');
+  for(const {dt,tit,hora} of impIcsOcs(txt,dia)){if(dt!==dia)continue;const p=impCasa(pacientes,tit);if(!p||ja.has(p.id+'|'+hora))continue;ja.add(p.id+'|'+hora);
+    const tel=String(p.telefone||'').replace(/\D/g,''),nome1=p.nome.trim().split(/\s+/)[0];
+    const msg=`Olá, ${nome1}! Passando para lembrar do seu atendimento ${quando||'em'} ${dd}${hora?` às ${hora}`:''}. Posso confirmar? Se precisar remarcar, é só me avisar por aqui.`;
+    out.push({paciente_id:p.id,nome:p.nome,hora,tel,msg,link:/^\d{10,11}$/.test(tel)?`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`:''})}
+  return out.sort((a,b)=>(a.hora||'99')<(b.hora||'99')?-1:1)}
+if(typeof module!=='undefined')module.exports={...(module.exports||{}),impIcs,impLembretes};
 
 // Sistema da clínica (ensaio 29/10, obs. 26 e 27): exportação em planilha com data, paciente e, se tiver, valor. Sai no mesmo formato da agenda.
 // Datas 25/10/2026, 25/10/26 ou 2026-10-25; valor 180, 180,00 ou R$ 1.200,00. Paciente casa pelo nome como na agenda.
