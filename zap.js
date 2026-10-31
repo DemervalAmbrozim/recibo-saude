@@ -200,17 +200,21 @@ function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-
 // est.guia guarda só ids e números (LGPD): {passo, ops:[ids], pac, valor, forma, pago}
 // Ensaio 29/10 (obs. 1, 4, 49): paciente pelo nome em ordem alfabética, com "Incluir nova"; uma só parecida = confirma direto.
 // est.lista = opções da última pergunta: a função zap manda como lista de toque do WhatsApp (o número segue valendo no texto).
-const G_NOVA='novo',zLista=(est,itens)=>{est.lista=itens.map(x=>String(x).slice(0,24))};
+const G_NOVA='novo',zLista=(est,itens)=>{est.lista=itens.map(x=>String(x).slice(0,100))};
 const G_FORMAS=[['Pix',true],['Dinheiro',true],['Cartão',true],['Transferência',true],['a receber',false]];
 const G_SAIR=/^(sair|cancela|cancelar|parar|desisto)$/,G_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer)$/;
-const gNome=(D,id)=>id===G_NOVA?'+ Incluir nova paciente':D.pacientes.find(x=>x.id===id).nome;
+// Reunião Daniel 31/10 (item 16): o lançamento é preso ao CPF; na lista vai nome + CPF mascarado (LGPD), que separa as homônimas
+const zCpfM=c=>(c=String(c||'').replace(/\D/g,'')).length===11?`***.${c.slice(3,6)}.${c.slice(6,9)}-**`:'';
+const gNome=(D,id)=>{if(id===G_NOVA)return '+ Incluir nova paciente';const p=D.pacientes.find(x=>x.id===id),m=zCpfM(p.cpf);return p.nome+(m?` · CPF ${m}`:'')};
+// Atendimento da paciente: pelo id (CPF) quando o banco manda; nome só nos dados antigos
+const zDaPac=(x,pac)=>x.paciente_id?x.paciente_id===pac.id:zNorm(x.paciente)===zNorm(pac.nome);
 function gPergunta(g,D,hoje,est){const pac=D.pacientes.find(x=>x.id===g.pac),L=it=>{if(est)zLista(est,it)};
   if(g.passo==='pac'&&g.ops.length===2&&g.ops[1]===G_NOVA){L(['Sim',gNome(D,G_NOVA)]);
     return `*Lançar atendimento* (1 de 4)\nÉ *${gNome(D,g.ops[0])}*?\n1. Sim\n2. ${gNome(D,G_NOVA)}\nou escreva outro nome. Para sair: *sair*`}
   if(g.passo==='pac'){L(g.ops.map(id=>gNome(D,id)));return `*Lançar atendimento* (1 de 4)\nQual paciente?\n`+g.ops.map((id,i)=>`${i+1}. ${gNome(D,id)}`).join('\n')
     +(g.mais?'\nNão está na lista? Escreva o começo do nome.':'')+'\nToque na opção ou escreva o nome. Para sair: *sair*'}
   if(g.passo==='novo')return '*Paciente nova*\nMande o nome completo e o CPF de quem é atendido, como vai no recibo. Ex.: *Maria Silva 123.456.789-09*\nSe outra pessoa paga (mãe, filho), acrescente: *paga 987.654.321-00*';
-  if(g.passo==='valor'){const u=D.atendimentos.filter(x=>pac&&zNorm(x.paciente)===zNorm(pac.nome)).sort((a,b)=>a.data<b.data?1:-1)[0];g.ult=u?+u.valor:null;
+  if(g.passo==='valor'){const u=D.atendimentos.filter(x=>pac&&zDaPac(x,pac)).sort((a,b)=>a.data<b.data?1:-1)[0];g.ult=u?+u.valor:null;
     if(u)L([`${zBrl(u.valor)}`]);
     return `*${pac.nome}* (2 de 4)\nQual o valor?\n`+(u?`1. ${zBrl(u.valor)} (o último lançado)\nou escreva outro valor, ex.: *180*`:'Escreva o valor, ex.: *180*')}
   if(g.passo==='forma'){L(G_FORMAS.map(([f,pg])=>pg?f:'Ainda não pagou'));return `*${pac.nome} · ${zBrl(g.valor)}* (3 de 4)\nComo pagou?\n`+G_FORMAS.map(([f,pg],i)=>`${i+1}. ${pg?f:'Ainda não pagou (a receber)'}`).join('\n')}
@@ -230,7 +234,7 @@ function gFrase(p,cand,D,est,hoje){est.escolha=null;const g={valor:p.valor,data:
 function gOps(D,ids){const ab=(a,b)=>zNorm(gNome(D,a)).localeCompare(zNorm(gNome(D,b)));
   return {ops:[...ids.slice(0,9)].sort(ab).concat(G_NOVA),mais:ids.length>9}}
 function gVistos(D){const vistos=[];
-  for(const a of [...D.atendimentos].sort((a,b)=>a.data<b.data?1:-1)){const p=D.pacientes.find(x=>zNorm(x.nome)===zNorm(a.paciente));if(p&&!vistos.includes(p.id))vistos.push(p.id)}
+  for(const a of [...D.atendimentos].sort((a,b)=>a.data<b.data?1:-1)){const p=D.pacientes.find(x=>zDaPac(a,x));if(p&&!vistos.includes(p.id))vistos.push(p.id)}
   for(const p of D.pacientes)if(!vistos.includes(p.id))vistos.push(p.id);return vistos}
 function gInicio(D,est,hoje){const vistos=gVistos(D);
   est.escolha=null;est.fluxo=null;est.guia=Object.assign({passo:vistos.length?'pac':'novo'},gOps(D,vistos));return gPergunta(est.guia,D,hoje,est)}
@@ -276,17 +280,17 @@ const F_PASSOS={rec:['pac','item','valor','resto','data','conf'],desp:['cod','va
 const F_CAT=[['Aluguel','aluguel'],['Condomínio','condominio'],['Água','agua'],['Luz','luz'],['Internet e telefone','internet'],['Anuidade do conselho','anuidade'],['Limpeza','limpeza'],['Funcionário','funcionario'],['INSS','inss']];
 const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|quero( conversar)?)$/;
 const F_TIT={rec:'Recebimento',desp:'Despesa',pac:'Pacote',ses:'Sessão do pacote'};
-const fAbertos=(D,pac)=>D.atendimentos.filter(x=>x.pago===false&&!x.emitido&&(!pac||zNorm(x.paciente)===zNorm(pac.nome))).sort((a,b)=>a.data<b.data?-1:1);
+const fAbertos=(D,pac)=>D.atendimentos.filter(x=>x.pago===false&&!x.emitido&&(!pac||zDaPac(x,pac))).sort((a,b)=>a.data<b.data?-1:1);
 const fItens=(D,f)=>(f.itens||[]).map(id=>D.atendimentos.find(x=>x.id===id)).filter(Boolean);
 function fProx(f,D){for(const p of F_PASSOS[f.tipo]){
     if(p==='pac'&&!f.pac||p==='item'&&!f.itens||p==='valor'&&f.valor==null||p==='n'&&!f.n||p==='forma'&&!f.forma||p==='data'&&!f.data||p==='cod'&&!f.cod)return p;
     if(p==='resto'&&f.desc==null){const it=fItens(D,f);if(it.length===1&&f.valor<+it[0].valor-0.005)return p;f.desc=false}
     if(p==='conf')return p}}
-function fPergunta(f,D,hoje,est){const L=it=>zLista(est,it),pac=D.pacientes.find(x=>x.id===f.pac),cab=`*${F_TIT[f.tipo]}*`+(pac?` · ${pac.nome}`:'')+(f.cod?` · ${nomeCod(f.cod)}`:''),sair='\nPara sair: *sair*';
+function fPergunta(f,D,hoje,est){const L=it=>zLista(est,it),pac=D.pacientes.find(x=>x.id===f.pac),cab=`*${F_TIT[f.tipo]}*`+(pac?` · ${gNome(D,pac.id)}`:'')+(f.cod?` · ${nomeCod(f.cod)}`:''),sair='\nPara sair: *sair*';
   if(f.passo==='pac'){if(!f.ops.length)return null;L(f.ops.map(id=>gNome(D,id)));
     return `${cab}\n${f.tipo==='rec'?'Quem pagou?':f.tipo==='ses'?'Sessão de quem?':'Pacote de quem?'}\n`+f.ops.map((id,i)=>`${i+1}. ${gNome(D,id)}`).join('\n')+'\nToque na opção ou escreva o nome.'+sair}
   if(f.passo==='item'){const ab=fAbertos(D,pac).slice(0,8);f.ops=ab.map(x=>x.id);const ops=ab.map(x=>`${zDBR(x.data)} · ${zBrl(x.valor)}`).concat(`Todos · ${zBrl(soma(ab))}`);L(ops);
-    return `${cab}\nTem ${ab.length} em aberto. O que ela pagou?\n`+ops.map((o,i)=>`${i+1}. ${o}`).join('\n')+sair}
+    return `${cab}\nTem ${ab.length} em aberto${f.valor!=null?` e ela pagou ${zBrl(f.valor)}`:''}. Quais ela pagou?\n`+ops.map((o,i)=>`${i+1}. ${o}`).join('\n')+'\nMais de um? Escreva os números, ex.: *1 3*'+sair}
   if(f.passo==='valor'){const tot=f.tipo==='rec'?soma(fItens(D,f)):0;if(tot)L([`Tudo · ${zBrl(tot)}`]);
     return `${cab}\n${f.tipo==='rec'?'Quanto ela pagou?':f.tipo==='pac'?`Valor do pacote de ${f.n} sessões?`:'Qual o valor?'}\n`+(tot?`1. Tudo (${zBrl(tot)})\nou escreva o valor, ex.: *90*`:'Escreva o valor, ex.: *'+(f.tipo==='pac'?'1500':'230,45')+'*')+sair}
   if(f.passo==='resto'){const a=fItens(D,f)[0];L(['Ainda vai pagar','Dei desconto']);
@@ -302,7 +306,7 @@ function fPergunta(f,D,hoje,est){const L=it=>zLista(est,it),pac=D.pacientes.find
   return `*Confere ${f.tipo==='desp'?'a despesa':f.tipo==='pac'?'o pacote':f.tipo==='ses'?'a sessão':'o recebimento'}?*\n${linha}\n1. Sim, gravar\n2. Corrigir (passo a passo)`}
 function fSegue(f,D,hoje,est){f.passo=fProx(f,D);return fPergunta(f,D,hoje,est)}
 async function fInicio(tipo,D,api,est,hoje,pre){est.guia=null;est.escolha=null;est.receber=null;const f=Object.assign({tipo},pre||{});est.fluxo=f;
-  if(tipo==='rec'){const ab=fAbertos(D);f.ops=[...new Set(ab.map(x=>(D.pacientes.find(p=>zNorm(p.nome)===zNorm(x.paciente))||{}).id).filter(Boolean))].sort((a,b)=>zNorm(gNome(D,a)).localeCompare(zNorm(gNome(D,b)))).slice(0,9);
+  if(tipo==='rec'){const ab=fAbertos(D);f.ops=[...new Set(ab.map(x=>(D.pacientes.find(p=>zDaPac(x,p))||{}).id).filter(Boolean))].sort((a,b)=>zNorm(gNome(D,a)).localeCompare(zNorm(gNome(D,b)))).slice(0,9);
     if(!f.ops.length){est.fluxo=null;return 'Ninguém está devendo agora. 👏'}}
   if(tipo==='pac')f.ops=gOps(D,gVistos(D)).ops.filter(id=>id!==G_NOVA);
   if(tipo==='ses'){let l=[];if(api.pacotes)try{l=await api.pacotes()}catch(e){est.fluxo=null;return zErro(String(e.message||e))}
@@ -313,8 +317,7 @@ async function fInicio(tipo,D,api,est,hoje,pre){est.guia=null;est.escolha=null;e
 // Depois de escolher a paciente: no recebimento, um só em aberto já vem escolhido; o valor que fecha os mais antigos escolhe vários (obs. 7)
 function fPac(f,D,hoje,est){if(f.tipo==='rec'&&f.pac&&!f.itens){const ab=fAbertos(D,D.pacientes.find(x=>x.id===f.pac));
     if(!ab.length){est.fluxo=null;return `Não há nada a receber de ${gNome(D,f.pac)}. Mande *a receber* para ver a lista.`}
-    if(ab.length===1)f.itens=[ab[0].id];
-    else if(f.valor!=null){let t=0,k=0;while(k<ab.length&&t+0.005<f.valor)t+=+ab[k++].valor;f.itens=(k>1&&Math.abs(t-f.valor)<0.01?ab.slice(0,k):[ab[0]]).map(x=>x.id)}}
+    if(ab.length===1)f.itens=[ab[0].id]}  // reunião Daniel 31/10 (item 17): com mais de um em aberto ela escolhe; nada de baixar "o primeiro da fila"
   if(f.tipo==='rec'&&f.valor!=null&&f.itens){const tot=soma(fItens(D,f));if(f.itens.length>1&&Math.abs(tot-f.valor)>0.01)f.itens=f.itens.slice(0,1);if(f.valor>soma(fItens(D,f))+0.005)f.valor=soma(fItens(D,f))}
   return fSegue(f,D,hoje,est)}
 async function fResponde(t,linha,D,api,est,hoje){const f=est.fluxo,n=/^\d{1,2}$/.test(t)?+t:0,de_novo=x=>`${x}\n\n`+fPergunta(f,D,hoje,est);
@@ -324,7 +327,11 @@ async function fResponde(t,linha,D,api,est,hoje){const f=est.fluxo,n=/^\d{1,2}$/
   if(f.passo==='pac'){let id=n?f.ops[n-1]:null;if(n&&!id)return de_novo(`Responda com um número de 1 a ${f.ops.length}.`);
     if(!id){const c=zAcha(D.pacientes.filter(p=>f.ops.includes(p.id)),zPartes(linha,hoje).nome);if(c.length!==1){if(c.length)f.ops=c.map(x=>x.id);return de_novo(c.length?'Tem mais de uma com esse nome: toque na certa.':`Não achei "${linha.trim()}" nesta lista.`)}id=c[0].id}
     f.pac=id;return fPac(f,D,hoje,est)}
-  if(f.passo==='item'){if(!n||n>f.ops.length+1)return de_novo(`Responda com um número de 1 a ${f.ops.length+1}.`);f.itens=n===f.ops.length+1?f.ops.slice():[f.ops[n-1]];return fSegue(f,D,hoje,est)}
+  if(f.passo==='item'){const ns=[...new Set((t.match(/\d+/g)||[]).map(Number))];if(!ns.length||ns.some(k=>k<1||k>f.ops.length+1)||ns.length>1&&ns.includes(f.ops.length+1))return de_novo(`Responda com um número de 1 a ${f.ops.length+1}.`);
+    const its=ns[0]===f.ops.length+1?f.ops.slice():ns.sort((a,b)=>a-b).map(k=>f.ops[k-1]),tot=soma(its.map(id=>D.atendimentos.find(x=>x.id===id)));
+    if(f.valor!=null&&f.valor>tot+0.005)return de_novo(`Esses somam ${zBrl(tot)}, menos do que ela pagou (${zBrl(f.valor)}).`);
+    if(f.valor!=null&&its.length>1&&Math.abs(f.valor-tot)>0.01)return de_novo(`Esses somam ${zBrl(tot)}. Para pagar parte, escolha um atendimento só.`);
+    f.itens=its;return fSegue(f,D,hoje,est)}
   if(f.passo==='valor'){const tot=f.tipo==='rec'?soma(fItens(D,f)):0;if(n===1&&tot){f.valor=tot;return fSegue(f,D,hoje,est)}
     if(n&&n<10)return de_novo('Escreva o valor em reais, ex.: *180*.');const v=pValor();if(!v)return de_novo('Não entendi o valor.');
     if(tot&&v>tot+0.005)return de_novo(`É mais do que está em aberto (${zBrl(tot)}).`);
@@ -497,14 +504,14 @@ async function zConfirma(t,D,api,est,hoje){const c=est.confirma;est.confirma=nul
 async function zLanca(p,D,api,est,hoje){const data=p.data||hoje,forma=p.forma||'Pix',pago=!p.receber;
   if(data>hoje)return 'Essa data ainda não chegou. Lance no dia do atendimento.';
   const c={tipo:'at',pac:p.pac.id,valor:p.valor,forma,receber:!pago,data},qual=`${p.pac.nome} · ${zBrl(p.valor)} · ${zDBR(data)}`,
-    mesmo=D.atendimentos.filter(x=>zNorm(x.paciente)===zNorm(p.pac.nome)&&x.data===data);
+    mesmo=D.atendimentos.filter(x=>zDaPac(x,p.pac)&&x.data===data);
   if(!p.dobro&&mesmo.some(x=>Math.abs(x.valor-p.valor)<0.01))
     {est.confirma=Object.assign(c,{dobro:true});zLista(est,['Sim, outra sessão','Não']);
     return `Já está lançado: ${qual}. Não gravei de novo.\nFoi outra sessão no mesmo dia?\n1. Sim, gravar mais uma\n2. Não`}
   if(!p.dobro&&!p.ok&&mesmo.length){c.dobro=true;return zPedeConfirma(est,c,qual,`ela já tem ${mesmo.length===1?'um atendimento':mesmo.length+' atendimentos'} neste dia (${mesmo.map(x=>zBrl(x.valor)).join(', ')}). É mais um`)}
   const fora=!p.ok&&zForaAt(D,p.pac,p.valor);if(fora){c.dobro=p.dobro;return zPedeConfirma(est,c,qual,fora)}
   // Local (obs. 17): o mesmo do último atendimento dela; com um local só, ele
-  const ult=D.atendimentos.find(x=>zNorm(x.paciente)===zNorm(p.pac.nome)&&x.local_id),lo=(D.locais||[]).length===1?D.locais[0]:ult&&(D.locais||[]).find(l=>l.id===ult.local_id)||null;
+  const ult=D.atendimentos.find(x=>zDaPac(x,p.pac)&&x.local_id),lo=(D.locais||[]).length===1?D.locais[0]:ult&&(D.locais||[]).find(l=>l.id===ult.local_id)||null;
   let id;try{id=await api.lanca(p.pac.id,data,p.valor,forma,pago,lo&&lo.id)}catch(e){return zErro(String(e.message||e))}
   D.atendimentos.unshift({id,data,valor:p.valor,forma,paciente:p.pac.nome,pago,emitido:false,local_id:lo&&lo.id});
   const txt=`${p.pac.nome} · ${zBrl(p.valor)} · ${pago?forma:'a receber'} · ${data===hoje?'hoje':zDBR(data)}`+(lo&&D.locais.length>1?` · ${lo.nome}`:'');est.ultimo={tipo:'at',id,txt};

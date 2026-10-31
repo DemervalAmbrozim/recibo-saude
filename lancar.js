@@ -295,7 +295,7 @@ $('i-mes').onchange=telaIni;
 // ---------- Lançar ----------
 function telaLan(){
   const sel=$('pac').value;
-  $('pac').innerHTML='<option value="">Escolha o paciente</option>'+D.pacientes.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')+'<option value="novo">+ Paciente novo</option>';
+  $('pac').innerHTML='<option value="">Escolha o paciente</option>'+D.pacientes.map(p=>`<option value="${p.id}">${esc(p.nome)}${p.cpf?' · CPF ***.'+p.cpf.slice(3,6)+'.'+p.cpf.slice(6,9)+'-**':''}</option>`).join('')+'<option value="novo">+ Paciente novo</option>';
   if(sel&&[...$('pac').options].some(o=>o.value===sel))$('pac').value=sel;
   contatoTela();
   const lsel=$('a-local').value;$('a-local').innerHTML=opLocais(false,D.locais.length?'':'Cadastre seus locais na aba Despesas');
