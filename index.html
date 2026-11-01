@@ -88,10 +88,12 @@ a{color:var(--accent)}
   <section id="t-login" hidden style="display:grid;gap:16px">
     <form class="card" id="f-login">
       <h2>Entrar</h2>
-      <div class="sub">Digite seu e-mail. Você recebe um link de acesso, sem senha. Abra o link neste mesmo aparelho.</div>
+      <div class="sub">Digite seu e-mail. Você recebe um link e um código de acesso, sem senha.</div>
       <label>E-mail <input id="l-email" type="email" autocomplete="email" required></label>
       <button class="pri" type="submit">Receber link de acesso</button>
       <div class="sub" id="l-msg"></div>
+      <div id="l-cod-box" hidden style="display:grid;gap:12px"><label>Código de 6 números do e-mail <input id="l-cod" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]*"></label>
+        <button type="button" id="b-l-cod">Entrar com o código</button></div>
     </form>
     <div class="card"><h2>É profissional da saúde?</h2>
       <div class="sub">Este painel é da Assessoria. Para criar sua conta ou lançar atendimentos, <a href="entrar.html">entre por aqui</a>.</div></div>

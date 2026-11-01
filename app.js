@@ -31,7 +31,14 @@ const pacDe=id=>S.pac.find(p=>p.id===id)||{nome:'(removido)',cpf:''};
 // ---------- Login ----------
 $('f-login').onsubmit=async e=>{e.preventDefault();
   const r=await sb.auth.signInWithOtp({email:$('l-email').value.trim(),options:{emailRedirectTo:location.origin+location.pathname}});
-  $('l-msg').textContent=r.error?'Não foi possível enviar: '+r.error.message:'Link enviado. Abra seu e-mail neste aparelho e toque no link.';};
+  $('l-msg').textContent=r.error?(/rate|limit|seconds/i.test(r.error.message)?'Muitos pedidos agora. Espere alguns minutos e tente de novo.':'Não foi possível enviar: '+r.error.message)
+    :CONFIG.codigo?'E-mail enviado. Digite o código de 6 números ou toque no link do e-mail (veja também o spam).':'Link enviado. Abra seu e-mail neste aparelho e toque no link.';
+  if(!r.error&&CONFIG.codigo){$('l-cod-box').hidden=false;$('l-cod').focus()}};
+// Código do e-mail: entra no painel sem abrir o link (útil quando o link abre em outro navegador)
+$('b-l-cod').onclick=async()=>{const t=String($('l-cod').value||'').replace(/\D/g,'');if(t.length<6){$('l-msg').textContent='Digite os 6 números do e-mail.';return}
+  const r=await sb.auth.verifyOtp({email:$('l-email').value.trim(),token:t,type:'email'});
+  if(r.error){$('l-msg').textContent=/expired|invalid/i.test(r.error.message)?'Código vencido ou errado. Peça um e-mail novo.':'Não consegui entrar. Confira a internet e tente de novo.';return}
+  $('l-cod-box').hidden=true;$('l-msg').textContent='';};
 $('b-sair').onclick=$('mfa-sair').onclick=async()=>{await sb.auth.signOut();location.reload();};
 
 let entrando=false, EQUIPE=false, ADMIN=false, SEC=false;
