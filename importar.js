@@ -133,6 +133,28 @@ function impExtrato(txt){txt=String(txt||'');const out=[];
     const vs=c.map((x,i)=>i!==iD&&/\d/.test(x)&&!/[a-z]{3}/i.test(x.replace(/r\$/i,''))?impReal(x):null).filter(x=>x!==null&&x!==0);if(!vs.length)continue;
     out.push({data:impDia(c[iD]),valor:vs[0],desc:c.filter((x,i)=>i!==iD&&/[a-zà-ú]{3}/i.test(x)).join(' ')})}
   return out}
+// Extrato em planilha com molde (reunião Daniel 31/10, item 29: a mesma "qual coluna é o quê" da clínica).
+// Banco que separa Crédito e Débito, ou põe Saldo e Nº do documento ao lado do valor, confunde o palpite: ela confirma as colunas uma vez
+// e o molde fica guardado no aparelho pelo cabeçalho; nos meses seguintes é só escolher o arquivo.
+const IMP_EXT_CAMPOS=[['data','Data'],['desc','Descrição / histórico'],['valor','Valor (com sinal)'],['credito','Crédito (entrada)'],['debito','Débito (saída)'],['tipo','Coluna C/D (crédito ou débito)']];
+function impExtTabela(txt){const ls=String(txt||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());if(!ls.length)return {cab:[],linhas:[]};
+  const sep=impSep(ls.find(l=>impCels(l,impSep(l)).length>=3)||ls[0]);let ini=ls.findIndex(l=>{const c=impCels(l,sep);return c.length>=3&&c.filter(x=>/[a-zà-ú]{3}/i.test(x)&&!impDia(x)).length>=2&&!c.some(x=>impDia(x))});
+  if(ini<0){const n=impCels(ls[0],sep).length;return {cab:Array.from({length:n},(_,i)=>'Coluna '+(i+1)),linhas:ls.map(l=>impCels(l,sep))}}
+  return {cab:impCels(ls[ini],sep),linhas:ls.slice(ini+1).map(l=>impCels(l,sep))}}
+function impExtAdivinha(cab){const h=cab.map(impNorm),m={},usado=new Set();h.forEach((x,i)=>{if(/saldo|^n|documento|^doc|agencia|conta$/.test(x)&&!/historico|descri|lancamento/.test(x))usado.add(i)});
+  const pega=(k,...res)=>{for(const re of res){const i=h.findIndex((x,j)=>!usado.has(j)&&re.test(x));if(i>=0){m[k]=i;usado.add(i);return}}};
+  pega('data',/^data( do)? (lancamento|movimento)/,/^data$/,/^dt\b/,/data/);pega('credito',/^credito|entrada/);pega('debito',/^debito|saida/);
+  if(m.credito===undefined||m.debito===undefined){delete m.credito;delete m.debito;pega('valor',/^valor( r\$)?$/,/valor/,/^r\$$/,/quantia|montante/)}
+  pega('tipo',/^(tipo|c\/d|d\/c|natureza)$/);pega('desc',/historico|descri|lancamento|memo|detalhe/);
+  if(m.data===undefined&&cab[0]==='Coluna 1')return {};return m}
+// Movimentos pelo molde: valor com sinal, ou crédito − débito; coluna C/D vira o sinal quando o banco põe tudo positivo
+function impExtPeloMolde(tab,m){const out=[],n=i=>i===undefined?null:i;
+  for(const c of tab.linhas){const dt=impDia(c[m.data]);if(!dt)continue;let v=null;
+    if(n(m.valor)!==null){v=impReal(c[m.valor]);if(v!==null&&n(m.tipo)!==null&&/^d|debito|saida/.test(impNorm(c[m.tipo])))v=-Math.abs(v)}
+    else{const cr=impReal(c[m.credito]),db=impReal(c[m.debito]);v=cr?Math.abs(cr):db?-Math.abs(db):null}
+    if(v===null||v===0)continue;out.push({data:dt,valor:v,desc:n(m.desc)!==null?String(c[m.desc]||'').trim():c.filter((x,i)=>i!==m.data&&/[a-zà-ú]{3}/i.test(x)).join(' ')})}
+  return out}
+const impExtChave=cab=>'rs-extrato-molde:'+cab.map(impNorm).join('|');
 const IMP_CONTA=/aluguel|condominio|energia|\bedp\b|enel|cemig|light|cesan|sabesp|saneamento|agua|vivo|claro|\btim\b|\boi\b|internet|telefon|crefito|crp|cref|conselho|anuidade|iptu/;
 function impConcilia(movs,ats,ds){const dif=(a,b)=>Math.abs((new Date(a+'T12:00')-new Date(b+'T12:00'))/864e5),usados=new Set(),r={confere:[],receber:[],semLanc:[],despOk:[],despFalta:[],semExtrato:[]};
   if(!movs.length)return r;const ini=movs.reduce((m,x)=>x.data<m?x.data:m,movs[0].data),fim=movs.reduce((m,x)=>x.data>m?x.data:m,movs[0].data);
@@ -153,4 +175,4 @@ function impConcilia(movs,ats,ds){const dif=(a,b)=>Math.abs((new Date(a+'T12:00'
     if(IMP_CONTA.test(impNorm(m.desc)))r.despFalta.push({mov:m})}
   r.semExtrato=pagos.filter(x=>!usados.has(x.id)&&/pix|transf/i.test(x.forma||''));
   return r}
-if(typeof module!=='undefined')module.exports={...(module.exports||{}),impAgendaCsv,impExtrato,impConcilia};
+if(typeof module!=='undefined')module.exports={...(module.exports||{}),impAgendaCsv,impExtrato,impConcilia,impExtTabela,impExtAdivinha,impExtPeloMolde,impExtChave};

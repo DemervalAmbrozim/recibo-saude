@@ -581,7 +581,20 @@ $('b-lem').onclick=async()=>{const o=$('lem-lista'),url=$('ag-url').value.trim()
     :`<div class="sub">Nenhuma consulta amanhã (${dBR(dia)}) com o nome de uma paciente cadastrada no título.</div>`};
 
 // Conferir com o extrato do banco (ensaio 29/10, obs. 25): só lê no aparelho, nada do extrato vai para o banco de dados
-$('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const mv=impExtrato(await f.text()),o=$('ex-res');
+// Planilha: molde de colunas (item 29). Guardado neste aparelho pelo cabeçalho; OFX não precisa.
+let EX_TAB=null;
+function exColunas(m,auto){const T=EX_TAB,o=$('ex-res'),op=v=>`<option value="">(não tem)</option>`+T.cab.map((h,i)=>`<option value="${i}"${v===i?' selected':''}>${esc(h)}</option>`).join('');
+  o.innerHTML=`<div class="sub">${auto?'Confira':'Diga'} qual coluna é o quê (só na primeira vez deste banco). Use <b>Valor</b> se o banco põe entrada e saída na mesma coluna, ou <b>Crédito</b> e <b>Débito</b> se vêm separadas.</div>`
+    +IMP_EXT_CAMPOS.map(([k,t])=>`<label>${t} <select data-excol="${k}">${op(m[k])}</select></label>`).join('')
+    +`<div class="sub">Primeiras linhas: ${T.linhas.slice(0,3).map(l=>esc(l.join(' · '))).join('<br>')}</div><button type="button" class="pri small" id="b-ex-col">Conferir com estas colunas</button>`}
+function exMolde(){const m={};document.querySelectorAll('[data-excol]').forEach(x=>{if(x.value!=='')m[x.dataset.excol]=+x.value});return m}
+const exMoldeOk=m=>m.data!==undefined&&(m.valor!==undefined||(m.credito!==undefined&&m.debito!==undefined));
+$('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const txt=await f.text();e.target.value='';
+  if(/<STMTTRN>/i.test(txt))return exMostra(impExtrato(txt));
+  EX_TAB=impExtTabela(txt);let salvo=null;try{salvo=JSON.parse(localStorage.getItem(impExtChave(EX_TAB.cab)))}catch(_){}
+  if(salvo&&exMoldeOk(salvo))return exMostra(impExtPeloMolde(EX_TAB,salvo),true);
+  const g=impExtAdivinha(EX_TAB.cab);if(!EX_TAB.linhas.length)return exMostra([]);exColunas(g,exMoldeOk(g))};
+function exMostra(mv,molde){const o=$('ex-res');
   if(!mv.length){o.innerHTML='<div class="sub">Não achei movimentos nesse arquivo. Exporte o extrato em OFX ou em planilha (data, descrição, valor).</div>';return}
   const k=impConcilia(mv,D.atendimentos,D.despesas||[]),li=(x,t)=>`<div class="item"><span>${dBR(x.mov?x.mov.data:x.data)} · ${t}</span></div>`,bl=(tit,l)=>l.length?`<h3 style="margin:10px 0 4px">${tit} (${l.length})</h3>`+l.join(''):'';
   o.innerHTML=`<div class="sub">${mv.length} movimentos lidos, de ${dBR(mv.reduce((m,x)=>x.data<m?x.data:m,mv[0].data))} a ${dBR(mv.reduce((m,x)=>x.data>m?x.data:m,mv[0].data))}. Confere: <b>${k.confere.length}</b> recebimento${k.confere.length===1?'':'s'} e <b>${k.despOk.length}</b> despesa${k.despOk.length===1?'':'s'}.</div>`
@@ -590,11 +603,14 @@ $('ex-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const mv=i
     +bl('Entrou e não está lançado (atendimento esquecido? se for transferência entre contas suas, ignore)',k.semLanc.map(x=>li(x,`${brl(x.mov.valor)} · ${esc(x.mov.desc)}`)))
     +bl('Parece conta do consultório e não está nas despesas',k.despFalta.map(x=>`<div class="item"><span>${dBR(x.mov.data)} · ${brl(-x.mov.valor)} · ${esc(x.mov.desc)}</span><button type="button" class="small" data-exdesp="${-x.mov.valor}" data-exdd="${x.mov.data}" data-exdo="${esc(x.mov.desc.slice(0,60))}">Lançar</button></div>`))
     +bl('Lançado como Pix ou transferência e não está no extrato (outra conta?)',k.semExtrato.map(x=>li(x,`${esc(x.paciente)} · ${brl(x.valor)}`)))
-    +(k.receber.length+k.semLanc.length+k.despFalta.length+k.semExtrato.length?'':'<div class="sub">Tudo bate. 👏</div>');
-  e.target.value=''};
+    +(k.receber.length+k.semLanc.length+k.despFalta.length+k.semExtrato.length?'':'<div class="sub">Tudo bate. 👏</div>')
+    +(molde?'<button type="button" class="small" id="b-ex-mudar">Mudar as colunas da planilha</button>':'');}
 // Contas fixas no Drive dela (reunião Daniel 31/10, item 31a, supabase/030)
 $('b-drive').onclick=async()=>{const u=$('drive-url').value.trim();if(u&&!/^https:\/\/drive\.google\.com\/[A-Za-z0-9/_?=&.-]+$/.test(u)){avisa('Cole o link da pasta do Google Drive (começa com https://drive.google.com/).',true);return}
   const r=await sb.rpc('link_drive',{tok:TOK,p_url:u||null});if(r.error){avisa('Não consegui salvar o link.',true);return}avisa(u?'Link salvo: a Assessoria confere a pasta todo mês.':'Link retirado.')};
+$('ex-res').addEventListener('click',e=>{if(e.target.id==='b-ex-mudar'){let m={};try{m=JSON.parse(localStorage.getItem(impExtChave(EX_TAB.cab)))||{}}catch(_){}exColunas(m,true)}
+  if(e.target.id!=='b-ex-col')return;const m=exMolde();if(!exMoldeOk(m)){avisa('Escolha a Data e o Valor (ou Crédito e Débito).',true);return}
+  const mv=impExtPeloMolde(EX_TAB,m);if(mv.length)localStorage.setItem(impExtChave(EX_TAB.cab),JSON.stringify(m));exMostra(mv,true)});
 $('ex-res').onclick=async e=>{const b=e.target.closest('[data-exr]');if(!b)return;b.disabled=true;
   const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:b.dataset.exr,p_valor:+b.dataset.exv,p_data:b.dataset.exd});
   if(r.error){b.disabled=false;avisa('Não consegui registrar o pagamento.',true);return}b.textContent='Recebido ✓';avisa('Pagamento registrado na data do extrato.');await carrega()};
