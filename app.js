@@ -393,7 +393,7 @@ const PLANO={'':'sem plano',essencial:'Essencial',completo:'Completo',contador:'
 const profsUnicos=()=>[...new Map(PROFS.map(p=>[p.id,p])).values()];
 function admTela(){
   const em7=new Date(Date.now()+7*864e5).toISOString().slice(0,10), todos=profsUnicos();
-  const F={conferir:p=>!p.conselho_ok&&sitEf(p)!=='cancelada',procuracao:p=>p.procuracao!=='conferida'&&p.plano!=='essencial'&&sitEf(p)!=='cancelada',teste:p=>sitEf(p)==='teste',vence:p=>sitEf(p)==='teste'&&p.teste_ate<=em7,
+  const F={conferir:p=>!p.conselho_ok&&sitEf(p)!=='cancelada',procuracao:p=>p.procuracao!=='conferida'&&!['leve','essencial'].includes(p.plano)&&sitEf(p)!=='cancelada',teste:p=>sitEf(p)==='teste',vence:p=>sitEf(p)==='teste'&&p.teste_ate<=em7,
     ativa:p=>sitEf(p)==='ativa',leitura:p=>sitEf(p)==='leitura',cancelada:p=>sitEf(p)==='cancelada'};
   $('adm-kpi').innerHTML=[['Em teste','teste'],['Ativas','ativa'],['Conselho a conferir','conferir']]
     .map(([n,k])=>`<div class="kpi"><span class="sub">${n}</span><b>${todos.filter(F[k]).length}</b></div>`).join('');

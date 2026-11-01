@@ -376,12 +376,13 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
    if(f&&!confirm(`${brl(v)} ${f.media?`está bem ${f.acima?'acima':'abaixo'} do que você costuma lançar (${brl(f.media)})`:'é um valor alto para um atendimento'}. Está certo?`))return}
   if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
   if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
+  const dt0=$('data').value;
   const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
     :await grava('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
   if(r.error){avisa(pn&&semRede(r.error)?'Pacote precisa de internet. Sem internet, lance a sessão como atendimento comum.':'Não consegui salvar. Confira a data e tente de novo.',true);return}
   if(r.fila){$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa('Sem internet: guardado no celular. Vai sozinho quando a internet voltar.');return}
   if(pn){$('pac-n').value='';$('valor').value='';await carrega();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
-  const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa(pg?'Atendimento salvo.':'Salvo em "A receber". Marque quando o paciente pagar.');
+  const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();const cv=pg&&carneVencido(dt0);avisa(pg?(cv?`Atendimento salvo. Atenção: o Carnê-Leão deste mês venceu em ${cv.toLocaleDateString('pt-BR')}; se houver imposto, vai com multa e juros. Veja com o contador.`:'Atendimento salvo.'):'Salvo em "A receber". Marque quando o paciente pagar.');
 };
 
 // ---------- Despesas ----------

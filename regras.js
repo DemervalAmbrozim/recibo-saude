@@ -63,6 +63,9 @@ function feriados(a){
 const dISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const diaUtil=d=>![0,6].includes(d.getDay())&&!feriados(d.getFullYear()).includes(dISO(d));
 function ultimoDiaUtil(a,m){const d=new Date(a,m+1,0);while(!diaUtil(d))d.setDate(d.getDate()-1);return d} // m: 0-11
+// Obs. 37: recebimento de mês cujo Carnê-Leão já venceu (vence no último dia útil do mês seguinte). Devolve o vencimento ou null.
+function carneVencido(dataISO,hoje){const [a,m]=dataISO.split('-').map(Number),v=ultimoDiaUtil(m===12?a+1:a,m%12),h=hoje||new Date();
+  return new Date(h.getFullYear(),h.getMonth(),h.getDate())>v?v:null}
 
 // Reforma tributária (LC 214/2025): abaixo de 50% do limite do MEI a pessoa física é "nanoempreendedor" e não paga CBS/IBS (art. 26, IV).
 // Acima disso vira contribuinte, com nota fiscal e cadastro pelo CPF (art. 59); fisioterapia tem 60% de redução (art. 130, Anexo III).

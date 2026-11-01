@@ -137,6 +137,9 @@ Maria Silva · R$ 180,00 · Pix · hoje
       <div class="card plano" data-p="contador"><h3>Completo + Contador</h3><div class="preco"><span>R$ 249</span><small>/mês</small></div><p class="sub">O contador também faz a sua declaração.</p>
         <ul class="ok"><li>Tudo do Completo</li><li>Declaração do IR anual</li><li>Revisão do ano e PF × CNPJ</li><li>Orientação da reforma de 2027</li></ul></div>
     </div>
+    <div class="card plano" data-p="leve" style="margin-top:14px"><h3>Leve: só o app</h3><div class="preco"><span>R$ 29</span><small>/mês</small></div><p class="sub">Para quem quer só organizar e calcular, e emite e importa sozinha.</p>
+      <ul class="ok"><li>App para lançar atendimentos e despesas</li><li>Carnê-Leão calculado</li><li>Arquivo dos recibos para importar</li><li>Sem contador parceiro e sem emissão pela Assessoria: dá para subir de plano a qualquer momento</li></ul></div>
+    <p class="sub" style="margin-top:14px"><b>Anual = o seu ano do IR:</b> inclui o fechamento do ano e o relatório para a declaração de abril. Entrou de outubro a dezembro? Fazemos o <b>acerto do ano</b> antes do 1º fechamento (extrato do banco e recibos já emitidos, conferidos pela Assessoria): incluído no anual, R$ 97 uma vez no mensal.</p>
     <p class="sub" style="margin-top:14px">Todos com 30 dias grátis e, de bônus, revisão do seu Instagram e LinkedIn (entregue em até 7 dias da assinatura) com 4 posts prontos por mês da sua especialidade; no teste grátis vai 1 post de amostra. <b>Fundadoras:</b> as 10 primeiras têm 30% de desconto por 12 meses.</p>
   </section>
 
@@ -186,7 +189,7 @@ Maria Silva · R$ 180,00 · Pix · hoje
 <script src="regras.js"></script>
 <script>
 // Preços: tabela planos do banco (pública); se não responder, ficam os escritos na página
-let PRECOS={essencial:79,completo:149,contador:249,empresa:299},CICLO='mensal';
+let PRECOS={leve:29,essencial:79,completo:149,contador:249,empresa:299},CICLO='mensal';
 const brl=v=>'R$ '+(Number.isInteger(+v)?(+v).toLocaleString('pt-BR'):(+v).toLocaleString('pt-BR',{minimumFractionDigits:2}));
 function mostra(){document.querySelectorAll('.plano').forEach(c=>{const m=PRECOS[c.dataset.p];if(!m)return;
   const an=CICLO==='anual'&&c.dataset.p!=='empresa'; // Empresa: mensal, com 12 meses de plano
