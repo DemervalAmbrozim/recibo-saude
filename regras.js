@@ -145,7 +145,7 @@ function empresaMes(ats,mes,desde,hist){const pagos=ats.filter(x=>x.pago!==false
 }
 // Histórico do contador (item 47): cola a planilha do sistema da contabilidade: competência; receita; folha (pró-labore + salários + encargos)
 function empHist(txt){const out={};for(const l of String(txt||'').split(/\r?\n/)){const m=l.match(/\b(\d{1,2})\/(\d{4})\b|\b(\d{4})-(\d{2})\b/);if(!m)continue;
-    const mes=m[1]?`${m[2]}-${m[1].padStart(2,'0')}`:`${m[3]}-${m[4]}`,vs=(l.replace(m[0],'').match(/\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:\.\d{1,2})?/g)||[]).map(v=>/,/.test(v)||/\.\d{3}$/.test(v)?+v.replace(/\./g,'').replace(',','.'):+v);
+    const mes=m[1]?`${m[2]}-${m[1].padStart(2,'0')}`:`${m[3]}-${m[4]}`,vs=(l.replace(m[0],'').match(/\d[\d.,]*\d|\d/g)||[]).map(v=>/,/.test(v)?+v.replace(/\./g,'').replace(',','.'):/^\d{1,3}(\.\d{3})+$/.test(v)?+v.replace(/\./g,''):+v);
     if(vs.length>=2)out[mes]={mes,receita:vs[0],folha:vs[1]}}
   return Object.values(out).sort((a,b)=>a.mes<b.mes?-1:1).slice(-36)}
 // Linhas da nota fiscal do mês (uma por pagamento) e da DMED do ano (total por paciente e responsável), a partir do link_exportar
