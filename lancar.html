@@ -249,6 +249,17 @@ a{color:var(--accent)}
         <div class="list" id="ex-res" aria-live="polite"></div>
       </div>
     </details>
+    <details class="card" id="cv-card">
+      <summary><b>Convênio que paga direto a você</b></summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">Atendimento pago pelo convênio <b>não é recibo do Receita Saúde</b> nem entra no Carnê-Leão: o convênio é empresa, retém o IR e informa à Receita. Aqui você traz o demonstrativo de pagamento do convênio (planilha) e vê, mês a mês, o que atendeu, o que recebeu, a glosa e o imposto retido. Entra no relatório do ano para o IR.</div>
+        <div class="row"><select id="cv-sel" style="width:auto"></select><input id="cv-nome" placeholder="Nome do convênio (ex.: Unimed Vitória)" maxlength="60"><input id="cv-cnpj" placeholder="CNPJ do convênio (está no demonstrativo)" inputmode="numeric" maxlength="18"></div>
+        <div class="row"><button type="button" id="b-cv-salvar" class="small">Salvar convênio</button></div>
+        <div class="sub">Escolha a planilha do demonstrativo (.csv). Na primeira vez de cada convênio você diz qual coluna é o quê. <input type="file" id="cv-arq" accept=".csv,.txt,text/csv"></div>
+        <div class="list" id="cv-imp" aria-live="polite"></div>
+        <div class="list" id="cv-rel"></div>
+      </div>
+    </details>
     <div class="card" id="pacotes-card" hidden>
       <h2>Pacotes com saldo</h2>
       <div class="list" id="pacotes"></div>
@@ -420,6 +431,7 @@ a{color:var(--accent)}
 <script src="config.js"></script>
 <script src="regras.js"></script>
 <script src="importar.js"></script>
+<script src="convenio.js"></script>
 <script src="lancar.js"></script>
 <script src="instalar.js"></script>
 </body>

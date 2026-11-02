@@ -75,7 +75,7 @@ async function carrega(){
   $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
   telaIni();telaLan();telaDesp();telaAg();pacotesTela();indTela();irAnos();
-  if(!off)envia();
+  if(!off){envia();cvCarrega()}
 }
 // Pacotes (supabase/018): saldo por paciente e "+1 sessão hoje"; sem a função no banco, o cartão fica escondido
 async function pacotesTela(){const r=await sb.rpc('link_pacotes',{tok:TOK});const l=r.error?[]:r.data||[];
@@ -196,10 +196,12 @@ function irAnos(){const as=[...new Set(D.atendimentos.map(a=>a.data.slice(0,4)))
   const v=s.value;s.innerHTML=(as.length?as:[hojeISO().slice(0,4)]).map(a=>`<option>${a}</option>`).join('');if(as.includes(v))s.value=v}
 const irDados=()=>relatorioIR(D.atendimentos.map(a=>({...a,valor:+a.valor})),D.despesas.map(d=>({...d,valor:+d.valor})),$('ir-ano').value,D.darfs||[]);
 const mesBR=m=>m.split('-').reverse().join('/');
+// Convênios no relatório do IR (item 28): rendimento de PJ, fora do Carnê-Leão
+const irConv=ano=>{const L=cvAno(CV.lancs,CV.convenios,ano);return L.length?[[],['Convênios: rendimentos recebidos de pessoa jurídica (fora do Carnê-Leão)','CNPJ','Rendimento pago','IR retido','INSS retido'],...L.map(c=>[c.nome,c.cnpj||'falta o CNPJ',c.pago,c.irrf,c.inss])]:[]};
 $('b-ir-csv').onclick=()=>{const R=irDados(),a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv(['Mês','Recebido de pessoas físicas','Pacientes','Livro-caixa usado','INSS','Carnê-Leão devido','DARF a pagar','DARF pago','Pago em'],
     [...R.meses.map(x=>[mesBR(x.mes),x.rec,String(x.pacientes),x.lc,x.inss,x.devido,x.darf,x.pago?+x.pago.valor:'',x.pago?dBR(x.pago.pago_em):'']),['Total',R.tot.rec,'',R.tot.lc,R.tot.inss,R.tot.devido,R.tot.darf,R.tot.pago,''],[],['Despesas do ano por conta','Valor','Conta ITG 1000 (sugestão; o contador confirma)'],
-    ...Object.entries(R.porConta).map(([n,v])=>[n,v,R.itgConta[n]||'']),[],['Receita',R.tot.rec,ITG_RECEITA]])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
+    ...Object.entries(R.porConta).map(([n,v])=>[n,v,R.itgConta[n]||'']),[],['Receita',R.tot.rec,ITG_RECEITA],...irConv(R.ano)])],{type:'text/csv'}));a.download=`relatorio-ir-${R.ano}.csv`;document.body.appendChild(a);a.click();a.remove()};
 // Prévia do IR para ela validar (ensaio 29/10, obs. 38): relatório × gov.br, com a validação registrada como pedido de prioridade
 function irPrevTela(){const R=irDados(),gov={};document.querySelectorAll('[data-irg]').forEach(i=>{if(i.value.trim())gov[i.dataset.irg]=+i.value.replace(/\./g,'').replace(',','.')});
   const L=irPrevia(R,gov);$('ir-prev-l').innerHTML=L.map(x=>`<div class="item" style="grid-template-columns:1fr auto;align-items:center"><span>${x.nome}<br><b>${brl(x.nosso)}</b> aqui${x.ok===null?'':x.ok?' · <span style="color:#0b7a55">confere com o gov.br ✓</span>':` · <span style="color:#b3261e">diferença de ${brl(x.dif)}</span>`}</span>
@@ -220,6 +222,8 @@ $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){a
     <tbody>${R.meses.map(x=>`<tr><td>${mesBR(x.mes)}</td>${td(x.rec)}<td style="text-align:right">${x.pacientes}</td>${td(x.lc)}${td(x.inss)}${td(x.devido)}${td(x.darf)}<td style="text-align:right">${x.pago?brl(+x.pago.valor)+' em '+dBR(x.pago.pago_em):x.darf?'não marcado':''}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>Total</td>${td(R.tot.rec)}<td></td>${td(R.tot.lc)}${td(R.tot.inss)}${td(R.tot.devido)}${td(R.tot.darf)}${td(R.tot.pago)}</tr></tfoot></table>
     ${Object.keys(R.porConta).length?`<h1>Despesas do ano por conta</h1><table>${Object.entries(R.porConta).map(([n,v])=>`<tr><td>${esc(n)}<br><small>ITG 1000: ${esc(R.itgConta[n]||'')}</small></td>${td(v)}</tr>`).join('')}</table>`:''}
+    ${(CV_A=>CV_A.length?`<h1>Convênios: rendimentos recebidos de pessoa jurídica</h1><p class="s">Não entram no Carnê-Leão. Na declaração, ficha "Rendimentos tributáveis recebidos de pessoa jurídica", um por convênio, com o CNPJ e o IR retido. Confira com o informe de rendimentos que o convênio manda até o fim de fevereiro.</p>
+    <table><thead><tr><th>Convênio</th><th>CNPJ</th><th style="text-align:right">Rendimento pago</th><th style="text-align:right">IR retido</th><th style="text-align:right">INSS retido</th></tr></thead><tbody>${CV_A.map(c=>`<tr><td>${esc(c.nome)}</td><td>${c.cnpj?esc(c.cnpj):'<b>falta o CNPJ</b>'}</td>${td(c.pago)}${td(c.irrf)}${td(c.inss)}</tr>`).join('')}</tbody></table>`:'')(cvAno(CV.lancs,CV.convenios,R.ano))}
     <h1>Conferir mês a mês no Carnê-Leão Web</h1><p class="s">No gov.br, Meu Imposto de Renda &gt; Carnê-Leão &gt; Demonstrativo de Apuração, escolha o mês e compare linha a linha (ensaio 29/10, obs. 39):</p>
     <table><tr><th>No Carnê-Leão Web</th><th>Neste relatório</th></tr><tr><td>Rendimentos: Trabalho não assalariado</td><td>Recebido (PF)</td></tr><tr><td>Deduções: Previdência Oficial</td><td>INSS</td></tr>
     <tr><td>Deduções: Livro Caixa</td><td>Livro-caixa usado (limitado ao recebido do mês)</td></tr><tr><td>Base de cálculo</td><td>Recebido − INSS − Livro-caixa (− dependentes e pensão, se você lançou lá)</td></tr>
@@ -243,6 +247,8 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
         meses.map(m=>{const ap=apura(pg,ds,m);return [m.split('-').reverse().join('/'),ap.rec,ap.usado,ap.inss,ap.darf.total,ap.darf.pagar,ap.sobra]}))},
       {nome:'recibos-emitidos.csv',dados:csv(['Tipo','Mês','Linhas','Gerado em','Confirmado na Receita em','Números dos recibos'],
         X.lotes.map(l=>[l.tipo,l.mes,l.linhas,l.gerado_em&&new Date(l.gerado_em).toLocaleDateString('pt-BR'),l.confirmado_em&&new Date(l.confirmado_em).toLocaleDateString('pt-BR'),(l.recibos||[]).join(' ')]))}];
+    if(CV.lancs.length){const cn=id=>CV.convenios.find(c=>c.id===id)||{};arqs.push({nome:'convenios.csv',dados:csv(['Convênio','CNPJ','Data do atendimento','Data do pagamento','Paciente','Guia','Apresentado','Pago','Glosa','IR retido','INSS retido'],
+      CV.lancs.map(x=>[cn(x.convenio_id).nome,cn(x.convenio_id).cnpj,x.data_atend&&dBR(x.data_atend),x.data_pag&&dBR(x.data_pag),x.paciente,x.guia,+x.apresentado,+x.pago,+x.glosa,+x.irrf,+x.inss]))})}
     // PDFs: links de 1 h da função zap; sem a função (ou sem PDFs), seguem só as planilhas
     let pdfs=[];try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
       const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'exportar',tok:TOK})});if(f.ok)pdfs=(await f.json()).pdfs||[]}catch(e){}
@@ -614,6 +620,47 @@ $('ex-res').addEventListener('click',e=>{if(e.target.id==='b-ex-mudar'){let m={}
 $('ex-res').onclick=async e=>{const b=e.target.closest('[data-exr]');if(!b)return;b.disabled=true;
   const r=await sb.rpc('link_receber',{tok:TOK,p_atendimento:b.dataset.exr,p_valor:+b.dataset.exv,p_data:b.dataset.exd});
   if(r.error){b.disabled=false;avisa('Não consegui registrar o pagamento.',true);return}b.textContent='Recebido ✓';avisa('Pagamento registrado na data do extrato.');await carrega()};
+// Convênio que paga direto a ela (reunião Daniel 31/10, item 28; supabase/034, app/convenio.js). Sem a função no banco, o cartão fica escondido.
+let CV={convenios:[],lancs:[]},CV_TAB=null,CV_IMP=null;
+async function cvCarrega(){const r=await sb.rpc('link_convenios',{tok:TOK});if(r.error||!r.data){$('cv-card').hidden=true;return}$('cv-card').hidden=false;CV=r.data;cvTela()}
+const cvAtual=()=>CV.convenios.find(c=>c.id===$('cv-sel').value)||null;
+function cvTela(){const s=$('cv-sel'),v=s.value;s.innerHTML=CV.convenios.map(c=>`<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('')+'<option value="">+ Novo convênio</option>';
+  if(CV.convenios.some(c=>c.id===v))s.value=v;else s.value=CV.convenios.length?CV.convenios[0].id:'';cvCampos();
+  const M=cvMeses(CV.lancs,CV.convenios),o=$('cv-rel');if(!M.length){o.innerHTML='';return}
+  o.innerHTML=`<h3 style="margin:10px 0 4px">Por convênio e mês</h3>`+M.slice(0,24).map(t=>`<div class="item"><span><b>${esc(t.convenio)}</b> · ${mesBR(t.mes)}${t.receber?' · <b>a receber</b>':''} · ${t.guias} guia${t.guias===1?'':'s'}<br>
+    Atendido ${brl(t.apresentado)} · ${t.receber?'ainda não pago':'Pago '+brl(t.pago)}${t.glosa?` · <span style="color:#b3261e">glosa ${brl(t.glosa)}</span>`:''}${t.irrf||t.inss?` · IR retido ${brl(t.irrf)} · INSS retido ${brl(t.inss)}`:''}${t.receber?'':` · Líquido ${brl(t.liquido)}`}</span></div>`).join('')}
+function cvCampos(){const c=cvAtual();$('cv-nome').value=c?c.nome:'';$('cv-cnpj').value=c&&c.cnpj?c.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'):''}
+$('cv-sel').onchange=()=>{cvCampos();$('cv-imp').innerHTML=''};
+async function cvSalva(molde){const c=cvAtual(),nome=$('cv-nome').value.trim(),cnpj=$('cv-cnpj').value.replace(/\D/g,'');
+  if(nome.length<2){avisa('Digite o nome do convênio.',true);return null}if(cnpj&&!cvCnpjOk(cnpj)){avisa('O CNPJ não confere. Copie do demonstrativo do convênio.',true);return null}
+  const r=await sb.rpc('link_convenio',{tok:TOK,p_id:c?c.id:null,p_nome:nome,p_cnpj:cnpj||null,p_molde:molde||null});
+  if(r.error){avisa(/duplicate|unique/.test(r.error.message)?'Já existe um convênio com esse nome.':'Não consegui salvar o convênio.',true);return null}
+  const id=r.data;await cvCarrega();$('cv-sel').value=id;cvCampos();return id}
+$('b-cv-salvar').onclick=async()=>{if(await cvSalva())avisa(cvAtual()&&!cvAtual().cnpj?'Convênio salvo. Falta o CNPJ: ele vai no relatório do IR.':'Convênio salvo.')};
+function cvColunas(m,auto){const T=CV_TAB,op=v=>`<option value="">(não tem)</option>`+T.cab.map((h,i)=>`<option value="${i}"${v===i?' selected':''}>${esc(h)}</option>`).join('');
+  $('cv-imp').innerHTML=`<div class="sub">${auto?'Confira':'Diga'} qual coluna é o quê (só na primeira vez deste convênio). Precisa de uma data e de um valor.</div>`
+    +CV_CAMPOS.map(([k,t])=>`<label>${t} <select data-cvcol="${k}">${op(m[k])}</select></label>`).join('')
+    +`<div class="sub">Primeiras linhas: ${T.linhas.slice(0,3).map(l=>esc(l.join(' · '))).join('<br>')}</div><button type="button" class="pri small" id="b-cv-col">Ver com estas colunas</button>`}
+function cvPrevia(m){const ls=cvLinhas(CV_TAB,m),o=$('cv-imp');CV_IMP={m,ls};
+  if(!ls.length){o.innerHTML='<div class="sub">Não achei guias nessa planilha com essas colunas.</div><button type="button" class="small" id="b-cv-mudar">Mudar as colunas</button>';return}
+  const T=k=>brl(ls.reduce((s,x)=>s+x[k],0));
+  o.innerHTML=`<div class="sub">${ls.length} guia${ls.length===1?'':'s'} lida${ls.length===1?'':'s'}: atendido ${T('apresentado')}, pago ${T('pago')}, glosa ${T('glosa')}, IR retido ${T('irrf')}, INSS retido ${T('inss')}. Guia que já está aqui não entra de novo.</div>
+    <div class="row"><button type="button" class="pri small" id="b-cv-imp">Importar</button><button type="button" class="small" id="b-cv-mudar">Mudar as colunas</button></div>`}
+$('cv-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;const txt=await f.text();e.target.value='';
+  if(!cvAtual()&&!await cvSalva())return;CV_TAB=impExtTabela(txt);if(!CV_TAB.linhas.length){$('cv-imp').innerHTML='<div class="sub">Planilha vazia.</div>';return}
+  const c=cvAtual(),sv=c.molde,cab=CV_TAB.cab.map(impNorm).join('|');
+  if(sv&&sv.cab===cab&&cvMoldeOk(sv.m))return cvPrevia(sv.m);const g=cvAdivinha(CV_TAB.cab);cvColunas(g,cvMoldeOk(g))};
+$('cv-imp').onclick=async e=>{const id=e.target.id;
+  if(id==='b-cv-mudar'){const c=cvAtual();cvColunas(CV_IMP?CV_IMP.m:(c&&c.molde&&c.molde.m)||{},true);return}
+  if(id==='b-cv-col'){const m={};document.querySelectorAll('[data-cvcol]').forEach(x=>{if(x.value!=='')m[x.dataset.cvcol]=+x.value});
+    if(!cvMoldeOk(m)){avisa('Escolha uma data (pagamento ou atendimento) e um valor (pago ou apresentado).',true);return}cvPrevia(m);return}
+  if(id==='b-cv-imp'){e.target.disabled=true;const c=cvAtual(),{m,ls}=CV_IMP;
+    const r=await sb.rpc('link_convenio_importar',{tok:TOK,p_convenio:c.id,p_linhas:ls});if(r.error){e.target.disabled=false;avisa('Não consegui importar. Confira a internet e tente de novo.',true);return}
+    await sb.rpc('link_convenio',{tok:TOK,p_id:c.id,p_nome:c.nome,p_cnpj:c.cnpj,p_molde:{cab:CV_TAB.cab.map(impNorm).join('|'),m}});
+    const x=r.data;await cvCarrega();$('cv-imp').innerHTML=`<div class="sub">Importadas <b>${x.novas}</b> guia${x.novas===1?'':'s'}${x.repetidas?`; ${x.repetidas} já estava${x.repetidas===1?'':'m'} aqui`:''}.</div>`
+      +(x.novas?`<button type="button" class="small" data-cvdesf="${esc(x.importacao)}">Desfazer esta importação</button>`:'');return}
+  const d=e.target.closest('[data-cvdesf]');if(d){d.disabled=true;const r=await sb.rpc('link_convenio_desfazer',{tok:TOK,p_importacao:d.dataset.cvdesf});
+    if(r.error){d.disabled=false;avisa('Não consegui desfazer.',true);return}await cvCarrega();$('cv-imp').innerHTML=`<div class="sub">Desfeito: ${r.data} guia${r.data===1?'':'s'} retirada${r.data===1?'':'s'}.</div>`}};
 $('b-ag-salvar').onclick=async()=>{const b=$('b-ag-salvar');b.disabled=true;let feitos=0,erro=0;
   for(const ck of document.querySelectorAll('[data-ag]:checked')){const i=+ck.dataset.ag,x=AGE[i],v=+String(document.querySelector(`[data-agv="${i}"]`).value).replace(/\./g,'').replace(',','.');
     if(!(v>0)){erro++;continue}
