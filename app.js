@@ -210,7 +210,7 @@ function recibos(mes){
   // com os dias das sessões na descrição. A caixa "Juntar" segue para quem recebe tudo no fim do mês sem lançar como "a receber".
   const g={};pend.forEach(a=>{const k=$('f-agrupa').checked?a.paciente_id:a.data_atend?a.paciente_id+a.data:a.id;
     const r=g[k]||(g[k]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
-    r.valor+=a.valor;r.datas.push(a.data_atend||a.data);r.ids.push(a.id);(r.itens=r.itens||[]).push({d:a.data_atend||a.data,v:a.valor,pac:(S.pacotes||[]).find(k=>k.atendimento_id===a.id)});if(a.data>r.data)r.data=a.data});
+    r.valor+=a.valor;r.datas.push(a.data_atend||a.data);r.ids.push(a.id);(r.formas=r.formas||[]).push(a.forma);(r.itens=r.itens||[]).push({d:a.data_atend||a.data,v:a.valor,pac:(S.pacotes||[]).find(k=>k.atendimento_id===a.id)});if(a.data>r.data)r.data=a.data});
   return Object.values(g);
 }
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -267,7 +267,10 @@ function fech(){
   $('f-lista').innerHTML=rs.length?rs.map(r=>`<div class="item"><div><b>${esc(pacDe(r.pac).nome)}</b><div class="meta">${r.datas.map(dBR).join(', ')}</div></div><div class="num">${brl(r.valor)}</div></div>`).join('')
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
   $('f-erros').innerHTML=[...new Set(erros)].map(t=>`<div class="msg err">${esc(t)}</div>`).join('');
-  $('f-csv').value=falta?'':linhas.join('\r\n');
+  const hojeISO=new Date().toISOString().slice(0,10),cf=rs.map(r=>{const p=pacDe(r.pac);return {r,p,c:confereRecibo({nome:p.nome,cpf:p.cpf,cpfPagador:p.cpf_pagador,valor:r.valor,data:r.data,formas:r.formas},mes,hojeISO)}});
+  $('f-confere').innerHTML=cf.length?`<div class="sub"><b>Conferência antes de importar</b> (o cancelamento só vale em 10 dias): ${cf.filter(x=>x.c.ok).length} de ${cf.length} sem erro.</div>`
+    +cf.filter(x=>x.c.erros.length||x.c.avisos.length).map(x=>`<div class="msg ${x.c.erros.length?'err':''}"><b>${esc(x.p.nome||'(sem nome)')}</b>: ${esc([...x.c.erros,...x.c.avisos].join('; '))}.</div>`).join(''):'';
+  $('f-csv').value=falta||cf.some(x=>!x.c.ok)?'':linhas.join('\r\n');
   envioTela(mes);loteTela(mes);
 }
 // Envio do recibo ao paciente (ponto 3 do Daniel): por enquanto abre o WhatsApp ou o e-mail com o texto pronto

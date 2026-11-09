@@ -169,3 +169,23 @@ const D_MIN={'P10.01.00002':300};  // aluguel abaixo de R$ 300 quase sempre é z
 function foraDesp(ds,fixas,cod,valor){const m=mediana(ds.filter(x=>x.codigo===cod).map(x=>+(x.valor_pago||x.valor)).concat((fixas||[]).filter(x=>x.codigo===cod).map(x=>+x.valor)));
   if(m&&(valor>m*4||valor<m/4))return {media:m,acima:valor>m};
   return !m&&D_MIN[cod]&&valor<D_MIN[cod]?{baixo:true}:!m&&valor>=10000?{alto:'desp'}:null}
+
+// Conferência antes de importar o lote no Carnê-Leão Web (Daniel, 09/11/2026: o cancelamento só vale em 10 dias).
+// Confere o que a Receita recusa ou o que dá recibo errado: nome e CPF do beneficiário, CPF do pagador, valor, data do pagamento e forma (cartão = 1 recibo por parcela).
+// r = {nome, cpf, cpfPagador, valor, data, formas:[...]}; mes = 'aaaa-mm' do fechamento; hoje = 'aaaa-mm-dd'. Devolve {ok, avisos:[], erros:[]}.
+function confereRecibo(r,mes,hoje){
+  const so=s=>String(s||'').replace(/\D/g,''), cpf=c=>{c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
+    for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true};
+  const erros=[],avisos=[];
+  if(!String(r.nome||'').trim())erros.push('beneficiário sem nome');
+  if(!cpf(r.cpf))erros.push('CPF do beneficiário inválido ou vazio');
+  if(r.cpfPagador&&!cpf(r.cpfPagador))erros.push('CPF do pagador inválido');
+  if(r.cpfPagador&&so(r.cpfPagador)!==so(r.cpf))avisos.push('o pagador é outra pessoa: confira o nome dele no Carnê-Leão antes de habilitar o beneficiário');
+  if(!(r.valor>0))erros.push('valor pago zerado ou negativo');
+  if(!r.data||!String(r.data).startsWith(mes))erros.push('data do pagamento fora do mês do fechamento');
+  else if(hoje&&r.data>hoje)erros.push('data do pagamento no futuro');
+  if(String(mes).slice(0,4)<String(hoje||mes).slice(0,4))erros.push('recibo de ano anterior: a Receita não permite emitir');
+  else if(hoje&&mes<hoje.slice(0,7))avisos.push('mês anterior ao atual: se o Carnê-Leão desse mês já foi pago, retifique ou gere a guia complementar');
+  if((r.formas||[]).some(f=>/cart[aã]o|cr[eé]dito/i.test(f||'')))avisos.push('cartão: confirme se foi parcelado (um recibo por parcela recebida)');
+  return {ok:!erros.length,avisos,erros};
+}
