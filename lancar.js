@@ -152,7 +152,7 @@ $('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-C
   avisa('Obrigado pelo aviso! A Assessoria confere no e-CAC.');extrasTela(PL&&PL.plano)};
 // Aviso de CNPJ: Quero conversar (pedido no Admin) · Ver a conta · Agora não (some por 30 dias)
 let CJ=null;
-function cnpjTela(m){CJ=cnpjAviso(pagos(),D.despesas,m);const ate=+guardaLocal.get('rs_cnpj_nao')||0,pedido=EX&&EX.pedido_cnpj;
+function cnpjTela(m){CJ=cnpjAviso(pagos(),D.despesas,m,guardaLocal.get('rs_inss20')==='1');const ate=+guardaLocal.get('rs_cnpj_nao')||0,pedido=EX&&EX.pedido_cnpj;
   $('i-cnpj').hidden=!(CJ?.mostra||pedido)||(!pedido&&Date.now()<ate);if($('i-cnpj').hidden)return;
   $('cj-txt').textContent=pedido?'Pedido recebido: a Assessoria vai chamar você no WhatsApp para marcar 20 minutos com o contador parceiro.'
     :`Talvez compense virar empresa em 2027. Pela sua média dos últimos 3 meses (${brl(CJ.R)}), como CNPJ no Simples você pagaria cerca de ${brl(CJ.eco)} a menos por mês, já contando o contador. É uma estimativa: quem decide é você com o contador.`;
@@ -173,6 +173,7 @@ $('b-meu-zap').onclick=async()=>{const r=await sb.rpc('meu_whatsapp',{p_fone:$('
 $('pf-recpac').onchange=async e=>{const r=await sb.rpc('link_recibo_paciente',{tok:TOK,p_ok:e.target.checked});  // reunião Daniel 31/10, item 50
   if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar.',true);return}EX.recibo_paciente=e.target.checked;
   avisa(e.target.checked?'Autorizado: o recibo vai direto ao paciente. Cadastre o WhatsApp de cada um na ficha.':'Desligado: os recibos voltam a vir só para você.')};
+$('pf-inss20').checked=guardaLocal.get('rs_inss20')==='1';$('pf-inss20').onchange=e=>{guardaLocal.set('rs_inss20',e.target.checked?'1':'0');if(D)cnpjTela($('i-mes').value)};
 $('pf-novidades').onchange=async e=>{const r=await sb.rpc('link_preferencias',{tok:TOK,p_cnpj:null,p_novidades:e.target.checked});
   if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar a preferência.',true);return}avisa(e.target.checked?'Combinado: avisamos as novidades no WhatsApp.':'Pronto: sem avisos de novidades.')};
 

@@ -157,6 +157,7 @@ Maria Silva · R$ 180,00 · Pix · hoje
       <form class="card conta" id="f-conta" onsubmit="return false">
         <h3>Faça a conta</h3>
         <label>Quanto você recebe por mês, em média? <input id="cj-rec" inputmode="decimal" placeholder="ex.: 6.000" autocomplete="off"></label>
+        <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="cj-20" style="width:auto"> Contribuo ao INSS pelo plano de 20% (sem marcar: plano simplificado de 11%)</label>
         <label>Despesas do consultório por mês (aluguel, contas) <input id="cj-desp" inputmode="decimal" placeholder="ex.: 800" autocomplete="off"></label>
         <div class="res" id="cj-res" aria-live="polite"><span class="sub">Digite a sua média para ver a estimativa.</span></div>
         <p class="sub" style="font-size:13px">Estimativa de 2026: INSS e Carnê-Leão como pessoa física × Simples Nacional (Anexo III, pró-labore de 28%) com contador. Não conta o ISS. É uma conta para conversar: quem decide o regime é você com o contador.</p>
@@ -202,11 +203,11 @@ fetch(CONFIG.url+'/rest/v1/planos?select=codigo,mensal',{headers:{apikey:CONFIG.
 const numBR=v=>parseFloat(String(v).replace(/[^\d,.]/g,'').replace(/\./g,'').replace(',','.'))||0;
 function conta(){const R=numBR(document.getElementById('cj-rec').value),dp=numBR(document.getElementById('cj-desp').value),el=document.getElementById('cj-res');
   if(!(R>0)){el.innerHTML='<span class="sub">Digite a sua média para ver a estimativa.</span>';return}
-  const ms=['2026-07-15','2026-08-15','2026-09-15'],c=cnpjAviso(ms.map(d=>({data:d,valor:R})),dp>0?ms.map(d=>({data:d,valor:dp,codigo:'P10.01.00002'})):[],'2026-10');
+  const ms=['2026-07-15','2026-08-15','2026-09-15'],c=cnpjAviso(ms.map(d=>({data:d,valor:R})),dp>0?ms.map(d=>({data:d,valor:dp,codigo:'P10.01.00002'})):[],'2026-10',document.getElementById('cj-20').checked);
   const B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
   el.innerHTML=c.eco>0?`Pessoa física: cerca de <b>${B(c.pf)}</b> por mês de INSS e Carnê-Leão.<br>CNPJ no Simples, com contador: cerca de <b>${B(c.cnpj)}</b>.<br>${c.mostra?'Diferença':'Diferença pequena'}: <b>${B(c.eco)}</b> por mês${c.mostra?'. Vale conversar.':'; por enquanto a pessoa física compensa.'}`
     :`Com essa média, a pessoa física ainda sai mais barata (cerca de ${B(c.pf)} × ${B(c.cnpj)} por mês). O app avisa se isso mudar.`}
-['cj-rec','cj-desp'].forEach(i=>document.getElementById(i).oninput=conta);
+['cj-rec','cj-desp'].forEach(i=>document.getElementById(i).oninput=conta);document.getElementById('cj-20').onchange=conta;
 </script>
 <script>// Indicação: leva o ?ind= da venda para o cadastro
 (()=>{const i=new URLSearchParams(location.search).get('ind');if(i)document.querySelectorAll('a[href="entrar.html"]').forEach(a=>a.href='entrar.html?ind='+encodeURIComponent(i))})();</script>
