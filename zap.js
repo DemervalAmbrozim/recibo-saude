@@ -202,21 +202,23 @@ function zBoleto(cod,hoje){const c=String(cod).replace(/\D/g,'');
 // Conferência do trimestre no gov.br (obs. 21 e 22): os recibos que ela emitiu e os que estão no CPF dela como paciente
 // Daniel (09/11/2026, pergunta 11): compara os últimos 12 meses fechados de cada conta fixa; mês sem lançamento vira pedido ao consultório.
 // Só conta meses a partir do mês em que a conta fixa foi cadastrada.
+// competência do INSS vem como 'mm/aaaa'; as demais despesas, a data: tudo vira 'aaaa-mm'
+const zComp=d=>{const c=String(d.competencia||d.data||'');return /^\d{2}\/\d{4}$/.test(c)?c.slice(3)+'-'+c.slice(0,2):c.slice(0,7)};
 function zFixas12(D,hoje){const h=new Date(hoje+'T12:00'),ms=[];for(let k=12;k>=1;k--){const d=new Date(h.getFullYear(),h.getMonth()-k,1);ms.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`)}
   // o link_dados não traz criado_em: sem ele, a conta só conta a partir do 1º lançamento dela (sem lançamento nenhum, não cobra mês antigo)
-  const primeiro=f=>(D.despesas||[]).filter(d=>d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id).map(d=>(d.competencia||d.data).slice(0,7)).sort()[0]||'9999';
+  const primeiro=f=>(D.despesas||[]).filter(d=>d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id).map(zComp).sort()[0]||'9999';
   return (D.fixas||[]).filter(f=>f.ativo!==false).map(f=>{const ini=f.criado_em?String(f.criado_em).slice(0,7):primeiro(f);
-    const falta=ms.filter(m=>m>=ini&&!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&(d.competencia||d.data).slice(0,7)===m));
+    const falta=ms.filter(m=>m>=ini&&!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&zComp(d)===m));
     return {f,falta,total:ms.filter(m=>m>=ini).length}}).filter(x=>x.falta.length)}
 function zFixasTexto(D,hoje){const r=zFixas12(D,hoje);
   if(!(D.fixas||[]).length)return 'Você ainda não cadastrou contas fixas (aluguel, luz, internet...). Cadastre no app, em Despesas fixas, e eu confiro todo mês se alguma ficou sem lançamento.';
   if(!r.length)return 'Conferi os últimos 12 meses: todas as suas contas fixas têm lançamento em todos os meses. 👏';
-  return '*Contas fixas sem lançamento nos últimos 12 meses:*\n'+r.map(x=>`• ${nomeCod(x.f.codigo)}: ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]+'/'+m.slice(2,4)).join(', ')}`).join('\n')+'\nPagou? Mande a foto da conta ou o valor que eu lanço. Se não existiu naquele mês, responda *sem conta* e eu anoto.'}
+  return '*Contas fixas sem lançamento nos últimos 12 meses:*\n'+r.map(x=>`• ${nomeCod(x.f.codigo)}: ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]+'/'+m.slice(2,4)).join(', ')}`).join('\n')+'\nPagou? Mande a foto da conta ou o valor que eu lanço. Se a conta não existiu naquele mês, mande *suporte* que a Assessoria ajusta.'}
 function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMonth()/3),a=q?h.getFullYear():h.getFullYear()-1,qi=q?(q-1)*3:9;
   const de=`${a}-${String(qi+1).padStart(2,'0')}`,ate=`${a}-${String(qi+3).padStart(2,'0')}`;
   const pg=(D.atendimentos||[]).filter(x=>x.pago!==false&&x.data.slice(0,7)>=de&&x.data.slice(0,7)<=ate),n=new Set(pg.map(x=>x.paciente+'|'+x.data)).size;
   // Reunião Daniel 31/10 (item 33): gatilho para não acumular 12 meses; fecha os ralos (recibo de despesa que outros emitiram, conta que ficou para trás)
-  const meses=[0,1,2].map(k=>`${a}-${String(qi+1+k).padStart(2,'0')}`),fx=(D.fixas||[]).map(f=>({f,falta:meses.filter(m=>!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&(d.competencia||d.data).slice(0,7)===m))})).filter(x=>x.falta.length&&x.falta.length<3);
+  const meses=[0,1,2].map(k=>`${a}-${String(qi+1+k).padStart(2,'0')}`),fx=(D.fixas||[]).map(f=>({f,falta:meses.filter(m=>!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&zComp(d)===m))})).filter(x=>x.falta.length&&x.falta.length<3);
   return `*Conferência do trimestre* (${ZAP_MESES[qi]} a ${ZAP_MESES[qi+2]} de ${a}): 5 minutos agora para não acumular 12 meses na hora do IR. No gov.br > Receita Saúde:
 1. *Recibos que você emitiu*: pelo que está lançado aqui, ${n} recibo${n===1?'':'s'}, ${zBrl(soma(pg))}. Se faltar ou sobrar algum, mande *suporte*.
 2. *Recibos em que você é a paciente* (sua consulta, dentista, terapia), que outros profissionais já emitiram no seu CPF: você nem lembra de pegar, e eles abatem na declaração anual como despesa médica. Viu um que não reconhece? Mande *suporte* com o print.
