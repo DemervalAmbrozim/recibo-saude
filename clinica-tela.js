@@ -87,7 +87,7 @@ async function admCliTela(){if(!EQUIPE)return;
   if(r.error){$('adm-cli').hidden=true;return} // 025 ainda não rodou
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)';
   $('adm-cli-lista').innerHTML=r.data.length?r.data.map(c=>`<div class="item"><div><b>${esc(c.nome)}</b>${c.ativa?'':' (inativa)'}<div class="meta">${esc(c.cidade||'')}${c.sistema?' · sistema '+esc(c.sistema):''} · emite: ${c.emissao==='secretaria'?'secretária':'Assessoria'}</div>
-      ${c.quem_recebe==='clinica'?'<div class="meta" style="color:var(--bad,#b00)">recebe no CNPJ: caso de nota fiscal/repasse (contador)</div>':''}
+      ${c.quem_recebe==='clinica'?'<div class="meta" style="color:var(--bad,#b00)">recebe no CNPJ: caso de nota fiscal da clínica; o que sai para a profissional é pró-labore ou lucro (contador)</div>':''}
       <div class="meta">${c.clinica_membros.map(m=>esc(nome(m.profissional_id))).join(', ')||'sem profissional'}</div>
       <div class="meta">${c.clinica_secretarias.map(s=>esc(s.nome||s.email)).join(', ')||'sem secretária'}</div></div>
     <div class="num">${brl(cliPreco(c.clinica_membros.length))}/mês</div></div>`).join(''):'<div class="sub">Nenhuma clínica ainda.</div>';

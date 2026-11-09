@@ -223,7 +223,7 @@ a{color:var(--accent)}
   <section id="t-cli" class="tab" hidden style="display:grid;gap:16px">
     <div class="card">
       <div class="head"><h2 id="cli-nome">Clínica</h2><select id="cli-sel" style="width:auto;padding:6px 8px" hidden aria-label="Clínica"></select></div>
-      <div class="msg err" id="cli-cnpj" hidden>Nesta clínica quem recebe do paciente é a clínica (CNPJ). Aí a receita é da clínica: nota fiscal e repasse ao profissional, não recibo do Receita Saúde. A importação fica parada até a Assessoria conversar com vocês.</div>
+      <div class="msg err" id="cli-cnpj" hidden>Nesta clínica quem recebe do paciente é a clínica (CNPJ). Aí a receita é da clínica: nota fiscal da clínica; para a profissional só sai pró-labore ou distribuição de lucro, não recibo do Receita Saúde. A importação fica parada até a Assessoria conversar com vocês.</div>
       <div class="head"><span class="sub">Quem falta emitir</span><input id="cli-mes" type="month" style="width:auto" aria-label="Mês"></div>
       <div class="list" id="cli-painel"></div>
       <div class="sub" id="cli-preco"></div>
@@ -322,7 +322,7 @@ a{color:var(--accent)}
       <details><summary>Nova clínica</summary>
         <div class="row"><label>Nome <input id="nc-nome"></label><label>CNPJ (se tiver) <input id="nc-cnpj" inputmode="numeric"></label><label>Cidade <input id="nc-cidade"></label></div>
         <label>Quem recebe do paciente? <select id="nc-recebe"><option value="">Escolha</option><option value="profissional">O profissional (no CPF dele: Pix, cartão, dinheiro)</option><option value="clinica">A clínica (no CNPJ, e repassa ao profissional)</option></select></label>
-        <div class="msg err" id="nc-aviso" hidden>Se a clínica recebe no CNPJ, a receita é dela: nota fiscal e DMED da clínica, e o repasse não é recibo do Receita Saúde. Leve ao contador antes de vender; a importação fica parada.</div>
+        <div class="msg err" id="nc-aviso" hidden>Se a clínica recebe no CNPJ, a receita é dela: nota fiscal e DMED da clínica, e o que a clínica paga à profissional (pró-labore ou distribuição de lucro) não é recibo do Receita Saúde. Leve ao contador antes de vender; a importação fica parada.</div>
         <label>Quem emite os recibos <select id="nc-emissao"><option value="secretaria">A secretária da clínica (procuração para o CPF dela)</option><option value="assessoria">A Assessoria (procuração para o CPF do responsável)</option></select></label>
         <label>Sistema de agenda da clínica <input id="nc-sistema" placeholder="ex.: Clinicorp, Simples Dental, Codental, Feegow"></label>
         <button class="pri" id="b-nc" type="button">Criar clínica</button>

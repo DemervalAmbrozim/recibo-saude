@@ -136,7 +136,7 @@ const zErro=e=>/somente leitura/.test(e)?'Sua conta está só para consulta e n�
 const PROCURACAO=`Procuração no e-CAC (5 minutos, no computador ou no celular):
 1. Entre no e-CAC (cav.receita.fazenda.gov.br) com o seu gov.br (nível prata ou ouro).
 2. Menu *Senhas e Procurações* → *Cadastro, Consulta e Cancelamento - Procuração para e-CAC* → *Cadastrar Procuração*.
-3. Procurador: escolha *CPF* e digite {CPF} (responsável pela Lado a Lado Assessoria). É CPF, não CNPJ: assim o Receita Saúde abre o perfil Representante.
+3. Procurador: escolha *CPF* e digite {CPF} (responsável pela Assessoria Lado a Lado Ltda). É CPF, não CNPJ: assim o Receita Saúde abre o perfil Representante.
 4. Validade: pode deixar a que o e-CAC sugere; você cancela quando quiser, no mesmo menu.
 5. Marque só o serviço *IRPF - Carnê Leão Web* e confirme.
 Pronto? Responda *fiz a procuração* que a Assessoria confere.`;
