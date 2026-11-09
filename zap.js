@@ -433,7 +433,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
 Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.p<0.8?'Folgada.':'Perto ou acima: mande *cnpj* para comparar com empresa.'}`}
   if(/^(fixas|contas fixas|contas atrasadas|conferir contas)$/.test(t))return zFixasTexto(D,hoje);
   if(/^(cnpj|empresa|pj)( 20| inss 20)?$/.test(t)){const p20=/20$/.test(t),c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7),p20);
-    const r=!c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: a diferença seria de ${zBrl(c.eco)} por mês. Eu aviso se isso mudar.`;
+    const r=!c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: ${c.eco>0?`a economia seria de só ${zBrl(c.eco)} por mês`:`ele custaria ${zBrl(-c.eco)} a mais por mês`}. Eu aviso se isso mudar.`;
     return c?r+(p20?'\nConta com o INSS do plano de 20%.':'\nConta com o INSS do plano simplificado (11% do salário mínimo). Mande *cnpj 20* para ver com o plano de 20%.'):r}
   // Pacote Vire CNPJ: "quero" (resposta ao aviso) ou "quero conversar" vira pedido no Admin
   if(/^(quero|quero conversar|quero cnpj|quero abrir( o)? cnpj|conversar)$/.test(t)){if(!api.pedido)return 'Anotado. A Assessoria vai chamar você aqui.';
