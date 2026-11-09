@@ -108,17 +108,18 @@ function reformaRitmo(ats,ano,meses){if(meses<1)return null;const rec=soma(ats.f
 // Só sugere conversar com o contador quando a economia passa de R$ 300 por mês.
 const SM=1621, TETO=8475.55, CONTADOR=400; // salário mínimo e teto do INSS 2026 (Decreto 12.797/2025, Portaria MPS/MF 13/2026)
 const A3=[[180e3,.06,0],[360e3,.112,9360],[720e3,.135,17640],[1.8e6,.16,35640],[3.6e6,.21,125640],[4.8e6,.33,648000]]; // Anexo III, LC 155/2016, conferido no Planalto em 28/10
-function cnpjAviso(ats,ds,mes){
+// INSS da PF: padrão = plano simplificado, 11% do salário mínimo (Daniel, 09/11/2026); p20=true usa 20% da receita (do mínimo ao teto), com aposentadoria por tempo de contribuição.
+function cnpjAviso(ats,ds,mes,p20){
   const [a,m]=mes.split('-').map(Number), ms=[1,2,3].map(k=>dISO(new Date(a,m-1-k,1)).slice(0,7));
   const rs=ms.map(k=>({rec:soma(ats.filter(x=>x.data.startsWith(k))),lc:soma(ds.filter(x=>x.data.startsWith(k)&&x.codigo!==INSS))}));
   if(rs.some(r=>!r.rec))return null;
   const R=rs.reduce((s,r)=>s+r.rec,0)/3, lc=Math.min(R,rs.reduce((s,r)=>s+r.lc,0)/3);
-  const inss=.2*Math.min(Math.max(R,SM),TETO), pf=inss+carneLeao(R,lc+inss).devido;
+  const inss=p20?.2*Math.min(Math.max(R,SM),TETO):.11*SM, pf=inss+carneLeao(R,lc+inss).devido;
   const P=Math.max(SM,.28*R), ip=.11*Math.min(P,TETO), rbt=12*R, [,al,pd]=A3.find(f=>rbt<=f[0])||A3[A3.length-1];
   const cnpj=(rbt*al-pd)/rbt*R+ip+carneLeao(P,ip).devido+CONTADOR, eco=Math.round(pf-cnpj);
   const B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   return {R,pf,cnpj,eco,mostra:eco>=300,
-    txt:`Pela média de ${B(R)} por mês nos últimos 3 meses, você paga cerca de ${B(pf)} de INSS e Carnê-Leão. Com um CNPJ no Simples seriam cerca de ${B(cnpj)}, já com contador: ${B(eco)} a menos por mês. Com CNPJ o INSS é menor, e a aposentadoria também. Converse com a Assessoria e o contador antes de decidir.`};
+    txt:`Pela média de ${B(R)} por mês nos últimos 3 meses, você paga cerca de ${B(pf)} de INSS e Carnê-Leão. Com um CNPJ no Simples seriam cerca de ${B(cnpj)}, já com contador: ${B(eco)} a menos por mês. O INSS considerado é o do plano simplificado (11% do salário mínimo, sem aposentadoria por tempo de contribuição); pelo plano de 20% a conta é outra. Converse com a Assessoria e o contador antes de decidir.`};
 }
 
 // Modo Empresa, 1ª parte (revisão item 34, supabase/020). Estimativas para ela se organizar; quem apura e assina é o contador.
