@@ -359,6 +359,7 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     if(!nome){avisa('Escreva o nome do paciente.',true);return}
     if(!cpfOk(cpf)){avisa('CPF do paciente inválido. Confira os números.',true);return}
     if(pag&&!cpfOk(pag)){avisa('CPF de quem paga inválido.',true);return}
+    if(pag&&pag!==cpf&&$('n-pag-nome').value.trim().length<3){avisa('Informe o nome de quem paga (primeiro o pagador, depois o paciente).',true);return}
   }
   const tel=$('n-tel').value.trim(),em=$('n-email').value.trim();
   if(tel&&!telOk(tel)){avisa('WhatsApp do paciente inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
@@ -368,7 +369,9 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     if(r.error){avisa(semRede(r.error)?'Paciente nova precisa de internet para o cadastro. Sem internet, lance os pacientes que já estão na lista.':'Não consegui salvar o paciente. Tente de novo.',true);return}
     const ja=D.pacientes.find(x=>x.id===r.data);  // ensaio 29/10, obs. 5: o banco devolve quem já tem esse CPF
     if(ja&&!confirm(`Esse CPF já é de ${ja.nome}: não vou cadastrar de novo. Lançar o atendimento para ${ja.nome}?`))return;
-    pac=r.data;$('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';
+    pac=r.data;
+    {const pn=$('n-pag-nome').value.trim();if(pn&&!ja)await sb.rpc('link_paciente_pagador',{tok:TOK,p_paciente:pac,p_nome_pagador:pn,p_valor_contratado:null})}
+    $('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';$('n-pag-nome').value='';
   }else{const p=D.pacientes.find(x=>x.id===pac);
     if(p&&((p.telefone||'')!==(tel?telLimpo(tel):'')||(p.email||'')!==em)){
       const r=await sb.rpc('link_paciente_contato',{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em});

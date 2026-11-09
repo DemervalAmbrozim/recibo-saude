@@ -135,6 +135,8 @@ a{color:var(--accent)}
       <label>Nome <input id="p-nome" required autocomplete="off"></label>
       <label>CPF do paciente <input id="p-cpf" inputmode="numeric" placeholder="só números" required></label>
       <label>CPF de quem paga (só se for outra pessoa, ex.: mãe de criança) <input id="p-pag" inputmode="numeric" placeholder="deixe vazio se for o próprio paciente"></label>
+      <label>Nome de quem paga (obrigatório se o CPF acima for de outra pessoa) <input id="p-pag-nome" autocomplete="off"></label>
+      <label>Valor combinado por sessão (opcional, para conferir o lote) <input id="p-valor" inputmode="decimal" placeholder="ex.: 180"></label>
       <div class="row">
         <label>WhatsApp do paciente (opcional) <input id="p-tel" inputmode="tel" placeholder="27 99999-9999"></label>
         <label>E-mail do paciente (opcional) <input id="p-email" type="email" autocomplete="off"></label>

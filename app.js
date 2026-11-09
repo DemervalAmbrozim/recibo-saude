@@ -11,6 +11,7 @@ const num=v=>parseFloat(String(v).replace(/\./g,'').replace(',','.'));
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cpfOk(c){c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
   for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true}
+const numBR2=v=>parseFloat(String(v||'').replace(/[^\d,.]/g,'').replace(/\./g,'').replace(',','.'))||0;
 const telOk=t=>/^\d{10,11}$/.test(so(t).replace(/^55(?=\d{10,11}$)/,''));
 const telLimpo=t=>so(t).replace(/^55(?=\d{10,11}$)/,'');
 const fmtTel=t=>{t=so(t);return t.length===11?t.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3'):t.replace(/(\d{2})(\d{4})(\d{4})/,'($1) $2-$3')};
@@ -105,7 +106,7 @@ function render(){
     <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
     :'<div class="sub">Nenhum atendimento neste mês. Registre o primeiro acima.</div>';
   $('l-pac').innerHTML=pacs.length?pacs.map(p=>`<div class="item"><div><b>${esc(p.nome)}</b>
-    <div class="meta mono">${fmtCpf(p.cpf)}${p.cpf_pagador?' · paga: '+fmtCpf(p.cpf_pagador):''}</div>
+    <div class="meta mono">${fmtCpf(p.cpf)}${p.cpf_pagador?' · paga: '+(p.nome_pagador?esc(p.nome_pagador)+' ':'')+fmtCpf(p.cpf_pagador):''}</div>
     <div class="meta">${[p.telefone&&fmtTel(p.telefone),p.email&&esc(p.email)].filter(Boolean).join(' · ')||'sem WhatsApp nem e-mail'}</div></div>
     <div class="btns"><button class="small" data-cpac="${p.id}" type="button">Contato</button><button class="small" data-dpac="${p.id}" type="button">Excluir</button></div></div>`).join('')
     :'<div class="sub">Cadastre o primeiro paciente acima.</div>';
@@ -147,9 +148,10 @@ $('f-pac').onsubmit=async e=>{e.preventDefault();
   const cpf=so($('p-cpf').value),pag=so($('p-pag').value),tel=$('p-tel').value.trim(),em=$('p-email').value.trim();
   if(!cpfOk(cpf)){avisa('CPF do paciente inválido. Confira os números.',true);return}
   if(pag&&!cpfOk(pag)){avisa('CPF de quem paga inválido.',true);return}
+  if(pag&&pag!==cpf&&$('p-pag-nome').value.trim().length<3){avisa('Informe o nome de quem paga (primeiro o pagador, depois o paciente).',true);return}
   if(tel&&!telOk(tel)){avisa('WhatsApp inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
   if(em&&!mailOk(em)){avisa('E-mail do paciente inválido.',true);return}
-  const r=await sb.from('pacientes').insert({profissional_id:S.prof.id,nome:$('p-nome').value.trim(),cpf,cpf_pagador:pag&&pag!==cpf?pag:null,
+  const r=await sb.from('pacientes').insert({profissional_id:S.prof.id,nome:$('p-nome').value.trim(),cpf,cpf_pagador:pag&&pag!==cpf?pag:null,nome_pagador:pag&&pag!==cpf?$('p-pag-nome').value.trim()||null:null,valor_contratado:numBR2($('p-valor').value)||null,
     telefone:tel?telLimpo(tel):null,email:em||null}).select().single();
   if(falhou(r,'salvar o paciente'))return;
   S.pac.push(r.data);e.target.reset();render();avisa('Paciente salvo.');};
@@ -267,7 +269,7 @@ function fech(){
   $('f-lista').innerHTML=rs.length?rs.map(r=>`<div class="item"><div><b>${esc(pacDe(r.pac).nome)}</b><div class="meta">${r.datas.map(dBR).join(', ')}</div></div><div class="num">${brl(r.valor)}</div></div>`).join('')
     :'<div class="sub">Todos os recibos deste mês já foram emitidos.</div>';
   $('f-erros').innerHTML=[...new Set(erros)].map(t=>`<div class="msg err">${esc(t)}</div>`).join('');
-  const hojeISO=new Date().toISOString().slice(0,10),cf=rs.map(r=>{const p=pacDe(r.pac);return {r,p,c:confereRecibo({nome:p.nome,cpf:p.cpf,cpfPagador:p.cpf_pagador,valor:r.valor,data:r.data,formas:r.formas},mes,hojeISO)}});
+  const hojeISO=new Date().toISOString().slice(0,10),cf=rs.map(r=>{const p=pacDe(r.pac);return {r,p,c:confereRecibo({nome:p.nome,cpf:p.cpf,cpfPagador:p.cpf_pagador,nomePagador:p.nome_pagador,valorContratado:p.valor_contratado,valor:r.valor,data:r.data,formas:r.formas},mes,hojeISO)}});
   $('f-confere').innerHTML=cf.length?`<div class="sub"><b>Conferência antes de importar</b> (o cancelamento só vale em 10 dias): ${cf.filter(x=>x.c.ok).length} de ${cf.length} sem erro.</div>`
     +cf.filter(x=>x.c.erros.length||x.c.avisos.length).map(x=>`<div class="msg ${x.c.erros.length?'err':''}"><b>${esc(x.p.nome||'(sem nome)')}</b>: ${esc([...x.c.erros,...x.c.avisos].join('; '))}.</div>`).join(''):'';
   $('f-csv').value=falta||cf.some(x=>!x.c.ok)?'':linhas.join('\r\n');
