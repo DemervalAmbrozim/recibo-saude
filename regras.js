@@ -181,7 +181,7 @@ function confereRecibo(r,mes,hoje){
   if(!cpf(r.cpf))erros.push('CPF do beneficiário inválido ou vazio');
   if(r.cpfPagador&&!cpf(r.cpfPagador))erros.push('CPF do pagador inválido');
   if(r.cpfPagador&&so(r.cpfPagador)!==so(r.cpf)){
-    if(!String(r.nomePagador||'').trim())erros.push('o pagador é outra pessoa: informe o nome dele no cadastro do paciente (primeiro o pagador, depois o beneficiário)');
+    if(!String(r.nomePagador||'').trim())avisos.push('o pagador é outra pessoa e o nome dele não está no cadastro: confirme o nome antes de importar (primeiro o pagador, depois o beneficiário)');
     else avisos.push('o pagador é '+String(r.nomePagador).trim()+': no Carnê-Leão informe primeiro o pagador e depois habilite o beneficiário')}
   if(r.valorContratado>0&&r.valor>0&&Math.abs(r.valorContratado-r.valor)>0.005)avisos.push('valor pago ('+r.valor.toFixed(2).replace('.',',')+') diferente do combinado ('+Number(r.valorContratado).toFixed(2).replace('.',',')+'): confira desconto, pacote ou várias sessões');
   if(!(r.valor>0))erros.push('valor pago zerado ou negativo');
