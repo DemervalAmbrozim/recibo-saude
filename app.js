@@ -108,7 +108,7 @@ function render(){
   $('l-pac').innerHTML=pacs.length?pacs.map(p=>`<div class="item"><div><b>${esc(p.nome)}</b>
     <div class="meta mono">${fmtCpf(p.cpf)}${p.cpf_pagador?' · paga: '+(p.nome_pagador?esc(p.nome_pagador)+' ':'')+fmtCpf(p.cpf_pagador):''}</div>
     <div class="meta">${[p.telefone&&fmtTel(p.telefone),p.email&&esc(p.email)].filter(Boolean).join(' · ')||'sem WhatsApp nem e-mail'}</div></div>
-    <div class="btns"><button class="small" data-cpac="${p.id}" type="button">Contato</button><button class="small" data-dpac="${p.id}" type="button">Excluir</button></div></div>`).join('')
+    <div class="btns"><button class="small" data-cpac="${p.id}" type="button">Contato</button><button class="small" data-ppac="${p.id}" type="button">Pagador</button><button class="small" data-dpac="${p.id}" type="button">Excluir</button></div></div>`).join('')
     :'<div class="sub">Cadastre o primeiro paciente acima.</div>';
 }
 document.addEventListener('click',async e=>{
@@ -125,6 +125,18 @@ document.addEventListener('click',async e=>{
     // guarda o histórico: o paciente sai da lista, os recibos antigos continuam
     if(falhou(await sb.from('pacientes').update({ativo:false}).eq('id',t.dpac),'excluir o paciente'))return;
     S.pac=S.pac.filter(p=>p.id!==t.dpac);render();}
+  if(t.ppac){const p=S.pac.find(x=>x.id===t.ppac);
+    // Daniel 09/11: primeiro quem paga (nome e CPF), depois o paciente; valor combinado serve de conferência no fechamento
+    const cp=prompt(`CPF de quem paga as sessões de ${p.nome} (deixe vazio se o próprio paciente paga):`,p.cpf_pagador?fmtCpf(p.cpf_pagador):'');if(cp===null)return;
+    const pag=so(cp);let nome=null;
+    if(pag){if(!cpfOk(pag)){avisa('CPF de quem paga inválido.',true);return}
+      if(pag===p.cpf){avisa('Esse é o CPF do próprio paciente: deixe vazio.',true);return}
+      const n=prompt('Nome de quem paga:',p.nome_pagador||'');if(n===null)return;
+      if(n.trim().length<3){avisa('Informe o nome de quem paga.',true);return}nome=n.trim()}
+    const v=prompt(`Valor combinado por sessão de ${p.nome} (opcional, só para conferir o lote; vazio apaga):`,p.valor_contratado?String(p.valor_contratado).replace('.',','):'');if(v===null)return;
+    const novo={cpf_pagador:pag||null,nome_pagador:nome,valor_contratado:numBR2(v)||null};
+    if(falhou(await sb.from('pacientes').update(novo).eq('id',p.id),'salvar o pagador'))return;
+    Object.assign(p,novo);render();fech();avisa('Pagador salvo.');}
   if(t.cpac){const p=S.pac.find(x=>x.id===t.cpac);
     const tel=prompt(`WhatsApp de ${p.nome} com DDD (deixe vazio para apagar):`,p.telefone?fmtTel(p.telefone):'');if(tel===null)return;
     if(tel.trim()&&!telOk(tel)){avisa('WhatsApp inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
