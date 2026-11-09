@@ -232,6 +232,29 @@ $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){a
     <p class="s">Diferença em algum mês? Use "Prévia para validar" no app ou mande <b>suporte</b> no WhatsApp.</p>
     <p class="s">Na declaração: importe os dados do Carnê-Leão Web (menu Declaração), que levam os rendimentos, o livro-caixa e o imposto de cada mês. Os recibos do Receita Saúde já aparecem na declaração pré-preenchida. "DARF a pagar" é o calculado; "DARF pago" é o que você marcou como pago no app ou no WhatsApp. O comprovante oficial fica no e-CAC (Pagamentos). Valores a conferir com o seu contador.</p>
     <script>onload=()=>print()<\/script>`);w.document.close()};
+// K5 e K6 (09/11): relatório de um mês em PDF e conferência com o Demonstrativo do Carnê-Leão Web
+const MESES_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const rmMes=()=>{const m=$('rm-mes').value;if(m)return m;const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);return iso(d).slice(0,7)};
+const rmApura=()=>{const m=rmMes();return {m,ap:apura(D.atendimentos.filter(a=>a.pago!==false).map(a=>({...a,valor:+a.valor})),D.despesas.map(d=>({...d,valor:+d.valor})),m)}};
+$('rm-mes').value=rmMes();
+function rmClTela(){const {ap}=rmApura(),gov={};document.querySelectorAll('[data-rmg]').forEach(i=>{if(i.value.trim())gov[i.dataset.rmg]=+i.value.replace(/\./g,'').replace(',','.')});
+  const L=confereCL(ap,gov);$('rm-cl-l').innerHTML=L.map(x=>`<div class="item" style="grid-template-columns:1fr auto;align-items:center"><span>${x.nome}<br><b>${brl(x.nosso)}</b> aqui${x.ok===null?'':x.ok?' · <span style="color:#0b7a55">confere ✓</span>':` · <span style="color:#b3261e">diferença de ${brl(x.dif)}</span>`}</span>
+    <input data-rmg="${x.k}" inputmode="decimal" placeholder="no gov.br" value="${x.gov===null?'':String(x.gov).replace('.',',')}" style="width:110px"></div>`).join('')
+    +(L.some(x=>x.ok===false)?'<div class="msg err">Há diferença. Confira se todos os recebimentos do mês têm recibo emitido e se o INSS e as despesas estão lançados no mês certo. Se persistir, mande <b>suporte</b> no WhatsApp.</div>':L.every(x=>x.ok)?'<div class="msg ok">Tudo confere com o Carnê-Leão Web.</div>':'');
+  document.querySelectorAll('[data-rmg]').forEach(i=>i.onchange=rmClTela)}
+$('b-rm-cl').onclick=()=>{$('rm-cl').hidden=false;rmClTela()};
+$('rm-mes').onchange=()=>{if(!$('rm-cl').hidden)rmClTela()};
+$('b-rm-pdf').onclick=()=>{const {m,ap}=rmApura(),w=window.open('','_blank');if(!w){avisa('Libere a janela nova para gerar o PDF.',true);return}
+  const nome=`${MESES_PT[+m.slice(5)-1]}/${m.slice(0,4)}`,no=D.atendimentos.filter(a=>a.pago!==false&&a.data.startsWith(m)),dm=D.despesas.filter(d=>d.data.startsWith(m)&&d.codigo!==INSS),pg=(D.darfs||[]).find(x=>x.mes===m);
+  const L=(a,b)=>`<tr><td>${a}</td><td style="text-align:right">${b}</td></tr>`,porConta={};dm.forEach(d=>{const k=nomeCod(d.codigo);porConta[k]=(porConta[k]||0)+ +d.valor});
+  w.document.write(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Fechamento ${nome}</title><style>body{font:13px system-ui,sans-serif;margin:24px;color:#1b2b26;max-width:720px}
+    h1{font-size:18px;color:#0f6b55}table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border-bottom:1px solid #d6e2dd;padding:5px 6px;text-align:left}.s{color:#5b6b66;font-size:12px}</style>
+    <h1>Fechamento de ${nome}</h1><div>${esc(D.nome||'')}</div><div class="s">Gerado em ${new Date().toLocaleDateString('pt-BR')} pela Lado a Lado Saúde</div>
+    <table>${L('Recebido de pessoas físicas ('+no.length+' recebimento'+(no.length===1?'':'s')+')',brl(ap.rec))+L('Livro-caixa usado',brl(ap.usado))+L('INSS',brl(ap.inss))+(ap.sobra?L('Despesa que passa para o mês seguinte',brl(ap.sobra)):'')
+      +L('Carnê-Leão devido',brl(ap.cl.devido))+L('DARF a pagar',brl(ap.darf.pagar)+(ap.darf.adia?' (abaixo de R$ 10: soma ao mês seguinte)':''))+L('DARF pago',pg?brl(+pg.valor)+' em '+dBR(pg.pago_em):ap.darf.pagar?'não marcado':'—')}</table>
+    ${Object.keys(porConta).length?`<h1>Despesas do mês por conta</h1><table>${Object.entries(porConta).map(([n,v])=>L(esc(n),brl(v))).join('')}</table>`:''}
+    <p class="s">Estimativa para conferência: a apuração oficial é a do Demonstrativo do Carnê-Leão Web (gov.br). Valores a confirmar com o seu contador.</p>
+    <script>onload=()=>print()<\/script>`);w.document.close()};
 $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disabled=true;st.textContent='Juntando os seus dados...';
   try{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error)throw r.error;const X=r.data,pr=X.profissional||{};
     const loc=id=>(X.locais.find(l=>l.id===id)||{}).nome||'',sim=v=>v?'sim':'não',n=v=>v==null?null:+v;

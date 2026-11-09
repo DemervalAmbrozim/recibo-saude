@@ -42,6 +42,7 @@ document.addEventListener('click',async e=>{const t=e.target.dataset||{};
 
 // Leitura: cola → molde (guardado ou palpite) → prévia com o que entra e o que corrigir
 let cliTab=null;
+$('cli-modelo').onclick=e=>{e.preventDefault();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([CLI_MODELO_CSV],{type:'text/csv'}));a.download='modelo-recebimentos-clinica.csv';document.body.appendChild(a);a.click();a.remove()};
 $('cli-txt').oninput=()=>cliLer();
 $('cli-arq').onchange=async e=>{const f=e.target.files[0];if(!f)return;let t=await f.text();
   if(t.includes('�'))t=new TextDecoder('windows-1252').decode(await f.arrayBuffer()); // CSV do Excel no Brasil costuma vir assim

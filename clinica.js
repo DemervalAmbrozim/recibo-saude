@@ -99,4 +99,7 @@ function cliCorrige(x,novo,vistos,hoje){const y={...x,...novo};hoje=hoje||new Da
 // Para o banco: só os campos que clinica_importar lê
 const cliEnvio=ls=>ls.map(x=>({linha:x.linha,prof:x.prof,data:x.data,nome:x.nome,cpf:x.cpf,cpf_pagador:x.cpf_pagador||'',valor:Math.round(x.valor*100)/100,forma:x.forma,chave:x.chave}));
 const cliPreco=n=>249+59*Math.max(0,(n||0)-3); // igual a clinica_preco do banco
-if(typeof module!=='undefined')module.exports={CLI_CAMPOS,cliTabela,cliAdivinha,cliData,cliValor,cliForma,cliProf,cliAplica,cliCorrige,cliEnvio,cliPreco};
+// K16 (09/11): modelo de planilha padrão para a secretária ou o ERP exportar (colunas fixas; o leitor reconhece sem configurar)
+const CLI_MODELO_COLUNAS=['Data do pagamento','Paciente','CPF do paciente','CPF do pagador','Profissional','Forma de pagamento','Valor pago'];
+const CLI_MODELO_CSV='\uFEFF'+[CLI_MODELO_COLUNAS,['05/11/2026','Maria Exemplo','529.982.247-25','','Dra. Nome da Profissional','Pix','180,00'],['06/11/2026','João Exemplo','111.444.777-35','','Dr. Nome do Profissional','Cartão','250,00']].map(l=>l.join(';')).join('\r\n');
+if(typeof module!=='undefined')module.exports={CLI_MODELO_COLUNAS,CLI_MODELO_CSV,CLI_CAMPOS,cliTabela,cliAdivinha,cliData,cliValor,cliForma,cliProf,cliAplica,cliCorrige,cliEnvio,cliPreco};

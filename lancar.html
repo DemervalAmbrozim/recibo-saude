@@ -401,6 +401,14 @@ a{color:var(--accent)}
       <div class="sub">Mês a mês: o que recebeu, as despesas que abateram, o INSS e o Carnê-Leão. Leve para quem faz a sua declaração.</div>
       <div class="row" style="align-items:center"><select id="ir-ano" style="width:auto"></select>
         <button id="b-ir-pdf" type="button" class="small">PDF</button><button id="b-ir-csv" type="button" class="small">Planilha</button><button id="b-ir-prev" type="button" class="small pri">Prévia para validar</button></div>
+      <h2 style="margin-top:14px">Relatório do mês</h2>
+      <div class="sub">Fechamento de um mês em PDF (recebido, livro-caixa, INSS, Carnê-Leão, DARF) para mandar ao seu contador. Depois do PDF, confira o mês com o Demonstrativo do Carnê-Leão Web.</div>
+      <div class="row" style="align-items:center"><input id="rm-mes" type="month" style="width:auto" aria-label="Mês do relatório">
+        <button id="b-rm-pdf" type="button" class="small">PDF do mês</button><button id="b-rm-cl" type="button" class="small pri">Conferir com o Carnê-Leão Web</button></div>
+      <div id="rm-cl" hidden style="display:grid;gap:10px;margin-top:6px">
+        <div class="sub">No gov.br: Meu Imposto de Renda &gt; Carnê-Leão &gt; Demonstrativo de Apuração do mês. Digite o número de lá; eu mostro a diferença.</div>
+        <div class="list" id="rm-cl-l"></div>
+      </div>
       <div id="ir-prev" hidden style="display:grid;gap:10px;margin-top:6px">
         <div class="sub">Confira cada número com o que está no seu gov.br (Receita Saúde e Carnê-Leão Web, menu Pagamentos). Digite o número de lá: eu mostro a diferença. Depois marque o que já está no gov.br e entra na declaração, e envie à Assessoria. A declaração só é fechada depois da sua validação.</div>
         <div class="list" id="ir-prev-l"></div>

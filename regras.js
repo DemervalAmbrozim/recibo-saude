@@ -192,3 +192,8 @@ function confereRecibo(r,mes,hoje){
   if((r.formas||[]).some(f=>/cart[aã]o|cr[eé]dito/i.test(f||'')))avisos.push('cartão: confirme se foi parcelado (um recibo por parcela recebida)');
   return {ok:!erros.length,avisos,erros};
 }
+
+// K6 (09/11): conferência de UM mês com o Demonstrativo do Carnê-Leão Web. Ela digita o que o gov.br mostra; diferença acima de R$ 1 acende aviso.
+function confereCL(ap,gov){const L=[['rec','Rendimentos: Trabalho não assalariado',ap.rec],['inss','Deduções: Previdência Oficial',ap.inss],['lc','Deduções: Livro Caixa',ap.usado],['devido','Imposto devido',ap.cl.devido]];
+  return L.map(([k,nome,nosso])=>{const g=gov&&gov[k]!=null&&gov[k]!==''&&!isNaN(+gov[k])?+gov[k]:null;return {k,nome,nosso,gov:g,dif:g==null?null:Math.round((nosso-g)*100)/100,ok:g==null?null:Math.abs(nosso-g)<=1}})}
+if(typeof module!=='undefined')module.exports={...(typeof module.exports==='object'?module.exports:{}),confereCL};
