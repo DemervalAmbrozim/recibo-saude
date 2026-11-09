@@ -9,7 +9,7 @@ const INSS='P20.01.00001';
 // Endereço do app (ensaio 29/10, obs. 34 e 48: domínio da marca, sem o nome pessoal). GitHub Pages pelo arquivo CNAME (30/10).
 const SITE='https://ladoaladosaude.com.br';
 const CONTAS=[...P10,[INSS,'Seu INSS (carnê ou GPS)']];
-const IMOVEL=['00001','00002','00003','00007','00008','00009','00014'].map(c=>'P10.01.'+c); // contas que dependem do local
+const IMOVEL=['00001','00002','00003','00007','00008','00009'].map(c=>'P10.01.'+c); // contas que dependem do local (00014 telefone e internet fora: Daniel 09/11, uso misto sem como separar = 100% profissional)
 const nomeCod=c=>(CONTAS.find(x=>x[0]===c)||[c,c])[1];
 // Amarração ao plano de contas da ITG 1000 (reunião Daniel 31/10, item 30): o plano referencial da Receita é genérico,
 // o contador amarra cada despesa ao plano dele. Base: plano simplificado da ITG 1000 (Resolução CFC 1.418/2012, Anexo):
