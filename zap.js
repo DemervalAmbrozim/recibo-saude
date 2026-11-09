@@ -200,6 +200,16 @@ function zBoleto(cod,hoje){const c=String(cod).replace(/\D/g,'');
   return null}
 
 // Conferência do trimestre no gov.br (obs. 21 e 22): os recibos que ela emitiu e os que estão no CPF dela como paciente
+// Daniel (09/11/2026, pergunta 11): compara os últimos 12 meses fechados de cada conta fixa; mês sem lançamento vira pedido ao consultório.
+// Só conta meses a partir do mês em que a conta fixa foi cadastrada.
+function zFixas12(D,hoje){const h=new Date(hoje+'T12:00'),ms=[];for(let k=12;k>=1;k--){const d=new Date(h.getFullYear(),h.getMonth()-k,1);ms.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`)}
+  return (D.fixas||[]).filter(f=>f.ativo!==false).map(f=>{const ini=String(f.criado_em||'0000').slice(0,7);
+    const falta=ms.filter(m=>m>=ini&&!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&(d.competencia||d.data).slice(0,7)===m));
+    return {f,falta,total:ms.filter(m=>m>=ini).length}}).filter(x=>x.falta.length)}
+function zFixasTexto(D,hoje){const r=zFixas12(D,hoje);
+  if(!(D.fixas||[]).length)return 'Você ainda não cadastrou contas fixas (aluguel, luz, internet...). Cadastre no app, em Despesas fixas, e eu confiro todo mês se alguma ficou sem lançamento.';
+  if(!r.length)return 'Conferi os últimos 12 meses: todas as suas contas fixas têm lançamento em todos os meses. 👏';
+  return '*Contas fixas sem lançamento nos últimos 12 meses:*\n'+r.map(x=>`• ${nomeCod(x.f.codigo)}: ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]+'/'+m.slice(2,4)).join(', ')}`).join('\n')+'\nPagou? Mande a foto da conta ou o valor que eu lanço. Se não existiu naquele mês, responda *sem conta* e eu anoto.'}
 function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMonth()/3),a=q?h.getFullYear():h.getFullYear()-1,qi=q?(q-1)*3:9;
   const de=`${a}-${String(qi+1).padStart(2,'0')}`,ate=`${a}-${String(qi+3).padStart(2,'0')}`;
   const pg=(D.atendimentos||[]).filter(x=>x.pago!==false&&x.data.slice(0,7)>=de&&x.data.slice(0,7)<=ate),n=new Set(pg.map(x=>x.paciente+'|'+x.data)).size;
@@ -209,7 +219,7 @@ function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMo
 1. *Recibos que você emitiu*: pelo que está lançado aqui, ${n} recibo${n===1?'':'s'}, ${zBrl(soma(pg))}. Se faltar ou sobrar algum, mande *suporte*.
 2. *Recibos em que você é a paciente* (sua consulta, dentista, terapia), que outros profissionais já emitiram no seu CPF: você nem lembra de pegar, e eles abatem na declaração anual como despesa médica. Viu um que não reconhece? Mande *suporte* com o print.
 3. *Contas que ficaram para trás*: `+(fx.length?fx.map(x=>`${nomeCod(x.f.codigo)} sem lançamento em ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]).join(' e ')}`).join('; ')+'. Pagou? Mande a foto da conta.':'as contas fixas estão lançadas nos 3 meses. 👏')+`
-Este aviso fica registrado: é a sua conferência de ${qi/3+1}º trimestre.`}
+${zFixas12(D,hoje).length?'Nos últimos 12 meses ainda há conta fixa sem lançamento: mande *fixas* para ver quais.\n':''}Este aviso fica registrado: é a sua conferência de ${qi/3+1}º trimestre.`}
 
 // Dica na 1ª despesa de cada tipo (obs. 20): o que vale no IR e o que muda se um dia virar CNPJ
 function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-Leão como dedução (Previdência Oficial), não como despesa do consultório.';
@@ -417,6 +427,7 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
 • *2029 a 2032*: o ISS da prefeitura cai aos poucos e o IBS sobe. *2033*: ISS acaba; perto de 10,6% no total (estimativa).
 • Abaixo da linha: nada muda, segue o recibo do Receita Saúde.
 Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.p<0.8?'Folgada.':'Perto ou acima: mande *cnpj* para comparar com empresa.'}`}
+  if(/^(fixas|contas fixas|contas atrasadas|conferir contas)$/.test(t))return zFixasTexto(D,hoje);
   if(/^(cnpj|empresa|pj)( 20| inss 20)?$/.test(t)){const p20=/20$/.test(t),c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7),p20);
     const r=!c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: a diferença seria de ${zBrl(c.eco)} por mês. Eu aviso se isso mudar.`;
     return c?r+(p20?'\nConta com o INSS do plano de 20%.':'\nConta com o INSS do plano simplificado (11% do salário mínimo). Mande *cnpj 20* para ver com o plano de 20%.'):r}
