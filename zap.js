@@ -203,7 +203,9 @@ function zBoleto(cod,hoje){const c=String(cod).replace(/\D/g,'');
 // Daniel (09/11/2026, pergunta 11): compara os últimos 12 meses fechados de cada conta fixa; mês sem lançamento vira pedido ao consultório.
 // Só conta meses a partir do mês em que a conta fixa foi cadastrada.
 function zFixas12(D,hoje){const h=new Date(hoje+'T12:00'),ms=[];for(let k=12;k>=1;k--){const d=new Date(h.getFullYear(),h.getMonth()-k,1);ms.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`)}
-  return (D.fixas||[]).filter(f=>f.ativo!==false).map(f=>{const ini=String(f.criado_em||'0000').slice(0,7);
+  // o link_dados não traz criado_em: sem ele, a conta só conta a partir do 1º lançamento dela (sem lançamento nenhum, não cobra mês antigo)
+  const primeiro=f=>(D.despesas||[]).filter(d=>d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id).map(d=>(d.competencia||d.data).slice(0,7)).sort()[0]||'9999';
+  return (D.fixas||[]).filter(f=>f.ativo!==false).map(f=>{const ini=f.criado_em?String(f.criado_em).slice(0,7):primeiro(f);
     const falta=ms.filter(m=>m>=ini&&!(D.despesas||[]).some(d=>(d.fixa_id===f.id||d.codigo===f.codigo&&d.local_id===f.local_id)&&(d.competencia||d.data).slice(0,7)===m));
     return {f,falta,total:ms.filter(m=>m>=ini).length}}).filter(x=>x.falta.length)}
 function zFixasTexto(D,hoje){const r=zFixas12(D,hoje);
