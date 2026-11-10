@@ -15,7 +15,7 @@ const FORMAS={pix:'Pix',dinheiro:'Dinheiro',especie:'Dinheiro',cartao:'Cartão',
 const A_RECEBER=['receber','fiado','depois','pendente','deve'];
 // Palavra da despesa → conta do Carnê-Leão (regras.js)
 const DESP={aluguel:'P10.01.00002',condominio:'P10.01.00003',agua:'P10.01.00001',luz:'P10.01.00007',energia:'P10.01.00007',
-  internet:'P10.01.00014',telefone:'P10.01.00014',gas:'P10.01.00008',iptu:'P10.01.00009',anuidade:'P10.01.00004',crefito:'P10.01.00004',
+  internet:'P10.01.00015',telefone:'P10.01.00014',gas:'P10.01.00008',iptu:'P10.01.00009',anuidade:'P10.01.00004',crefito:'P10.01.00004',
   conselho:'P10.01.00004',limpeza:'P10.01.00011',escritorio:'P10.01.00012',funcionario:'P10.01.00013',salario:'P10.01.00013',iss:'P10.01.00010',inss:INSS};
 
 // Valor: 180 | 180,50 | 1.200 | R$ 1.200,00
@@ -313,7 +313,7 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
 // Recebimento, despesa, pacote e sessão no passo a passo (cobrança de 30/10 22h40: "isso sai também").
 // A frase escrita só preenche; cada um termina em "Confere? 1. Sim, gravar". est.fluxo guarda só ids e números (LGPD).
 const F_PASSOS={rec:['pac','item','valor','resto','data','conf'],desp:['cod','valor','data','conf'],pac:['pac','n','valor','forma','data','conf'],ses:['pac','data','conf']};
-const F_CAT=[['Aluguel','aluguel'],['Condomínio','condominio'],['Água','agua'],['Luz','luz'],['Internet e telefone','internet'],['Anuidade do conselho','anuidade'],['Limpeza','limpeza'],['Funcionário','funcionario'],['INSS','inss']];
+const F_CAT=[['Aluguel','aluguel'],['Condomínio','condominio'],['Água','agua'],['Luz','luz'],['Telefone','telefone'],['Internet','internet'],['Anuidade do conselho','anuidade'],['Limpeza','limpeza'],['Funcionário','funcionario'],['INSS','inss']];
 const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|quero( conversar)?)$/;
 const F_TIT={rec:'Recebimento',desp:'Despesa',pac:'Pacote',ses:'Sessão do pacote'};
 const fAbertos=(D,pac)=>D.atendimentos.filter(x=>x.pago===false&&!x.emitido&&(!pac||zDaPac(x,pac))).sort((a,b)=>a.data<b.data?-1:1);

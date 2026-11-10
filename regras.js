@@ -2,10 +2,12 @@
 
 // Plano de contas padrão do Carnê-Leão (P10 = despesa dedutível do livro-caixa) e INSS (P20.01.00001 = Previdência Oficial)
 const P10=[['00002','Aluguel do consultório'],['00003','Condomínio do consultório'],['00001','Água do consultório'],['00007','Energia do consultório'],
-  ['00014','Telefone e internet do consultório'],['00008','Gás do consultório'],['00009','IPTU do consultório'],['00004','Anuidade do conselho (CREFITO etc.)'],
+  ['00014','Telefone do consultório'],['00015','Internet do consultório'],['00008','Gás do consultório'],['00009','IPTU do consultório'],['00004','Anuidade do conselho (CREFITO etc.)'],
   ['00011','Material de limpeza do consultório'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
   ['00005','Cópias e autenticações'],['00006','Emolumentos pagos a terceiros']].map(([c,n])=>['P10.01.'+c,n]);
 const INSS='P20.01.00001';
+// Internet é conta própria no app (Daniel 09/11: telefone e internet são despesas separadas), mas o plano da Receita tem uma conta só (00014): no arquivo sai como 00014
+const codRec=c=>c==='P10.01.00015'?'P10.01.00014':c;
 // Endereço do app (ensaio 29/10, obs. 34 e 48: domínio da marca, sem o nome pessoal). GitHub Pages pelo arquivo CNAME (30/10).
 const SITE='https://ladoaladosaude.com.br';
 const CONTAS=[...P10,[INSS,'Seu INSS (carnê ou GPS)']];
@@ -16,7 +18,7 @@ const nomeCod=c=>(CONTAS.find(x=>x[0]===c)||[c,c])[1];
 // 3.1.1.03 Venda de Serviços; 3.2.2.01 Despesas Administrativas; 3.2.2.03 Outras Despesas Gerais. A ITG é modelo-base:
 // a subconta final segue a estrutura que o Daniel usa (pergunta 25 enviada em 31/10); até lá, esta é a sugestão.
 const ITG={'00002':['3.2.2.01.001','Aluguel'],'00003':['3.2.2.01.002','Condomínio'],'00001':['3.2.2.01.003','Água'],'00007':['3.2.2.01.004','Energia elétrica'],
-  '00014':['3.2.2.01.005','Telefone e internet'],'00008':['3.2.2.01.006','Gás'],'00011':['3.2.2.01.007','Material de limpeza'],'00012':['3.2.2.01.008','Material de escritório'],
+  '00014':['3.2.2.01.005','Telefone'],'00015':['3.2.2.01.013','Internet'],'00008':['3.2.2.01.006','Gás'],'00011':['3.2.2.01.007','Material de limpeza'],'00012':['3.2.2.01.008','Material de escritório'],
   '00005':['3.2.2.01.009','Cópias e autenticações'],'00006':['3.2.2.01.010','Emolumentos'],'00004':['3.2.2.01.011','Anuidade do conselho'],
   '00013':['3.2.2.01.012','Salários e encargos'],'00009':['3.2.2.03.001','IPTU'],'00010':['3.2.2.03.002','ISS']};
 const ITG_RECEITA='3.1.1.03 Venda de Serviços';

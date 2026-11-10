@@ -185,7 +185,7 @@ function despTela(){
     :'<div class="sub">Nenhuma despesa neste mês.</div>';
   // Dois arquivos, como nos modelos da Receita: livro-caixa (plano de contas padrão) e INSS (pagamentos gerais: multa, juros e competência)
   const nov=ds.filter(d=>!d.lote_id), hist=d=>ascii(nomeCod(d.codigo)+(d.obs?' - '+d.obs:'')).slice(0,255);
-  $('d-csv').value=nov.filter(d=>d.codigo!==INSS).map(d=>[dBR(d.data),d.codigo,vcsv(d.valor),hist(d)].join(';')).join('\r\n');
+  $('d-csv').value=nov.filter(d=>d.codigo!==INSS).map(d=>[dBR(d.data),codRec(d.codigo),vcsv(d.valor),hist(d)].join(';')).join('\r\n');
   $('d-csv2').value=nov.filter(d=>d.codigo===INSS).map(d=>[dBR(d.data),d.codigo,vcsv(d.valor),hist(d),'','',d.competencia||''].join(';')).join('\r\n');
   $('l-csv2').hidden=!$('d-csv2').value;
 }
