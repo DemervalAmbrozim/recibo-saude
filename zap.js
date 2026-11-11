@@ -249,6 +249,7 @@ function gPergunta(g,D,hoje,est){const pac=D.pacientes.find(x=>x.id===g.pac),L=i
     return `*Lançar atendimento* (1 de 4)\nÉ *${gNome(D,g.ops[0])}*?\n1. Sim\n2. ${gNome(D,G_NOVA)}\nou escreva outro nome. Para sair: *sair*`}
   if(g.passo==='pac'){L(g.ops.map(id=>gNome(D,id)));return `*Lançar atendimento* (1 de 4)\nQual paciente?\n`+g.ops.map((id,i)=>`${i+1}. ${gNome(D,id)}`).join('\n')
     +(g.mais?'\nNão está na lista? Escreva o começo do nome.':'')+'\nToque na opção ou escreva o nome. Para sair: *sair*'}
+  if(g.passo==='pagnome')return `*Quem paga*\nQual o nome completo de quem paga as sessões de ${g.novoNome||'a paciente'}? (como está no CPF dele). Ou escreva *pular*.`;
   if(g.passo==='novo')return '*Paciente nova*\nMande o nome completo e o CPF de quem é atendido, como vai no recibo. Ex.: *Maria Silva 123.456.789-09*\nSe outra pessoa paga (mãe, filho), acrescente: *paga 987.654.321-00*';
   if(g.passo==='valor'){const u=D.atendimentos.filter(x=>pac&&zDaPac(x,pac)).sort((a,b)=>a.data<b.data?1:-1)[0];g.ult=u?+u.valor:null;
     if(u)L([`${zBrl(u.valor)}`]);
@@ -293,8 +294,15 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
     if(!zCpf(cpf))return de_novo('Esse CPF não confere.');if(pag&&!zCpf(pag))return de_novo('O CPF de quem paga não confere.');if(nome.split(/\s+/).length<2)return de_novo('Mande o nome completo.');
     let id;try{id=await api.paciente(nome,cpf,pag&&pag!==cpf?pag:null)}catch(e){return zErro(String(e.message||e))}
     const ja=D.pacientes.find(x=>x.id===id);if(!ja)D.pacientes.push({id,nome});g.pac=id;g.passo=gProx(g);
+    if(!ja&&pag&&pag!==cpf){g.passo='pagnome';g.novoNome=nome;return `Cadastrada: ${nome} ✅\n\n`+gPergunta(g,D,hoje,est)}  // A23: pagador diferente pede o NOME dele
     if(g.so){est.guia=null;return (ja?`Esse CPF já é de *${ja.nome}*: não cadastrei de novo.`:`Cadastrada: ${nome} ✅`)+(pag&&pag!==cpf?' O recibo sai no CPF dela, com quem paga no campo do pagador.':'')+' Para lançar um atendimento, escreva *lançar*.'}
     return (ja?`Esse CPF já é de *${ja.nome}*: segui com ela, sem cadastrar de novo.`:`Cadastrada: ${nome} ✅`)+'\n\n'+gPergunta(g,D,hoje,est)}
+  if(g.passo==='pagnome'){const nm=linha.trim().replace(/\s+/g,' ');
+    if(!/^(pular|nao sei|depois)$/.test(t)){if(nm.split(' ').length<2||/\d/.test(nm))return de_novo('Mande o nome completo de quem paga (ou escreva *pular*).');
+      try{if(api.pagadorNome)await api.pagadorNome(g.pac,nm)}catch(e){return zErro(String(e.message||e))}}
+    const ok=/^(pular|nao sei|depois)$/.test(t)?' Sem o nome do pagador a conferência do lote vai avisar.':' O recibo sai no CPF do paciente, com '+nm+' no campo do pagador.';
+    if(g.so){est.guia=null;return 'Pagador anotado ✅'+ok+' Para lançar um atendimento, escreva *lançar*.'}
+    g.passo=gProx(g);return 'Pagador anotado ✅'+ok+'\n\n'+gPergunta(g,D,hoje,est)}
   if(g.passo==='valor'){if(n&&n<10&&!(n===1&&g.ult))return de_novo('Escreva o valor em reais, ex.: *180*.');  // "2" no menu não vira R$ 2,00
     const v=n===1&&g.ult?g.ult:/^r?\$?\s*[\d.,]+\s+mil$/.test(t)?zValor(t.replace(/\s*mil$/,'').replace(/[r$\s]/g,''))*1000:zValor(t.replace(/\s/g,'').replace(/^r?\$/,''));if(!v)return de_novo('Não entendi o valor.');
     g.valor=v;g.passo=gProx(g);return gPergunta(g,D,hoje,est)}
