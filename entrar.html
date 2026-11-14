@@ -40,8 +40,9 @@ h2{font-size:16px;margin:0}
 .mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;min-width:0}
 label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
-input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;box-sizing:border-box}
+input,select,textarea{font:inherit;font-size:max(16px,1em);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;box-sizing:border-box}
 textarea{font-family:var(--mono);font-size:12px;min-height:120px}
+input.bad{border-color:#c0392b;background:#fdecea}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button{font:inherit;font-weight:600;border-radius:8px;padding:11px 14px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
@@ -109,13 +110,13 @@ a{color:var(--accent)}
     <div class="sub">Conta de <b id="c-email"></b>. Os dados saem no recibo do Receita Saúde, como a Receita pede.</div>
     <label>Nome completo <input id="c-nome" autocomplete="name" required></label>
     <div class="row">
-      <label>CPF <input id="c-cpf" inputmode="numeric" placeholder="só números" required></label>
+      <label>CPF <input id="c-cpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00" required></label>
       <label>Profissão
         <select id="c-ocup"><option value="231">Fisioterapeuta</option><option value="255">Psicólogo(a)</option><option value="230">Fonoaudiólogo(a)</option><option value="232">Terapeuta ocupacional</option><option value="226">Dentista</option><option value="225">Médico(a)</option></select></label>
     </div>
     <label>Registro no conselho <input id="c-reg" placeholder="ex.: CREFITO-15/123456-F" required></label>
     <div class="row">
-      <label>Seu WhatsApp <input id="c-tel" inputmode="tel" placeholder="27 99999-9999" required></label>
+      <label>Seu WhatsApp <input id="c-tel" inputmode="tel" maxlength="15" placeholder="(27) 99999-9999" required></label>
       <label>Cidade <input id="c-cid" autocomplete="address-level2"></label>
     </div>
     <label>Pensa em abrir CNPJ em 2027? <select id="c-cnpj"><option value="">Prefiro não dizer</option><option value="nao">Não</option><option value="talvez">Talvez, quero entender</option><option value="sim">Sim, quero conversar</option></select></label>

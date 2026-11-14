@@ -6,6 +6,12 @@ const TERMOS = 'resumo-2026-10-27'; // versão aceita, gravada na conta
 const $=id=>document.getElementById(id);
 const so=s=>String(s||'').replace(/\D/g,'');
 const telLimpo=t=>so(t).replace(/^55(?=\d{10,11}$)/,'');
+// Travas ao digitar (14/11): CPF com máscara e conferência na hora, telefone com máscara
+const mCpf=v=>{v=so(v).slice(0,11);return v.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1-$2')};
+const mTel=v=>{v=so(v).slice(0,11);return v.length>6?v.replace(/^(\d{2})(\d{4,5})(\d{4})$/,'($1) $2-$3').replace(/^(\d{2})(\d+)$/,'($1) $2'):v.replace(/^(\d{2})(\d+)$/,'($1) $2')};
+document.addEventListener('DOMContentLoaded',()=>{const c=document.getElementById('c-cpf'),t=document.getElementById('c-tel');
+  if(c){c.addEventListener('input',()=>{c.value=mCpf(c.value);const n=so(c.value).length;c.classList.toggle('bad',n===11&&!cpfOk(c.value))});c.addEventListener('blur',()=>c.classList.toggle('bad',so(c.value).length>0&&!cpfOk(c.value)))}
+  if(t)t.addEventListener('input',()=>{t.value=mTel(t.value)})});
 function cpfOk(c){c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;
   for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true}
 function avisa(t,err){const a=$('aviso');a.textContent=t;a.className='msg'+(err?' err':'');a.hidden=false;clearTimeout(avisa.t);avisa.t=setTimeout(()=>a.hidden=true,7000)}
