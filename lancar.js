@@ -262,7 +262,7 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
     const meses=[...new Set([...pg.map(a=>a.data.slice(0,7)),...ds.map(d=>d.data.slice(0,7))])].sort();
     const arqs=[
       {nome:'LEIA-ME.txt',dados:new TextEncoder().encode(`Lado a Lado Saúde: dados de ${pr.nome||''} (CPF ${pr.cpf||''}), baixados em ${new Date().toLocaleString('pt-BR')}.\r\n\r\nAs planilhas (.csv) abrem no Excel ou no Google Planilhas.\r\n- atendimentos.csv: cada atendimento, com o paciente, o valor e o recibo.\r\n- livro-caixa-mensal.csv: o que entrou, as despesas que abatem e o Carnê-Leão de cada mês.\r\n- pacientes.csv, despesas.csv e recibos-emitidos.csv.\r\n- recibos/ e posts/: os PDFs guardados pela Assessoria.\r\n\r\nGuarde os comprovantes por 5 anos. O livro-caixa oficial é o do Carnê-Leão Web (gov.br).`)},
-      {nome:'pacientes.csv',dados:csv(['Nome','CPF','CPF de quem paga','WhatsApp','E-mail','Ativo'],X.pacientes.map(p=>[p.nome,p.cpf,p.cpf_pagador,p.telefone,p.email,sim(p.ativo)]))},
+      {nome:'pacientes.csv',dados:csv(['Nome','CPF','CPF de quem paga','WhatsApp','2º WhatsApp','E-mail','Ativo'],X.pacientes.map(p=>[p.nome,p.cpf,p.cpf_pagador,p.telefone,p.telefone2,p.email,sim(p.ativo)]))},
       {nome:'atendimentos.csv',dados:csv(['Data','Paciente','CPF','CPF de quem paga','Valor','Forma','Recebido','Local','Recibo do mês','Recibo confirmado na Receita'],
         ats.map(a=>[dBR(a.data),a.paciente,a.cpf,a.cpf_pagador,a.valor,a.forma,sim(a.pago!==false),loc(a.local_id),a.recibo_mes||'',sim(a.recibo_confirmado)]))},
       {nome:'despesas.csv',dados:csv(['Data','Conta','Conta ITG 1000','Valor que abate','Valor da conta','Local','Competência','Observação'],
@@ -368,8 +368,13 @@ function telaLan(){
 // WhatsApp e e-mail do paciente, para a Assessoria mandar o recibo (ponto 3 do Daniel)
 function contatoTela(){const v=$('pac').value,p=D.pacientes.find(x=>x.id===v);
   $('novo').hidden=v!=='novo';$('contato').hidden=!v;
-  $('n-tel').value=p&&p.telefone?fmtTel(p.telefone):'';$('n-email').value=p&&p.email||'';}
+  $('n-tel').value=p&&p.telefone?fmtTel(p.telefone):'';$('n-tel2').value=p&&p.telefone2?fmtTel(p.telefone2):'';$('n-email').value=p&&p.email||'';}
 $('pac').onchange=contatoTela;
+// Travas ao digitar: CPF com máscara e conferência na hora (borda vermelha se os 11 números não fecham), telefone com máscara
+const mCpf=v=>{v=so(v).slice(0,11);return v.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1-$2')};
+const mTel=v=>{v=so(v).slice(0,11);return v.length>6?v.replace(/^(\d{2})(\d{4,5})(\d{4})$/,'($1) $2-$3').replace(/^(\d{2})(\d+)$/,'($1) $2'):v.replace(/^(\d{2})(\d+)$/,'($1) $2')};
+['n-cpf','n-pag'].forEach(id=>{const e=$(id);if(!e)return;e.addEventListener('input',()=>{e.value=mCpf(e.value);const n=so(e.value).length;e.classList.toggle('bad',n===11&&!cpfOk(e.value)||n>0&&n<11&&document.activeElement!==e)});e.addEventListener('blur',()=>{const n=so(e.value).length;e.classList.toggle('bad',n>0&&!cpfOk(e.value))})});
+['n-tel','n-tel2'].forEach(id=>{const e=$(id);if(!e)return;e.addEventListener('input',()=>{e.value=mTel(e.value)})});
 function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
 $('pago').onchange=pagoTela;
 $('f-at').onsubmit=async e=>{e.preventDefault();
@@ -386,6 +391,8 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   }
   const tel=$('n-tel').value.trim(),em=$('n-email').value.trim();
   if(tel&&!telOk(tel)){avisa('WhatsApp do paciente inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
+  const tel2=$('n-tel2').value.trim();
+  if(tel2&&!telOk(tel2)){avisa('2º WhatsApp inválido. Use o DDD e o número, ex.: 27 99999-9999.',true);return}
   if(em&&!mailOk(em)){avisa('E-mail do paciente inválido.',true);return}
   if(pac==='novo'){
     const r=await sb.rpc('link_paciente',{tok:TOK,p_nome:$('n-nome').value.trim(),p_cpf:so($('n-cpf').value),p_cpf_pagador:so($('n-pag').value),p_telefone:tel?telLimpo(tel):'',p_email:em});
@@ -394,10 +401,12 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     if(ja&&!confirm(`Esse CPF já é de ${ja.nome}: não vou cadastrar de novo. Lançar o atendimento para ${ja.nome}?`))return;
     pac=r.data;
     {const pn=$('n-pag-nome').value.trim();if(pn&&!ja)await sb.rpc('link_paciente_pagador',{tok:TOK,p_paciente:pac,p_nome_pagador:pn,p_valor_contratado:null})}
-    $('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';$('n-pag-nome').value='';
+    if(tel2&&!ja){const r2=await sb.rpc('link_paciente_contato',{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em,p_telefone2:telLimpo(tel2)});if(r2.error){avisa('Paciente salvo, mas não consegui guardar o 2º WhatsApp. Edite o paciente e tente de novo.',true)}}
+    $('n-nome').value='';$('n-cpf').value='';$('n-pag').value='';$('n-pag-nome').value='';$('n-tel2').value='';
   }else{const p=D.pacientes.find(x=>x.id===pac);
-    if(p&&((p.telefone||'')!==(tel?telLimpo(tel):'')||(p.email||'')!==em)){
-      const r=await sb.rpc('link_paciente_contato',{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em});
+    const t2=tel2?telLimpo(tel2):'';
+    if(p&&((p.telefone||'')!==(tel?telLimpo(tel):'')||(p.email||'')!==em||(p.telefone2||'')!==t2)){
+      const r=await sb.rpc('link_paciente_contato',(p.telefone2||t2)?{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em,p_telefone2:t2}:{tok:TOK,p_paciente:pac,p_telefone:tel?telLimpo(tel):'',p_email:em});
       if(r.error){avisa('Não consegui salvar o contato do paciente. Tente de novo.',true);return}}
   }
   const pn=+so($('pac-n').value);
