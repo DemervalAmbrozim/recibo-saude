@@ -547,3 +547,12 @@ $('b-pdfs').onclick=async()=>{const fs=[...$('f-pdfs').files],mes=$('f-mes').val
   st.textContent=r.data.ensaio?`${fs.length} PDF(s) guardados. O WhatsApp oficial ainda não está ligado: quando o número entrar, clique de novo (eles ficam guardados).`
     :r.data.enviados?`Enviados ${r.data.enviados} PDF(s) pelo WhatsApp.`:'Nada enviado: '+r.data.motivo;
   $('f-pdfs').value='';};
+
+// Travas ao digitar no painel (14/11): CPF e CNPJ com máscara e limite; CPF inválido fica vermelho
+(()=>{const mCpf=v=>{v=so(v).slice(0,11);return v.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1-$2')};
+  const mCnpj=v=>{v=so(v).slice(0,14);return v.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2')};
+  const cpfValido=c=>{c=so(c);if(c.length!==11||/^(\d)\1+$/.test(c))return false;for(let t=9;t<11;t++){let s=0;for(let i=0;i<t;i++)s+=+c[i]*(t+1-i);if(((s*10)%11)%10!==+c[t])return false}return true};
+  ['p-cpf','c-cpf','gs-cpf'].forEach(id=>{const e=document.getElementById(id);if(!e)return;e.maxLength=14;e.autocomplete='off';
+    e.addEventListener('input',()=>{e.value=mCpf(e.value);e.classList.toggle('bad',so(e.value).length===11&&!cpfValido(e.value))});
+    e.addEventListener('blur',()=>e.classList.toggle('bad',so(e.value).length>0&&!cpfValido(e.value)))});
+  const n=document.getElementById('nc-cnpj');if(n){n.maxLength=18;n.addEventListener('input',()=>{n.value=mCnpj(n.value)})}})();
