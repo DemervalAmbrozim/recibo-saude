@@ -86,8 +86,12 @@ a{color:var(--accent)}
 
   <!-- LOGIN -->
   <section id="t-login" hidden style="display:grid;gap:16px">
+    <div class="card" id="c-prof"><h2>Sou profissional da saúde</h2>
+      <div class="sub">Crie sua conta, lance seus atendimentos e emita o recibo do Receita Saúde. Teste grátis por 30 dias.</div>
+      <a class="pri" href="entrar.html" style="display:block;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:700">Criar minha conta ou entrar</a></div>
+    <div class="sub" style="text-align:center">Abaixo: acesso da equipe da Assessoria.</div>
     <form class="card" id="f-login">
-      <h2>Entrar</h2>
+      <h2>Entrar na Assessoria</h2>
       <div class="sub">Digite seu e-mail. Você recebe um link e um código de acesso, sem senha.</div>
       <label>E-mail <input id="l-email" type="email" autocomplete="email" required></label>
       <button class="pri" type="submit">Receber link de acesso</button>
@@ -95,8 +99,6 @@ a{color:var(--accent)}
       <div id="l-cod-box" hidden style="display:grid;gap:12px"><label>Código de 6 números do e-mail <input id="l-cod" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]*"></label>
         <button type="button" id="b-l-cod">Entrar com o código</button></div>
     </form>
-    <div class="card"><h2>É profissional da saúde?</h2>
-      <div class="sub">Este painel é da Assessoria. Para criar sua conta ou lançar atendimentos, <a href="entrar.html">entre por aqui</a>.</div></div>
   </section>
 
   <!-- 2º FATOR: código do aplicativo autenticador (auditoria S5) -->
