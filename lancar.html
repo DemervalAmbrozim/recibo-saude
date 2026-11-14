@@ -94,7 +94,7 @@ a{color:var(--accent)}
     <h1 id="nome">Lado a Lado Saúde</h1>
     <span class="sub" id="sub">Seu financeiro do consultório</span>
   </header>
-  <div id="aviso" class="msg" hidden></div>
+  <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>
   <div id="semrede" class="msg" hidden></div>
   <div id="conta" class="msg" hidden></div>
   <div id="ruim" class="card" hidden><h2>Vamos abrir a sua conta</h2><div class="sub">Se você criou a conta com e-mail, entre pelo botão abaixo. Se usa o link que a Assessoria mandou no WhatsApp e ele não abriu, peça um novo pelo número 27 99971-2727.</div>
@@ -146,7 +146,7 @@ a{color:var(--accent)}
       <button class="pri" id="b-proc" type="button">Já fiz a procuração</button>
     </div>
     <div class="card">
-      <div class="head"><h2>Seu mês</h2><input id="i-mes" type="month" style="width:auto;padding:6px 8px"></div>
+      <div class="head"><h2>Seu mês</h2><input id="i-mes" aria-label="Mês" type="month" style="width:auto;padding:6px 8px"></div>
       <div class="grid3">
         <div class="kpi"><span class="sub">Recebido</span><b id="i-rec">–</b></div>
         <div class="kpi"><span class="sub">Despesas que abatem</span><b id="i-desp">–</b></div>
@@ -223,7 +223,7 @@ a{color:var(--accent)}
         <div class="sub"><b>Isto é só o cadastro</b> (nome e CPF): não cria atendimento nem recibo. Os atendimentos vêm no passo 2 ou no Lançar.</div>
         <div class="sub">Copie as colunas da sua planilha (nome, CPF e, se tiver, WhatsApp e e-mail) e cole abaixo. Ou escolha um arquivo .csv ou de contatos (.vcf). O CPF é obrigatório: é ele que vai no recibo.</div>
         <textarea id="imp-txt" rows="5" placeholder="Maria Silva	529.982.247-25	27 99999-1111"></textarea>
-        <input type="file" id="imp-arq" accept=".csv,.txt,.vcf,text/csv,text/vcard">
+        <input type="file" id="imp-arq" aria-label="Escolher o arquivo de pacientes" accept=".csv,.txt,.vcf,text/csv,text/vcard">
         <div class="sub" id="imp-prev" aria-live="polite"></div>
         <button class="pri" type="button" id="b-imp" hidden>Importar</button>
       </div>
@@ -233,9 +233,9 @@ a{color:var(--accent)}
       <div style="display:grid;gap:12px;margin-top:12px">
         <div class="sub"><b>Isto traz atendimentos</b> para você conferir e salvar. A paciente precisa estar cadastrada (passo 1).</div>
         <div class="sub">As consultas da sua agenda viram atendimentos para você conferir e salvar. Vale o evento com o nome da paciente no título. Uma vez só: no Google Agenda do computador, Configurações → a sua agenda → <b>Endereço secreto no formato iCal</b> → copie e cole aqui. Ele fica guardado só neste aparelho.</div>
-        <input id="ag-url" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" autocomplete="off">
+        <input id="ag-url" aria-label="Endereço da agenda" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" autocomplete="off">
         <div class="row"><button type="button" id="b-ag" class="small">Trazer dos últimos 14 dias</button></div>
-        <div class="sub">Ou escolha o arquivo exportado: .ics da agenda, ou a planilha (.csv) do sistema da clínica com data, paciente e valor. Falta e desmarcação ficam de fora. <input type="file" id="ag-arq" accept=".ics,.csv,.txt,text/calendar,text/csv"></div>
+        <div class="sub">Ou escolha o arquivo exportado: .ics da agenda, ou a planilha (.csv) do sistema da clínica com data, paciente e valor. Falta e desmarcação ficam de fora. <input type="file" id="ag-arq" aria-label="Escolher o arquivo da agenda" accept=".ics,.csv,.txt,text/calendar,text/csv"></div>
         <div class="list" id="ag-prev"></div>
         <button class="pri" type="button" id="b-ag-salvar" hidden>Salvar os marcados</button>
         <h3 style="margin:8px 0 0">Lembrar os pacientes de amanhã</h3>
@@ -248,7 +248,7 @@ a{color:var(--accent)}
       <summary><b>Conferir com o extrato do banco</b></summary>
       <div style="display:grid;gap:12px;margin-top:12px">
         <div class="sub">No app ou no site do seu banco, exporte o extrato do mês em <b>OFX</b> (ou planilha) e escolha o arquivo aqui. Na planilha, na primeira vez você diz qual coluna é o quê. Eu comparo o que entrou e saiu com o que você lançou. O extrato é lido só neste aparelho: nada dele é guardado.</div>
-        <input type="file" id="ex-arq" accept=".ofx,.csv,.txt,application/x-ofx,text/csv">
+        <input type="file" id="ex-arq" aria-label="Escolher o arquivo de exportação" accept=".ofx,.csv,.txt,application/x-ofx,text/csv">
         <div class="list" id="ex-res" aria-live="polite"></div>
       </div>
     </details>

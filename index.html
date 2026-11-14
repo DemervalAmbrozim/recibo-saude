@@ -74,6 +74,8 @@ nav button[aria-current="page"]{color:var(--accent);box-shadow:inset 0 3px 0 var
 .marca{display:flex;align-items:center;gap:8px}.marca i{width:24px;height:24px;border-radius:7px;background:var(--accent);flex:none}
 a{color:var(--accent)}
 </style>
+<link rel="apple-touch-icon" href="icone-192.png">
+<meta name="description" content="Painel da Assessoria Lado a Lado Saúde.">
 </head>
 <body>
 <main>
@@ -82,7 +84,7 @@ a{color:var(--accent)}
     <span class="sub" id="quem"></span>
     <select id="prof-sel" hidden style="width:auto"></select>
   </header>
-  <div id="aviso" class="msg" hidden></div>
+  <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>
 
   <!-- LOGIN -->
   <section id="t-login" hidden style="display:grid;gap:16px">

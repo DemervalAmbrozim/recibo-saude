@@ -759,3 +759,17 @@ $('b-emp-notas').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK
 $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error){avisa('Não consegui juntar os dados. Tente de novo.',true);return}
   const a=+$('emp-mes').value.slice(0,4),l=dmedAno(r.data,a,EX.cnpj_desde);
   baixaCsv(`dmed-${a}.csv`,csv(['CPF do responsável (quem pagou)','Paciente','CPF do paciente','Total pago no ano'],l.map(x=>[x.responsavel_cpf,x.paciente,x.paciente_cpf,x.valor])))};
+
+// Travas gerais dos formulários (14/11): data não pode ser futura (a Receita barra) e envio duplo (dois toques seguidos) não grava duas vezes
+(()=>{const hojeISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  ['data','d-data'].forEach(id=>{const e=$(id);if(e)e.max=hojeISO()});
+  const guarda=(fid,did)=>{const f=$(fid);if(!f||!f.onsubmit)return;const h=f.onsubmit;
+    f.onsubmit=async e=>{
+      if(f.dataset.enviando==='1'){e.preventDefault();return}
+      const d=$(did);if(d&&d.value&&d.value>hojeISO()){e.preventDefault();avisa('Essa data ainda não chegou. Use hoje ou uma data passada.',true);return}
+      f.dataset.enviando='1';const bs=[...f.querySelectorAll('button[type=submit],button:not([type])')];bs.forEach(b=>b.disabled=true);
+      try{return await h(e)}finally{f.dataset.enviando='';bs.forEach(b=>b.disabled=false)}}};
+  guarda('f-at','data');guarda('f-desp','d-data')})();
+
+// Valor em reais: aceita só números, vírgula e ponto (14/11)
+['valor','d-valor'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{const v=e.value.replace(/[^\d.,]/g,'');if(v!==e.value)e.value=v})});
