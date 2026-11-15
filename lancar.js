@@ -809,6 +809,6 @@ $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK}
 
 $('pos-pedir').onclick=()=>{$('pos').hidden=true;$('b-zap').click();
   // 15/11: pedido registrado com relógio de 24 h (supabase/039); se a função ainda não existir, o zap segue normal
-  try{sb.rpc('link_pedir_recibo',{tok:TOK,p_obs:'Pedido pelo app: pedir o recibo agora',p_origem:'app'}).then(r=>{if(!r.error)avisa('Pedido registrado. Você recebe o recibo ou o motivo em até 24 horas.')})}catch(e){}};
+  try{sb.rpc('link_pedir_recibo',{tok:TOK,p_obs:'Pedido pelo app: pedir o recibo agora',p_origem:'app'}).then(r=>{if(!r.error)avisa('Pedido registrado. Você recebe o recibo, ou o motivo de não termos conseguido, em no máximo 24 horas.')})}catch(e){}};
 $('pos-ver').onclick=()=>{$('pos').hidden=true;document.querySelector('nav button[data-t=t-ini]').click();setTimeout(()=>$('i-pendcard').scrollIntoView({behavior:'smooth'}),150)};
 $('pos-fecha').onclick=()=>{$('pos').hidden=true};
