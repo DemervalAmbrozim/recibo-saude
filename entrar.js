@@ -36,7 +36,7 @@ async function inicio(){
 }
 
 $('e-email').onsubmit=async e=>{e.preventDefault();
-  const r=await sb.auth.signInWithOtp({email:$('email').value.trim(),options:{emailRedirectTo:new URL('entrar.html',location.href).href}});
+  const r=await sb.auth.signInWithOtp({email:$('email').value.trim(),options:{emailRedirectTo:new URL('entrar.html',location.href).href,data:{origem:ORIGEM}}});
   const ok=$('email-ok');ok.hidden=false;ok.className='msg'+(r.error?' err':'');
   // Sem servidor de e-mail próprio o Supabase manda poucos e-mails por hora: o erro de limite vira orientação
   if(!r.error&&CONFIG.codigo){$('cod-box').hidden=false;$('cod').focus()}
@@ -51,6 +51,9 @@ $('b-cod').onclick=async()=>{const t=so($('cod').value);if(t.length<6){avisa('Di
   if(r.error){avisa(/expired|invalid/i.test(r.error.message)?'Código vencido ou errado. Peça um e-mail novo.':'Não consegui entrar. Confira a internet e tente de novo.',true);return}
   $('cod-box').hidden=true;$('email-ok').hidden=true;inicio()};
 
+// Origem da visita (?o=ig|li|fb|zap...): guardada e gravada no cadastro (user_metadata.origem); sem SQL
+const ORIGEM=(()=>{const q=(new URLSearchParams(location.search).get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20);
+  try{if(q)localStorage.setItem('rs-o',q);return q||localStorage.getItem('rs-o')||''}catch(e){return q}})();
 // Indicação (supabase/019): ?ind=CODIGO na venda ou no link da colega; guardado porque o e-mail de entrada volta sem ele
 const IND=(()=>{const q=(new URLSearchParams(location.search).get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   try{if(q)localStorage.setItem('rs-ind',q);return q||localStorage.getItem('rs-ind')||''}catch(e){return q}})();
