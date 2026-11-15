@@ -515,7 +515,7 @@ $('f-local').onsubmit=async e=>{e.preventDefault();
 function agenda(){
   const hoje=new Date();hoje.setHours(0,0,0,0);const fim=new Date(hoje);fim.setDate(fim.getDate()+90);const it=[];
   for(let k=0;k<4;k++){const a=hoje.getFullYear(),m=hoje.getMonth()+k,d1=new Date(a,m,1);
-    it.push({d:d1,t:'Fechamento do mês',s:`A Lado a Lado Saúde emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
+    it.push({d:d1,t:'Fechamento do mês',s:`Confira se todos os atendimentos de ${NOMES_MES[(m+11)%12]} foram lançados. Os recibos você pede quando quiser, e a Lado a Lado Saúde entrega em no máximo 24 horas.`});
     D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
     const ant=new Date(a,m-1,1), dv=apura(pagos(),D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).darf;
     if(dv.pagar>0&&!(D.darfs||[]).some(x=>x.mes===mesDe(ant.getFullYear(),ant.getMonth())))it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(dv.pagar)} de ${NOMES_MES[ant.getMonth()]}. A Lado a Lado Saúde manda o DARF.`});
