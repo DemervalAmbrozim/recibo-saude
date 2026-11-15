@@ -198,4 +198,13 @@ function confereRecibo(r,mes,hoje){
 // K6 (09/11): conferência de UM mês com o Demonstrativo do Carnê-Leão Web. Ela digita o que o gov.br mostra; diferença acima de R$ 1 acende aviso.
 function confereCL(ap,gov){const L=[['rec','Rendimentos: Trabalho não assalariado',ap.rec],['inss','Deduções: Previdência Oficial',ap.inss],['lc','Deduções: Livro Caixa',ap.usado],['devido','Imposto devido',ap.cl.devido]];
   return L.map(([k,nome,nosso])=>{const g=gov&&gov[k]!=null&&gov[k]!==''&&!isNaN(+gov[k])?+gov[k]:null;return {k,nome,nosso,gov:g,dif:g==null?null:Math.round((nosso-g)*100)/100,ok:g==null?null:Math.abs(nosso-g)<=1}})}
-if(typeof module!=='undefined')module.exports={...(typeof module.exports==='object'?module.exports:{}),confereCL};
+
+// Reembolso do plano ANUAL (decisão dele, 15/11/2026): cancelar é livre; perde-se só o desconto ("paga 10, leva 12").
+// Nos 7 primeiros dias (CDC art. 49) devolve tudo. Depois: pago − meses usados × preço mensal CHEIO (nunca negativo).
+function reembolsoAnual(o){const mensal=+o.valorMensal,pago=+o.valorPago!=null&&!isNaN(+o.valorPago)?+o.valorPago:mensal*10,dias=+o.diasDesdeContratacao;
+  if(!(mensal>0)||!(dias>=0))return {erro:'dados insuficientes'};
+  if(dias<=7)return {tipo:'arrependimento',pago:r2(pago),usado:0,devolver:r2(pago)};
+  const meses=Math.min(12,Math.max(1,Math.ceil(dias/30))),usado=r2(meses*mensal);
+  return {tipo:'cancelamento',pago:r2(pago),mesesUsados:meses,usado,devolver:r2(Math.max(0,pago-usado))}}
+function r2(x){return Math.round(x*100)/100}
+if(typeof module!=='undefined')module.exports={...(typeof module.exports==='object'?module.exports:{}),confereCL,reembolsoAnual};
