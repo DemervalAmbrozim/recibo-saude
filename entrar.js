@@ -64,9 +64,13 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   if(!cpfOk(cpf)){avisa(ERROS['cpf invalido'],true);return}
   if(!/^\d{10,11}$/.test(tel)){avisa(ERROS['whatsapp invalido'],true);return}
   if(!$('c-aceite').checked){avisa(ERROS['precisa aceitar os termos'],true);return}
+  if(!document.querySelector('.c-forma:checked')){avisa('Marque pelo menos uma forma em que você atua.',true);return}
   const r=await sb.rpc('cadastrar_profissional',{p_nome:nome,p_cpf:cpf,p_ocupacao:$('c-ocup').value,p_registro:$('c-reg').value,
     p_telefone:tel,p_cidade:$('c-cid').value,p_aceite:TERMOS});
   if(r.error){avisa(traduz(r.error.message),true);return}
+  // 15/11 (supabase/040): ciclo do teste (mensal 7 dias, anual 30) e formas de atuação; sem a função no banco, segue com o padrão
+  try{const ciclo=(document.querySelector('input[name="c-ciclo"]:checked')||{}).value||'mensal';await sb.rpc('definir_ciclo_teste',{p_ciclo:ciclo});
+    await sb.rpc('salvar_perfil_atuacao',{p_formas:[...document.querySelectorAll('.c-forma:checked')].map(x=>x.value),p_vinculo:$('c-vinculo').value===''?null:$('c-vinculo').value==='sim',p_cnpj:$('c-tem-cnpj').value||null,p_origem:ORIGEM})}catch(e){}
   // Pacote Vire CNPJ (supabase/016): "sim" já vira pedido no Admin; sem a função no banco, segue sem
   if($('c-cnpj').value||$('c-novidades').checked)await sb.rpc('link_preferencias',{tok:'',p_cnpj:$('c-cnpj').value||null,p_novidades:$('c-novidades').checked});
   const ind=$('c-ind').value.trim().toUpperCase();

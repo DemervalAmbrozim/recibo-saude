@@ -102,7 +102,7 @@ a{color:var(--accent)}
     <div class="msg" id="email-ok" hidden></div>
     <div id="cod-box" hidden><label>Código de 6 números do e-mail <input id="cod" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]*"></label>
       <button type="button" id="b-cod">Entrar com o código</button></div>
-    <div class="sub">Primeira vez? Você testa 30 dias grátis, sem cartão. Dúvida? <a href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20saber%20do%20Recibo%20Sa%C3%BAde.">Fale com a Lado a Lado Saúde pelo WhatsApp</a>.</div>
+    <div class="sub">Primeira vez? Você testa grátis, sem cartão: 7 dias no plano mensal ou 30 dias no anual. Dúvida? <a href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20saber%20do%20Recibo%20Sa%C3%BAde.">Fale com a Lado a Lado Saúde pelo WhatsApp</a>.</div>
   </form>
 
   <!-- 2. CADASTRO: só no primeiro acesso -->
@@ -120,10 +120,29 @@ a{color:var(--accent)}
       <label>Seu WhatsApp <input id="c-tel" inputmode="tel" maxlength="15" placeholder="(27) 99999-9999" required></label>
       <label>Cidade <input id="c-cid" autocomplete="address-level2"></label>
     </div>
+    <fieldset style="border:1px solid var(--line,#ccd);border-radius:10px;padding:10px 12px"><legend>Como você atua hoje? (marque todas)</legend>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="consultorio_proprio" style="width:auto"> Consultório próprio</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="sala_por_turno" style="width:auto"> Sala alugada ou por turno</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="clinica_autonoma" style="width:auto"> Dentro de clínica, como autônoma</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="clinica_vinculo" style="width:auto"> Dentro de clínica, com vínculo</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="domicilio" style="width:auto"> Atendimento em domicílio</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="online" style="width:auto"> Online</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="empresa_hospital" style="width:auto"> Empresa ou hospital</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="plantao" style="width:auto"> Plantão</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="avulso" style="width:auto"> Avulso (sessões pontuais)</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="c-forma" value="outra" style="width:auto"> Outra forma</label>
+    </fieldset>
+    <label>Você também tem emprego com carteira assinada? <select id="c-vinculo"><option value="">Prefiro não dizer</option><option value="nao">Não, só autônoma</option><option value="sim">Sim, também tenho emprego</option></select></label>
+    <label>Você tem CNPJ hoje? <select id="c-tem-cnpj"><option value="">Prefiro não dizer</option><option value="nao">Não</option><option value="mei">Sim, MEI</option><option value="empresa">Sim, empresa</option></select></label>
+    <fieldset style="border:1px solid var(--line,#ccd);border-radius:10px;padding:10px 12px"><legend>Por onde você quer começar?</legend>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="radio" name="c-ciclo" value="mensal" checked style="width:auto"> Plano mensal: teste grátis de 7 dias</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="radio" name="c-ciclo" value="anual" style="width:auto"> Plano anual (paga 10, leva 12): teste grátis de 30 dias</label>
+      <div class="sub">Sem cartão. Você pode mudar de plano depois.</div>
+    </fieldset>
     <label>Pensa em abrir CNPJ em 2027? <select id="c-cnpj"><option value="">Prefiro não dizer</option><option value="nao">Não</option><option value="talvez">Talvez, quero entender</option><option value="sim">Sim, quero conversar</option></select></label>
     <details><summary>Como funciona (resumo dos termos)</summary>
       <p>Você lança seus atendimentos e despesas; a Lado a Lado Saúde emite os recibos no Receita Saúde em seu nome, com a sua autorização (procuração eletrônica no e-CAC), e calcula o Carnê-Leão.</p>
-      <p>30 dias de teste grátis, sem cartão. Sem plano depois disso, a conta fica só para consulta: nada é apagado e você pode baixar tudo quando quiser.</p>
+      <p>Teste grátis, sem cartão: 7 dias no plano mensal e 30 dias no anual. Sem plano depois disso, a conta fica só para consulta: nada é apagado e você pode baixar tudo quando quiser.</p>
       <p>Seus dados e os dos seus pacientes ficam num banco com servidor em São Paulo, separados por profissional, e só são usados para o seu financeiro. Você pode pedir a cópia ou a exclusão a qualquer momento.</p>
       <p>Não somos escritório de contabilidade: o que exige contador é indicado a um contador. Versão resumida de 27/10/2026; a versão completa chega antes de qualquer cobrança. <a href="termos.html" target="_blank" rel="noopener">Ler a minuta completa</a>.</p>
     </details>
