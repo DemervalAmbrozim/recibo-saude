@@ -1,9 +1,9 @@
 // Regras fiscais comuns ao painel (app.js) e ao app da profissional (lancar.js): um lugar só para o cálculo nunca divergir.
 
 // Plano de contas padrão do Carnê-Leão (P10 = despesa dedutível do livro-caixa) e INSS (P20.01.00001 = Previdência Oficial)
-const P10=[['00002','Aluguel do consultório'],['00003','Condomínio do consultório'],['00001','Água do consultório'],['00007','Energia do consultório'],
-  ['00014','Telefone do consultório'],['00015','Internet do consultório'],['00008','Gás do consultório'],['00009','IPTU do consultório'],['00004','Anuidade do conselho (CREFITO etc.)'],
-  ['00011','Material de limpeza do consultório'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
+const P10=[['00002','Aluguel do local de atendimento'],['00003','Condomínio do local de atendimento'],['00001','Água do local de atendimento'],['00007','Energia do local de atendimento'],
+  ['00014','Telefone do local de atendimento'],['00015','Internet do local de atendimento'],['00008','Gás do local de atendimento'],['00009','IPTU do local de atendimento'],['00004','Anuidade do conselho (CREFITO etc.)'],
+  ['00011','Material de limpeza do local de atendimento'],['00012','Material de escritório'],['00013','Funcionário: salário, INSS e FGTS'],['00010','ISS'],
   ['00005','Cópias e autenticações'],['00006','Emolumentos pagos a terceiros']].map(([c,n])=>['P10.01.'+c,n]);
 const INSS='P20.01.00001';
 // Internet é conta própria no app (Daniel 09/11: telefone e internet são despesas separadas), mas o plano da Receita tem uma conta só (00014): no arquivo sai como 00014
