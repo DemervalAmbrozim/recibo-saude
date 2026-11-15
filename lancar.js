@@ -442,10 +442,11 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
   if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
   const dt0=$('data').value;
-  const ds=pn?{ok:true,lista:[]}:diasSessoes($('dias-s').value,dt0);
+  const ds=diasSessoes($('dias-s').value,dt0);
   if(!ds.ok){avisa(ds.msg,true);return}
   const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
     :await grava(ds.lista.length?'link_atendimento_dias':'link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked,...(ds.lista.length?{p_dias:ds.lista}:{})},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
+  if(pn&&!r.error&&ds.lista.length&&r.data&&r.data.atendimento){const q=await sb.rpc('link_dias_atendimento',{tok:TOK,p_atendimento:r.data.atendimento,p_dias:ds.lista});if(q.error)avisa('Pacote salvo, mas não consegui gravar os dias. Avise a Assessoria.',true)}
   if(r.error){avisa(pn&&semRede(r.error)?'Pacote precisa de internet. Sem internet, lance a sessão como atendimento comum.':'Não consegui salvar. Confira a data e tente de novo.',true);return}
   if(r.fila){$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa('Sem internet: guardado no celular. Vai sozinho quando a internet voltar.');return}
   if(pn){$('pac-n').value='';$('valor').value='';await carrega();posSalvo();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
