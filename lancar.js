@@ -155,7 +155,7 @@ $('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-C
 let CJ=null;
 function cnpjTela(m){CJ=cnpjAviso(pagos(),D.despesas,m,guardaLocal.get('rs_inss20')==='1');const ate=+guardaLocal.get('rs_cnpj_nao')||0,pedido=EX&&EX.pedido_cnpj;
   $('i-cnpj').hidden=!(CJ?.mostra||pedido)||(!pedido&&Date.now()<ate);if($('i-cnpj').hidden)return;
-  $('cj-txt').textContent=pedido?'Pedido recebido: a Lado a Lado Saúde vai chamar você no WhatsApp para marcar 20 minutos com o contador parceiro.'
+  $('cj-txt').textContent=pedido?'Pedido recebido: a Lado a Lado Saúde vai chamar você no WhatsApp para marcar 20 minutos com o contador.'
     :`Talvez compense virar empresa em 2027. Pela sua média dos últimos 3 meses (${brl(CJ.R)}), como CNPJ no Simples você pagaria cerca de ${brl(CJ.eco)} a menos por mês, já contando o contador. É uma estimativa: quem decide é você com o contador.`;
   $('cj-btns').hidden=!!pedido;$('cj-conta').textContent=CJ?CJ.txt+' Quem abre o CNPJ até 31/12/2026 escolhe o Simples na abertura e já começa 2027 como empresa.':''}
 $('b-cj-conta').onclick=()=>$('cj-conta').hidden=!$('cj-conta').hidden;
