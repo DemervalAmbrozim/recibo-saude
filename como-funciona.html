@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Como funciona · Lado a Lado Saúde</title>
+<meta name="description" content="Recibo do Receita Saúde em no máximo 24 horas, controle do mês, Carnê-Leão e DARF. Para fisioterapeutas, psicólogos, fonoaudiólogos, terapeutas ocupacionais, dentistas, médicos e demais profissionais da saúde. Teste grátis, sem cartão.">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Lado a Lado Saúde"><meta property="og:title" content="Como funciona · Lado a Lado Saúde"><meta property="og:description" content="Você atende. A gente cuida do recibo e das suas contas. Recibo em no máximo 24 horas. Teste grátis, sem cartão."><meta property="og:image" content="https://ladoaladosaude.com.br/social-venda.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f6b55">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+
+/* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;
+  --zap:#dcf8c6;--zap-fg:#17231e;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;
+  --accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:56px;padding:20px 0 64px}
+h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(22px,4vw,30px);margin:0 0 6px;text-wrap:balance}
+h3{font-size:17px;margin:0}
+p{margin:6px 0}
+a{color:var(--accent)}
+.sub{color:var(--muted)}
+.marca{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.marca i{width:28px;height:28px;border-radius:8px;background:var(--accent);display:inline-block}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cta{display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}
+.cta.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:10px 16px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.hero .lead{font-size:19px;color:var(--muted);margin:14px 0 22px}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;font-size:14px}
+.b{max-width:85%;padding:8px 11px;border-radius:12px;white-space:pre-line}
+.b.eu{justify-self:end;background:var(--zap);color:var(--zap-fg);border-bottom-right-radius:3px}
+.b.nos{justify-self:start;background:var(--soft);border-bottom-left-radius:3px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.n{font-weight:700;color:var(--accent);font-size:14px}
+.plano.destaque{border:2px solid var(--accent)}
+.preco{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.preco small{font-size:15px;color:var(--muted);font-weight:500}
+.tag{justify-self:start;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent);border-radius:99px;padding:2px 10px}
+ul.ok{list-style:none;padding:0;margin:4px 0;display:grid;gap:6px}
+ul.ok li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.ciclo{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;margin:10px 0 18px;background:var(--card)}
+.ciclo button{font:inherit;border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;cursor:pointer}
+.ciclo button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600}
+details{border-top:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600}
+.cnpj{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.conta{display:grid;gap:10px}
+.conta label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.conta input{font:inherit;font-size:max(16px,1em);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.res{font-size:15px}
+.res b{font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+ol.passos{margin:6px 0;padding-left:20px;display:grid;gap:4px}
+@media (max-width:760px){.cnpj{grid-template-columns:1fr}}
+.faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
+footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
+@media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
+
+main{gap:36px;max-width:640px}
+.hero{grid-template-columns:1fr}
+.lista{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.lista li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.lista b{display:block}
+</style>
+</head>
+<body>
+<main>
+  <div class="topo"><span class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</span><a class="cta sec" href="entrar.html">Entrar</a></div>
+  <section>
+    <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Gestão • Tecnologia</p>
+    <h1>Como funciona, passo a passo</h1>
+    <p class="lead">O serviço mensal é pronto e igual para todas. Os serviços à parte são contratados por quem quiser, e nenhum promete resultado.</p>
+  </section>
+  <section>
+    <h2>Começar</h2>
+    <ol class="passos sub">
+      <li><b>Cadastro e termos.</b> Nome, CPF, registro no conselho e as formas em que você atua. Imediato.</li>
+      <li><b>Procuração no e-CAC.</b> Só o Carnê-Leão Web, pelo computador, revogável a qualquer hora. Nunca pedimos a senha do gov.br.</li>
+      <li><b>Primeiro lançamento.</b> Você registra um atendimento e confere o texto exato do recibo antes de gravar.</li>
+      <li><b>Primeiro recibo e conta do mês.</b> Você pede com um toque e recebe o PDF no WhatsApp em no máximo 24 horas, com o resumo do que entrou, saiu e sobra. Ao fim do teste (7 dias no mensal, 30 no anual) você segue ou para sem custo.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>A rotina mensal</h2>
+    <ol class="passos sub" start="5">
+      <li><b>Lançar e pedir o recibo.</b> Pelo app ou pelo WhatsApp, em poucos toques. Quem ficou devendo vai para "a receber".</li>
+      <li><b>Emissão e entrega em no máximo 24 horas, todos os dias.</b> Cada pedido abre um relógio. Se não conseguirmos (por exemplo, Receita ou gov.br fora do ar), você recebe o motivo e a nova previsão dentro do mesmo prazo.</li>
+      <li><b>Controle do mês.</b> Recebimentos, despesas e livro-caixa, conferidos com o extrato quando você envia.</li>
+      <li><b>Fechamento: Carnê-Leão e DARF.</b> Calculado com as despesas que abatem e entregue antes do vencimento, com contador responsável.</li>
+      <li><b>Acompanhamento.</b> Avisamos de prazos e mudanças de regra, e quando compensa virar CNPJ.</li>
+    </ol>
+  </section>
+  <section id="servicos">
+    <h2>Serviços à parte: como cada um funciona</h2>
+    <p class="sub">Não estão incluídos em nenhum plano. Só está incluído o que o plano lista; qualquer outro serviço pode ser contratado à parte.</p>
+    <h3>Imposto de Renda · R$ 197 por declaração, uma vez por ano</h3>
+    <ol class="passos sub"><li>Você envia o que só você tem (outras rendas, plano de saúde, dependentes).</li><li>Reunimos o que já cuidamos no ano: rendimentos dos recibos, despesas e Carnê-Leão pagos.</li><li>O contador revisa e monta a declaração.</li><li>Você confere e aprova.</li><li>Transmitimos e entregamos o recibo da entrega. Quem não contratar a declaração recebe o relatório organizado do que cuidamos.</li></ol>
+    <p class="sub">O prazo segue o calendário da Receita e depende de você enviar as informações no combinado. Casos com várias fontes de renda ou CNPJ têm valor combinado após a análise. Já incluído no plano Completo + Contador.</p>
+    <h3>Abertura de CNPJ · R$ 297 avulsa, mais as taxas públicas</h3>
+    <ol class="passos sub"><li>Conversa e conta na tela: pessoa física ou empresa.</li><li>Enquadramento no Simples Nacional.</li><li>Registro na Junta Comercial e na Receita.</li><li>Prefeitura, conselho e certificado digital.</li><li>Entrega do CNPJ e dos documentos. Termina aqui; você pode contratar a rotina da empresa (plano Empresa) ou seguir como preferir.</li></ol>
+    <p class="sub">Sem custo de serviço para quem contrata o plano Empresa por 12 meses. As taxas públicas variam por cidade e conselho e são mostradas antes de você decidir.</p>
+    <h3>Presença nas redes (Instagram, Facebook e LinkedIn) · valor sob consulta</h3>
+    <ol class="passos sub"><li>Ajuste do perfil: nome, foto, bio e link.</li><li>Calendário mensal de conteúdo da sua especialidade.</li><li>Você aprova.</li><li>Publicação, ou entrega para você publicar.</li><li>Revisão mensal curta.</li></ol>
+    <p class="sub">Sem promessa de seguidores, mensagens, pacientes ou faturamento. Depende do seu retorno (aprovações, fotos e informações). Nenhum dado ou imagem de paciente é usado, e tudo respeita o código de ética do seu conselho.</p>
+    <h3>Consultoria de apoio · valor sob consulta</h3>
+    <ol class="passos sub"><li>Questionário (cerca de 15 minutos, sem dado de paciente).</li><li>Conversa de 30 a 40 minutos.</li><li>Raio-X do profissional: pontos fortes, de atenção, oportunidades e a ordem de prioridade.</li><li>Plano de ação com 2 ou 3 prioridades combinadas.</li><li>Acompanhamento mensal de 30 minutos, com os números do app.</li></ol>
+    <p class="sub">Sob medida, a partir do que você nos conta. Escopo fechado por etapa; sem promessa de resultado; evolui só com o seu retorno.</p>
+  </section>
+  <section style="text-align:center"><a class="cta" href="entrar.html">Testar sem cartão</a><p class="sub" style="font-size:14px"><a href="venda.html">Ver planos e perguntas frequentes</a></p></section>
+  <footer class="sub" style="font-size:13px">Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54.</footer>
+</main>
+</body>
+</html>

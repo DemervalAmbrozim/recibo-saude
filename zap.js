@@ -67,6 +67,7 @@ const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • *desfazer* (apaga o último lançamento)
 • foto ou PDF de uma conta paga (guardo o comprovante e lanço a despesa)
 • *comprovantes* (despesas que ainda não têm a foto guardada)
+• *dias 20 22 27 29* (depois de lançar: os dias das sessões que esse pagamento cobre; o recibo sai com eles)
 • *pedir recibo* (abre o pedido: você recebe o recibo, ou o motivo, em no máximo 24 horas) e *status* (como está o pedido)
 • *recibos* ou *recibo Maria* (o PDF de novo, para encaminhar)
 • o código do boleto (confiro se não é adulterado)
@@ -323,7 +324,7 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
 // A frase escrita só preenche; cada um termina em "Confere? 1. Sim, gravar". est.fluxo guarda só ids e números (LGPD).
 const F_PASSOS={rec:['pac','item','valor','resto','data','conf'],desp:['cod','valor','data','conf'],pac:['pac','n','valor','forma','data','conf'],ses:['pac','data','conf']};
 const F_CAT=[['Aluguel','aluguel'],['Condomínio','condominio'],['Água','agua'],['Luz','luz'],['Telefone','telefone'],['Internet','internet'],['Anuidade do conselho','anuidade'],['Limpeza','limpeza'],['Funcionário','funcionario'],['INSS','inss']];
-const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|status|quero( conversar)?)$/;
+const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|status|quero( conversar)?)$|^dias\b/;
 const F_TIT={rec:'Recebimento',desp:'Despesa',pac:'Pacote',ses:'Sessão do pacote'};
 const fAbertos=(D,pac)=>D.atendimentos.filter(x=>x.pago===false&&!x.emitido&&(!pac||zDaPac(x,pac))).sort((a,b)=>a.data<b.data?-1:1);
 const fItens=(D,f)=>(f.itens||[]).map(id=>D.atendimentos.find(x=>x.id===id)).filter(Boolean);
@@ -464,6 +465,19 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   if(!/\d/.test(t)){if(/\b(imposto|carne|darf|leao)\b/.test(t)&&/\b(quanto|qual|tenho|vou|devo|pagar|pago)\b/.test(t))return zDarf(D,hoje);
     if(/\bquem\b.*\b(deve|devendo|falta|pagou)\b|\b(falta|ainda) receber\b/.test(t))return zReceber(D);
     if(/\bquanto\b.*\b(recebi|ganhei|faturei|entrou|fiz|tirei)\b|\bcomo (esta|ta) (o|meu) mes\b/.test(t))return zResumo(D,hoje)}
+  // Dias das sessões pelo zap (supabase/042): vale para o último lançamento. "dias 20 22 27 29" ou "dias 20, 22, 27 e 29 de outubro"
+  {const m=t.match(/^dias(?: das sessoes)?[: ]+(.+)$/);if(m){
+    const u=est.ultimo;if(!u||u.tipo!=='at'||!u.id)return 'Primeiro lance o atendimento (escreva *lançar*). Depois mande *dias* com os dias das sessões, por exemplo: *dias 20 22 27 29*.';
+    if(!api.definirDias)return 'Para informar os dias das sessões, use o app, no campo "Dias das sessões" do lançamento.';
+    const mesNome=(m[1].match(/janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/)||[])[0];
+    const nums=[...new Set((m[1].replace(/\d{1,2}\/\d{1,2}(\/\d{2,4})?/g,x=>x.split('/')[0]).match(/\d{1,2}/g)||[]).map(Number))].filter(n=>n>=1&&n<=31);
+    if(!nums.length)return 'Não entendi os dias. Exemplo: *dias 20 22 27 29*.';
+    const at=D.atendimentos.find(x=>x.id===u.id),base=(at&&at.data)||hoje,ano=+base.slice(0,4),mp=+base.slice(5,7),dp=+base.slice(8,10);
+    const MN=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const iso=n=>{let y=ano,mo=mesNome?MN.indexOf(mesNome)+1:(n>dp?mp-1:mp);if(mo<1){mo=12;y--}if(mesNome&&mo>mp)y--;return `${y}-${String(mo).padStart(2,'0')}-${String(n).padStart(2,'0')}`};
+    const dias=nums.map(iso).sort();
+    try{await api.definirDias(u.id,dias)}catch(e){return zErro(String(e.message||e))}
+    return `✅ Dias das sessões guardados: ${dias.map(zDBR).join(', ')}. O recibo sai com esses dias na descrição. Algum dia é de outro mês? Mande de novo com o mês, por exemplo: *dias 20 22 27 29 de outubro*.`}}
   // Pedido de recibo pelo zap (SLA de no máximo 24 h, supabase/039): abre o pedido com relógio e responde com o prazo
   if(/^(pedir|quero|preciso( d[oe])?|solicito|solicitar|emitir|emite|gerar|manda|mandar)( o| um| meu| os| uma)? ?recibos?\b/.test(t)||/^recibo (agora|pra hoje|urgente)$/.test(t)){
     if(!api.pedirRecibo)return 'Para pedir o recibo, abra o app e toque em *Pedir o recibo agora*. Se preferir, mande *suporte*.';
