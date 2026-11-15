@@ -855,3 +855,19 @@ async function questSalva(concluir){const o={};QUEST.forEach(([,qs])=>qs.forEach
   $('q-msg').textContent=r.error?'Não consegui salvar agora: '+r.error.message:(concluir?'Enviado ✅ Montamos o seu Raio-X a partir das suas respostas e chamamos você para a conversa. Obrigado pelo retorno.':'Salvo. Você continua de onde parou.')}
 $('aj-serv')&&$('aj-serv').addEventListener('toggle',servTela);$('aj-q')&&$('aj-q').addEventListener('toggle',questTela);
 $('q-salva')&&($('q-salva').onclick=()=>questSalva(false));$('q-envia')&&($('q-envia').onclick=()=>questSalva(true));
+
+// ===== Cancelamento do plano (regra de 15/11): prévia do reembolso do anual e pedido pela equipe =====
+async function cancTela(){const prev=$('canc-prev');if(!prev||prev.dataset.ok)return;prev.dataset.ok='1';
+  try{const r=await sb.rpc('minha_cobranca',{tok:TOK});const c=r.error?null:r.data;
+    if(!c||!c.plano){prev.textContent='Você ainda não tem plano contratado: nada a cancelar além do teste.';return}
+    if(c.ciclo!=='anual'){prev.textContent='Plano mensal: ao cancelar, nada mais é cobrado.';return}
+    const pl=(c.planos||[]).find(x=>x.codigo===c.plano),mensal=pl?+pl.mensal:0,pago=mensal*10;
+    const ini=c.cobranca&&c.cobranca.vencimento?new Date(c.cobranca.vencimento):null,dias=ini?Math.max(0,Math.floor((Date.now()-ini)/864e5)):null;
+    if(!mensal||dias==null){prev.textContent='Plano anual: a equipe calcula o seu reembolso e confirma por escrito.';return}
+    const x=reembolsoAnual({valorMensal:mensal,valorPago:pago,diasDesdeContratacao:dias});
+    prev.textContent=x.erro?'A equipe calcula o seu reembolso e confirma por escrito.':(x.tipo==='arrependimento'?`Você está nos 7 primeiros dias: devolução integral de ${brlF(x.devolver)}.`:`Estimativa: pago ${brlF(x.pago)}, meses usados ao preço cheio ${brlF(x.usado)} (${x.mesesUsados}), a devolver ${brlF(x.devolver)}. A equipe confirma o valor por escrito.`)}catch(e){prev.textContent='A equipe calcula o seu reembolso e confirma por escrito.'}}
+const brlF=v=>(+v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+$('aj-canc')&&$('aj-canc').addEventListener('toggle',cancTela);
+$('canc-pede')&&($('canc-pede').onclick=async()=>{const m=($('canc-motivo').value||'').trim();
+  const r=await sb.rpc('link_suporte',{tok:TOK,p_texto:'[Cancelamento do plano] '+(m||'sem motivo informado')+' | '+($('canc-prev').textContent||'')});
+  $('canc-msg').textContent=r.error?'Não consegui enviar agora: '+r.error.message:'Pedido recebido ✅ A equipe confirma o cancelamento e o valor a devolver por escrito, em até 1 dia útil.'});
