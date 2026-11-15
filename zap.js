@@ -56,7 +56,7 @@ const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • *resumo* (o mês até agora)
 • *cnpj* (pessoa física ou CNPJ: o que sai mais barato)
 • *reforma* (os novos impostos de 2027 e o que muda para você)
-• *procuração* (passo a passo para a Assessoria emitir por você)
+• *procuração* (passo a passo para a Lado a Lado Saúde emitir por você)
 • *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
 • *paguei* (marca o DARF do mês passado como pago)
@@ -120,7 +120,7 @@ function zDarf(D,hoje){const h=new Date(hoje+'T12:00'),p=new Date(h.getFullYear(
   const r=apura(D.atendimentos.filter(x=>x.pago!==false),D.despesas,mes),venc=ultimoDiaUtil(h.getFullYear(),h.getMonth());
   const nome=`${ZAP_MESES[p.getMonth()]}/${p.getFullYear()}`;
   const pg=(D.darfs||[]).find(x=>x.mes===mes);if(pg)return `Carnê-Leão de ${nome}: ${zBrl(+pg.valor)}, pago em ${new Date(pg.pago_em+'T12:00').toLocaleDateString('pt-BR')} ✅`;
-  return r.darf.pagar?`Carnê-Leão de ${nome}: *${zBrl(r.darf.pagar)}*, vence em ${venc.toLocaleDateString('pt-BR')}. A Assessoria gera o DARF e manda aqui.`
+  return r.darf.pagar?`Carnê-Leão de ${nome}: *${zBrl(r.darf.pagar)}*, vence em ${venc.toLocaleDateString('pt-BR')}. A Lado a Lado Saúde gera o DARF e manda aqui.`
     :r.darf.adia?`Carnê-Leão de ${nome}: ${zBrl(r.darf.total)}. Abaixo de R$ 10 a Receita não gera DARF: soma ao mês seguinte.`
     :`Carnê-Leão de ${nome}: nada a pagar (recebido ${zBrl(r.rec)}).`}
 
@@ -128,7 +128,7 @@ function zReceber(D){const ab=D.atendimentos.filter(x=>x.pago===false);
   return ab.length?'*A receber*\n'+ab.map(x=>`• ${x.paciente}: ${zBrl(x.valor)} (${zDBR(x.data)})`).join('\n')+`\nTotal: ${zBrl(soma(ab))}\nQuando pagar: *nome recebi valor*`
     :'Ninguém devendo. 👏'}
 
-const zErro=e=>/somente leitura/.test(e)?'Sua conta está só para consulta e não aceita lançamentos. Fale com a Assessoria para continuar.'
+const zErro=e=>/somente leitura/.test(e)?'Sua conta está só para consulta e não aceita lançamentos. Fale com a Lado a Lado Saúde para continuar.'
   :/data invalida/.test(e)?'Essa data não dá: lance até um ano para trás e nunca no futuro.':'Não consegui gravar agora. Tente de novo em instantes.';
 
 // Procuração no e-CAC (revisão item 5): o mesmo passo a passo do app (lancar.html, proc-passos). Ressalva 4 (29/10): o manual Receita Saúde 2.1,
@@ -139,12 +139,12 @@ const PROCURACAO=`Procuração no e-CAC (5 minutos, no computador ou no celular)
 3. Procurador: escolha *CPF* e digite {CPF} (responsável pela Assessoria Lado a Lado Ltda). É CPF, não CNPJ: assim o Receita Saúde abre o perfil Representante.
 4. Validade: pode deixar a que o e-CAC sugere; você cancela quando quiser, no mesmo menu.
 5. Marque só o serviço *IRPF - Carnê Leão Web* e confirme.
-Pronto? Responda *fiz a procuração* que a Assessoria confere.`;
+Pronto? Responda *fiz a procuração* que a Lado a Lado Saúde confere.`;
 
 // Perguntas livres (revisão item 15, 28/10): "posso deduzir o curso?". Regra do livro-caixa: RIR/2018 (Decreto 9.580/2018) art. 68,
 // conferido no Planalto em 28/10/2026: abate salário com carteira e encargos (I), emolumentos (II) e custeio necessário à atividade (III);
 // não abate depreciação de equipamento e arrendamento (§ ún. I) nem locomoção e transporte (§ ún. II). O que é parecer vai ao contador.
-const ART68='(Regulamento do IR, art. 68)',CONTADOR_Q=' Isso é parecer: mande *suporte* que a Assessoria leva ao contador.';
+const ART68='(Regulamento do IR, art. 68)',CONTADOR_Q=' Isso é parecer: mande *suporte* que a Lado a Lado Saúde leva ao contador.';
 const PERGUNTAS=[
   [/carro|combustivel|gasolina|estacionamento|uber|onibus|transporte|locomocao|pedagio|moto\b/,`Não abate. Carro, combustível, estacionamento e transporte ficam de fora para quem é da saúde ${ART68}.`],
   [/congresso|seminario|simposio|jornada|encontro cientifico|workshop|livro/,`Abate, se for da sua área e necessário ao trabalho: inscrição, livros e material, hospedagem e transporte da viagem, sem reembolso (Receita, Perguntas e Respostas IRPF 2026, nº 444 e 438). Guarde a nota e o certificado de presença. Lance em despesas.`],
@@ -165,7 +165,7 @@ const BIB=[
   [/multa|atrasad|em atraso|esqueci de pagar|esqueci de emitir/,'DARF pago depois do vencimento: multa de 0,33% por dia, até 20%, mais juros Selic (Lei 9.430/1996, art. 61); gere o DARF atualizado no Carnê-Leão Web. Recibo do Receita Saúde: pode ser emitido até o último dia de fevereiro do ano seguinte; quem não emite fica sujeito a multa. Mande *suporte* se precisar de ajuda com um caso.'],
   [/split|pagamento dividido|imposto (separado|retido) no (pix|cartao|pagamento)/,'*Split payment* (o banco separa a parte da CBS e do IBS na hora do pagamento; LC 214/2025, arts. 31 a 36): a Receita disse em set/2026 que a obrigatoriedade fica para *2028*; em 2027 a adesão pode ser voluntária, começando por Pix e boleto, e o cartão depois. Só alcança quem é contribuinte da CBS/IBS: a pessoa física que passa da linha de receita do ano (mande *reforma*). Em 2026 nada muda. A regulamentação ainda não saiu: o seu contador confirma quando sair.'],
   [/celular ou computador|computador ou celular|no computador|no notebook|tem app|baixar o app|instalar/,'Os dois. O dia a dia é aqui pelo zap. O app abre no navegador do celular ou do computador, com atalho na tela inicial do celular (no app: Ajuda > Instalar). Painel e relatórios ficam melhores no computador.'],
-  [/recibo errado|emiti errado|errei o recibo|cancelar (o |um )?recibo|corrigir (o |um )?recibo/,'Recibo já emitido com erro: a Assessoria cancela e emite de novo pelo gov.br, sem custo. O cancelamento leva até 10 dias para valer na Receita. Ainda não emitido? Mande *desfazer* (o último) ou corrija na tela Lançar.'],
+  [/recibo errado|emiti errado|errei o recibo|cancelar (o |um )?recibo|corrigir (o |um )?recibo/,'Recibo já emitido com erro: a Lado a Lado Saúde cancela e emite de novo pelo gov.br, sem custo. O cancelamento leva até 10 dias para valer na Receita. Ainda não emitido? Mande *desfazer* (o último) ou corrija na tela Lançar.'],
   [/esqueci (o |meu )?pin|nao (consigo )?entr|link (nao abre|parou|expirou)|perdi o celular|troquei de (celular|numero)/,`Sem acesso: se acha que outra pessoa usou, mande *bloquear*. Esqueceu o PIN, trocou de celular ou de número: entre em ${SITE}/entrar.html com o seu e-mail e toque em Ajuda > Segurança > *Gerar link e PIN novos*. Sem e-mail na conta? Mande *suporte acesso*.`]];
 // Acha a resposta: primeiro as aprovadas (mais específicas, mais palavras-chave batendo), depois as fixas e as do "posso deduzir"
 function zBib(t,D){let m=null,k=0;for(const b of (D&&D.biblioteca)||[]){const n=(b.chaves||[]).filter(c=>c&&t.includes(zNorm(c))).length;if(n>k){k=n;m=b}}
@@ -213,7 +213,7 @@ function zFixas12(D,hoje){const h=new Date(hoje+'T12:00'),ms=[];for(let k=12;k>=
 function zFixasTexto(D,hoje){const r=zFixas12(D,hoje);
   if(!(D.fixas||[]).length)return 'Você ainda não cadastrou contas fixas (aluguel, luz, internet...). Cadastre no app, em Despesas fixas, e eu confiro todo mês se alguma ficou sem lançamento.';
   if(!r.length)return 'Conferi os últimos 12 meses: todas as suas contas fixas têm lançamento em todos os meses. 👏';
-  return '*Contas fixas sem lançamento nos últimos 12 meses:*\n'+r.map(x=>`• ${nomeCod(x.f.codigo)}: ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]+'/'+m.slice(2,4)).join(', ')}`).join('\n')+'\nPagou? Mande a foto da conta ou o valor que eu lanço. Se a conta não existiu naquele mês, mande *suporte* que a Assessoria ajusta.'}
+  return '*Contas fixas sem lançamento nos últimos 12 meses:*\n'+r.map(x=>`• ${nomeCod(x.f.codigo)}: ${x.falta.map(m=>ZAP_MESES[+m.slice(5)-1]+'/'+m.slice(2,4)).join(', ')}`).join('\n')+'\nPagou? Mande a foto da conta ou o valor que eu lanço. Se a conta não existiu naquele mês, mande *suporte* que a Lado a Lado Saúde ajusta.'}
 function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMonth()/3),a=q?h.getFullYear():h.getFullYear()-1,qi=q?(q-1)*3:9;
   const de=`${a}-${String(qi+1).padStart(2,'0')}`,ate=`${a}-${String(qi+3).padStart(2,'0')}`;
   const pg=(D.atendimentos||[]).filter(x=>x.pago!==false&&x.data.slice(0,7)>=de&&x.data.slice(0,7)<=ate),n=new Set(pg.map(x=>x.paciente+'|'+x.data)).size;
@@ -413,11 +413,11 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   if(est.receber&&!/^\d{1,2}$/.test(t))est.receber=null;
   // Bloquear (obs. 32): aviso de aparelho novo que não foi ela; confirma antes porque desliga também o celular dela
   if(est.bloq){est.bloq=false;if(/^(1|sim|sim, bloquear|bloquear)$/.test(t)){if(!api.bloquear)return 'Anotado.';try{await api.bloquear()}catch(e){return zErro(String(e.message||e))}
-      return `🔒 Bloqueado. Todos os aparelhos e o link foram desligados, e o PIN foi zerado.\nPara voltar sozinha, sem esperar ninguém: entre em ${SITE}/entrar.html com o seu e-mail (chega um código de 6 números) e toque em Ajuda > Segurança > *Gerar link e PIN novos*. Sem e-mail na conta? A Assessoria manda o link novo aqui. Não repasse o PIN a ninguém.`}
+      return `🔒 Bloqueado. Todos os aparelhos e o link foram desligados, e o PIN foi zerado.\nPara voltar sozinha, sem esperar ninguém: entre em ${SITE}/entrar.html com o seu e-mail (chega um código de 6 números) e toque em Ajuda > Segurança > *Gerar link e PIN novos*. Sem e-mail na conta? A Lado a Lado Saúde manda o link novo aqui. Não repasse o PIN a ninguém.`}
     if(/^(2|nao|não)$/.test(t))return 'Certo, nada foi bloqueado.'}
   if(/^(desbloquear|desbloqueio|novo link|link novo|esqueci (o )?pin|troquei de celular)$/.test(t))return `Para um link e PIN novos, sem esperar ninguém: entre em ${SITE}/entrar.html com o seu e-mail (chega um código de 6 números) e toque em Ajuda > Segurança > *Gerar link e PIN novos*. Trocou de número? Lá mesmo você salva o WhatsApp novo. Sem e-mail na conta? Mande *suporte acesso*.`;
   if(/^(bloquear|bloqueia|bloqueio|nao fui eu|não fui eu)$/.test(t)){est.bloq=true;zLista(est,['Sim, bloquear','Não']);
-    return 'Bloquear desliga *todos* os aparelhos, inclusive o seu, e o link. Você recebe um link novo da Assessoria e cria outro PIN. Bloquear agora?\n1. Sim, bloquear\n2. Não'}
+    return 'Bloquear desliga *todos* os aparelhos, inclusive o seu, e o link. Você recebe um link novo da Lado a Lado Saúde e cria outro PIN. Bloquear agora?\n1. Sim, bloquear\n2. Não'}
   if(est.confirma){const r=await zConfirma(t,D,api,est,hoje);if(r!==undefined)return r}
   if(est.guia){const r=await gResponde(t,linha,D,api,est,hoje);if(r!==undefined)return r}
   if(est.fluxo){const r=await fResponde(t,linha,D,api,est,hoje);if(r!==undefined)return r}
@@ -444,14 +444,14 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
     const r=!c?'Para comparar pessoa física e CNPJ preciso de 3 meses completos com atendimentos lançados.':c.mostra?c.txt:`Pela média de ${zBrl(c.R)} por mês, o CNPJ ainda não compensa: ${c.eco>0?`a economia seria de só ${zBrl(c.eco)} por mês`:`ele custaria ${zBrl(-c.eco)} a mais por mês`}. Eu aviso se isso mudar.`;
     return c?r+(p20?'\nConta com o INSS do plano de 20%.':'\nConta com o INSS do plano simplificado (11% do salário mínimo). Mande *cnpj 20* para ver com o plano de 20%.'):r}
   // Pacote Vire CNPJ: "quero" (resposta ao aviso) ou "quero conversar" vira pedido no Admin
-  if(/^(quero|quero conversar|quero cnpj|quero abrir( o)? cnpj|conversar)$/.test(t)){if(!api.pedido)return 'Anotado. A Assessoria vai chamar você aqui.';
+  if(/^(quero|quero conversar|quero cnpj|quero abrir( o)? cnpj|conversar)$/.test(t)){if(!api.pedido)return 'Anotado. A Lado a Lado Saúde vai chamar você aqui.';
     const c=cnpjAviso(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,7));
     try{await api.pedido('cnpj',c?Math.round(c.R):null,c?c.eco:null)}catch(e){return zErro(String(e.message||e))}
-    return 'Pedido anotado ✅ A Assessoria vai chamar você aqui para marcar 20 minutos com o contador parceiro, com a sua conta na tela. É uma conversa: a decisão é sua.'}
-  if(/^(procuracao|como faco a procuracao|procuracao e-?cac)$/.test(t))return PROCURACAO.replace('{CPF}',/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(api.procurador||'')&&!/^0+$/.test(String(api.procurador).replace(/\D/g,''))?'*'+api.procurador+'*':'o CPF que a Assessoria te manda aqui em seguida');
-  if(/^(fiz|feita|pronto|ja fiz)( a)? procuracao$|^procuracao (feita|pronta|ok)$/.test(t)){if(!api.pedido)return 'Recebido! A Assessoria confere no e-CAC.';
+    return 'Pedido anotado ✅ A Lado a Lado Saúde vai chamar você aqui para marcar 20 minutos com o contador parceiro, com a sua conta na tela. É uma conversa: a decisão é sua.'}
+  if(/^(procuracao|como faco a procuracao|procuracao e-?cac)$/.test(t))return PROCURACAO.replace('{CPF}',/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(api.procurador||'')&&!/^0+$/.test(String(api.procurador).replace(/\D/g,''))?'*'+api.procurador+'*':'o CPF que a Lado a Lado Saúde te manda aqui em seguida');
+  if(/^(fiz|feita|pronto|ja fiz)( a)? procuracao$|^procuracao (feita|pronta|ok)$/.test(t)){if(!api.pedido)return 'Recebido! A Lado a Lado Saúde confere no e-CAC.';
     try{await api.pedido('procuracao',null,null)}catch(e){return zErro(String(e.message||e))}
-    return 'Recebido ✅ A Assessoria confere no e-CAC em até 1 dia útil e avisa aqui.'}
+    return 'Recebido ✅ A Lado a Lado Saúde confere no e-CAC em até 1 dia útil e avisa aqui.'}
   if(/^(posts?|meus posts|bonus)$/.test(t)){if(!api.posts)return 'Os posts do mês chegam aqui assim que ficarem prontos.';
     let l;try{l=await api.posts()}catch(e){return zErro(String(e.message||e))}
     return l&&l.length?`Seus posts de ${l.mes}:\n`+l.map((x,i)=>`${i+1}. ${x.nome}: ${x.url}`).join('\n')+'\nOs links valem 7 dias. Cada post vem com a legenda pronta; confira antes de publicar.'
@@ -466,10 +466,10 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   // Entrega do recibo (obs. 14 e 15): ela pede de novo a qualquer hora e encaminha à paciente ou a quem a paciente pedir (filha, plano)
   {const m=t.match(/^(?:recibos?|pdfs?)(?: (?:da|do|de))?(?: (.+))?$/);if(m){const nome=m[1]&&!/^(do mes|deste mes|mes)$/.test(m[1])?m[1]:'';
     const ps=nome?zAcha(D.pacientes,nome.split(' ')):[];if(nome&&!ps.length)return `Não achei paciente com o nome "${nome}". Mande *recibos* para receber todos do mês.`;
-    if(!api.recibos)return 'Os PDFs dos recibos chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês.';
+    if(!api.recibos)return 'Os PDFs dos recibos chegam aqui assim que a Lado a Lado Saúde emitir no Receita Saúde, no fechamento do mês.';
     let r;try{r=await api.recibos(ps.length===1?ps[0]:null)}catch(e){return zErro(String(e.message||e))}
-    if(!r||!r.enviados)return r&&r.mes?`Não achei o PDF ${ps.length===1?'de '+ps[0].nome+' ':''}em ${r.mes}. Se ele já foi emitido, mande *suporte* que a Assessoria reenvia.`
-      :'Ainda não há recibo emitido para mandar. Eles chegam aqui assim que a Assessoria emitir no Receita Saúde, no fechamento do mês.';
+    if(!r||!r.enviados)return r&&r.mes?`Não achei o PDF ${ps.length===1?'de '+ps[0].nome+' ':''}em ${r.mes}. Se ele já foi emitido, mande *suporte* que a Lado a Lado Saúde reenvia.`
+      :'Ainda não há recibo emitido para mandar. Eles chegam aqui assim que a Lado a Lado Saúde emitir no Receita Saúde, no fechamento do mês.';
     return `Mandei ${r.enviados} PDF${r.enviados>1?'s':''} de ${r.mes}. Para entregar: toque e segure no PDF > *Encaminhar* > escolha a paciente, ou quem ela pediu (filha, plano de saúde). O recibo também fica no app Receita Saúde da paciente (gov.br).`}}
   if(/^(conferir|conferencia|trimestre|conferir gov|conferir recibos)$/.test(t))return zTrimestre(D,hoje);
   {const so=linha.replace(/[\s.\-]/g,'');if(/^(boleto\s*)?\d{44,48}$/i.test(so)){const r=zBoleto(so.replace(/\D/g,''),hoje);if(r)return r}}
@@ -590,7 +590,7 @@ function zFotoPergunta(l){return l?`📎 Comprovante guardado. Li: *${nomeCod(DE
 
 // Suporte (revisão item 26, projeto/manual-suporte.md): "suporte ..." vira pedido no Admin, com o texto inteiro
 const SUPORTE=/^(suporte|atendente|atendimento|falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|reclamacao|problema)\b/;
-const SUPORTE_OK='Recebido. Uma pessoa da Assessoria responde aqui em até 1 dia útil (segunda a sexta, 8h às 18h). Se for erro num recibo já emitido, a correção é sem custo.';
+const SUPORTE_OK='Recebido. Uma pessoa da Lado a Lado Saúde responde aqui em até 1 dia útil (segunda a sexta, 8h às 18h). Se for erro num recibo já emitido, a correção é sem custo.';
 // Mensagem inteira (pode ter várias linhas). Devolve o texto da resposta; est é alterado no lugar.
 // Triagem antes da pessoa (ensaio 29/10, obs. 42): o assunto vem primeiro; emissão e imposto são prioridade (prazo e multa)
 const S_TEMAS=[['Recibo ou emissão',true],['Imposto, DARF ou apuração',true],['Lançar ou usar o app',false],['Plano ou pagamento',false],['Outra dúvida',false]];
@@ -601,7 +601,7 @@ function zTriagem(tema,texto,D,est){const b=zBib(zNorm(texto),D);if(!b)return nu
   return `${b}\n\nResolveu?\n1. Sim\n2. Não, quero falar com uma pessoa`}
 async function zSuporte(tema,texto,api,D,novo){const [nome,pri]=S_TEMAS[tema];if(!api.suporte)return SUPORTE_OK;
   try{await api.suporte(`[${nome}${pri?' · PRIORIDADE':''}${novo?' · Biblioteca nova':''}] ${texto}`)}catch(e){return zErro(String(e.message||e))}
-  return pri?'Recebido, com prioridade: emissão e imposto têm prazo. Uma pessoa da Assessoria responde aqui hoje, até as 18h (segunda a sexta; no fim de semana, segunda cedo). Se for erro num recibo já emitido, a correção é sem custo.':SUPORTE_OK}
+  return pri?'Recebido, com prioridade: emissão e imposto têm prazo. Uma pessoa da Lado a Lado Saúde responde aqui hoje, até as 18h (segunda a sexta; no fim de semana, segunda cedo). Se for erro num recibo já emitido, a correção é sem custo.':SUPORTE_OK}
 async function zapResponde(texto,D,api,est,hoje){const out=[];delete est.lista;const t0=zNorm(String(texto||'').split(/\n/)[0]);
   if(est.suporte){const sp=est.suporte;est.suporte=null;
     if(sp.passo==='resolveu'){if(/^(1|sim|s|resolveu|sim, resolveu|obrigad[ao])\b/.test(t0))return 'Que bom! Qualquer coisa, é só chamar.';
@@ -613,7 +613,7 @@ async function zapResponde(texto,D,api,est,hoje){const out=[];delete est.lista;c
     if(G_SAIR.test(t0))return 'Certo, não abri o pedido.'}
   if(SUPORTE.test(t0)){const resto=String(texto).replace(/^\s*(falar com (alguem|uma pessoa|a assessoria|voces)|ajuda humana|\S+)\s*/i,'').trim();
     if(!resto){est.suporte={passo:'tema'};zLista(est,S_TEMAS.map(x=>x[0]));
-      return '*Falar com a Assessoria*\nQual o assunto?\n'+S_TEMAS.map(([n,p],i)=>`${i+1}. ${n}${p?' (prioridade)':''}`).join('\n')}
+      return '*Falar com a Lado a Lado Saúde*\nQual o assunto?\n'+S_TEMAS.map(([n,p],i)=>`${i+1}. ${n}${p?' (prioridade)':''}`).join('\n')}
     const tx=String(texto).trim(),tm=zTema(zNorm(resto));return zTriagem(tm,resto,D,est)||zSuporte(tm,tx,api,D,zEhPergunta(zNorm(resto),resto))}
   const linhas=String(texto||'').split(/\n+/).filter(l=>l.trim()).slice(0,20);
   for(const [i,l] of linhas.entries()){const r=await zLinha(l,D,api,est,hoje);if(r)out.push(r);

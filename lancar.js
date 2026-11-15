@@ -2,7 +2,7 @@
 // Sem login: tudo passa pelas funções link_* do banco. O código fica guardado no aparelho para o app instalado abrir sozinho.
 // Com login (entrar.html, desde 27/10/2026): TOK fica vazio e as mesmas funções resolvem a profissional pela conta logada.
 const sb = supabase.createClient(CONFIG.url, CONFIG.chave);
-const ZAP = '5527999712727'; // WhatsApp da Assessoria até o produto ir ao mercado (decisão de 17/10/2026)
+const ZAP = '5527999712727'; // WhatsApp da Lado a Lado Saúde até o produto ir ao mercado (decisão de 17/10/2026)
 const guarda={get(){try{return localStorage.getItem('rs_tok')||''}catch(e){return ''}},set(t){try{localStorage.setItem('rs_tok',t)}catch(e){}}};
 let TOK = location.hash.slice(1).replace(/^t=/, '') || guarda.get();
 const $=id=>document.getElementById(id);
@@ -96,13 +96,13 @@ async function contaTela(){
   document.body.classList.toggle('leitura',leitura);
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
   $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
-    :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Assessoria.'}`:'';
+    :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Lado a Lado Saúde.'}`:'';
   $('b-sair').hidden=!c.logada&&!TOK;$('aj-seg').hidden=!c.logada||!!TOK;
 }
-// 8i: clínica do grupo. A secretária (ou a Assessoria) emite por procuração para o CPF de quem emite; sem o 025, o cartão fica escondido.
+// 8i: clínica do grupo. A secretária (ou a Lado a Lado Saúde) emite por procuração para o CPF de quem emite; sem o 025, o cartão fica escondido.
 async function cliTela(){const r=await sb.rpc('minha_clinica',{tok:TOK}),l=r.error?[]:r.data||[];$('aj-cli').hidden=!l.length;
   $('aj-cli').innerHTML=l.map(c=>{const s=c.secretaria,quem=c.emissao==='secretaria'&&s&&s.cpf
-      ?`a secretária ${esc(s.nome||'')} (CPF ${esc(s.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'))})`:'a Assessoria Lado a Lado (veja o CPF em Ajuda > Procuração)';
+      ?`a secretária ${esc(s.nome||'')} (CPF ${esc(s.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'))})`:'a Lado a Lado Saúde (veja o CPF em Ajuda > Procuração)';
     return `<h2>Clínica ${esc(c.nome)}</h2><div class="sub">Seus atendimentos desta clínica entram pelo relatório da secretária. Quem emite seus recibos no Receita Saúde: ${quem}.${c.procuracao_ok?' Procuração conferida.':' Falta a procuração no e-CAC para esse CPF, com o serviço IRPF - Carnê Leão Web.'}</div>
       <button type="button" class="small" data-sair-cli="${esc(c.id)}">Sair desta clínica</button>`}).join('<hr>')}
 $('aj-cli').onclick=async e=>{const id=e.target.dataset.sairCli;if(!id)return;
@@ -133,7 +133,7 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
     if(j.ensaio){if(w)w.close();avisa(`Modo de teste: nenhuma cobrança real foi criada (${brl(j.valor)}, vencimento ${dBR(j.vencimento)}).`)}
     else if(w)w.location=j.link;else location.href=j.link;
     await planoTela()}
-  catch(err){if(w)w.close();avisa('Não consegui abrir o pagamento agora. Tente de novo ou fale com a Assessoria.',true)}
+  catch(err){if(w)w.close();avisa('Não consegui abrir o pagamento agora. Tente de novo ou fale com a Lado a Lado Saúde.',true)}
   e.target.disabled=false});
 
 // ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
@@ -142,35 +142,35 @@ async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});i
   // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
   $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
   const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
-  $('proc-sit').textContent=env?`Recebemos o seu aviso${EX.procuracao_em?' em '+new Date(EX.procuracao_em).toLocaleDateString('pt-BR'):''}. A Assessoria confere no e-CAC em até 1 dia útil.`
-    :'Com ela a Assessoria emite os seus recibos no Receita Saúde. Leva 5 minutos e não precisa passar senha.';
+  $('proc-sit').textContent=env?`Recebemos o seu aviso${EX.procuracao_em?' em '+new Date(EX.procuracao_em).toLocaleDateString('pt-BR'):''}. A Lado a Lado Saúde confere no e-CAC em até 1 dia útil.`
+    :'Com ela a Lado a Lado Saúde emite os seus recibos no Receita Saúde. Leva 5 minutos e não precisa passar senha.';
   $('i-proc').querySelector('h2').textContent=env?'Procuração em conferência':'Falta a sua procuração no e-CAC';
   $('pf-novidades').checked=!!EX.aceita_novidades;$('pf-recpac').checked=!!EX.recibo_paciente;if(D)cnpjTela($('i-mes').value)}
 $('proc-passos').ontoggle=()=>$('proc-passos').dataset.visto=1;
-$('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-CAC para o CPF do responsável pela Assessoria, com o serviço IRPF - Carnê Leão Web?'))return;
+$('b-proc').onclick=async()=>{if(!confirm('Você cadastrou a procuração no e-CAC para o CPF do responsável pela Lado a Lado Saúde, com o serviço IRPF - Carnê Leão Web?'))return;
   const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'procuracao',p_media:null,p_economia:null,p_origem:'app'});
-  if(r.error){avisa('Não consegui avisar agora. Tente de novo ou fale com a Assessoria.',true);return}
-  avisa('Obrigado pelo aviso! A Assessoria confere no e-CAC.');extrasTela(PL&&PL.plano)};
+  if(r.error){avisa('Não consegui avisar agora. Tente de novo ou fale com a Lado a Lado Saúde.',true);return}
+  avisa('Obrigado pelo aviso! A Lado a Lado Saúde confere no e-CAC.');extrasTela(PL&&PL.plano)};
 // Aviso de CNPJ: Quero conversar (pedido no Admin) · Ver a conta · Agora não (some por 30 dias)
 let CJ=null;
 function cnpjTela(m){CJ=cnpjAviso(pagos(),D.despesas,m,guardaLocal.get('rs_inss20')==='1');const ate=+guardaLocal.get('rs_cnpj_nao')||0,pedido=EX&&EX.pedido_cnpj;
   $('i-cnpj').hidden=!(CJ?.mostra||pedido)||(!pedido&&Date.now()<ate);if($('i-cnpj').hidden)return;
-  $('cj-txt').textContent=pedido?'Pedido recebido: a Assessoria vai chamar você no WhatsApp para marcar 20 minutos com o contador parceiro.'
+  $('cj-txt').textContent=pedido?'Pedido recebido: a Lado a Lado Saúde vai chamar você no WhatsApp para marcar 20 minutos com o contador parceiro.'
     :`Talvez compense virar empresa em 2027. Pela sua média dos últimos 3 meses (${brl(CJ.R)}), como CNPJ no Simples você pagaria cerca de ${brl(CJ.eco)} a menos por mês, já contando o contador. É uma estimativa: quem decide é você com o contador.`;
   $('cj-btns').hidden=!!pedido;$('cj-conta').textContent=CJ?CJ.txt+' Quem abre o CNPJ até 31/12/2026 escolhe o Simples na abertura e já começa 2027 como empresa.':''}
 $('b-cj-conta').onclick=()=>$('cj-conta').hidden=!$('cj-conta').hidden;
 $('b-cj-nao').onclick=()=>{guardaLocal.set('rs_cnpj_nao',String(Date.now()+30*864e5));$('i-cnpj').hidden=true};
 $('b-cj-quero').onclick=async()=>{$('b-cj-quero').disabled=true;
   const r=await sb.rpc('link_pedido',{tok:TOK,p_tipo:'cnpj',p_media:CJ?Math.round(CJ.R):null,p_economia:CJ?CJ.eco:null,p_origem:'app'});
-  $('b-cj-quero').disabled=false;if(r.error){avisa('Não consegui mandar o pedido. Tente de novo ou fale com a Assessoria.',true);return}
-  if(EX)EX.pedido_cnpj='novo';cnpjTela($('i-mes').value);avisa('Pedido enviado. A Assessoria chama você no WhatsApp.')};
+  $('b-cj-quero').disabled=false;if(r.error){avisa('Não consegui mandar o pedido. Tente de novo ou fale com a Lado a Lado Saúde.',true);return}
+  if(EX)EX.pedido_cnpj='novo';cnpjTela($('i-mes').value);avisa('Pedido enviado. A Lado a Lado Saúde chama você no WhatsApp.')};
 // Desbloqueio sem pessoa (reunião Daniel 31/10, item 42, supabase/032): só com a conta logada pelo e-mail (código de 6 números)
 $('b-meu-link').onclick=async()=>{if(!confirm('Gerar link novo? Os aparelhos e o PIN antigos param de funcionar.'))return;
   const r=await sb.rpc('meu_link_novo');if(r.error){avisa('Não consegui. Saia e entre de novo com o e-mail.',true);return}
   const u=new URL('lancar.html#'+r.data,location.href).href;$('meu-link').innerHTML=`Link novo: <a href="${esc(u)}">abrir e criar o PIN</a>. Salve no seu WhatsApp; não repasse.`;avisa('Link novo gerado.')};
 $('b-meu-zap').onclick=async()=>{const r=await sb.rpc('meu_whatsapp',{p_fone:$('meu-zap').value});
   if(r.error){avisa(/invalido/.test(r.error.message)?'WhatsApp com DDD, ex.: 27 99999-9999.':'Não consegui salvar. Esse número pode já estar em outra conta.',true);return}
-  $('meu-zap').value='';avisa('Número salvo: o zap já reconhece. A Assessoria confere a troca por segurança.')};
+  $('meu-zap').value='';avisa('Número salvo: o zap já reconhece. A Lado a Lado Saúde confere a troca por segurança.')};
 $('pf-recpac').onchange=async e=>{const r=await sb.rpc('link_recibo_paciente',{tok:TOK,p_ok:e.target.checked});  // reunião Daniel 31/10, item 50
   if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar.',true);return}EX.recibo_paciente=e.target.checked;
   avisa(e.target.checked?'Autorizado: o recibo vai direto ao paciente. Cadastre o WhatsApp de cada um na ficha.':'Desligado: os recibos voltam a vir só para você.')};
@@ -214,7 +214,7 @@ $('b-ir-ok').onclick=async()=>{const L=irPrevTela(),ano=$('ir-ano').value,falta=
   if(falta){avisa(`Digite os ${falta} número${falta>1?'s':''} do gov.br antes de validar.`,true);return}
   const t=`[Imposto · PRIORIDADE] Prévia do IR ${ano} validada no app. `+L.map(x=>`${x.nome}: ${brl(x.nosso)} (gov.br ${brl(x.gov)}${x.ok?', confere':', DIFERENÇA '+brl(x.dif)})`).join('; ')+`. Itens do gov.br marcados: ${cks} de 3.`+($('ir-obs').value.trim()?' Obs.: '+$('ir-obs').value.trim():'');
   const r=await sb.rpc('link_suporte',{tok:TOK,p_texto:t.slice(0,1900)});if(r.error){avisa('Não consegui enviar. Tente de novo.',true);return}
-  avisa(L.every(x=>x.ok)?'Prévia validada e enviada. A Assessoria fecha a declaração e avisa você.':'Enviada com as diferenças. A Assessoria confere com você antes de fechar.')};
+  avisa(L.every(x=>x.ok)?'Prévia validada e enviada. A Lado a Lado Saúde fecha a declaração e avisa você.':'Enviada com as diferenças. A Lado a Lado Saúde confere com você antes de fechar.')};
 $('b-ir-pdf').onclick=()=>{const R=irDados(),w=window.open('','_blank');if(!w){avisa('Libere a janela nova para gerar o PDF.',true);return}
   const td=v=>`<td style="text-align:right">${brl(v)}</td>`;
   w.document.write(`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Relatório IR ${R.ano}</title><style>body{font:13px system-ui,sans-serif;margin:24px;color:#1b2b26}
@@ -262,7 +262,7 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
     const ats=X.atendimentos.map(a=>({...a,valor:+a.valor})),pg=ats.filter(a=>a.pago!==false),ds=X.despesas.map(d=>({...d,valor:+d.valor}));
     const meses=[...new Set([...pg.map(a=>a.data.slice(0,7)),...ds.map(d=>d.data.slice(0,7))])].sort();
     const arqs=[
-      {nome:'LEIA-ME.txt',dados:new TextEncoder().encode(`Lado a Lado Saúde: dados de ${pr.nome||''} (CPF ${pr.cpf||''}), baixados em ${new Date().toLocaleString('pt-BR')}.\r\n\r\nAs planilhas (.csv) abrem no Excel ou no Google Planilhas.\r\n- atendimentos.csv: cada atendimento, com o paciente, o valor e o recibo.\r\n- livro-caixa-mensal.csv: o que entrou, as despesas que abatem e o Carnê-Leão de cada mês.\r\n- pacientes.csv, despesas.csv e recibos-emitidos.csv.\r\n- recibos/ e posts/: os PDFs guardados pela Assessoria.\r\n\r\nGuarde os comprovantes por 5 anos. O livro-caixa oficial é o do Carnê-Leão Web (gov.br).`)},
+      {nome:'LEIA-ME.txt',dados:new TextEncoder().encode(`Lado a Lado Saúde: dados de ${pr.nome||''} (CPF ${pr.cpf||''}), baixados em ${new Date().toLocaleString('pt-BR')}.\r\n\r\nAs planilhas (.csv) abrem no Excel ou no Google Planilhas.\r\n- atendimentos.csv: cada atendimento, com o paciente, o valor e o recibo.\r\n- livro-caixa-mensal.csv: o que entrou, as despesas que abatem e o Carnê-Leão de cada mês.\r\n- pacientes.csv, despesas.csv e recibos-emitidos.csv.\r\n- recibos/ e posts/: os PDFs guardados pela Lado a Lado Saúde.\r\n\r\nGuarde os comprovantes por 5 anos. O livro-caixa oficial é o do Carnê-Leão Web (gov.br).`)},
       {nome:'pacientes.csv',dados:csv(['Nome','CPF','CPF de quem paga','WhatsApp','2º WhatsApp','E-mail','Ativo'],X.pacientes.map(p=>[p.nome,p.cpf,p.cpf_pagador,p.telefone,p.telefone2,p.email,sim(p.ativo)]))},
       {nome:'atendimentos.csv',dados:csv(['Data','Paciente','CPF','CPF de quem paga','Valor','Forma','Recebido','Local','Recibo do mês','Recibo confirmado na Receita'],
         ats.map(a=>[dBR(a.data),a.paciente,a.cpf,a.cpf_pagador,a.valor,a.forma,sim(a.pago!==false),loc(a.local_id),a.recibo_mes||'',sim(a.recibo_confirmado)]))},
@@ -306,7 +306,7 @@ function telaIni(){telaDarf();
   $('i-faixa').textContent=tot<=LIM?`Isenção de 2026: até ${brl(LIM)} no mês não paga Carnê-Leão. Faltam ${brl(LIM-tot)}.`
     :tot<=LIM2?`Passou de ${brl(LIM)}: o imposto tem desconto parcial em 2026.`:`Acima de ${brl(LIM2)}: imposto sem desconto.`;
   const [a,mm]=m.split('-').map(Number), venc=ultimoDiaUtil(a,mm);
-  $('i-guardar').textContent=ap.darf.pagar>0?`Guarde ${brl(ap.darf.pagar)} para o Carnê-Leão deste mês. Vence em ${venc.toLocaleDateString('pt-BR')}; a Assessoria manda o DARF.`
+  $('i-guardar').textContent=ap.darf.pagar>0?`Guarde ${brl(ap.darf.pagar)} para o Carnê-Leão deste mês. Vence em ${venc.toLocaleDateString('pt-BR')}; a Lado a Lado Saúde manda o DARF.`
     :ap.darf.adia?`Carnê-Leão de ${brl(ap.darf.total)}: abaixo de R$ 10 não tem DARF; o valor soma ao do mês seguinte.`
     :desp<SIMPL&&tot>LIM?`Suas despesas (${brl(desp)}) são menores que o desconto padrão de ${brl(SIMPL)}; o cálculo usa o desconto padrão.`
     :'Nada a guardar de imposto neste mês.';
@@ -366,7 +366,7 @@ function telaLan(){
   $('feitos').innerHTML=D.atendimentos.slice(0,30).map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)}${x.local_id&&localDe(x.local_id)?' · '+esc(localDe(x.local_id).nome):''}</div></div>
     <div style="text-align:right"><span class="pill ${x.emitido?'':'pend'}">${x.fila?'⏳ aguardando internet':x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span>${x.emitido||x.fila?'':`<div style="margin-top:6px"><button class="small" data-del="${x.id}" type="button">Apagar</button></div>`}</div></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
 }
-// WhatsApp e e-mail do paciente, para a Assessoria mandar o recibo (ponto 3 do Daniel)
+// WhatsApp e e-mail do paciente, para a Lado a Lado Saúde mandar o recibo (ponto 3 do Daniel)
 function contatoTela(){const v=$('pac').value,p=D.pacientes.find(x=>x.id===v);
   $('novo').hidden=v!=='novo';$('contato').hidden=!v;
   $('n-tel').value=p&&p.telefone?fmtTel(p.telefone):'';$('n-tel2').value=p&&p.telefone2?fmtTel(p.telefone2):'';$('n-email').value=p&&p.email||'';}
@@ -453,7 +453,7 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   if(!ds.ok){avisa(ds.msg,true);return}
   const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
     :await grava(ds.lista.length?'link_atendimento_dias':'link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked,...(ds.lista.length?{p_dias:ds.lista}:{})},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
-  if(pn&&!r.error&&ds.lista.length&&r.data&&r.data.atendimento){const q=await sb.rpc('link_dias_atendimento',{tok:TOK,p_atendimento:r.data.atendimento,p_dias:ds.lista});if(q.error)avisa('Pacote salvo, mas não consegui gravar os dias. Avise a Assessoria.',true)}
+  if(pn&&!r.error&&ds.lista.length&&r.data&&r.data.atendimento){const q=await sb.rpc('link_dias_atendimento',{tok:TOK,p_atendimento:r.data.atendimento,p_dias:ds.lista});if(q.error)avisa('Pacote salvo, mas não consegui gravar os dias. Avise a Lado a Lado Saúde.',true)}
   if(r.error){avisa(pn&&semRede(r.error)?'Pacote precisa de internet. Sem internet, lance a sessão como atendimento comum.':'Não consegui salvar. Confira a data e tente de novo.',true);return}
   if(r.fila){$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa('Sem internet: guardado no celular. Vai sozinho quando a internet voltar.');return}
   if(pn){$('pac-n').value='';$('valor').value='';await carrega();posSalvo();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
@@ -515,13 +515,13 @@ $('f-local').onsubmit=async e=>{e.preventDefault();
 function agenda(){
   const hoje=new Date();hoje.setHours(0,0,0,0);const fim=new Date(hoje);fim.setDate(fim.getDate()+90);const it=[];
   for(let k=0;k<4;k++){const a=hoje.getFullYear(),m=hoje.getMonth()+k,d1=new Date(a,m,1);
-    it.push({d:d1,t:'Fechamento do mês',s:`A Assessoria emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
+    it.push({d:d1,t:'Fechamento do mês',s:`A Lado a Lado Saúde emite os recibos de ${NOMES_MES[(m+11)%12]}. Confira se todos os atendimentos foram lançados.`});
     D.fixas.forEach(f=>{const ult=new Date(a,m+1,0).getDate();it.push({d:new Date(a,m,Math.min(f.dia,ult)),t:nomeCod(f.codigo),s:`Vencimento: cerca de ${brl(f.valor)}. Depois de pagar, lance em Despesas.`})});
     const ant=new Date(a,m-1,1), dv=apura(pagos(),D.despesas,mesDe(ant.getFullYear(),ant.getMonth())).darf;
-    if(dv.pagar>0&&!(D.darfs||[]).some(x=>x.mes===mesDe(ant.getFullYear(),ant.getMonth())))it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(dv.pagar)} de ${NOMES_MES[ant.getMonth()]}. A Assessoria manda o DARF.`});
+    if(dv.pagar>0&&!(D.darfs||[]).some(x=>x.mes===mesDe(ant.getFullYear(),ant.getMonth())))it.push({d:ultimoDiaUtil(ant.getFullYear(),ant.getMonth()+1),t:'Carnê-Leão (DARF)',s:`${brl(dv.pagar)} de ${NOMES_MES[ant.getMonth()]}. A Lado a Lado Saúde manda o DARF.`});
     // Auditoria F8: o cadastro no Carnê-Leão Web vale um ano; sem ele o Receita Saúde não emite
-    if(d1.getMonth()===0)it.push({d:new Date(d1.getFullYear(),0,2),t:'Cadastro do ano no Carnê-Leão',s:'A Assessoria atualiza o seu cadastro do ano no Carnê-Leão Web. Sem ele, o recibo do Receita Saúde não sai.'});
-    if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Assessoria prepara o resumo do ano para cada paciente declarar no IR dele.'});
+    if(d1.getMonth()===0)it.push({d:new Date(d1.getFullYear(),0,2),t:'Cadastro do ano no Carnê-Leão',s:'A Lado a Lado Saúde atualiza o seu cadastro do ano no Carnê-Leão Web. Sem ele, o recibo do Receita Saúde não sai.'});
+    if(d1.getMonth()===1)it.push({d:new Date(d1.getFullYear(),1,28),t:'Informe aos pacientes',s:'A Lado a Lado Saúde prepara o resumo do ano para cada paciente declarar no IR dele.'});
     if(d1.getMonth()===2)it.push({d:new Date(d1.getFullYear(),2,1),t:'Declaração do IR',s:'Começa o prazo da declaração. O livro-caixa do ano já está pronto aqui.'});
   }
   return it.filter(x=>x.d>=hoje&&x.d<=fim).sort((x,y)=>x.d-y.d);
@@ -540,16 +540,16 @@ const AJUDA=[
   ['Maca, aparelhos e computador abatem?','Não. Equipamento que dura anos não entra no livro-caixa. Material que se gasta no dia a dia entra se estiver no plano da Receita.'],
   ['Quanto tempo guardo os comprovantes?','5 anos, no seu nome e CPF. Foto legível também serve para você, mas guarde o papel ou o PDF original.'],
   ['O paciente é criança. Como lanço?','Lance no nome da criança e preencha o CPF de quem paga (mãe ou pai). O recibo sai certo para os dois.'],
-  ['Quando vence o Carnê-Leão?','No último dia útil do mês seguinte. Se der imposto, a Assessoria manda o DARF com o valor.'],
-  ['Preciso me cadastrar na prefeitura?','Sim. Quem atende como autônoma precisa de inscrição municipal, antes de começar a atender, tanto como pessoa física quanto como empresa. Na Serra: formulário no site da prefeitura, com documento, comprovante de residência e carnê do IPTU; a prefeitura gera a inscrição, o ISS fixo e, se você atende em consultório fixo, a Taxa de Poder de Polícia. A Assessoria confere a sua situação.'],
-  ['Meu registro no conselho vence. A Assessoria acompanha?','Conferir se o registro está ativo é responsabilidade sua (ou do responsável pelo consultório). Se quiser que a Assessoria lembre você, cadastre a anuidade ou a renovação do registro como despesa fixa, com a data: no dia certo o lembrete chega no WhatsApp.'],
+  ['Quando vence o Carnê-Leão?','No último dia útil do mês seguinte. Se der imposto, a Lado a Lado Saúde manda o DARF com o valor.'],
+  ['Preciso me cadastrar na prefeitura?','Sim. Quem atende como autônoma precisa de inscrição municipal, antes de começar a atender, tanto como pessoa física quanto como empresa. Na Serra: formulário no site da prefeitura, com documento, comprovante de residência e carnê do IPTU; a prefeitura gera a inscrição, o ISS fixo e, se você atende em consultório fixo, a Taxa de Poder de Polícia. A Lado a Lado Saúde confere a sua situação.'],
+  ['Meu registro no conselho vence. A Lado a Lado Saúde acompanha?','Conferir se o registro está ativo é responsabilidade sua (ou do responsável pelo consultório). Se quiser que a Lado a Lado Saúde lembre você, cadastre a anuidade ou a renovação do registro como despesa fixa, com a data: no dia certo o lembrete chega no WhatsApp.'],
   ['Recibo de mês anterior ou de ano anterior?','Recibo do mês anterior pode ser emitido, mas o Carnê-Leão daquele mês precisa ser retificado ou gerar guia complementar do imposto. Recibo de ano anterior não pode ser emitido: o sistema da Receita não permite. Por isso emita o recibo no mês do pagamento.'],
-  ['Pago ISS para a prefeitura?','Quem atende como autônoma com inscrição na prefeitura paga um ISS fixo por ano, que depende da cidade e da escolaridade da profissão, não de quanto você recebe. Em Vitória, em 2026, venceu em 22/04, com 5% de desconto na cota única. Em Vila Velha, o fixo de nível superior é R$ 204,17 (Lei 5.398/2012); na Serra, o valor é atualizado todo ano e vem no carnê da prefeitura (em 2019 foi R$ 901,92). A inscrição municipal é obrigatória e se faz antes de começar a atender. O ISS pago abate no Carnê-Leão: lance em Despesas, tipo ISS. A Assessoria confere a sua situação.'],
+  ['Pago ISS para a prefeitura?','Quem atende como autônoma com inscrição na prefeitura paga um ISS fixo por ano, que depende da cidade e da escolaridade da profissão, não de quanto você recebe. Em Vitória, em 2026, venceu em 22/04, com 5% de desconto na cota única. Em Vila Velha, o fixo de nível superior é R$ 204,17 (Lei 5.398/2012); na Serra, o valor é atualizado todo ano e vem no carnê da prefeitura (em 2019 foi R$ 901,92). A inscrição municipal é obrigatória e se faz antes de começar a atender. O ISS pago abate no Carnê-Leão: lance em Despesas, tipo ISS. A Lado a Lado Saúde confere a sua situação.'],
   ['Meu INSS abate?','Sim. O INSS que você paga como autônoma (carnê ou GPS) abate do Carnê-Leão no mês em que foi pago. Lance em Despesas, tipo "Seu INSS", com o mês a que se refere.'],
   ['Gastei mais do que recebi no mês. Perco a despesa?','Não. O que passar do recebido fica guardado e abate nos meses seguintes, até dezembro. O app faz essa conta sozinho e mostra no Início.'],
   ['Quando sai o recibo? E se o paciente parcelar?','O recibo vale pela data em que o dinheiro entrou, não pela data do atendimento. Se ainda não recebeu, desmarque "Já recebi" ao lançar: fica em A receber. Parcelado ou cartão: a cada parcela que cair, toque em Recebi e informe o valor; cada parcela vira um recibo.'],
-  ['Como o paciente recebe o recibo?','A Assessoria emite no Receita Saúde e manda o PDF para você encaminhar. O paciente também vê todos os recibos dele no app Receita Saúde (gov.br), com o CPF.'],
-  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 55 mil no ano (R$ 70 mil em 2028, pela lei nova do MEI, a confirmar) passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Atenção: a nota fiscal não dispensa o recibo do Receita Saúde; quem emite nota continua emitindo o recibo de cada pagamento. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Assessoria acompanha.'],
+  ['Como o paciente recebe o recibo?','A Lado a Lado Saúde emite no Receita Saúde e manda o PDF para você encaminhar. O paciente também vê todos os recibos dele no app Receita Saúde (gov.br), com o CPF.'],
+  ['Vou ter que emitir nota fiscal?','Pela reforma tributária, a partir de 2027 quem recebe mais de cerca de R$ 55 mil no ano (R$ 70 mil em 2028, pela lei nova do MEI, a confirmar) passa a pagar os novos impostos (CBS e IBS, com 60% de desconto para fisioterapia) e a emitir nota fiscal. Atenção: a nota fiscal não dispensa o recibo do Receita Saúde; quem emite nota continua emitindo o recibo de cada pagamento. O Início mostra onde você está. Algumas regras ainda dependem de regulamentação; a Lado a Lado Saúde acompanha.'],
   ['Tenho mais de um local. Como faço?','Cadastre cada um em Despesas → Meus locais e escolha o local em cada atendimento e conta. O Início mostra quanto rende cada um.']];
 $('aj-lista').innerHTML='<h2>Perguntas frequentes</h2>'+AJUDA.map(([p,r])=>`<details><summary>${esc(p)}</summary><p>${esc(r)}</p></details>`).join('');
 $('b-duvida').onclick=()=>location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá! Sou ${D?D.nome:''} e tenho uma dúvida:`)}`;
@@ -569,7 +569,7 @@ document.addEventListener('click',async e=>{const t=e.target.dataset||{};
   if(t.corsalva){const id=t.corsalva,v=num(document.querySelector(`[data-corv="${id}"]`).value),d=document.querySelector(`[data-cord="${id}"]`).value;
     if(!(v>0)||!d){avisa('Confira a data e o valor.',true);return}
     const r=await sb.rpc('link_corrigir',{tok:TOK,p_atendimento:id,p_data:d,p_valor:v,p_forma:document.querySelector(`[data-corf="${id}"]`).value});
-    if(r.error){avisa(/emitido/.test(r.error.message)?'Esse recibo já foi emitido: peça a correção à Assessoria pelo zap (*suporte*).':'Não consegui corrigir.',true);return}
+    if(r.error){avisa(/emitido/.test(r.error.message)?'Esse recibo já foi emitido: peça a correção à Lado a Lado Saúde pelo zap (*suporte*).':'Não consegui corrigir.',true);return}
     await carrega();avisa('Corrigido.');return}
   if(t.conc){const id=t.conc,r=await sb.rpc('link_conferir',{tok:TOK,p_ids:[id],p_como:document.querySelector(`[data-concf="${id}"]`).value,p_obs:document.querySelector(`[data-conco="${id}"]`).value});
     if(r.error){avisa('Não consegui marcar.',true);return}await carrega();avisa('Conferido.');return}
@@ -608,7 +608,7 @@ $('pin').onsubmit=async e=>{e.preventDefault();const p=$('pin-1').value;
   if(!/^\d{4}$/.test(p)){avisa('O PIN tem 4 números.',true);return}
   if(PIN==='criar'&&p!==$('pin-2').value){avisa('Os dois PIN não são iguais.',true);return}
   const r=await sb.rpc(PIN==='criar'?'link_pin_criar':'link_entrar',{tok:TOK,p_pin:p});$('pin-1').value=$('pin-2').value='';
-  if(r.error){const m=r.error.message;avisa(/facil/.test(m)?'PIN fácil demais. Evite 1234 e números repetidos.':/bloqueado ate (\S+)/.test(m)?'Muitas tentativas. Tente de novo às '+m.match(/bloqueado ate (\S+)/)[1]+'.':/ja existe/.test(m)?'Este link já tem PIN. Digite o PIN que você criou.':'Este link não vale mais. Peça um novo à Assessoria.',true);if(/ja existe/.test(m))partida();return}
+  if(r.error){const m=r.error.message;avisa(/facil/.test(m)?'PIN fácil demais. Evite 1234 e números repetidos.':/bloqueado ate (\S+)/.test(m)?'Muitas tentativas. Tente de novo às '+m.match(/bloqueado ate (\S+)/)[1]+'.':/ja existe/.test(m)?'Este link já tem PIN. Digite o PIN que você criou.':'Este link não vale mais. Peça um novo à Lado a Lado Saúde.',true);if(/ja existe/.test(m))partida();return}
   if(!r.data){avisa('PIN errado.',true);return}
   TOK=r.data;guarda.set(TOK);$('pin').hidden=true;carrega();
   // obs. 32: aparelho novo avisa no zap dela (com "bloquear" se não foi ela); sem internet ou sem zap ligado, segue sem aviso
@@ -685,7 +685,7 @@ function exMostra(mv,molde){const o=$('ex-res');
     +(molde?'<button type="button" class="small" id="b-ex-mudar">Mudar as colunas da planilha</button>':'');}
 // Contas fixas no Drive dela (reunião Daniel 31/10, item 31a, supabase/030)
 $('b-drive').onclick=async()=>{const u=$('drive-url').value.trim();if(u&&!/^https:\/\/drive\.google\.com\/[A-Za-z0-9/_?=&.-]+$/.test(u)){avisa('Cole o link da pasta do Google Drive (começa com https://drive.google.com/).',true);return}
-  const r=await sb.rpc('link_drive',{tok:TOK,p_url:u||null});if(r.error){avisa('Não consegui salvar o link.',true);return}avisa(u?'Link salvo: a Assessoria confere a pasta todo mês.':'Link retirado.')};
+  const r=await sb.rpc('link_drive',{tok:TOK,p_url:u||null});if(r.error){avisa('Não consegui salvar o link.',true);return}avisa(u?'Link salvo: a Lado a Lado Saúde confere a pasta todo mês.':'Link retirado.')};
 $('ex-res').addEventListener('click',e=>{if(e.target.id==='b-ex-mudar'){let m={};try{m=JSON.parse(localStorage.getItem(impExtChave(EX_TAB.cab)))||{}}catch(_){}exColunas(m,true)}
   if(e.target.id!=='b-ex-col')return;const m=exMolde();if(!exMoldeOk(m)){avisa('Escolha a Data e o Valor (ou Crédito e Débito).',true);return}
   const mv=impExtPeloMolde(EX_TAB,m);if(mv.length)localStorage.setItem(impExtChave(EX_TAB.cab),JSON.stringify(m));exMostra(mv,true)});
@@ -773,7 +773,7 @@ function empTela(){const tem=!!(EX&&EX.cnpj);$('i-emp').hidden=!tem;
     +(e.fatorR==null?'<div class="sub">Para o Fator R de verdade, cole abaixo a receita e a folha dos últimos 12 meses do sistema do seu contador.</div>':'')
     +(e.primeiroAno?'<div class="sub">Primeiro ano da empresa: a faixa do Simples é proporcional aos meses de atividade.</div>':'');
   $('emp-nfse').value=EX.nfse_acesso||'';$('emp-cert').value=EX.cert_validade||'';$('l-emp-cert').hidden=$('emp-nfse').value!=='a1';
-  $('emp-simples').textContent=EX.simples_codigo_em?`A Assessoria confirmou o código em ${dBR(EX.simples_codigo_em)}.`:'A Assessoria ainda não tem o seu código.'}
+  $('emp-simples').textContent=EX.simples_codigo_em?`A Lado a Lado Saúde confirmou o código em ${dBR(EX.simples_codigo_em)}.`:'A Lado a Lado Saúde ainda não tem o seu código.'}
 $('emp-nfse').onchange=()=>{$('l-emp-cert').hidden=$('emp-nfse').value!=='a1'};
 $('b-emp-acesso').onclick=async()=>{const h=$('emp-hist').value.trim()?empHist($('emp-hist').value):null;
   if($('emp-hist').value.trim()&&!h.length){avisa('Não achei meses na planilha. Use: competência; receita; folha (ex.: 09/2026;9.000,00;2.600,00).',true);return}

@@ -97,7 +97,7 @@ a{color:var(--accent)}
   <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>
   <div id="semrede" class="msg" hidden></div>
   <div id="conta" class="msg" hidden></div>
-  <div id="ruim" class="card" hidden><h2>Vamos abrir a sua conta</h2><div class="sub">Se você criou a conta com e-mail, entre pelo botão abaixo. Se usa o link que a Assessoria mandou no WhatsApp e ele não abriu, peça um novo pelo número 27 99971-2727.</div>
+  <div id="ruim" class="card" hidden><h2>Vamos abrir a sua conta</h2><div class="sub">Se você criou a conta com e-mail, entre pelo botão abaixo. Se usa o link que a Lado a Lado Saúde mandou no WhatsApp e ele não abriu, peça um novo pelo número 27 99971-2727.</div>
     <a href="entrar.html" style="text-align:center;padding:11px;border-radius:8px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:600">Entrar com e-mail</a></div>
 
   <!-- PIN do link (supabase/014, auditoria S4): o link sozinho não abre o app depois que ela cria o PIN -->
@@ -107,7 +107,7 @@ a{color:var(--accent)}
     <label>PIN <input id="pin-1" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required></label>
     <label id="l-pin-2">Repita o PIN <input id="pin-2" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4"></label>
     <button class="pri" type="submit">Entrar</button>
-    <div class="sub">Esqueceu o PIN? Peça à Assessoria para zerar: 27 99971-2727.</div>
+    <div class="sub">Esqueceu o PIN? Peça à Lado a Lado Saúde para zerar: 27 99971-2727.</div>
   </form>
 
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
@@ -126,22 +126,22 @@ a{color:var(--accent)}
             <select id="emp-nfse"><option value="">Ainda não sei</option><option value="gov">Com o meu login gov.br, no Emissor Nacional</option><option value="a1">Com certificado digital A1</option></select></label>
           <label id="l-emp-cert" hidden>Validade do certificado A1 <input type="date" id="emp-cert"></label>
           <button type="button" class="small" id="b-emp-acesso">Salvar</button>
-          <div class="sub"><b>Código de acesso do Simples Nacional</b> (saída quando o e-CAC trava): no Portal do Simples Nacional, "Código de Acesso", gere com o CNPJ, o CPF do responsável e o número do recibo do IR (ou o título de eleitor). Não escreva o código no zap nem no app: mande <b>suporte simples</b> no zap e a Assessoria liga para você anotar no cofre dela. <span id="emp-simples"></span></div>
+          <div class="sub"><b>Código de acesso do Simples Nacional</b> (saída quando o e-CAC trava): no Portal do Simples Nacional, "Código de Acesso", gere com o CNPJ, o CPF do responsável e o número do recibo do IR (ou o título de eleitor). Não escreva o código no zap nem no app: mande <b>suporte simples</b> no zap e a Lado a Lado Saúde liga para você anotar no cofre dela. <span id="emp-simples"></span></div>
           <div class="row"><button type="button" id="b-emp-notas">Notas do mês (planilha)</button><button type="button" id="b-emp-dmed">DMED do ano (planilha)</button></div>
         </div></details>
     </div>
     <div class="card" id="i-proc" hidden>
       <h2>Falta a sua procuração na Receita</h2>
-      <div class="sub" id="proc-sit">Com ela a Assessoria emite os seus recibos no Receita Saúde. Leva uns 5 minutos e não precisa passar senha. Faça no <b>computador</b>: no celular o assinador da Receita costuma falhar.</div>
+      <div class="sub" id="proc-sit">Com ela a Lado a Lado Saúde emite os seus recibos no Receita Saúde. Leva uns 5 minutos e não precisa passar senha. Faça no <b>computador</b>: no celular o assinador da Receita costuma falhar.</div>
       <details id="proc-passos"><summary>Ver o passo a passo</summary>
         <ol class="passos">
           <li>No computador, entre em <b>servicos.receitafederal.gov.br</b> com o seu gov.br (nível prata ou ouro). Se o navegador bloquear pop-ups, permita para esse site.</li>
           <li>Abra <b>Minhas Autorizações de Acesso</b> → <b>Nova Autorização</b>. (Pelo e-CAC: Senhas e Procurações → Cadastrar Procuração.)</li>
-          <li>Em quem recebe, digite o <b>CPF do responsável pela Assessoria</b> e confira o nome na tela. Não sabe o número? Mande <b>procuração</b> no WhatsApp da Assessoria que ele chega na hora.</li>
+          <li>Em quem recebe, digite o <b>CPF do responsável pela Lado a Lado Saúde</b> e confira o nome na tela. Não sabe o número? Mande <b>procuração</b> no WhatsApp da Lado a Lado Saúde que ele chega na hora.</li>
           <li>Marque <b>só</b> o serviço <b>IRPF - Carnê-Leão Web</b> e confirme com o seu gov.br. Prazo: pode deixar o sugerido (1 ano). Você cancela quando quiser.</li>
-          <li>A Assessoria confirma do lado dela em poucos minutos. Quando a Receita mostrar "Ativa", é só tocar em "Já fiz a procuração".</li>
+          <li>A Lado a Lado Saúde confirma do lado dela em poucos minutos. Quando a Receita mostrar "Ativa", é só tocar em "Já fiz a procuração".</li>
         </ol>
-        <div class="sub">Não pedimos outro serviço nem a sua senha. Se aparecer algo diferente na tela, toque em "Perguntar à Assessoria" na aba Ajuda.</div>
+        <div class="sub">Não pedimos outro serviço nem a sua senha. Se aparecer algo diferente na tela, toque em "Perguntar à Lado a Lado Saúde" na aba Ajuda.</div>
       </details>
       <button class="pri" id="b-proc" type="button">Já fiz a procuração</button>
     </div>
@@ -183,8 +183,8 @@ a{color:var(--accent)}
     <div class="card" id="i-pendcard">
       <h2>Aguardando recibo</h2>
       <div class="list" id="pend"></div>
-      <button class="pri" id="b-zap" type="button">Transmitir para a Assessoria emitir os recibos</button>
-      <div class="sub">Abre o WhatsApp com o resumo pronto. A Assessoria emite no Receita Saúde e devolve os PDFs para você encaminhar. O paciente também vê o recibo no app Receita Saúde (gov.br), com o CPF dele. Lançou errado? Toque em <b>Corrigir</b> ou Apagar <b>antes</b> de transmitir: depois de emitido, o cancelamento na Receita leva até 10 dias.</div>
+      <button class="pri" id="b-zap" type="button">Transmitir para a Lado a Lado Saúde emitir os recibos</button>
+      <div class="sub">Abre o WhatsApp com o resumo pronto. A Lado a Lado Saúde emite no Receita Saúde e devolve os PDFs para você encaminhar. O paciente também vê o recibo no app Receita Saúde (gov.br), com o CPF dele. Lançou errado? Toque em <b>Corrigir</b> ou Apagar <b>antes</b> de transmitir: depois de emitido, o cancelamento na Receita leva até 10 dias.</div>
     </div>
   </section>
 
@@ -272,7 +272,7 @@ a{color:var(--accent)}
     <div class="card" id="rec-st" hidden><b id="rec-t"></b><div class="sub" id="rec-d"></div></div>
     <div class="card" id="pos" hidden style="border:2px solid var(--ok,#2e7d32)">
       <h2>✅ Atendimento salvo. E agora?</h2>
-      <div class="sub">O recibo só sai quando você pede. Toque no botão abaixo: abre o WhatsApp com o resumo pronto para a Assessoria emitir no Receita Saúde.</div>
+      <div class="sub">O recibo só sai quando você pede. Toque no botão abaixo: abre o WhatsApp com o resumo pronto para a Lado a Lado Saúde emitir no Receita Saúde.</div>
       <button class="pri" id="pos-pedir" type="button">Pedir o recibo agora</button>
       <div class="row"><button class="small" id="pos-ver" type="button">Ver, corrigir ou apagar</button> <button class="small" id="pos-fecha" type="button">Depois</button></div>
     </div>
@@ -313,7 +313,7 @@ a{color:var(--accent)}
       <div class="list" id="l-fixas"></div>
       <details id="drive-card"><summary>Guardo as contas no meu Google Drive</summary>
         <div style="display:grid;gap:8px;margin-top:8px">
-          <div class="sub">Crie uma pasta no <b>seu</b> Drive, ponha nela as contas do mês (PDF ou foto) e compartilhe com a Assessoria ("qualquer pessoa com o link pode ver"). Cole o link aqui: todo mês a Assessoria confere e lança o que faltar. A pasta é sua: você tira o acesso quando quiser.</div>
+          <div class="sub">Crie uma pasta no <b>seu</b> Drive, ponha nela as contas do mês (PDF ou foto) e compartilhe com a Lado a Lado Saúde ("qualquer pessoa com o link pode ver"). Cole o link aqui: todo mês a Lado a Lado Saúde confere e lança o que faltar. A pasta é sua: você tira o acesso quando quiser.</div>
           <input id="drive-url" placeholder="https://drive.google.com/drive/folders/..." autocomplete="off">
           <button type="button" class="small" id="b-drive">Salvar o link</button>
         </div></details>
@@ -421,22 +421,22 @@ a{color:var(--accent)}
         <div class="list" id="rm-cl-l"></div>
       </div>
       <div id="ir-prev" hidden style="display:grid;gap:10px;margin-top:6px">
-        <div class="sub">Confira cada número com o que está no seu gov.br (Receita Saúde e Carnê-Leão Web, menu Pagamentos). Digite o número de lá: eu mostro a diferença. Depois marque o que já está no gov.br e entra na declaração, e envie à Assessoria. A declaração só é fechada depois da sua validação.</div>
+        <div class="sub">Confira cada número com o que está no seu gov.br (Receita Saúde e Carnê-Leão Web, menu Pagamentos). Digite o número de lá: eu mostro a diferença. Depois marque o que já está no gov.br e entra na declaração, e envie à Lado a Lado Saúde. A declaração só é fechada depois da sua validação.</div>
         <div class="list" id="ir-prev-l"></div>
         <label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" class="ir-ck" style="width:auto"> Baixei os recibos em que eu sou a paciente (consultas, dentista, terapia): despesa médica da declaração</label>
         <label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" class="ir-ck" style="width:auto"> Baixei o informe de rendimentos do banco e da previdência privada, se tiver</label>
         <label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" class="ir-ck" style="width:auto"> Conferi as despesas do ano por conta (no PDF do relatório)</label>
-        <textarea id="ir-obs" rows="2" placeholder="Algo que não bate ou que a Assessoria precisa saber"></textarea>
-        <button id="b-ir-ok" type="button" class="pri">Validar e enviar à Assessoria</button>
+        <textarea id="ir-obs" rows="2" placeholder="Algo que não bate ou que a Lado a Lado Saúde precisa saber"></textarea>
+        <button id="b-ir-ok" type="button" class="pri">Validar e enviar à Lado a Lado Saúde</button>
       </div>
-      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-recpac" style="width:auto"> Autorizo a Assessoria a mandar o recibo direto ao WhatsApp de cada paciente (quem não tiver WhatsApp na ficha, eu encaminho)</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-recpac" style="width:auto"> Autorizo a Lado a Lado Saúde a mandar o recibo direto ao WhatsApp de cada paciente (quem não tiver WhatsApp na ficha, eu encaminho)</label>
       <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-inss20" style="width:auto"> Contribuo ao INSS pelo plano de 20% (aposentadoria por tempo de contribuição). Sem marcar, a conta usa o plano simplificado de 11% do salário mínimo.</label>
       <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="pf-novidades" style="width:auto"> Quero receber pelo WhatsApp avisos de novidades, como a conta para virar CNPJ</label>
     </div>
     <div class="card" id="aj-lista"></div>
     <div class="card">
       <h2>Ficou alguma dúvida?</h2>
-      <button class="pri" id="b-duvida" type="button">Perguntar à Assessoria pelo WhatsApp</button>
+      <button class="pri" id="b-duvida" type="button">Perguntar à Lado a Lado Saúde pelo WhatsApp</button>
       <button id="b-sair" type="button" hidden>Sair deste aparelho</button>
     </div>
   </section>
@@ -449,11 +449,11 @@ a{color:var(--accent)}
   <button data-t="t-aj">Ajuda</button>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=38"></script>
-<script src="regras.js?v=38"></script>
-<script src="importar.js?v=38"></script>
-<script src="convenio.js?v=38"></script>
-<script src="lancar.js?v=38"></script>
-<script src="instalar.js?v=38"></script>
+<script src="config.js?v=39"></script>
+<script src="regras.js?v=39"></script>
+<script src="importar.js?v=39"></script>
+<script src="convenio.js?v=39"></script>
+<script src="lancar.js?v=39"></script>
+<script src="instalar.js?v=39"></script>
 </body>
 </html>
