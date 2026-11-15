@@ -821,3 +821,37 @@ async function recStatus(){try{const r=await sb.rpc('link_status_recibo',{tok:TO
   $('rec-t').textContent=T[x.situacao]||'Pedido de recibo';
   $('rec-d').textContent=x.situacao==='feito'?'Entregue em '+f(x.entregue_em||x.criado_em)+'.':x.situacao==='nao_consegui'?'Motivo: '+(x.motivo||'—'):x.situacao==='desistiu'?'':'Entrega em no máximo 24 horas (até '+f(x.prazo_ate)+').';
   $('rec-st').hidden=false}catch(e){}}
+
+// ===== 15/11 (supabase/041): serviços à parte e questionário do profissional =====
+const SERVICOS=[['ir','Imposto de Renda','R$ 197 por declaração, uma vez por ano. Fazemos a declaração completa; casos com várias fontes de renda ou CNPJ têm valor combinado após a análise.'],
+  ['cnpj_avulso','Abertura de CNPJ (avulsa)','R$ 297, mais as taxas públicas. Enquadramento no Simples, Junta Comercial e Receita, prefeitura, conselho e orientação do certificado. Termina com o CNPJ aberto e os documentos entregues.'],
+  ['cnpj_plano12','Abertura de CNPJ com o plano Empresa de 12 meses','Sem custo de serviço (só as taxas públicas) para quem contrata a rotina mensal da empresa por 12 meses.'],
+  ['redes','Presença nas redes (Instagram, Facebook e LinkedIn)','Perfil e conteúdo mensal da sua especialidade, dentro das regras do seu conselho. Valor sob consulta.'],
+  ['apoio','Consultoria de apoio','Plano de ação e de atuação feito a partir do que você nos conta (questionário, conversa, Raio-X e acompanhamento mensal). Valor sob consulta.']];
+const QUEST=[['Sobre você',[['q1','Nome, profissão e número no conselho (CRP, CREFITO, CRN etc.)'],['q2','Há quanto tempo você atende? Em que formas você trabalha hoje e quanto de cada uma?'],['q3','Quantos atendimentos você faz por semana, em média?']]],
+ ['Para quem você atende',[['q4','Quem é o paciente que você mais atende (idade, queixa, convênio ou particular)?'],['q5','Com qual tipo de paciente você gosta de trabalhar? E com qual não quer?']]],
+ ['Como os pacientes chegam',[['q6','Como os pacientes chegam até você hoje (indicação, médicos, clínica, redes, Google)?'],['q7','Você divulga o seu trabalho? Onde (Instagram, Facebook, LinkedIn, Google, nenhum)? Coloque o @ ou o link.']]],
+ ['Relacionamento e parcerias',[['q8','Como você mantém contato com quem já atendeu (retorno, lembrete, WhatsApp)?'],['q9','O que seus pacientes mais elogiam em você (sem citar nomes)?'],['q10','Com quem você trabalha (médicos que indicam, clínicas, outros profissionais)?'],['q11','Existe alguma parceria que você gostaria de ter?']]],
+ ['Tempo e recursos',[['q12','Como é a sua semana? O que toma mais tempo além do atendimento (agenda, recibos, cobrança, burocracia)?'],['q13','O que você gostaria de parar de fazer?'],['q14','O que você tem hoje: espaço (se tiver), equipamentos, equipe, ferramentas, formação extra?']]],
+ ['Custos e receitas (números, sem dado de paciente)',[['q15','Quanto você recebe por mês, em média (faixa)? Quanto gasta com o seu trabalho (aluguel, materiais, deslocamento, cursos)?'],['q16','Como você cobra: sessão avulsa, pacote, convênio, plano mensal? Quanto cobra por sessão?'],['q17','Tem muito paciente que paga atrasado ou falta? Quantos por mês?']]],
+ ['O seu diferencial',[['q18','Em uma frase, o que você faz de diferente de outros profissionais da sua área?'],['q19','Que título, especialização ou diferencial você pode comprovar?']]],
+ ['Objetivos',[['q20','Onde você quer estar em 12 meses (mais pacientes, mais renda, menos burocracia, ter o próprio espaço, virar empresa, organizar o que já tem)?'],['q21','O que mais incomoda hoje na sua atuação?'],['q22','O que você já tentou e não funcionou?']]],
+ ['Presença nas redes e combinados',[['q23','O que você quer ou não quer mostrar (rosto, local de atendimento, valores)?'],['q24','Há assuntos que o seu conselho proíbe ou limita que você já conhece?'],['q25','Quanto tempo por semana você consegue dedicar às respostas e às aprovações? Qual o melhor dia e horário?']]]];
+function servTela(){const L=$('serv-lista');if(!L||L.dataset.ok)return;L.dataset.ok='1';
+  L.innerHTML=SERVICOS.map(([c,t,d])=>`<div class="item"><div><b>${esc(t)}</b><div class="sub">${esc(d)}</div><div class="sub" data-sv-st="${c}"></div></div><div><button class="small" type="button" data-serv="${c}">Quero contratar</button></div></div>`).join('')}
+document.addEventListener('click',async e=>{const c=e.target.dataset&&e.target.dataset.serv;if(!c)return;
+  if(!$('serv-aceite').checked){$('serv-msg').textContent='Marque a caixa de aceite antes de contratar.';return}
+  const r=await sb.rpc('link_contratar_servico',{tok:TOK,p_servico:c,p_obs:'Pedido pelo app',p_aceite:true});
+  if(r.error){$('serv-msg').textContent='Não consegui registrar agora: '+r.error.message;return}
+  const st=document.querySelector(`[data-sv-st="${c}"]`);if(st)st.textContent='Pedido registrado ✅ A Lado a Lado Saúde chama você no WhatsApp para combinar os próximos passos.';
+  $('serv-msg').textContent='Pedido registrado. Você não paga nada agora: combinamos escopo e valor por escrito antes de começar.'});
+async function questTela(){const box=$('q-campos');if(!box||box.dataset.ok)return;box.dataset.ok='1';
+  box.innerHTML=QUEST.map(([t,qs])=>`<h3 style="margin:8px 0 0">${esc(t)}</h3>`+qs.map(([id,p])=>`<label>${esc(p)}<textarea id="${id}" rows="2" maxlength="1500"></textarea></label>`).join('')).join('');
+  try{const r=await sb.rpc('link_questionario_ler',{tok:TOK});const x=r.error?null:r.data;if(x&&x.respostas){for(const [k,v] of Object.entries(x.respostas)){const el=$(k);if(el)el.value=v}
+    if(x.concluido_em)$('q-msg').textContent='Respostas enviadas em '+new Date(x.concluido_em).toLocaleDateString('pt-BR')+'. Você pode atualizar quando quiser.'}}catch(e){}}
+async function questSalva(concluir){const o={};QUEST.forEach(([,qs])=>qs.forEach(([id])=>{const v=($(id)||{}).value||'';if(v.trim())o[id]=v.trim()}));
+  if(concluir&&Object.keys(o).length<8){$('q-msg').textContent='Responda pelo menos 8 perguntas para enviar (as outras podem ficar em branco).';return}
+  const r=await sb.rpc('link_questionario_salvar',{tok:TOK,p_respostas:o,p_concluir:concluir});
+  $('q-msg').textContent=r.error?'Não consegui salvar agora: '+r.error.message:(concluir?'Enviado ✅ Montamos o seu Raio-X a partir das suas respostas e chamamos você para a conversa. Obrigado pelo retorno.':'Salvo. Você continua de onde parou.')}
+$('aj-serv')&&$('aj-serv').addEventListener('toggle',servTela);$('aj-q')&&$('aj-q').addEventListener('toggle',questTela);
+$('q-salva')&&($('q-salva').onclick=()=>questSalva(false));$('q-envia')&&($('q-envia').onclick=()=>questSalva(true));

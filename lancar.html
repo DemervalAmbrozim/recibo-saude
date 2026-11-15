@@ -360,6 +360,25 @@ a{color:var(--accent)}
   <section id="t-aj" hidden style="display:grid;gap:16px">
     <!-- 8i: grupo da clínica (supabase/025 minha_clinica / sair_clinica) -->
     <div class="card" id="aj-cli" hidden></div>
+    <!-- 15/11: serviços à parte (supabase/041) -->
+    <details class="card" id="aj-serv">
+      <summary><b>Serviços à parte</b> (só se você quiser)</summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">Não estão incluídos em nenhum plano. Nenhum promete resultado e, onde dependemos de informações suas, o andamento depende do seu retorno.</div>
+        <div id="serv-lista" style="display:grid;gap:10px"></div>
+        <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400"><input type="checkbox" id="serv-aceite" style="width:auto;margin-top:3px"> Entendi: o serviço não promete resultado, depende do meu retorno e é cobrado à parte do meu plano.</label>
+        <div class="sub" id="serv-msg"></div>
+      </div>
+    </details>
+    <details class="card" id="aj-q">
+      <summary><b>Questionário do profissional</b> (para a consultoria de apoio e o Raio-X)</summary>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <div class="sub">Cerca de 15 minutos. Não escreva nome, dado ou foto de paciente. Você pode salvar e continuar depois. Não prometemos número de pacientes, seguidores ou faturamento: o resultado depende de muitos fatores, entre eles a sua participação.</div>
+        <div id="q-campos" style="display:grid;gap:10px"></div>
+        <div class="row"><button class="small" id="q-salva" type="button">Salvar e continuar depois</button> <button class="pri" id="q-envia" type="button">Enviar respostas</button></div>
+        <div class="sub" id="q-msg"></div>
+      </div>
+    </details>
     <details class="card" id="aj-emp">
       <summary><b>Tenho CNPJ</b> (modo Empresa)</summary>
       <div style="display:grid;gap:12px;margin-top:12px">
@@ -449,11 +468,11 @@ a{color:var(--accent)}
   <button data-t="t-aj">Ajuda</button>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=41"></script>
-<script src="regras.js?v=41"></script>
-<script src="importar.js?v=41"></script>
-<script src="convenio.js?v=41"></script>
-<script src="lancar.js?v=41"></script>
-<script src="instalar.js?v=41"></script>
+<script src="config.js?v=42"></script>
+<script src="regras.js?v=42"></script>
+<script src="importar.js?v=42"></script>
+<script src="convenio.js?v=42"></script>
+<script src="lancar.js?v=42"></script>
+<script src="instalar.js?v=42"></script>
 </body>
 </html>
