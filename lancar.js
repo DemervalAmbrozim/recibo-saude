@@ -67,6 +67,7 @@ async function carrega(){
     if(c&&c.tok===TOK){r={data:{...c.D,em:c.em}};off=true}}
   if(r.error&&!TOK){location.replace('entrar.html');return} // logada sem cadastro: termina o cadastro
   if(r.error){$('ruim').hidden=false;['t-ini','t-lan','t-desp','t-ag','t-aj','nav'].forEach(i=>$(i).hidden=true);return}
+  recStatus();
   D=r.data;D.locais=D.locais||[];D.fixas=D.fixas||[];D.despesas=D.despesas||[];
   if(!off)try{localStorage.setItem(CACHE_D,JSON.stringify({em:new Date().toISOString(),tok:TOK,D}))}catch(e){}
   filaAplica();redeTela(off,D.em);
@@ -812,3 +813,11 @@ $('pos-pedir').onclick=()=>{$('pos').hidden=true;$('b-zap').click();
   try{sb.rpc('link_pedir_recibo',{tok:TOK,p_obs:'Pedido pelo app: pedir o recibo agora',p_origem:'app'}).then(r=>{if(!r.error)avisa('Pedido registrado. Você recebe o recibo, ou o motivo de não termos conseguido, em no máximo 24 horas.')})}catch(e){}};
 $('pos-ver').onclick=()=>{$('pos').hidden=true;document.querySelector('nav button[data-t=t-ini]').click();setTimeout(()=>$('i-pendcard').scrollIntoView({behavior:'smooth'}),150)};
 $('pos-fecha').onclick=()=>{$('pos').hidden=true};
+
+// Andamento do pedido de recibo (SLA de no máximo 24 h, supabase/039); sem a função no banco, o cartão simplesmente não aparece
+async function recStatus(){try{const r=await sb.rpc('link_status_recibo',{tok:TOK});const x=r.error?null:r.data;if(!x){$('rec-st').hidden=true;return}
+  const f=d=>new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const T={novo:'Pedido de recibo recebido',conversando:'Pedido de recibo em andamento',emitindo:'Emitindo o seu recibo',feito:'Recibo entregue',nao_consegui:'Ainda não conseguimos emitir',desistiu:'Pedido cancelado'};
+  $('rec-t').textContent=T[x.situacao]||'Pedido de recibo';
+  $('rec-d').textContent=x.situacao==='feito'?'Entregue em '+f(x.entregue_em||x.criado_em)+'.':x.situacao==='nao_consegui'?'Motivo: '+(x.motivo||'—'):x.situacao==='desistiu'?'':'Entrega em no máximo 24 horas (até '+f(x.prazo_ate)+').';
+  $('rec-st').hidden=false}catch(e){}}
