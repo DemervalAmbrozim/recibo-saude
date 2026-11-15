@@ -363,7 +363,7 @@ function telaLan(){
   const lsel=$('a-local').value;$('a-local').innerHTML=opLocais(false,D.locais.length?'':'Cadastre seus locais na aba Despesas');
   if(lsel)$('a-local').value=lsel;$('l-local').hidden=!D.locais.length;
   $('feitos').innerHTML=D.atendimentos.slice(0,30).map(x=>`<div class="item"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)}${x.local_id&&localDe(x.local_id)?' · '+esc(localDe(x.local_id).nome):''}</div></div>
-    <span class="pill ${x.emitido?'':'pend'}">${x.fila?'⏳ aguardando internet':x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
+    <div style="text-align:right"><span class="pill ${x.emitido?'':'pend'}">${x.fila?'⏳ aguardando internet':x.emitido?'recibo emitido':x.pago===false?'a receber':'aguardando'}</span>${x.emitido||x.fila?'':`<div style="margin-top:6px"><button class="small" data-del="${x.id}" type="button">Apagar</button></div>`}</div></div>`).join('')||'<div class="sub">Nenhum atendimento ainda.</div>';
 }
 // WhatsApp e e-mail do paciente, para a Assessoria mandar o recibo (ponto 3 do Daniel)
 function contatoTela(){const v=$('pac').value,p=D.pacientes.find(x=>x.id===v);
@@ -396,6 +396,8 @@ function textoDias(lista,base){
 function diasPrevTela(){const r=diasSessoes($('dias-s').value,$('data').value),b=$('dias-prev');
   if(!$('dias-s').value.trim()){b.hidden=true;return}b.hidden=false;
   b.textContent=r.ok?'Texto no recibo: '+textoDias(r.lista,(D.prof&&D.prof.descricao)||'Servicos de Fisioterapia'):r.msg}
+// 14/11 (Fernanda não achou como pedir o recibo nem como apagar): depois de salvar, aparece o que fazer a seguir
+function posSalvo(){const p=$('pos');if(!p)return;p.hidden=false;p.scrollIntoView({behavior:'smooth',block:'center'})}
 function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
 $('pago').onchange=pagoTela;
 $('f-at').onsubmit=async e=>{e.preventDefault();
@@ -446,8 +448,8 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
     :await grava(ds.lista.length?'link_atendimento_dias':'link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked,...(ds.lista.length?{p_dias:ds.lista}:{})},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
   if(r.error){avisa(pn&&semRede(r.error)?'Pacote precisa de internet. Sem internet, lance a sessão como atendimento comum.':'Não consegui salvar. Confira a data e tente de novo.',true);return}
   if(r.fila){$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa('Sem internet: guardado no celular. Vai sozinho quando a internet voltar.');return}
-  if(pn){$('pac-n').value='';$('valor').value='';await carrega();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
-  const pg=$('pago').checked;$('dias-s').value='';diasPrevTela();$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();const cv=pg&&carneVencido(dt0);avisa(pg?(cv?`Atendimento salvo. Atenção: o Carnê-Leão deste mês venceu em ${cv.toLocaleDateString('pt-BR')}; se houver imposto, vai com multa e juros. Veja com o contador.`:'Atendimento salvo.'):'Salvo em "A receber". Marque quando o paciente pagar.');
+  if(pn){$('pac-n').value='';$('valor').value='';await carrega();posSalvo();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
+  posSalvo();const pg=$('pago').checked;$('dias-s').value='';diasPrevTela();$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();const cv=pg&&carneVencido(dt0);avisa(pg?(cv?`Atendimento salvo. Atenção: o Carnê-Leão deste mês venceu em ${cv.toLocaleDateString('pt-BR')}; se houver imposto, vai com multa e juros. Veja com o contador.`:'Atendimento salvo.'):'Salvo em "A receber". Marque quando o paciente pagar.');
 };
 
 // ---------- Despesas ----------
@@ -797,3 +799,7 @@ $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK}
 // Valor em reais: aceita só números, vírgula e ponto (14/11)
 ['valor','d-valor'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{const v=e.value.replace(/[^\d.,]/g,'');if(v!==e.value)e.value=v})});
 ['dias-s','data'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',diasPrevTela)});
+
+$('pos-pedir').onclick=()=>{$('pos').hidden=true;$('b-zap').click()};
+$('pos-ver').onclick=()=>{$('pos').hidden=true;document.querySelector('nav button[data-t=t-ini]').click();setTimeout(()=>$('i-pendcard').scrollIntoView({behavior:'smooth'}),150)};
+$('pos-fecha').onclick=()=>{$('pos').hidden=true};
