@@ -447,11 +447,12 @@ function admTela(){
 $('adm-filtro').onchange=admTela;
 // Pedidos (supabase/016): quero conversar sobre CNPJ e aviso de procuração feita
 const PROC={pendente:'procuração pendente',enviada:'procuração a conferir',conferida:'procuração conferida'};
-const PSIT={novo:'novo',conversando:'conversando',feito:'feito',desistiu:'desistiu'},PTIPO={cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração',suporte:'Suporte (responder em 1 dia útil)'};
+const PSIT={novo:'novo',conversando:'conversando',emitindo:'emitindo',feito:'feito (entregue)',nao_consegui:'não consegui (motivo)',desistiu:'desistiu'},PTIPO={recibo:'PEDIDO DE RECIBO (prazo 24 h)',cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração',suporte:'Suporte (responder em 1 dia útil)'};
 async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedidos').select('*').order('criado_em',{ascending:false}).limit(100);
-  if(f==='aberto')q=q.in('situacao',['novo','conversando']);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
+  if(f==='aberto')q=q.in('situacao',['novo','conversando','emitindo']);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
+      ${x.tipo==='recibo'&&x.prazo_ate&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<div class="meta"><b>${(()=>{const h=(new Date(x.prazo_ate)-Date.now())/36e5;return h<0?'PRAZO ESTOURADO há '+Math.ceil(-h)+' h':'Faltam '+Math.floor(h)+' h para o prazo'})()}</b> (até ${new Date(x.prazo_ate).toLocaleString('pt-BR')})</div>`:''}
       ${x.obs&&x.tipo==='suporte'?`<div class="meta" style="white-space:pre-wrap">${esc(x.obs)}</div>`+bibForm(x):''}
       ${x.media?`<div class="meta">média ${brl(+x.media)}/mês · economia estimada ${brl(+x.economia||0)}/mês</div>`:''}</div>
       <div><select data-ped="${x.id}" style="width:auto;padding:6px 8px" aria-label="Situação do pedido">${op(x.situacao)}</select></div></div>`).join('')
