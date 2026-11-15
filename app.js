@@ -452,6 +452,7 @@ async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedido
   if(f==='aberto')q=q.in('situacao',['novo','conversando','emitindo']);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
+      ${x.tipo==='recibo'&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<input data-motivo="${x.id}" placeholder="Se não conseguir: motivo e nova previsão (vai ao zap dela)" aria-label="Motivo" style="width:100%;margin-top:6px">`:''}${x.motivo?`<div class="meta">Motivo: ${esc(x.motivo)}</div>`:''}
       ${x.tipo==='recibo'&&x.prazo_ate&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<div class="meta"><b>${(()=>{const h=(new Date(x.prazo_ate)-Date.now())/36e5;return h<0?'PRAZO ESTOURADO há '+Math.ceil(-h)+' h':'Faltam '+Math.floor(h)+' h para o prazo'})()}</b> (até ${new Date(x.prazo_ate).toLocaleString('pt-BR')})</div>`:''}
       ${x.obs&&x.tipo==='suporte'?`<div class="meta" style="white-space:pre-wrap">${esc(x.obs)}</div>`+bibForm(x):''}
       ${x.media?`<div class="meta">média ${brl(+x.media)}/mês · economia estimada ${brl(+x.economia||0)}/mês</div>`:''}</div>
@@ -500,7 +501,12 @@ document.addEventListener('click',e=>{const t=e.target.dataset||{};
 document.addEventListener('change',e=>{const t=e.target.dataset||{};
   if(t.sit)admMuda(t.sit,{situacao:e.target.value},`Situação: ${SIT[e.target.value]}.`);
   if(t.plano!==undefined)admMuda(t.plano,{plano:e.target.value||null},'Plano salvo.');
-  if(t.ped)sb.from('pedidos').update({situacao:e.target.value,atualizado:new Date().toISOString()}).eq('id',t.ped).then(r=>{if(!falhou(r,'mudar o pedido')){avisa('Pedido: '+PSIT[e.target.value]+'.');pedTela()}});});
+  if(t.ped){const v=e.target.value,u={situacao:v,atualizado:new Date().toISOString()};
+    // SLA 24 h (supabase/039): "feito" grava a entrega; "não consegui" exige o motivo, que a profissional recebe no zap
+    if(v==='feito')u.entregue_em=new Date().toISOString();
+    if(v==='nao_consegui'){const m=(document.querySelector(`[data-motivo="${t.ped}"]`)||{}).value||'';if(m.trim().length<5){avisa('Escreva o motivo antes (ex.: Receita fora do ar, previsão amanhã 10h).',true);pedTela();return}u.motivo=m.trim()}
+    sb.from('pedidos').update(u).eq('id',t.ped).then(r=>{if(!falhou(r,'mudar o pedido')){avisa('Pedido: '+PSIT[v]+'.');pedTela()}});return}
+});
 $('b-convidar').onclick=async()=>{const em=$('cv-email').value.trim();if(!mailOk(em)){avisa('E-mail inválido.',true);return}
   const r=await sb.rpc('convidar',{p_email:em,p_papel:$('cv-papel').value});if(falhou(r,'convidar'))return;
   $('cv-email').value='';avisa(r.data.replace(/^./,c=>c.toUpperCase())+'.');};
