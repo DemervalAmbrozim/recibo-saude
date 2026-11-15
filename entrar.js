@@ -64,7 +64,6 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   if(!cpfOk(cpf)){avisa(ERROS['cpf invalido'],true);return}
   if(!/^\d{10,11}$/.test(tel)){avisa(ERROS['whatsapp invalido'],true);return}
   if(!$('c-aceite').checked){avisa(ERROS['precisa aceitar os termos'],true);return}
-  if(!document.querySelector('.c-forma:checked')){avisa('Marque pelo menos uma forma em que você atua.',true);return}
   const r=await sb.rpc('cadastrar_profissional',{p_nome:nome,p_cpf:cpf,p_ocupacao:$('c-ocup').value,p_registro:$('c-reg').value,
     p_telefone:tel,p_cidade:$('c-cid').value,p_aceite:TERMOS});
   if(r.error){avisa(traduz(r.error.message),true);return}

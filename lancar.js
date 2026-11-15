@@ -853,6 +853,7 @@ async function questSalva(concluir){const o={};QUEST.forEach(([,qs])=>qs.forEach
   if(concluir&&Object.keys(o).length<8){$('q-msg').textContent='Responda pelo menos 8 perguntas para enviar (as outras podem ficar em branco).';return}
   const r=await sb.rpc('link_questionario_salvar',{tok:TOK,p_respostas:o,p_concluir:concluir});
   $('q-msg').textContent=r.error?'Não consegui salvar agora: '+r.error.message:(concluir?'Enviado ✅ Montamos o seu Raio-X a partir das suas respostas e chamamos você para a conversa. Obrigado pelo retorno.':'Salvo. Você continua de onde parou.')}
+document.addEventListener('input',e=>{if(!(e.target.closest&&e.target.closest('#q-campos')))return;const n=QUEST.reduce((s,[,qs])=>s+qs.filter(([id])=>(($(id)||{}).value||'').trim()).length,0);$('q-prog').textContent='Respondidas: '+n+' de 25. Para enviar, responda pelo menos 8.'});
 $('aj-serv')&&$('aj-serv').addEventListener('toggle',servTela);$('aj-q')&&$('aj-q').addEventListener('toggle',questTela);
 $('q-salva')&&($('q-salva').onclick=()=>questSalva(false));$('q-envia')&&($('q-envia').onclick=()=>questSalva(true));
 
