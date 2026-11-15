@@ -398,7 +398,8 @@ function diasPrevTela(){const r=diasSessoes($('dias-s').value,$('data').value),b
   if(!r.ok){b.innerHTML='<b>Confira os dias:</b> '+esc(r.msg);return}
   const pn=+so($('pac-n').value),v=num($('valor').value),base=(D.prof&&D.prof.descricao)||'Servicos de Fisioterapia';
   let t=textoDias(r.lista.length?r.lista:[$('data').value],base);if(pn>=2&&v>0)t+=` Pacote de ${pn} sessoes, ${brl(v/pn).replace(/\u00a0/g,' ')} cada.`;
-  b.innerHTML='<b>Assim vai sair no recibo. Confira antes de salvar:</b><div style="margin-top:6px">'+esc(t)+'</div>'}
+  const dp=$('data').value,hoje=dp===hojeISO(),antes=r.lista.length&&r.lista.some(x=>x<dp.slice(0,7)+'-01');
+  b.innerHTML='<b>Assim vai sair no recibo. Confira antes de salvar:</b><div style="margin-top:6px">'+esc(t)+'</div><div style="margin-top:8px"><b>Data do pagamento: '+dBR(dp)+'</b>'+(hoje?' (hoje)':'')+'</div>'+(hoje&&antes?'<div style="margin-top:6px;color:#b3261e"><b>Atenção:</b> as sessões foram em mês anterior e a data do pagamento está como hoje. Se o paciente pagou antes, troque a data acima para o dia do pagamento.</div>':'')}
 // 14/11 (Fernanda não achou como pedir o recibo nem como apagar): depois de salvar, aparece o que fazer a seguir
 function posSalvo(){const p=$('pos');if(!p)return;p.hidden=false;p.scrollIntoView({behavior:'smooth',block:'center'})}
 function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
@@ -442,6 +443,8 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
    if(mesmo.some(a=>Math.abs(a.valor-v)<0.01)){if(!confirm(`Já está lançado: ${nomeP} · ${brl(v)} em ${dBR(dt)}.\nSó lance de novo se foram duas sessões no mesmo dia. Lançar mesmo assim?`))return}
    else if(mesmo.length&&!confirm(`${nomeP} já tem ${mesmo.length===1?'um atendimento':mesmo.length+' atendimentos'} em ${dBR(dt)} (${mesmo.map(a=>brl(a.valor)).join(', ')}). É mais um?`))return;
    if(f&&!confirm(`${brl(v)} ${f.media?`está bem ${f.acima?'acima':'abaixo'} do que você costuma lançar (${brl(f.media)})`:'é um valor alto para um atendimento'}. Está certo?`))return}
+  {const dsx=diasSessoes($('dias-s').value,$('data').value);
+   if(dsx.ok&&dsx.lista.length&&$('data').value===hojeISO()&&dsx.lista.some(x=>x<$('data').value.slice(0,7)+'-01')&&!confirm(`A data do pagamento está como HOJE (${dBR($('data').value)}), mas as sessões foram em mês anterior.\nO paciente pagou mesmo hoje? Se foi antes, cancele e troque a data pelo dia do pagamento (o recibo e o imposto seguem essa data).`))return}
   if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
   if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
   const dt0=$('data').value;
