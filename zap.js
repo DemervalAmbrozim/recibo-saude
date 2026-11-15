@@ -67,6 +67,7 @@ const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • *desfazer* (apaga o último lançamento)
 • foto ou PDF de uma conta paga (guardo o comprovante e lanço a despesa)
 • *comprovantes* (despesas que ainda não têm a foto guardada)
+• *pedir recibo* (abre o pedido: você recebe o recibo, ou o motivo, em no máximo 24 horas) e *status* (como está o pedido)
 • *recibos* ou *recibo Maria* (o PDF de novo, para encaminhar)
 • o código do boleto (confiro se não é adulterado)
 • *conferir* (o que olhar no gov.br a cada trimestre)
@@ -322,7 +323,7 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
 // A frase escrita só preenche; cada um termina em "Confere? 1. Sim, gravar". est.fluxo guarda só ids e números (LGPD).
 const F_PASSOS={rec:['pac','item','valor','resto','data','conf'],desp:['cod','valor','data','conf'],pac:['pac','n','valor','forma','data','conf'],ses:['pac','data','conf']};
 const F_CAT=[['Aluguel','aluguel'],['Condomínio','condominio'],['Água','agua'],['Luz','luz'],['Telefone','telefone'],['Internet','internet'],['Anuidade do conselho','anuidade'],['Limpeza','limpeza'],['Funcionário','funcionario'],['INSS','inss']];
-const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|quero( conversar)?)$/;
+const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|status|quero( conversar)?)$/;
 const F_TIT={rec:'Recebimento',desp:'Despesa',pac:'Pacote',ses:'Sessão do pacote'};
 const fAbertos=(D,pac)=>D.atendimentos.filter(x=>x.pago===false&&!x.emitido&&(!pac||zDaPac(x,pac))).sort((a,b)=>a.data<b.data?-1:1);
 const fItens=(D,f)=>(f.itens||[]).map(id=>D.atendimentos.find(x=>x.id===id)).filter(Boolean);
@@ -463,6 +464,21 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   if(!/\d/.test(t)){if(/\b(imposto|carne|darf|leao)\b/.test(t)&&/\b(quanto|qual|tenho|vou|devo|pagar|pago)\b/.test(t))return zDarf(D,hoje);
     if(/\bquem\b.*\b(deve|devendo|falta|pagou)\b|\b(falta|ainda) receber\b/.test(t))return zReceber(D);
     if(/\bquanto\b.*\b(recebi|ganhei|faturei|entrou|fiz|tirei)\b|\bcomo (esta|ta) (o|meu) mes\b/.test(t))return zResumo(D,hoje)}
+  // Pedido de recibo pelo zap (SLA de no máximo 24 h, supabase/039): abre o pedido com relógio e responde com o prazo
+  if(/^(pedir|quero|preciso( d[oe])?|solicito|solicitar|emitir|emite|gerar|manda|mandar)( o| um| meu| os| uma)? ?recibos?\b/.test(t)||/^recibo (agora|pra hoje|urgente)$/.test(t)){
+    if(!api.pedirRecibo)return 'Para pedir o recibo, abra o app e toque em *Pedir o recibo agora*. Se preferir, mande *suporte*.';
+    let r;try{r=await api.pedirRecibo('Pedido pelo zap: '+String(linha||'').slice(0,200))}catch(e){return zErro(String(e.message||e))}
+    const quando=r&&r.prazo_ate?new Date(r.prazo_ate).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    return `Pedido recebido ✅ Você recebe o recibo, ou o motivo de não termos conseguido, em no máximo 24 horas${quando?' (até '+quando+')':''}. Para acompanhar, mande *status*.`}
+  if(/^(status|cade( o)? (meu )?recibo|como esta( o)?( meu)? (pedido|recibo))$/.test(t)){
+    if(!api.statusRecibo)return 'Veja o andamento no app, na tela de lançar.';
+    let r;try{r=await api.statusRecibo()}catch(e){return zErro(String(e.message||e))}
+    if(!r)return 'Você ainda não tem pedido de recibo. Mande *pedir recibo* quando quiser.';
+    const f=d=>new Date(d).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    if(r.situacao==='feito')return 'Seu último recibo foi entregue em '+f(r.entregue_em||r.criado_em)+'. ✅';
+    if(r.situacao==='nao_consegui')return 'Ainda não conseguimos emitir. Motivo: '+(r.motivo||'em análise')+'.';
+    if(r.situacao==='desistiu')return 'O último pedido foi cancelado. Mande *pedir recibo* para abrir outro.';
+    return 'Seu pedido está em andamento. Entrega em no máximo 24 horas'+(r.prazo_ate?' (até '+f(r.prazo_ate)+')':'')+'.'}
   // Entrega do recibo (obs. 14 e 15): ela pede de novo a qualquer hora e encaminha à paciente ou a quem a paciente pedir (filha, plano)
   {const m=t.match(/^(?:recibos?|pdfs?)(?: (?:da|do|de))?(?: (.+))?$/);if(m){const nome=m[1]&&!/^(do mes|deste mes|mes)$/.test(m[1])?m[1]:'';
     const ps=nome?zAcha(D.pacientes,nome.split(' ')):[];if(nome&&!ps.length)return `Não achei paciente com o nome "${nome}". Mande *recibos* para receber todos do mês.`;
