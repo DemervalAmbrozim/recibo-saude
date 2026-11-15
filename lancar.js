@@ -394,8 +394,11 @@ function textoDias(lista,base){
   const partes=g.map((x,i)=>{const [a,m]=x.k.split('-'),nm=MESES_L[+m-1];return `${e(x.dias)} de ${nm[0].toUpperCase()+nm.slice(1)}${i===g.length-1||g[i+1].k.slice(0,4)!==a?` de ${a}`:''}`});
   return `${base||'Servicos de Fisioterapia'} ${lista.length>1?'nos dias':'no dia'} ${e(partes)}.`}
 function diasPrevTela(){const r=diasSessoes($('dias-s').value,$('data').value),b=$('dias-prev');
-  if(!$('dias-s').value.trim()){b.hidden=true;return}b.hidden=false;
-  b.textContent=r.ok?'Texto no recibo: '+textoDias(r.lista,(D.prof&&D.prof.descricao)||'Servicos de Fisioterapia'):r.msg}
+  if(!$('data').value){b.hidden=true;return}b.hidden=false;
+  if(!r.ok){b.innerHTML='<b>Confira os dias:</b> '+esc(r.msg);return}
+  const pn=+so($('pac-n').value),v=num($('valor').value),base=(D.prof&&D.prof.descricao)||'Servicos de Fisioterapia';
+  let t=textoDias(r.lista.length?r.lista:[$('data').value],base);if(pn>=2&&v>0)t+=` Pacote de ${pn} sessoes, ${brl(v/pn).replace(/\u00a0/g,' ')} cada.`;
+  b.innerHTML='<b>Assim vai sair no recibo. Confira antes de salvar:</b><div style="margin-top:6px">'+esc(t)+'</div>'}
 // 14/11 (Fernanda não achou como pedir o recibo nem como apagar): depois de salvar, aparece o que fazer a seguir
 function posSalvo(){const p=$('pos');if(!p)return;p.hidden=false;p.scrollIntoView({behavior:'smooth',block:'center'})}
 function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
@@ -799,7 +802,7 @@ $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK}
 
 // Valor em reais: aceita só números, vírgula e ponto (14/11)
 ['valor','d-valor'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{const v=e.value.replace(/[^\d.,]/g,'');if(v!==e.value)e.value=v})});
-['dias-s','data'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',diasPrevTela)});
+['dias-s','data','pac-n','valor'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',diasPrevTela)});
 
 $('pos-pedir').onclick=()=>{$('pos').hidden=true;$('b-zap').click()};
 $('pos-ver').onclick=()=>{$('pos').hidden=true;document.querySelector('nav button[data-t=t-ini]').click();setTimeout(()=>$('i-pendcard').scrollIntoView({behavior:'smooth'}),150)};

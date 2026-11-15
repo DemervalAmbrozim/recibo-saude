@@ -210,14 +210,14 @@ a{color:var(--accent)}
         <label>Valor (R$) <input id="valor" inputmode="decimal" placeholder="150,00" required></label>
       </div>
       <label>Dias das sessões (opcional, para pagamento de várias sessões de uma vez) <input id="dias-s" autocomplete="off" placeholder="ex.: 3, 10, 17 e 24"></label>
-      <div class="sub" id="dias-prev" hidden></div>
       <label>Forma de pagamento
         <select id="forma"><option>Pix</option><option>Dinheiro</option><option>Cartão</option><option>Transferência</option></select></label>
       <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pago" checked style="width:auto"> Já recebi o pagamento</label>
       <div class="sub" id="pago-dica" hidden>Fica em "A receber" no Início. O recibo só sai quando você marcar que recebeu.</div>
       <label>Pacote: quantas sessões? (deixe vazio se for avulsa) <input id="pac-n" inputmode="numeric" placeholder="ex.: 10"></label>
       <div class="sub">Pacote pago de uma vez gera um recibo só, na data do pagamento. As sessões depois só abatem do saldo.</div>
-      <button class="pri" type="submit">Salvar atendimento</button>
+      <div id="dias-prev" hidden style="border:2px solid #1b6ec2;border-radius:10px;padding:12px;background:rgba(27,110,194,.08)"></div>
+      <button class="pri" type="submit">Conferi o texto, salvar atendimento</button>
     </form>
     <details class="card" id="imp-card">
       <summary><b>1. Trazer a sua lista de pacientes</b> (uma vez, ao chegar)</summary>
@@ -448,11 +448,11 @@ a{color:var(--accent)}
   <button data-t="t-aj">Ajuda</button>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=32"></script>
-<script src="regras.js?v=32"></script>
-<script src="importar.js?v=32"></script>
-<script src="convenio.js?v=32"></script>
-<script src="lancar.js?v=32"></script>
-<script src="instalar.js?v=32"></script>
+<script src="config.js?v=33"></script>
+<script src="regras.js?v=33"></script>
+<script src="importar.js?v=33"></script>
+<script src="convenio.js?v=33"></script>
+<script src="lancar.js?v=33"></script>
+<script src="instalar.js?v=33"></script>
 </body>
 </html>
