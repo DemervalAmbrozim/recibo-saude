@@ -826,8 +826,12 @@ async function recStatus(){try{const r=await sb.rpc('link_status_recibo',{tok:TO
 const SERVICOS=[['ir','Imposto de Renda','R$ 197 por declaração, uma vez por ano. Fazemos a declaração completa; casos com várias fontes de renda ou CNPJ têm valor combinado após a análise.'],
   ['cnpj_avulso','Abertura de CNPJ (avulsa)','R$ 297, mais as taxas públicas. Enquadramento no Simples, Junta Comercial e Receita, prefeitura, conselho e orientação do certificado. Termina com o CNPJ aberto e os documentos entregues.'],
   ['cnpj_plano12','Abertura de CNPJ com o plano Empresa de 12 meses','Sem custo de serviço (só as taxas públicas) para quem contrata a rotina mensal da empresa por 12 meses.'],
-  ['redes','Presença nas redes (Instagram, Facebook e LinkedIn)','Perfil e conteúdo mensal da sua especialidade, dentro das regras do seu conselho. Valor sob consulta.'],
-  ['apoio','Consultoria de apoio','Plano de ação e de atuação feito a partir do que você nos conta (questionário, conversa, Raio-X e acompanhamento mensal). Valor sob consulta.']];
+  ['redes_base','Presença nas redes: Base','R$ 197 por mês. Instagram, 8 carrosséis por mês da sua especialidade, ajuste do perfil, calendário e revisão mensal. Sem fidelidade, sem promessa de seguidores, pacientes ou faturamento.'],
+  ['redes_completa','Presença nas redes: Completa','R$ 347 por mês. Instagram e LinkedIn (ou Facebook), 12 carrosséis e 4 roteiros de stories por mês, perfil, calendário, revisão mensal e trimestral. Sem fidelidade e sem promessa de resultado.'],
+  ['apoio_diag','Consultoria de apoio: Diagnóstico','R$ 297, uma vez. Questionário, conversa de 30 a 40 minutos e Raio-X do profissional com a Matriz GUT. Se depois do Raio-X você achar que não valeu, devolvemos.'],
+  ['apoio_plano','Consultoria de apoio: Plano de ação','R$ 397, uma vez. 2 ou 3 prioridades com passos, responsável e prazo (roteiro de 60 dias).'],
+  ['apoio_pacote','Consultoria de apoio: Pacote Diagnóstico + Plano','R$ 597, uma vez (economiza R$ 97).'],
+  ['apoio_acomp','Consultoria de apoio: Acompanhamento mensal','R$ 147 por mês. 30 minutos por mês com os números do app, 3 decisões e 1 meta. Mensal livre.']];
 const QUEST=[['Sobre você',[['q1','Nome, profissão e número no conselho (CRP, CREFITO, CRN etc.)'],['q2','Há quanto tempo você atende? Em que formas você trabalha hoje e quanto de cada uma?'],['q3','Quantos atendimentos você faz por semana, em média?']]],
  ['Para quem você atende',[['q4','Quem é o paciente que você mais atende (idade, queixa, convênio ou particular)?'],['q5','Com qual tipo de paciente você gosta de trabalhar? E com qual não quer?']]],
  ['Como os pacientes chegam',[['q6','Como os pacientes chegam até você hoje (indicação, médicos, clínica, redes, Google)?'],['q7','Você divulga o seu trabalho? Onde (Instagram, Facebook, LinkedIn, Google, nenhum)? Coloque o @ ou o link.']]],
