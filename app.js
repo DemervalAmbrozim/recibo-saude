@@ -224,7 +224,7 @@ function recibos(mes){
   // com os dias das sessões na descrição. A caixa "Juntar" segue para quem recebe tudo no fim do mês sem lançar como "a receber".
   const g={};pend.forEach(a=>{const k=$('f-agrupa').checked?a.paciente_id:a.data_atend?a.paciente_id+a.data:a.id;
     const r=g[k]||(g[k]={pac:a.paciente_id,data:a.data,valor:0,datas:[],ids:[]});
-    r.valor+=a.valor;r.datas.push(a.data_atend||a.data);r.ids.push(a.id);(r.formas=r.formas||[]).push(a.forma);(r.itens=r.itens||[]).push({d:a.data_atend||a.data,v:a.valor,pac:(S.pacotes||[]).find(k=>k.atendimento_id===a.id)});if(a.data>r.data)r.data=a.data});
+    r.valor+=a.valor;r.datas.push(...(a.dias_sessoes&&a.dias_sessoes.length?a.dias_sessoes:[a.data_atend||a.data]));r.ids.push(a.id);(r.formas=r.formas||[]).push(a.forma);(r.itens=r.itens||[]).push({d:a.data_atend||a.data,v:a.valor,pac:(S.pacotes||[]).find(k=>k.atendimento_id===a.id)});if(a.data>r.data)r.data=a.data});
   return Object.values(g);
 }
 const MESES=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];

@@ -209,6 +209,8 @@ a{color:var(--accent)}
         <label><span id="l-data">Data do pagamento</span> <input id="data" type="date" required></label>
         <label>Valor (R$) <input id="valor" inputmode="decimal" placeholder="150,00" required></label>
       </div>
+      <label>Dias das sessões (opcional, para pagamento de várias sessões de uma vez) <input id="dias-s" autocomplete="off" placeholder="ex.: 3, 10, 17 e 24"></label>
+      <div class="sub" id="dias-prev" hidden></div>
       <label>Forma de pagamento
         <select id="forma"><option>Pix</option><option>Dinheiro</option><option>Cartão</option><option>Transferência</option></select></label>
       <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pago" checked style="width:auto"> Já recebi o pagamento</label>

@@ -375,6 +375,27 @@ const mCpf=v=>{v=so(v).slice(0,11);return v.replace(/^(\d{3})(\d)/,'$1.$2').repl
 const mTel=v=>{v=so(v).slice(0,11);return v.length>6?v.replace(/^(\d{2})(\d{4,5})(\d{4})$/,'($1) $2-$3').replace(/^(\d{2})(\d+)$/,'($1) $2'):v.replace(/^(\d{2})(\d+)$/,'($1) $2')};
 ['n-cpf','n-pag'].forEach(id=>{const e=$(id);if(!e)return;e.addEventListener('input',()=>{e.value=mCpf(e.value);const n=so(e.value).length;e.classList.toggle('bad',n===11&&!cpfOk(e.value)||n>0&&n<11&&document.activeElement!==e)});e.addEventListener('blur',()=>{const n=so(e.value).length;e.classList.toggle('bad',n>0&&!cpfOk(e.value))})});
 ['n-tel','n-tel2'].forEach(id=>{const e=$(id);if(!e)return;e.addEventListener('input',()=>{e.value=mTel(e.value)})});
+
+// 14/11: "Dias das sessões" (pedido da Fernanda). Só o dia (3, 10, 17) vale para o mês do pagamento; dia maior que o do pagamento vira mês anterior; dd/mm também vale.
+const MESES_L=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function diasSessoes(txt,pagISO){
+  const t=(txt||'').trim();if(!t||!pagISO)return {ok:true,lista:[]};
+  const [py,pm,pd]=pagISO.split('-').map(Number),out=[];
+  for(const p of t.split(/[,;e\s]+/).filter(Boolean)){
+    const m=p.match(/^(\d{1,2})(?:\/(\d{1,2}))?$/);if(!m)return {ok:false,msg:`Não entendi "${p}". Escreva os dias separados por vírgula, ex.: 3, 10, 17 e 24.`};
+    let d=+m[1],mm=m[2]?+m[2]:pm,y=py;if(!m[2]&&d>pd){mm--;if(mm<1){mm=12;y--}}if(m[2]&&mm>pm&&!(y<py))y--;
+    const dt=new Date(y,mm-1,d);if(dt.getDate()!==d||dt.getMonth()!==mm-1)return {ok:false,msg:`O dia ${p} não existe.`};
+    const iso=`${y}-${String(mm).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(iso>pagISO)return {ok:false,msg:`O dia ${p} é depois do pagamento.`};
+    if(!out.includes(iso))out.push(iso)}
+  return {ok:true,lista:out.sort()}}
+function textoDias(lista,base){
+  const e=l=>l.length>1?l.slice(0,-1).join(', ')+' e '+l.at(-1):l[0],g=[];
+  lista.forEach(d=>{const k=d.slice(0,7),u=g.at(-1);u&&u.k===k?u.dias.push(d.slice(8)):g.push({k,dias:[d.slice(8)]})});
+  const partes=g.map((x,i)=>{const [a,m]=x.k.split('-'),nm=MESES_L[+m-1];return `${e(x.dias)} de ${nm[0].toUpperCase()+nm.slice(1)}${i===g.length-1||g[i+1].k.slice(0,4)!==a?` de ${a}`:''}`});
+  return `${base||'Servicos de Fisioterapia'} ${lista.length>1?'nos dias':'no dia'} ${e(partes)}.`}
+function diasPrevTela(){const r=diasSessoes($('dias-s').value,$('data').value),b=$('dias-prev');
+  if(!$('dias-s').value.trim()){b.hidden=true;return}b.hidden=false;
+  b.textContent=r.ok?'Texto no recibo: '+textoDias(r.lista,(D.prof&&D.prof.descricao)||'Servicos de Fisioterapia'):r.msg}
 function pagoTela(){const p=$('pago').checked;$('l-data').textContent=p?'Data do pagamento':'Data do atendimento';$('pago-dica').hidden=p}
 $('pago').onchange=pagoTela;
 $('f-at').onsubmit=async e=>{e.preventDefault();
@@ -419,12 +440,14 @@ $('f-at').onsubmit=async e=>{e.preventDefault();
   if(pn&&(pn<2||pn>60)){avisa('O pacote vai de 2 a 60 sessões.',true);return}
   if(pn&&!$('pago').checked){avisa('Pacote se lança quando é pago. Marque "Já recebi o pagamento".',true);return}
   const dt0=$('data').value;
+  const ds=pn?{ok:true,lista:[]}:diasSessoes($('dias-s').value,dt0);
+  if(!ds.ok){avisa(ds.msg,true);return}
   const r=pn?await sb.rpc('link_pacote',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_sessoes:pn})
-    :await grava('link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
+    :await grava(ds.lista.length?'link_atendimento_dias':'link_atendimento',{tok:TOK,p_paciente:pac,p_data:$('data').value,p_valor:v,p_forma:$('forma').value,p_local:$('a-local').value||null,p_pago:$('pago').checked,...(ds.lista.length?{p_dias:ds.lista}:{})},{nome:(D.pacientes.find(x=>x.id===pac)||{}).nome});
   if(r.error){avisa(pn&&semRede(r.error)?'Pacote precisa de internet. Sem internet, lance a sessão como atendimento comum.':'Não consegui salvar. Confira a data e tente de novo.',true);return}
   if(r.fila){$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();avisa('Sem internet: guardado no celular. Vai sozinho quando a internet voltar.');return}
   if(pn){$('pac-n').value='';$('valor').value='';await carrega();avisa(`Pacote de ${pn} sessões salvo. Um recibo só, na data do pagamento.`);return}
-  const pg=$('pago').checked;$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();const cv=pg&&carneVencido(dt0);avisa(pg?(cv?`Atendimento salvo. Atenção: o Carnê-Leão deste mês venceu em ${cv.toLocaleDateString('pt-BR')}; se houver imposto, vai com multa e juros. Veja com o contador.`:'Atendimento salvo.'):'Salvo em "A receber". Marque quando o paciente pagar.');
+  const pg=$('pago').checked;$('dias-s').value='';diasPrevTela();$('valor').value='';$('pago').checked=true;pagoTela();await carrega();$('pac').value=pac;contatoTela();const cv=pg&&carneVencido(dt0);avisa(pg?(cv?`Atendimento salvo. Atenção: o Carnê-Leão deste mês venceu em ${cv.toLocaleDateString('pt-BR')}; se houver imposto, vai com multa e juros. Veja com o contador.`:'Atendimento salvo.'):'Salvo em "A receber". Marque quando o paciente pagar.');
 };
 
 // ---------- Despesas ----------
@@ -773,3 +796,4 @@ $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK}
 
 // Valor em reais: aceita só números, vírgula e ponto (14/11)
 ['valor','d-valor'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',()=>{const v=e.value.replace(/[^\d.,]/g,'');if(v!==e.value)e.value=v})});
+['dias-s','data'].forEach(id=>{const e=$(id);if(e)e.addEventListener('input',diasPrevTela)});
