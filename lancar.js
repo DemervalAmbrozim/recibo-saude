@@ -872,3 +872,18 @@ $('aj-canc')&&$('aj-canc').addEventListener('toggle',cancTela);
 $('canc-pede')&&($('canc-pede').onclick=async()=>{const m=($('canc-motivo').value||'').trim();
   const r=await sb.rpc('link_suporte',{tok:TOK,p_texto:'[Cancelamento do plano] '+(m||'sem motivo informado')+' | '+($('canc-prev').textContent||'')});
   $('canc-msg').textContent=r.error?'Não consegui enviar agora: '+r.error.message:'Pedido recebido ✅ A equipe confirma o cancelamento e o valor a devolver por escrito, em até 1 dia útil.'});
+
+// ===== Cadastro em 2 passos (auditoria 16/11): "como você atua" vira cartão no Início, depois da conta criada =====
+async function atuaTela(){const c=$('i-atua');if(!c)return;let dispensa=false;try{dispensa=localStorage.getItem('rs-atua-depois')==='1'}catch(e){}
+  if(dispensa){c.hidden=true;return}
+  try{const r=await sb.rpc('minha_conta',{tok:TOK});const x=r.error?null:r.data;
+    // só aparece se o banco já tem a coluna e a profissional ainda não respondeu (formas vazias)
+    const d=await sb.rpc('link_formas_atuacao',{tok:TOK});const dd=d.error?null:d.data;
+    c.hidden=!(x&&x.cadastrada)||!dd||(dd.formas&&dd.formas.length>0)}catch(e){c.hidden=true}}
+$('a-depois')&&($('a-depois').onclick=()=>{try{localStorage.setItem('rs-atua-depois','1')}catch(e){}$('i-atua').hidden=true});
+$('a-salva')&&($('a-salva').onclick=async()=>{const f=[...document.querySelectorAll('.a-forma:checked')].map(x=>x.value);
+  if(!f.length){$('a-msg').textContent='Marque pelo menos uma forma ou toque em Depois.';return}
+  const r=await sb.rpc('salvar_perfil_atuacao',{p_formas:f,p_vinculo:$('a-vinculo').value===''?null:$('a-vinculo').value==='sim',p_cnpj:$('a-cnpj').value||null,p_origem:null});
+  if(r.error){$('a-msg').textContent='Não consegui salvar agora: '+r.error.message;return}
+  $('a-msg').textContent='Salvo ✅ Obrigado.';setTimeout(()=>{$('i-atua').hidden=true},900)});
+setTimeout(atuaTela,1200);

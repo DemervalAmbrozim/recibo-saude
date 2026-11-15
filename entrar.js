@@ -69,7 +69,7 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   if(r.error){avisa(traduz(r.error.message),true);return}
   // 15/11 (supabase/040): ciclo do teste (mensal 7 dias, anual 30) e formas de atuação; sem a função no banco, segue com o padrão
   try{const ciclo=(document.querySelector('input[name="c-ciclo"]:checked')||{}).value||'mensal';await sb.rpc('definir_ciclo_teste',{p_ciclo:ciclo});
-    await sb.rpc('salvar_perfil_atuacao',{p_formas:[...document.querySelectorAll('.c-forma:checked')].map(x=>x.value),p_vinculo:$('c-vinculo').value===''?null:$('c-vinculo').value==='sim',p_cnpj:$('c-tem-cnpj').value||null,p_origem:ORIGEM})}catch(e){}
+    await sb.rpc('salvar_perfil_atuacao',{p_formas:[],p_vinculo:null,p_cnpj:null,p_origem:ORIGEM})}catch(e){}
   // Pacote Vire CNPJ (supabase/016): "sim" já vira pedido no Admin; sem a função no banco, segue sem
   if($('c-cnpj').value||$('c-novidades').checked)await sb.rpc('link_preferencias',{tok:'',p_cnpj:$('c-cnpj').value||null,p_novidades:$('c-novidades').checked});
   const ind=$('c-ind').value.trim().toUpperCase();

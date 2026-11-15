@@ -131,6 +131,26 @@ a{color:var(--accent)}
           <div class="row"><button type="button" id="b-emp-notas">Notas do mês (planilha)</button><button type="button" id="b-emp-dmed">DMED do ano (planilha)</button></div>
         </div></details>
     </div>
+    <div class="card" id="i-atua" hidden>
+      <h2>Conte como você atua</h2>
+      <div class="sub">Leva 1 minuto e nos ajuda a falar a sua língua: não presumimos consultório nem CNPJ.</div>
+    <fieldset style="border:1px solid var(--line,#ccd);border-radius:10px;padding:10px 12px"><legend>Como você atua hoje? (marque todas)</legend>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="consultorio_proprio" style="width:auto"> Consultório próprio</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="sala_por_turno" style="width:auto"> Sala alugada ou por turno</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="clinica_autonoma" style="width:auto"> Dentro de clínica, como autônoma</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="clinica_vinculo" style="width:auto"> Dentro de clínica, com vínculo</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="domicilio" style="width:auto"> Atendimento em domicílio</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="online" style="width:auto"> Online</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="empresa_hospital" style="width:auto"> Empresa ou hospital</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="plantao" style="width:auto"> Plantão</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="avulso" style="width:auto"> Avulso (sessões pontuais)</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" class="a-forma" value="outra" style="width:auto"> Outra forma</label>
+    </fieldset>
+    <label>Você também tem emprego com carteira assinada? <select id="a-vinculo"><option value="">Prefiro não dizer</option><option value="nao">Não, só autônoma</option><option value="sim">Sim, também tenho emprego</option></select></label>
+    <label>Você tem CNPJ hoje? <select id="a-cnpj"><option value="">Prefiro não dizer</option><option value="nao">Não</option><option value="mei">Sim, MEI</option><option value="empresa">Sim, empresa</option></select></label>
+      <button class="pri" id="a-salva" type="button">Salvar</button> <button class="small" id="a-depois" type="button">Depois</button>
+      <div class="sub" id="a-msg"></div>
+    </div>
     <div class="card" id="i-proc" hidden>
       <h2>Falta a sua procuração na Receita</h2>
       <div class="sub" id="proc-sit">Com ela a Lado a Lado Saúde emite os seus recibos no Receita Saúde. Leva uns 5 minutos e não precisa passar senha. Faça no <b>computador</b>: no celular o assinador da Receita costuma falhar.</div>
@@ -362,6 +382,14 @@ a{color:var(--accent)}
     <!-- 8i: grupo da clínica (supabase/025 minha_clinica / sair_clinica) -->
     <div class="card" id="aj-cli" hidden></div>
     <!-- 15/11: serviços à parte (supabase/041) -->
+    <details class="card" id="aj-etapas">
+      <summary><b>Como funciona</b> (as 9 etapas)</summary>
+      <div style="display:grid;gap:10px;margin-top:12px">
+        <div class="sub"><b>Começar:</b> 1. cadastro e termos · 2. procuração no e-CAC (só o Carnê-Leão Web, revogável) · 3. primeiro lançamento · 4. primeiro recibo e conta do mês.</div>
+        <div class="sub"><b>Rotina mensal:</b> 5. lançar e pedir o recibo · 6. emissão e entrega em no máximo 24 horas, todos os dias, ou o motivo no mesmo prazo · 7. controle do mês · 8. fechamento: Carnê-Leão e DARF, com contador responsável · 9. acompanhamento e melhoria.</div>
+        <div class="sub">Imposto de Renda, abertura de CNPJ, presença nas redes e consultoria de apoio são serviços à parte (veja "Serviços à parte"). <a href="como-funciona.html" target="_blank" rel="noopener">Ver o passo a passo completo</a>.</div>
+      </div>
+    </details>
     <details class="card" id="aj-serv">
       <summary><b>Serviços à parte</b> (só se você quiser)</summary>
       <div style="display:grid;gap:12px;margin-top:12px">
@@ -480,11 +508,11 @@ a{color:var(--accent)}
   <button data-t="t-aj">Ajuda</button>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
-<script src="config.js?v=48"></script>
-<script src="regras.js?v=48"></script>
-<script src="importar.js?v=48"></script>
-<script src="convenio.js?v=48"></script>
-<script src="lancar.js?v=48"></script>
-<script src="instalar.js?v=48"></script>
+<script src="config.js?v=49"></script>
+<script src="regras.js?v=49"></script>
+<script src="importar.js?v=49"></script>
+<script src="convenio.js?v=49"></script>
+<script src="lancar.js?v=49"></script>
+<script src="instalar.js?v=49"></script>
 </body>
 </html>

@@ -450,7 +450,7 @@ const PROC={pendente:'procuração pendente',enviada:'procuração a conferir',c
 const SERVNOME={ir:'Imposto de Renda',cnpj_avulso:'Abertura de CNPJ (avulsa)',cnpj_plano12:'Abertura de CNPJ com o plano Empresa de 12 meses',redes:'Presença nas redes',apoio:'Consultoria de apoio'};
 const PSIT={novo:'novo',conversando:'conversando',emitindo:'emitindo',feito:'feito (entregue)',nao_consegui:'não consegui (motivo)',desistiu:'desistiu'},PTIPO={servico:'SERVIÇO À PARTE',recibo:'PEDIDO DE RECIBO (prazo 24 h)',cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração',suporte:'Suporte (responder em 1 dia útil)'};
 async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedidos').select('*').order('criado_em',{ascending:false}).limit(100);
-  if(f==='aberto')q=q.in('situacao',['novo','conversando','emitindo']);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
+  if(f==='aberto')q=q.in('situacao',['novo','conversando','emitindo']);const ft=($('adm-ped-tipo')||{}).value;if(ft)q=q.eq('tipo',ft);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
       ${x.tipo==='recibo'&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<input data-motivo="${x.id}" placeholder="Se não conseguir: motivo e nova previsão (vai ao zap dela)" aria-label="Motivo" style="width:100%;margin-top:6px">`:''}${x.motivo?`<div class="meta">Motivo: ${esc(x.motivo)}</div>`:''}
@@ -460,7 +460,7 @@ async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedido
       ${x.media?`<div class="meta">média ${brl(+x.media)}/mês · economia estimada ${brl(+x.economia||0)}/mês</div>`:''}</div>
       <div><select data-ped="${x.id}" style="width:auto;padding:6px 8px" aria-label="Situação do pedido">${op(x.situacao)}</select></div></div>`).join('')
     :'<div class="sub">Nenhum pedido aberto.</div>'}
-$('adm-ped-filtro').onchange=pedTela;
+$('adm-ped-filtro').onchange=pedTela;if($('adm-ped-tipo'))$('adm-ped-tipo').onchange=pedTela;
 // Biblioteca do zap (reunião Daniel 31/10, itens 18-19, supabase/028): a resposta aprovada aqui passa a valer no zap para todas.
 // Pergunta nova ("Biblioteca nova") é preparada com a fonte; uma pessoa aprova. Nada vai à cliente só com a IA.
 const bibForm=x=>/Biblioteca nova/.test(x.obs)&&!['feito','desistiu'].includes(x.situacao)?`<details style="margin-top:6px"><summary class="meta">Responder e guardar na biblioteca</summary>
