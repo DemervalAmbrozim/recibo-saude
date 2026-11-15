@@ -123,7 +123,7 @@ function impAgendaCsv(txt,pacientes,ats,desde,ate){const ls=String(txt).split(/\
 
 // Extrato do banco (ensaio 29/10, obs. 25): OFX (todo banco exporta) ou planilha com data, descrição e valor.
 // Confere o que entrou com o que ela lançou: crédito casado com atendimento pago, crédito que pode ser um "a receber",
-// crédito sem lançamento (atendimento esquecido? ou transferência entre contas dela) e despesa do consultório que saiu e não foi lançada.
+// crédito sem lançamento (atendimento esquecido? ou transferência entre contas dela) e despesa do trabalho que saiu e não foi lançada.
 function impExtrato(txt){txt=String(txt||'');const out=[];
   if(/<STMTTRN>/i.test(txt)){for(const b of txt.split(/<STMTTRN>/i).slice(1)){const v=k=>{const m=b.match(new RegExp('<'+k+'>([^<\\r\\n]*)','i'));return m?m[1].trim():''};
       const d=v('DTPOSTED'),valor=impReal(v('TRNAMT').replace(/^\+/,''));if(!/^\d{8}/.test(d)||valor===null)continue;

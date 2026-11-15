@@ -52,7 +52,7 @@ function zAcha(pacs,nome){const q=nome.filter(Boolean);if(!q.length)return[];
 const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • *lançar* (passo a passo com opções: paciente, valor, forma e dia; nada é gravado sem você confirmar)
 • *recebi* (paciente pagou o que estava a receber, tudo ou parte)
-• *despesa* (conta do consultório)
+• *despesa* (conta do trabalho)
 • *resumo* (o mês até agora)
 • *cnpj* (pessoa física ou CNPJ: o que sai mais barato)
 • *reforma* (os novos impostos de 2027 e o que muda para você)
@@ -103,7 +103,7 @@ function zSemana1(D,d){const at=D.atendimentos||[],ds=D.despesas||[],q=n=>`${n} 
     ?`Bem-vinda! Você já lançou ${q(at.length)} (${zBrl(soma(at))}). É assim todo dia: mandou aqui, está guardado e o recibo sai pronto no fim do mês.`
     :`Bem-vinda! Seu primeiro passo leva 10 segundos: escreva *lançar* e eu pergunto passo a passo: paciente, valor, forma e dia, é só tocar nas opções. O resto (recibo, Carnê-Leão, lembretes) é com a gente. Mande *ajuda* para ver tudo que dá para fazer.`;
   if(d===2)return (at.length?`Em 3 dias: ${q(at.length)}, ${zBrl(soma(at))} guardados com recibo garantido.`:`Ainda sem atendimentos lançados. Escreva *lançar* e eu pergunto passo a passo.`)
-    +(ds.length?` Despesas: ${zBrl(soma(ds))}, que já abatem do Carnê-Leão.`:` Próximo passo: a despesa do consultório (escreva *despesa*). Ela abate do Carnê-Leão e diminui o imposto.`);
+    +(ds.length?` Despesas: ${zBrl(soma(ds))}, que já abatem do Carnê-Leão.`:` Próximo passo: a despesa do trabalho (escreva *despesa*). Ela abate do Carnê-Leão e diminui o imposto.`);
   if(d===6)return `Sua primeira semana: ${q(at.length)} (${zBrl(soma(at))})`+(ds.length?` e ${zBrl(soma(ds))} em despesas`:'')
     +`. Mande *resumo* para ver o mês e *darf* para saber o Carnê-Leão. No último dia do mês eu aviso para conferir, e os recibos saem sem você digitar nada de novo.`;
   return ''}
@@ -174,7 +174,7 @@ function zBib(t,D){let m=null,k=0;for(const b of (D&&D.biblioteca)||[]){const n=
 const zEhPergunta=(t,linha)=>/\?\s*$/.test(linha)||/^(como|onde|quando|qual|quais|quanto|o que|oque|posso|preciso|tenho que|tem como|da pra|da para|e se|por que|porque)\b/.test(t);
 function zPergunta(t){if(!/(posso|pode|da pra|da para|consigo).{0,20}(deduz|abat|descont|lancar)|^(deduz|abate)|\b(e dedutivel|abate\?|deduz\?)/.test(t))return null;
   const r=PERGUNTAS.find(([re])=>re.test(t));
-  return r?r[1]:`Pela lei, abate o que é necessário para receber e manter a sua atividade: aluguel e contas do consultório, material, salário de quem tem carteira ${ART68}.`+CONTADOR_Q}
+  return r?r[1]:`Pela lei, abate o que é necessário para receber e manter a sua atividade: aluguel e contas do local de atendimento, material, salário de quem tem carteira ${ART68}.`+CONTADOR_Q}
 
 // Boleto conferido pelo código (ensaio 29/10, obs. 23): a conta de verificação pega erro de digitação e código adulterado.
 // Boleto de banco = 47 números; conta de consumo (luz, água, telefone, tributo) = 48, começando por 8. Não substitui conferir o beneficiário.
@@ -226,7 +226,7 @@ function zTrimestre(D,hoje){const h=new Date(hoje+'T12:00'),q=Math.floor(h.getMo
 ${zFixas12(D,hoje).length?'Nos últimos 12 meses ainda há conta fixa sem lançamento: mande *fixas* para ver quais.\n':''}Este aviso fica registrado: é a sua conferência de ${qi/3+1}º trimestre.`}
 
 // Dica na 1ª despesa de cada tipo (obs. 20): o que vale no IR e o que muda se um dia virar CNPJ
-function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-Leão como dedução (Previdência Oficial), não como despesa do consultório.';
+function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-Leão como dedução (Previdência Oficial), não como despesa do trabalho.';
   if(cod==='P10.01.00004')return 'Dica: a anuidade abate 100%. Guarde o boleto pago por 5 anos.';
   if(cod==='P10.01.00013')return 'Dica: abate o salário com carteira assinada e os encargos (INSS, FGTS). Guarde a folha e as guias.';
   if(IMOVEL.includes(cod))return 'Dica: abate pelo local do atendimento. Guarde a conta paga por 5 anos. Se um dia abrir CNPJ, o ideal é a conta já sair no nome da empresa.';
