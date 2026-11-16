@@ -107,7 +107,7 @@ function zSemana1(D,d){const at=D.atendimentos||[],ds=D.despesas||[],q=n=>`${n} 
   if(d===2)return (at.length?`Em 3 dias: ${q(at.length)}, ${zBrl(soma(at))} guardados com recibo garantido.`:`Ainda sem atendimentos lançados. Escreva *lançar* e eu pergunto passo a passo.`)
     +(ds.length?` Despesas: ${zBrl(soma(ds))}, que já abatem do Carnê-Leão.`:` Próximo passo: a despesa do trabalho (escreva *despesa*). Ela abate do Carnê-Leão e diminui o imposto.`);
   if(d===6)return `Sua primeira semana: ${q(at.length)} (${zBrl(soma(at))})`+(ds.length?` e ${zBrl(soma(ds))} em despesas`:'')
-    +`. Mande *resumo* para ver o mês e *darf* para saber o Carnê-Leão. No último dia do mês eu aviso para conferir, e os recibos saem sem você digitar nada de novo.`;
+    +`. Mande *resumo* para ver o mês e *darf* para saber o Carnê-Leão. No último dia do mês eu aviso para conferir. Quando quiser o recibo, escreva *pedir recibo* e você recebe em no máximo 24 horas, sem digitar nada de novo.`;
   return ''}
 
 // "paguei" (8f ressalva 2): marca o DARF do mês passado como pago hoje, pelo valor calculado ou o que ela disser ("paguei 126,42")
@@ -496,10 +496,10 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   // Entrega do recibo (obs. 14 e 15): ela pede de novo a qualquer hora e encaminha à paciente ou a quem a paciente pedir (filha, plano)
   {const m=t.match(/^(?:recibos?|pdfs?)(?: (?:da|do|de))?(?: (.+))?$/);if(m){const nome=m[1]&&!/^(do mes|deste mes|mes)$/.test(m[1])?m[1]:'';
     const ps=nome?zAcha(D.pacientes,nome.split(' ')):[];if(nome&&!ps.length)return `Não achei paciente com o nome "${nome}". Mande *recibos* para receber todos do mês.`;
-    if(!api.recibos)return 'Os PDFs dos recibos chegam aqui assim que a Lado a Lado Saúde emitir no Receita Saúde, no fechamento do mês.';
+    if(!api.recibos)return 'Os PDFs dos recibos chegam aqui assim que a Lado a Lado Saúde emitir no Receita Saúde, em no máximo 24 horas do seu pedido (escreva *pedir recibo*).';
     let r;try{r=await api.recibos(ps.length===1?ps[0]:null)}catch(e){return zErro(String(e.message||e))}
     if(!r||!r.enviados)return r&&r.mes?`Não achei o PDF ${ps.length===1?'de '+ps[0].nome+' ':''}em ${r.mes}. Se ele já foi emitido, mande *suporte* que a Lado a Lado Saúde reenvia.`
-      :'Ainda não há recibo emitido para mandar. Eles chegam aqui assim que a Lado a Lado Saúde emitir no Receita Saúde, no fechamento do mês.';
+      :'Ainda não há recibo emitido para mandar. Eles chegam aqui assim que a Lado a Lado Saúde emitir no Receita Saúde, em no máximo 24 horas do seu pedido.';
     return `Mandei ${r.enviados} PDF${r.enviados>1?'s':''} de ${r.mes}. Para entregar: toque e segure no PDF > *Encaminhar* > escolha a paciente, ou quem ela pediu (filha, plano de saúde). O recibo também fica no app Receita Saúde da paciente (gov.br).`}}
   if(/^(conferir|conferencia|trimestre|conferir gov|conferir recibos)$/.test(t))return zTrimestre(D,hoje);
   {const so=linha.replace(/[\s.\-]/g,'');if(/^(boleto\s*)?\d{44,48}$/i.test(so)){const r=zBoleto(so.replace(/\D/g,''),hoje);if(r)return r}}
