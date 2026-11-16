@@ -577,3 +577,29 @@ document.addEventListener('toggle',async e=>{const d=e.target;if(!d.dataset||!d.
 document.addEventListener('click',e=>{const id=(e.target.dataset||{}).raiox;if(!id)return;const d=e.target.closest('details'),o=JSON.parse(d.dataset.o||'{}'),g=k=>o[k]?o[k]:'(sem resposta)';
   const t=`RAIO-X DO PROFISSIONAL (RASCUNHO, a completar e auditar antes de enviar)\n\nO que você pediu: ${g('q20')}\n\nComo o seu trabalho funciona hoje: ${g('q2')} | ${g('q3')} por semana | ${g('q12')}\n\nPontos fortes: ${g('q9')} | Diferencial: ${g('q18')} | ${g('q19')}\n\nPontos de atenção: ${g('q13')} | ${g('q17')} | ${g('q21')} | Já tentou: ${g('q22')}\n\nOportunidades (no máximo 3): a definir a partir de: canais ${g('q6')}; redes ${g('q7')}; parcerias ${g('q11')}\n\nMATRIZ GUT (G x U x T, notas de 1 a 5): preencher 3 a 5 itens\n\nOpções de ação: ligar cada item a um serviço (plano, IR, CNPJ, redes ou apoio)\n\nO que depende de você: retorno nos prazos combinados. Não prometemos pacientes, seguidores ou faturamento.`;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>avisa('Rascunho copiado.'),()=>{prompt('Copie o rascunho:',t)})});
+
+// ===== Números do mês (Parte 6, item 5): indicadores fixos, calculados dos pedidos e das profissionais =====
+async function indicadoresTela(){const box=$('adm-ind-lista');if(!box)return;
+  const ini=new Date();ini.setDate(1);ini.setHours(0,0,0,0);
+  const r=await sb.from('pedidos').select('tipo,situacao,criado_em,prazo_ate,entregue_em,motivo').eq('tipo','recibo').gte('criado_em',ini.toISOString());
+  const L=(r.error?[]:r.data||[]).filter(x=>x.tipo==='recibo'&&new Date(x.criado_em)>=ini),agora=Date.now();
+  const feitos=L.filter(x=>x.situacao==='feito'&&x.entregue_em),noPrazo=feitos.filter(x=>new Date(x.entregue_em)<=new Date(x.prazo_ate));
+  const abertos=L.filter(x=>['novo','conversando','emitindo'].includes(x.situacao)),atraso=abertos.filter(x=>x.prazo_ate&&new Date(x.prazo_ate)<agora);
+  const falhas=L.filter(x=>x.situacao==='nao_consegui'),semMotivo=falhas.filter(x=>!(x.motivo||'').trim());
+  const med=feitos.length?feitos.reduce((s,x)=>s+(new Date(x.entregue_em)-new Date(x.criado_em)),0)/feitos.length/36e5:null;
+  const pct=feitos.length?Math.round(100*noPrazo.length/feitos.length):null,ativas=(PROFS||[]).filter(p=>p.situacao==='ativa').length;
+  const orig={};(PROFS||[]).forEach(p=>{if(p.origem)orig[p.origem]=(orig[p.origem]||0)+1});
+  const lin=(n,t,v,meta,ok)=>`<div class="item"><span>${n}. ${t}<div class="meta">meta: ${meta}</div></div></span><span class="num" style="${ok===false?'color:#b00020':ok===true?'color:#2e7d32':''}">${v}</span></div>`;
+  box.innerHTML=[
+    lin(1,'Recibos entregues no prazo de 24 h',pct==null?'sem entregas no mês':pct+'% ('+noPrazo.length+' de '+feitos.length+')','95% ou mais',pct==null?null:pct>=95),
+    lin(2,'Tempo médio de entrega',med==null?'—':med.toFixed(1).replace('.',',')+' h','até 12 h',med==null?null:med<=12),
+    lin(3,'Pedidos em atraso agora (e falhas sem motivo)',atraso.length+' em atraso · '+semMotivo.length+' sem motivo','zero sem motivo comunicado',atraso.length===0&&semMotivo.length===0),
+    lin(4,'Dúvidas respondidas em 1 dia útil','a medir','95% ou mais',null),
+    lin(5,'Recibos com erro nosso (por 100)','a medir','zero',null),
+    lin(6,'Profissionais ativas',String(ativas),'dentro do limite definido',null),
+    lin(7,'Receita recorrente e dos serviços à parte','a medir (Asaas real)','acompanhar',null),
+    lin(8,'Teste que virou plano','a medir no piloto','acompanhar',null),
+    lin(9,'Cancelamentos e motivo','a medir','acompanhar',null),
+    lin(10,'Origem dos cadastros',Object.keys(orig).length?Object.entries(orig).map(([k,v])=>k+' '+v).join(' · '):'sem origem registrada ainda','acompanhar',null),
+    lin(11,'Satisfação ("recomendaria a uma colega?")','a medir','acompanhar',null)].join('')}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('nav button[data-t=t-adm]'))setTimeout(indicadoresTela,900)});

@@ -312,6 +312,11 @@ a{color:var(--accent)}
   <!-- ADMINISTRAÇÃO: só a equipe (supabase/010) -->
   <section id="t-adm" class="tab" hidden style="display:grid;gap:16px">
     <div class="msg err" id="adm-mfa" hidden>Ligue o 2º fator em Ajustes: com ele, quem descobrir sua senha do e-mail não entra no painel.</div>
+    <div class="card" id="adm-ind">
+      <div class="head"><h2>Números do mês</h2></div>
+      <div class="sub">Os indicadores fixos da governança (Parte 6), sempre na mesma ordem. Metas iniciais, calibradas no piloto.</div>
+      <div id="adm-ind-lista"></div>
+    </div>
     <div class="card" id="adm-ped-card">
       <div class="head"><h2>Pedidos</h2><button type="button" class="small" id="adm-bib-lote" title="Biblioteca do zap: perguntas novas em lote para a IA">Perguntas novas em lote</button><select id="adm-ped-tipo" style="width:auto;padding:6px 8px" aria-label="Tipo de pedido"><option value="">Todos os tipos</option><option value="recibo">Recibo (24 h)</option><option value="servico">Serviço à parte</option><option value="suporte">Suporte</option><option value="procuracao">Procuração</option><option value="cnpj">CNPJ</option></select><select id="adm-ped-filtro" style="width:auto;padding:6px 8px"><option value="aberto">Abertos</option><option value="">Todos</option></select></div>
       <div class="list" id="adm-ped"></div>

@@ -91,11 +91,11 @@ document.addEventListener('click',async e=>{const id=e.target.dataset&&e.target.
 async function contaTela(){
   cliTela();
   const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();extrasTela(r.data.plano);
-  const c=r.data, leitura=['leitura','cancelada'].includes(c.situacao), teste=c.situacao==='teste'&&c.teste_ate;
+  const c=r.data, leitura=['leitura','cancelada','pausada'].includes(c.situacao),pausada=c.situacao==='pausada', teste=c.situacao==='teste'&&c.teste_ate;
   const dias=teste?Math.round((new Date(c.teste_ate)-new Date(hojeISO()))/864e5):0;
   document.body.classList.toggle('leitura',leitura);
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
-  $('conta').textContent=leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
+  $('conta').textContent=pausada?'Seu plano está pausado: nada foi apagado e você pode consultar tudo. Para voltar antes dos 60 dias, vá em Ajuda > Pausar meu plano.':leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
     :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Lado a Lado Saúde.'}`:'';
   $('b-sair').hidden=!c.logada&&!TOK;$('aj-seg').hidden=!c.logada||!!TOK;
 }
@@ -891,3 +891,15 @@ $('a-salva')&&($('a-salva').onclick=async()=>{const f=[...document.querySelector
   if(r.error){$('a-msg').textContent='Não consegui salvar agora: '+r.error.message;return}
   $('a-msg').textContent='Salvo ✅ Obrigado.';setTimeout(()=>{$('i-atua').hidden=true},900)});
 setTimeout(atuaTela,1200);
+
+// ===== Pausa do plano (Parte 5, cap. 6; supabase/045): até 60 dias, sem cobrança, uma por 12 meses =====
+async function pausaTela(){const m=$('pausa-msg');if(!m)return;
+  try{const r=await sb.rpc('minha_conta',{tok:TOK});const c=r.error?null:r.data;const p=c&&c.situacao==='pausada';
+    $('pausa-pede').hidden=!!p||!(c&&c.situacao==='ativa');$('pausa-volta').hidden=!p;
+    if(p)m.textContent='Seu plano está pausado. Ele volta sozinho em até 60 dias, ou antes, se você pedir.'}catch(e){}}
+$('aj-pausa')&&$('aj-pausa').addEventListener('toggle',pausaTela);
+$('pausa-pede')&&($('pausa-pede').onclick=async()=>{if(!confirm('Pausar o plano por até 60 dias? Nada é apagado, os lembretes e as emissões ficam suspensos e a conta fica só para consulta.'))return;
+  const r=await sb.rpc('link_pausar_plano',{tok:TOK});
+  $('pausa-msg').textContent=r.error?(/12 meses/.test(r.error.message)?'Você já usou a pausa nos últimos 12 meses.':/plano ativo/.test(r.error.message)?'A pausa vale para quem tem plano ativo.':'Não consegui pausar agora: '+r.error.message):'Plano pausado ✅ Ele volta sozinho em até 60 dias. Recarregue a página para ver a conta só para consulta.'});
+$('pausa-volta')&&($('pausa-volta').onclick=async()=>{const r=await sb.rpc('link_retomar_plano',{tok:TOK});
+  $('pausa-msg').textContent=r.error?'Não consegui retomar agora: '+r.error.message:'Plano retomado ✅ Recarregue a página para voltar a lançar.'});
