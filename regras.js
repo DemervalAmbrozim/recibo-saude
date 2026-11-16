@@ -189,7 +189,7 @@ function confereRecibo(r,mes,hoje){
   if(!(r.valor>0))erros.push('valor pago zerado ou negativo');
   if(!r.data||!String(r.data).startsWith(mes))erros.push('data do pagamento fora do mês do fechamento');
   else if(hoje&&r.data>hoje)erros.push('data do pagamento no futuro');
-  if(String(mes).slice(0,4)<String(hoje||mes).slice(0,4))erros.push('recibo de ano anterior: a Receita não permite emitir');
+  {const h=String(hoje||mes),ay=+h.slice(0,4),my=+String(mes).slice(0,4);if(my<ay-1||(my===ay-1&&h.slice(5,7)>'02'))erros.push('recibo de ano anterior: só dá para emitir até 28/02 do ano seguinte (manual Receita Saúde, perguntas 4 e 5)');}
   else if(hoje&&mes<hoje.slice(0,7))avisos.push('mês anterior ao atual: se o Carnê-Leão desse mês já foi pago, retifique ou gere a guia complementar');
   if((r.formas||[]).some(f=>/cart[aã]o|cr[eé]dito/i.test(f||'')))avisos.push('cartão: confirme se foi parcelado (um recibo por parcela recebida)');
   return {ok:!erros.length,avisos,erros};
