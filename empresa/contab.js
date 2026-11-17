@@ -64,7 +64,7 @@ function custosAbertura(cidade,profissao){const al=ALVARA[String(cidade||'').toL
 const PASSOS=[[0,'Contrato e proposta assinados','contador',[]],[1,'Viabilidade: nome, endereço e CNAE','contador',[0]],[2,'Tipo (SLU) e contrato social','contador',[1]],
   [3,'Protocolo na Junta (JUCEES)','contador',[2]],[4,'CNPJ e inscrição municipal','contador',[3]],[5,'Opção pelo Simples Nacional (prazo duro)','contador',[4]],
   [6,'Alvará de funcionamento','cliente',[4]],[7,'Vigilância Sanitária e CNES (se atender no consultório)','cliente',[6]],[8,'Registro da empresa no conselho','cliente',[4,6]],
-  [9,'Certificado A1 e procurações no e-CAC','contador',[4]],[10,'Conta bancária PJ','cliente',[4]],[11,'NFS-e: habilitar e emitir a nota de teste','app',[4,5,9]],
+  [9,'Certificado A1 (com emissão assistida, se quiser) e procurações no e-CAC','contador',[4]],[10,'Conta bancária PJ','cliente',[4]],[11,'NFS-e: habilitar e emitir a nota de teste','app',[4,5,9]],
   [12,'Transição PF para PJ (baixa de autônoma, avisar pagadores)','app',[5,11]],[13,'Pró-labore definido pelo Fator R e cadastro no eSocial','contador',[5,9]],
   [14,'Empregado: admissão e eSocial (se houver)','contador',[13]],[15,'Calendário fiscal ligado e 1º relatório mensal','app',[5,13]],[16,'Reunião de entrega','app',[15]]]
   .map(([id,titulo,dono,depende])=>({id,titulo,dono,depende}));
