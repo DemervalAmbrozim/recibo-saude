@@ -135,4 +135,81 @@ function calculaDecimoTerceiro(emp,o={},ano=2026){const T=tabelaFolha(ano),erros
     parcela2:{bruto:p2bruto,inss,irrf:ir,liquido:p2liq,fgts:r2f(p2bruto*T.fgts),vence:ano+'-12-20'},fgtsTotal:r2f(total*T.fgts),
     aviso:'Estimativa; IRRF do 13º sem desconto simplificado (a conferir) e com a redução da Lei 15.270.'}}
 
-if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13};
+// ===== Fase 3: rescisão (17/11/2026) =====
+// Cinco tipos: sem_justa_causa, pedido_demissao, justa_causa, acordo (CLT art. 484-A), termino_contrato (contrato por prazo, ex.: experiência).
+// Fontes (a conferir no texto oficial pelo contador, ver projeto/folha-propria-plano): CLT arts. 477 (prazo de 10 dias para pagar), 482 (justa causa), 484-A (acordo), 487 e 488 (aviso prévio), 146 e 147 (férias na rescisão);
+// Lei 12.506/2011 (aviso proporcional: 30 dias + 3 por ano completo, máximo 90); Lei 8.036/1990 (FGTS, multa de 40%, 20% no acordo); Súmulas 305 e 261 do TST.
+// Incidências adotadas: saldo de salário e 13º proporcional pagam INSS e IRRF (o 13º em separado); aviso indenizado, férias indenizadas e 1/3 não pagam INSS nem IRRF; FGTS incide sobre saldo, 13º e aviso indenizado, não sobre férias indenizadas.
+// ESTIMATIVA: rescisão é onde o passivo trabalhista nasce; o contador confere cada uma e o advogado trabalhista revisa as primeiras.
+const TIPOS_RESCISAO=['sem_justa_causa','pedido_demissao','justa_causa','acordo','termino_contrato'];
+const parseIsoR=s=>{const [a,m,d]=String(s).split('-').map(Number);return new Date(Date.UTC(a,m-1,d))};
+const isoR=d=>d.toISOString().slice(0,10);
+const diasEntre=(a,b)=>Math.round((b-a)/86400000);
+const ultimoDiaMes=(a,m)=>new Date(Date.UTC(a,m+1,0)).getUTCDate();
+const addMeses=(d,n)=>{const a=d.getUTCFullYear(),m=d.getUTCMonth()+n,dd=Math.min(d.getUTCDate(),ultimoDiaMes(a+Math.floor(m/12),((m%12)+12)%12));return new Date(Date.UTC(a,m,dd))};
+function anosCompletos(adm,fim){const a=parseIsoR(adm),f=parseIsoR(fim);let k=f.getUTCFullYear()-a.getUTCFullYear();if(addMeses(a,k*12)>f)k--;return Math.max(0,k)}
+// 13º: meses do ano da saída com 15 dias ou mais trabalhados
+function avos13Rescisao(adm,fim){const a=parseIsoR(adm),f=parseIsoR(fim),Y=f.getUTCFullYear();let n=0;
+  for(let m=0;m<=f.getUTCMonth();m++){const ini=new Date(Date.UTC(Y,m,1)),fm=new Date(Date.UTC(Y,m,ultimoDiaMes(Y,m))),de=a>ini?a:ini,ate=f<fm?f:fm,dias=diasEntre(de,ate)+1;if(dias>=15)n++}return n}
+// Férias proporcionais: meses desde o último aniversário do contrato, a fração de 15 dias ou mais conta como mês (CLT art. 146 parágrafo único)
+function avosFeriasRescisao(adm,fim){const a=parseIsoR(adm),f=parseIsoR(fim),k=anosCompletos(adm,fim),ann=addMeses(a,k*12),fe=new Date(f.getTime()+86400000);let m=0;
+  while(addMeses(ann,m+1)<=fe)m++;const resto=diasEntre(addMeses(ann,m),fe);if(resto>=15)m++;return Math.min(12,m)}
+
+// emp: {salario, dependentes}. o: {tipo, admissao, saida (último dia, ou data da comunicação se o aviso for indenizado), avisoIndenizado (bool), mediaVariaveis, periodosVencidos (férias vencidas não gozadas),
+//   saldoFgts (saldo do FGTS antes da rescisão, do extrato), diasSaldo (dias trabalhados no mês, padrão: dia da saída), parcela13Paga (valor da 1ª parcela do 13º já paga neste ano), dispensaAviso (empregador dispensa o aviso no pedido de demissão)}
+function calculaRescisao(emp,o={},ano){
+  const erros=[],S=+emp.salario;
+  if(!(S>0))erros.push('salário inválido');
+  if(!TIPOS_RESCISAO.includes(o.tipo))erros.push('tipo de rescisão inválido');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(o.admissao||'')||!/^\d{4}-\d{2}-\d{2}$/.test(o.saida||''))erros.push('datas de admissão e saída são obrigatórias (AAAA-MM-DD)');
+  if(erros.length)return {ok:false,erros};
+  if(o.saida<o.admissao)erros.push('a saída não pode ser antes da admissão');
+  const AN=+(ano||o.saida.slice(0,4)),T=tabelaFolha(AN),media=+(o.mediaVariaveis||0),base=S+media,tipo=o.tipo;
+  const sg=+(o.saldoFgts||0),venc=Math.max(0,Math.floor(+(o.periodosVencidos||0)));
+  if(sg<0)erros.push('saldo do FGTS inválido');
+  if(erros.length)return {ok:false,erros};
+  const anos=anosCompletos(o.admissao,o.saida),jc=tipo==='justa_causa',tem13=!jc,temProp=!jc;
+  // aviso prévio
+  let avisoDias=0,avisoValor=0,avisoDesconto=0,projDias=0;const nota=[];
+  if(tipo==='sem_justa_causa'||tipo==='acordo'){const dias=Math.min(90,30+3*anos);
+    if(o.avisoIndenizado){avisoDias=tipo==='acordo'?dias/2:dias;avisoValor=base/30*avisoDias;projDias=avisoDias;if(tipo==='acordo')nota.push('acordo: aviso indenizado pela metade; a projeção para 13º e férias foi limitada à metade [conferir]')}
+    else nota.push('aviso trabalhado: o contrato termina no fim do aviso; informe a data de saída final')}
+  if(tipo==='pedido_demissao'&&!o.avisoTrabalhado&&!o.dispensaAviso){avisoDesconto=S;nota.push('pedido de demissão sem cumprir o aviso: desconto de 30 dias, salvo dispensa do empregador')}
+  if(tipo==='termino_contrato')nota.push('contrato por prazo: sem aviso nem multa do FGTS; se a empresa encerrar antes do prazo, há indenização do art. 479 da CLT (fora desta conta)');
+  const fim=projDias?isoR(new Date(parseIsoR(o.saida).getTime()+projDias*86400000)):o.saida;
+  // verbas
+  const diasSaldo=o.diasSaldo!=null?+o.diasSaldo:+o.saida.slice(8,10);
+  const saldo=S/30*Math.min(30,diasSaldo),avos13=tem13?avos13Rescisao(o.admissao,fim):0,v13=base/12*avos13;
+  const avosF=temProp?avosFeriasRescisao(o.admissao,fim):0,feriasProp=base/12*avosF,tercoProp=feriasProp/3,feriasVenc=base*venc,tercoVenc=feriasVenc/3;
+  const P=[],D=[],add=(L,cod,desc,ref,v,inc={})=>{v=r2f(v);if(v!==0)L.push({cod,desc,ref,valor:v,...inc})};
+  add(P,'R01','Saldo de salário',Math.min(30,diasSaldo)+' dias',saldo,{inss:true,irrf:true,fgts:true});
+  add(P,'R02','Aviso prévio indenizado',avisoDias+' dias',avisoValor,{inss:false,irrf:false,fgts:true});
+  add(P,'R03','13º salário proporcional',avos13+'/12',v13,{inss:true,irrf:true,fgts:true,separado13:true});
+  add(P,'R04','Férias vencidas',venc+' período(s)',feriasVenc,{inss:false,irrf:false,fgts:false});
+  add(P,'R05','1/3 sobre férias vencidas',' ',tercoVenc,{inss:false,irrf:false,fgts:false});
+  add(P,'R06','Férias proporcionais',avosF+'/12',feriasProp,{inss:false,irrf:false,fgts:false});
+  add(P,'R07','1/3 sobre férias proporcionais',' ',tercoProp,{inss:false,irrf:false,fgts:false});
+  // descontos legais
+  const inssSaldo=inssFolha(saldo,AN),irSaldo=saldo>0?r2f(carneLeao(saldo,inssSaldo+(emp.dependentes||0)*T.depIR).devido):0;
+  const inss13=v13>0?inssFolha(v13,AN):0,ir13=v13>0?irrf13(v13,inss13,emp.dependentes||0,T):0;
+  add(D,'D01','INSS sobre saldo de salário',' ',inssSaldo);add(D,'D02','IRRF sobre saldo de salário',' ',irSaldo);
+  add(D,'D03','INSS sobre 13º',' ',inss13);add(D,'D04','IRRF sobre 13º',' ',ir13);
+  add(D,'D05','Aviso prévio não cumprido',' ',avisoDesconto);
+  if(+(o.parcela13Paga||0)>0)add(D,'D06','Adiantamento do 13º já pago',' ',+o.parcela13Paga);
+  const totP=r2f(P.reduce((x,y)=>x+y.valor,0)),totD=r2f(D.reduce((x,y)=>x+y.valor,0)),liquido=r2f(totP-totD);
+  if(liquido<0)return {ok:false,erros:['líquido negativo: os descontos passam das verbas; revisar (aviso não cumprido e adiantamentos)']};
+  // FGTS: depósito sobre as verbas que incidem; multa e saque pelo saldo
+  const baseFgts=saldo+avisoValor+v13,dep=r2f(baseFgts*T.fgts);
+  const multaPct=tipo==='sem_justa_causa'?.4:tipo==='acordo'?.2:0,saqPct=tipo==='sem_justa_causa'||tipo==='termino_contrato'?1:tipo==='acordo'?.8:0;
+  const multa=r2f((sg+dep)*multaPct);
+  // prazo: 10 dias da comunicação do aviso indenizado, da saída (aviso trabalhado) ou do término do contrato (CLT art. 477 §6º)
+  const vencimento=isoR(new Date(parseIsoR(o.saida).getTime()+10*86400000));
+  const alertas=[];if(venc>1)alertas.push('mais de um período de férias vencido: pode haver pagamento em dobro (CLT art. 137); o contador confere');
+  if(jc)alertas.push('justa causa: confirme a falta grave e a prova; erro aqui gera reversão e indenização');
+  if(tipo==='acordo')alertas.push('acordo (art. 484-A): sem seguro-desemprego e saque de 80% do FGTS; registrar o acordo por escrito');
+  if(anos<1&&tipo!=='termino_contrato')alertas.push('menos de 1 ano de contrato: as férias proporcionais são devidas (Súmula 261 do TST)');
+  return {ok:true,tipo,anosCompletos:anos,avos13,avosFerias:avosF,avisoDias,proventos:P,descontos:D,totalProventos:totP,totalDescontos:totD,liquido,
+    fgts:{deposito:dep,multa,multaPct,saquePct:saqPct,saqueEstimado:r2f((sg+dep)*saqPct)},vencimento,projecaoAte:fim,notas:nota,alertas,
+    aviso:'Estimativa; o contador confere cada rescisão e o advogado trabalhista revisa as primeiras. O termo de rescisão (TRCT) oficial é gerado a partir destes valores.'}}
+
+if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,calculaRescisao,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};
