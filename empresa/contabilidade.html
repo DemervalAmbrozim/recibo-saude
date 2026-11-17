@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Contabilidade PJ da saúde: protótipo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f6b55">
+<style>
+/* PROTÓTIPO (17/11/2026), não publicado nem ligado ao menu. Cálculos em contab.js (testes/contab.test.js). Estimativas: o contador confere. */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;--warn:#8a5a00;--warnbg:#fff3d6;--bad:#9b1c1c;--badbg:#fde4e4;--sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--warn:#f2c36b;--warnbg:#3a2f12;--bad:#ff9d9d;--badbg:#3d1a1a;color-scheme:dark}}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.5;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:920px;margin:0 auto;padding:16px 0 64px;display:grid;gap:16px}
+h1{font-size:clamp(24px,5vw,34px);margin:0}h2{font-size:20px;margin:0 0 8px}h3{font-size:16px;margin:0 0 6px}
+.sub{color:var(--muted);font-size:14px}.faixa{background:var(--warnbg);color:var(--warn);padding:10px 12px;border-radius:10px;font-size:14px}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{font:inherit;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:44px}
+nav button[aria-selected=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+section{display:none}section.on{display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+input,select{font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);min-height:44px;box-sizing:border-box;width:100%}
+.chk{display:flex;gap:8px;align-items:center;color:var(--fg)}.chk input{width:auto;min-height:0}
+button.p{font:inherit;padding:12px 18px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer;min-height:44px}
+button.s{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:40px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.big{font-size:26px;font-weight:700}.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:var(--soft)}
+.tag.crit{background:var(--badbg);color:var(--bad)}.tag.at{background:var(--warnbg);color:var(--warn)}
+.alerta{padding:10px 12px;border-radius:10px;background:var(--warnbg);color:var(--warn);font-size:14px}.alerta.crit{background:var(--badbg);color:var(--bad)}
+.passo{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.passo.bloq{opacity:.5}.barra{height:8px;background:var(--soft);border-radius:99px;overflow:hidden}.barra i{display:block;height:100%;background:var(--accent)}
+@media (max-width:520px){.num{white-space:normal}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Contabilidade da sua empresa de saúde</h1>
+  <p class="sub">Protótipo para o contador avaliar. As contas abaixo são <b>estimativas</b> com os números informados; quem apura, assina e transmite é o contador responsável.</p>
+  <p class="sub"><a href="modulos.html">Conciliação, resumo do mês, lucros, virada, sócios, diagnóstico, CNAE e eventos: abrir os módulos do contador →</a></p>
+  <p class="faixa">Rascunho interno, não publicado. Nada daqui vai para o cliente antes da revisão do contador e do advogado.</p>
+</header>
+<nav role="tablist" aria-label="Seções">
+  <button role="tab" aria-selected="true" data-t="ficha">1. Ficha e simulação</button>
+  <button role="tab" aria-selected="false" data-t="abertura">2. Abertura do CNPJ</button>
+  <button role="tab" aria-selected="false" data-t="folha">3. Folha (até 3)</button>
+  <button role="tab" aria-selected="false" data-t="agenda">4. Calendário</button>
+  <button role="tab" aria-selected="false" data-t="painel">5. Painel do contador</button>
+</nav>
+
+<section id="ficha" class="on">
+  <div class="card"><h2>Quem é e como atende</h2>
+    <div class="grid">
+      <label>Nome<input id="nome" autocomplete="off" placeholder="Nome da profissional"></label>
+      <label>Profissão<select id="prof"><option>fisioterapia</option><option>psicologia</option><option>fonoaudiologia</option><option>terapia ocupacional</option><option>nutrição</option><option>odontologia</option><option>medicina</option></select></label>
+      <label>Cidade<select id="cidade"><option value="vitoria">Vitória</option><option value="vila velha">Vila Velha</option><option value="serra">Serra</option><option value="cariacica">Cariacica</option></select></label>
+      <label>Onde atende<select id="local"><option value="online">Só online</option><option value="consultorio">Consultório próprio</option><option value="sala">Sala alugada ou dividida</option><option value="domicilio">Na casa do paciente</option></select></label>
+    </div></div>
+  <div class="card"><h2>Números do mês</h2>
+    <div class="grid">
+      <label>Receita média por mês (R$)<input id="rec" inputmode="decimal" value="10000"></label>
+      <label>Despesas por mês (R$)<input id="desp" inputmode="decimal" value="1500"></label>
+      <label>Pró-labore (R$, vazio = o app propõe)<input id="pl" inputmode="decimal" placeholder="automático"></label>
+      <label>Empregados (0 a 3)<select id="nemp"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    </div>
+    <div class="grid" id="sals" style="margin-top:10px"></div></div>
+  <div class="card"><h2>Situação</h2>
+    <div class="grid">
+      <label class="chk"><input type="checkbox" id="serv"> É servidor público ou tem outro vínculo</label>
+      <label class="chk"><input type="checkbox" id="cons"> Registro no conselho pendente</label>
+      <label class="chk"><input type="checkbox" id="pend"> Tem dívida ou pendência fiscal</label>
+      <label class="chk"><input type="checkbox" id="conv"> Atende convênio ou recebe repasse de clínica</label>
+      <label class="chk"><input type="checkbox" id="mei"> Hoje está como MEI</label>
+      <label class="chk"><input type="checkbox" id="ant"> Já tem contador</label>
+      <label class="chk"><input type="checkbox" id="bronze"> gov.br nível bronze</label>
+    </div></div>
+  <div id="res"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="p" id="salvar">Salvar esta ficha como cliente</button></div>
+</section>
+
+<section id="abertura">
+  <div class="card"><h2>Abrir o CNPJ: passo a passo</h2>
+    <p class="sub" id="aberResumo"></p>
+    <div class="grid"><label>Data da abertura do CNPJ (se já abriu)<input type="date" id="dabre"></label>
+      <label>Data do último deferimento (alvará ou inscrição)<input type="date" id="ddef"></label></div>
+    <p id="prazoOpcao" style="margin:10px 0 0"></p>
+    <div class="barra" aria-hidden="true" style="margin-top:10px"><i id="prog" style="width:0"></i></div></div>
+  <div class="card" id="passos"></div>
+  <div class="card"><h2>Custos públicos do 1º ano</h2><div id="custos"></div></div>
+</section>
+
+<section id="folha">
+  <div class="card"><h2>Folha de pagamento estimada</h2>
+    <p class="sub">Simples nos Anexos I a III: sem INSS patronal (vai no DAS); FGTS de 8%. Ajuste os salários na aba 1.</p><div id="folhaTab"></div></div>
+  <div class="card"><h2>Fechar a folha do mês (1 empregado por vez)</h2>
+    <p class="sub">Fase 1 da folha própria: salário, extras, noturno, faltas, comissão, INSS, IRRF, FGTS e vale-transporte. Férias, 13º e rescisão vêm nas próximas fases. O contador confere antes de pagar.</p>
+    <div class="grid">
+      <label>Empregado<select id="fe"></select></label>
+      <label>Nome no holerite<input id="fnome" placeholder="Nome do empregado"></label>
+      <label>Horas extras 50%<input id="fhe" inputmode="decimal" value="0"></label>
+      <label>Horas extras 100%<input id="fhd" inputmode="decimal" value="0"></label>
+      <label>Horas noturnas<input id="fhn" inputmode="decimal" value="0"></label>
+      <label>Faltas (dias)<input id="ffa" inputmode="decimal" value="0"></label>
+      <label>DSR perdidos<input id="fds" inputmode="decimal" value="0"></label>
+      <label>Atrasos (horas)<input id="fat" inputmode="decimal" value="0"></label>
+      <label>Comissões (R$)<input id="fco" inputmode="decimal" value="0"></label>
+      <label>Dias úteis do mês<input id="fdu" inputmode="decimal" value="25"></label>
+      <label>Domingos e feriados<input id="fdd" inputmode="decimal" value="5"></label>
+      <label>Dependentes (IR)<input id="fdep" inputmode="decimal" value="0"></label>
+      <label>Filhos para salário-família<input id="fsf" inputmode="decimal" value="0"></label>
+      <label>Custo do vale-transporte (R$)<input id="fvt" inputmode="decimal" value="0"></label>
+    </div>
+    <div id="folhaRes" style="margin-top:12px"></div>
+    <button class="p" id="fholerite" style="margin-top:10px">Abrir holerite para imprimir ou salvar em PDF</button></div>
+</section>
+
+<section id="agenda">
+  <div class="card"><h2>Calendário fiscal dos próximos 12 meses</h2>
+    <p class="sub">Dia 20 não é ajustado para dia útil: o contador confirma. Datas anuais de IR seguem o calendário do ano.</p><div id="agTab"></div></div>
+</section>
+
+<section id="painel">
+  <div class="card"><h2>Clientes da carteira</h2>
+    <p class="sub">Primeiras linhas são exemplos fictícios para mostrar o painel. As fichas salvas na aba 1 entram aqui (guardadas só neste navegador).</p>
+    <div id="cli"></div></div>
+</section>
+</main>
+<script src="../regras.js"></script>
+<script src="contab.js"></script>
+<script src="folha.js"></script>
+<script>
+const $=id=>document.getElementById(id),B=v=>(v==null||isNaN(v)?'-':v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})),P=v=>(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=id=>{const v=String($(id).value||'').replace(/\./g,'').replace(',','.');return v===''?null:+v};
+const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let feitos=lsGet('pj_feitos',[]);
+
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));render()});
+
+function salariosCampos(){const n=+$('nemp').value,w=$('sals');const atual=[...w.querySelectorAll('input')].map(i=>i.value);
+  w.innerHTML=Array.from({length:n},(_,i)=>`<label>Salário do empregado ${i+1} (R$)<input class="sal" inputmode="decimal" value="${atual[i]||'2200'}"></label>`).join('');
+  w.querySelectorAll('input').forEach(i=>i.oninput=render)}
+function ficha(){const emp=[...document.querySelectorAll('.sal')].map(i=>({salario:+String(i.value).replace(/\./g,'').replace(',','.')||0})).filter(e=>e.salario>0);
+  return {nome:$('nome').value,prof:$('prof').value,cidade:$('cidade').value,local:$('local').value,receita:num('rec')||0,despesas:num('desp')||0,proLabore:num('pl'),emp,
+    r:{servidor:$('serv').checked,conselhoPendente:$('cons').checked,pendencia:$('pend').checked,convenio:$('conv').checked,regime:$('mei').checked?'mei':'',contadorAnterior:$('ant').checked,
+    govBronze:$('bronze').checked,empregados:emp.length,rbtPrevisto:(num('rec')||0)*12,local:$('local').value}}}
+
+function renderFicha(f){const s=simulaPJ({receita:f.receita,despesas:f.despesas,emp:f.emp,proLabore:f.proLabore}),al=alertas(f.r),maior=s.diferenca>=0;
+  $('res').innerHTML=`<div class="card"><h2>O que o app encontrou</h2>
+   <div class="grid"><div><div class="sub">Anexo previsto</div><div class="big">Anexo ${s.anexo}</div><div class="sub">Fator R ${P(s.fatorR)} · ${s.porte}</div></div>
+   <div><div class="sub">Pró-labore sugerido</div><div class="big">${B(s.proLabore)}</div><div class="sub">menor valor que mantém 28%: ${B(s.proLaboreAlvo)}</div></div>
+   <div><div class="sub">DAS por mês</div><div class="big">${B(s.das)}</div><div class="sub">alíquota efetiva ${P(s.efetiva)}</div></div></div>
+   ${s.perto?`<p class="alerta">${esc(s.perto)}</p>`:''}</div>
+   <div class="card"><h2>Pessoa física × empresa, por mês</h2>
+   <table><tr><th></th><th class="num">Autônoma (PF)</th><th class="num">Empresa (Simples)</th></tr>
+   <tr><td>Impostos e INSS</td><td class="num">${B(s.pf.impostos)}</td><td class="num">${B(s.pj.impostos)}</td></tr>
+   <tr><td>Contabilidade (estimativa)</td><td class="num">${B(0)}</td><td class="num">${B(s.contador)}</td></tr>
+   <tr><td>Folha de empregados (igual nos dois)</td><td class="num">${B(s.custoFolha)}</td><td class="num">${B(s.custoFolha)}</td></tr>
+   <tr><td>Despesas</td><td class="num">${B(f.despesas)}</td><td class="num">${B(f.despesas)}</td></tr>
+   <tr><td><b>Sobra no mês</b></td><td class="num"><b>${B(s.pf.liquido)}</b></td><td class="num"><b>${B(s.pj.liquido)}</b></td></tr></table>
+   <p>${maior?`Com estes números, a empresa deixa cerca de <b>${B(s.diferenca)}</b> a mais por mês.`:`Com estes números, a empresa deixa cerca de <b>${B(-s.diferenca)}</b> a menos por mês: ficar como autônoma pode ser melhor.`}</p>
+   <p class="sub">${esc(s.aviso)}</p></div>
+   <div class="card"><h2>Alertas para o contador</h2>${al.length?al.map(a=>`<p class="alerta ${a.nivel==='crítico'?'crit':''}"><b>${esc(a.nivel)}:</b> ${esc(a.txt)}</p>`).join(''):'<p class="sub">Nenhum alerta com as respostas atuais.</p>'}</div>`;
+  return s}
+
+function renderAbertura(f){const c=custosAbertura(f.cidade,f.prof),prox=new Set(proximosPassos(feitos).map(p=>p.id));
+  $('aberResumo').textContent=`${f.prof}, ${$('cidade').selectedOptions[0].text}. Quem faz cada passo: contador, você ou o app.`;
+  $('passos').innerHTML=PASSOS.map(p=>{const ok=feitos.includes(p.id),lib=prox.has(p.id);
+    return `<div class="passo ${!ok&&!lib?'bloq':''}"><input type="checkbox" id="p${p.id}" ${ok?'checked':''} ${!ok&&!lib?'disabled':''} aria-label="${esc(p.titulo)}">
+    <label for="p${p.id}" style="color:var(--fg)">${p.id}. ${esc(p.titulo)}${!ok&&!lib?'<br><span class="sub">libera depois do passo '+p.depende.filter(d=>!feitos.includes(d)).join(', ')+'</span>':''}</label><span class="tag">${p.dono}</span></div>`}).join('');
+  PASSOS.forEach(p=>{const e=$('p'+p.id);if(e)e.onchange=()=>{feitos=e.checked?[...new Set([...feitos,p.id])]:feitos.filter(x=>x!==p.id&&!PASSOS.find(q=>q.id===x).depende.includes(p.id));lsSet('pj_feitos',feitos);render()}});
+  $('prog').style.width=Math.round(feitos.length/PASSOS.length*100)+'%';
+  const ab=$('dabre').value,df=$('ddef').value;
+  $('prazoOpcao').innerHTML=ab?`<span class="tag crit">Prazo da opção pelo Simples: ${prazoOpcaoSimples(ab,df||null).split('-').reverse().join('/')}</span> <span class="sub">30 dias do último deferimento, no máximo 60 dias da abertura. Perdeu, só em janeiro.</span>`:'<span class="sub">Informe a data de abertura do CNPJ para ver o prazo da opção pelo Simples.</span>';
+  $('custos').innerHTML=`<table>${c.itens.map(i=>`<tr><td>${esc(i.n)}<br><span class="sub">${esc(i.nota||'')}</span></td><td class="num">${i.faixa?B(i.faixa[0])+' a '+B(i.faixa[1]):i.v==null?'a confirmar':B(i.v)}</td></tr>`).join('')}
+   <tr><td><b>Faixa do 1º ano</b><br><span class="sub">${c.pendentes?c.pendentes+' item(ns) a confirmar ficam de fora da soma. ':''}${esc(c.txt)}</span></td><td class="num"><b>${B(c.min)} a ${B(c.max)}</b></td></tr></table>`}
+
+function renderFolha(f,s){$('folhaTab').innerHTML=f.emp.length?`<table><tr><th>Empregado</th><th class="num">Salário</th><th class="num">INSS</th><th class="num">IRRF</th><th class="num">Líquido</th><th class="num">FGTS</th><th class="num">Custo mensal*</th></tr>
+  ${s.folha.map((h,i)=>`<tr><td>${i+1}</td><td class="num">${B(h.salario)}</td><td class="num">${B(h.inss)}</td><td class="num">${B(h.ir)}</td><td class="num">${B(h.liquido)}</td><td class="num">${B(h.fgts)}</td><td class="num">${B(h.custoMensal)}</td></tr>`).join('')}
+  <tr><td><b>Total</b></td><td class="num"><b>${B(f.emp.reduce((t,e)=>t+e.salario,0))}</b></td><td></td><td></td><td></td><td></td><td class="num"><b>${B(s.custoFolha)}</b></td></tr></table>
+  <p class="sub">*Com 13º e férias (+1/3) provisionados e FGTS sobre eles. eSocial até o dia 15 e FGTS Digital até o dia 20 do mês seguinte. A folha real roda em sistema homologado (decisão em aberto); isto é a prévia.</p>`:'<p class="sub">Sem empregados na ficha. Escolha de 1 a 3 empregados na aba 1.</p>'}
+
+function renderAgenda(f){const hoje=new Date(),de=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`,ev=calendario(de,{folha:f.emp.length>0,abertura:$('dabre').value||null});
+  $('agTab').innerHTML=`<table>${ev.map(e=>`<tr><td class="num">${e.data.split('-').reverse().join('/')}</td><td>${esc(e.titulo)}</td><td><span class="tag ${e.critico?'crit':''}">${e.critico?'prazo legal':e.tipo}</span></td></tr>`).join('')}</table>`}
+
+const EX=[{nome:'Exemplo A (fisioterapia, Vitória)',prox:'DAS 20/12',passo:'Rotina mensal',alertas:0},{nome:'Exemplo B (psicologia, Serra)',prox:'Opção pelo Simples, prazo em 9 dias',passo:'Abertura, passo 5',alertas:1},{nome:'Exemplo C (fono, Vila Velha, 2 empregados)',prox:'eSocial 15/12',passo:'Rotina mensal com folha',alertas:2}];
+function renderPainel(){const cl=lsGet('pj_clientes',[]);
+  $('cli').innerHTML=`<table><tr><th>Cliente</th><th>Próximo vencimento</th><th>Situação</th><th>Alertas</th><th></th></tr>
+  ${EX.map(e=>`<tr><td>${esc(e.nome)}</td><td>${esc(e.prox)}</td><td>${esc(e.passo)}</td><td>${e.alertas}</td><td><span class="tag">exemplo</span></td></tr>`).join('')}
+  ${cl.map((c,i)=>{const s=simulaPJ({receita:c.receita,despesas:c.despesas,emp:c.emp,proLabore:c.proLabore}),al=alertas(c.r);
+    return `<tr><td>${esc(c.nome||'Sem nome')} (${esc(c.prof)}, ${esc(c.cidade)})</td><td>DAS: ${B(s.das)}</td><td>Anexo ${s.anexo}, Fator R ${P(s.fatorR)}</td><td>${al.length}</td><td><button class="s" data-i="${i}">Abrir</button></td></tr>`}).join('')}</table>`;
+  $('cli').querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>{const c=cl[+b.dataset.i];$('nome').value=c.nome||'';$('prof').value=c.prof;$('cidade').value=c.cidade;$('local').value=c.local;
+    $('rec').value=c.receita;$('desp').value=c.despesas;$('pl').value=c.proLabore==null?'':c.proLabore;$('nemp').value=c.emp.length;salariosCampos();
+    document.querySelectorAll('.sal').forEach((i,k)=>i.value=c.emp[k]?c.emp[k].salario:'');
+    [['serv','servidor'],['cons','conselhoPendente'],['pend','pendencia'],['conv','convenio'],['ant','contadorAnterior'],['bronze','govBronze']].forEach(([id,k])=>$(id).checked=!!c.r[k]);$('mei').checked=c.r.regime==='mei';
+    document.querySelector('nav button[data-t=ficha]').click()})}
+
+const fnum=id=>{const v=String($(id).value||'0').replace(/\./g,'').replace(',','.');return isNaN(+v)?0:+v};
+let ultimoHolerite=null;
+function folhaMes(){const f=ficha(),sel=$('fe'),i=+sel.value||0;
+  if(sel.options.length!==f.emp.length){sel.innerHTML=f.emp.map((e,k)=>`<option value="${k}">Empregado ${k+1} (${B(e.salario)})</option>`).join('')}
+  if(!f.emp.length){$('folhaRes').innerHTML='<p class="sub">Escolha de 1 a 3 empregados na aba 1.</p>';$('fholerite').disabled=true;return}
+  $('fholerite').disabled=false;const e=f.emp[Math.min(i,f.emp.length-1)];
+  const r=calculaFolha({salario:e.salario,dependentes:fnum('fdep'),filhosSF:fnum('fsf'),vtCusto:fnum('fvt')},
+    {heNormais:fnum('fhe'),heDescanso:fnum('fhd'),horasNoturnas:fnum('fhn'),faltasDias:fnum('ffa'),dsrPerdidos:fnum('fds'),atrasoHoras:fnum('fat'),comissao:fnum('fco'),diasUteis:fnum('fdu'),diasDescanso:fnum('fdd')});
+  if(!r.ok){ultimoHolerite=null;$('folhaRes').innerHTML=r.erros.map(x=>`<p class="alerta crit">${esc(x)}</p>`).join('');$('fholerite').disabled=true;return}
+  ultimoHolerite=r;
+  $('folhaRes').innerHTML=`<table><tr><th>Cód.</th><th>Descrição</th><th>Ref.</th><th class="num">Proventos</th><th class="num">Descontos</th></tr>
+  ${r.proventos.map(x=>`<tr><td>${x.cod}</td><td>${esc(x.desc)}</td><td>${esc(x.ref)}</td><td class="num">${B(x.valor)}</td><td></td></tr>`).join('')}
+  ${r.descontos.map(x=>`<tr><td>${x.cod}</td><td>${esc(x.desc)}</td><td>${esc(x.ref)}</td><td></td><td class="num">${B(x.valor)}</td></tr>`).join('')}
+  <tr><td colspan="3"><b>Líquido a receber</b></td><td class="num"><b>${B(r.totalProventos)}</b></td><td class="num"><b>${B(r.totalDescontos)}</b></td></tr></table>
+  <p class="big">${B(r.liquido)}</p><p class="sub">FGTS do mês ${B(r.fgts)} (vence no dia 20, pelo FGTS Digital). Custo estimado para a empresa ${B(r.custoMensal)} com 13º e férias provisionados. ${esc(r.aviso)}</p>`}
+['fe','fhe','fhd','fhn','ffa','fds','fat','fco','fdu','fdd','fdep','fsf','fvt'].forEach(id=>$(id).addEventListener('input',folhaMes));
+$('fholerite').onclick=()=>{if(!ultimoHolerite)return;const f=ficha(),h=holeriteHTML(ultimoHolerite,{nome:'Empresa da profissional',cnpj:''},{nome:$('fnome').value||'Empregado',cpf:'',cargo:''},new Date().toISOString().slice(0,7));
+  const u=URL.createObjectURL(new Blob([h],{type:'text/html'}));window.open(u,'_blank')};
+function render(){const f=ficha(),s=renderFicha(f);renderAbertura(f);renderFolha(f,s);renderAgenda(f);renderPainel();folhaMes()}
+$('nemp').onchange=()=>{salariosCampos();render()};
+['nome','prof','cidade','local','rec','desp','pl','serv','cons','pend','conv','mei','ant','bronze','dabre','ddef'].forEach(id=>$(id).addEventListener('input',render));
+$('salvar').onclick=()=>{const f=ficha(),cl=lsGet('pj_clientes',[]);cl.push(f);lsSet('pj_clientes',cl);renderPainel();$('salvar').textContent='Salvo (painel, aba 5)';setTimeout(()=>$('salvar').textContent='Salvar esta ficha como cliente',2500)};
+salariosCampos();render();
+</script>
+</body>
+</html>

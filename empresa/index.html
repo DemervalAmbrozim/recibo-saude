@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lado a Lado Saúde para a sua empresa: contabilidade, folha e gestão</title>
+<meta name="description" content="Contabilidade completa para empresas de saúde no Simples Nacional, com até 3 funcionários: imposto, folha, notas, balanço e um resumo de uma página por mês.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f6b55">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;
+  --zap:#dcf8c6;--zap-fg:#17231e;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;
+  --accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:56px;padding:20px 0 64px}
+h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(22px,4vw,30px);margin:0 0 6px;text-wrap:balance}
+h3{font-size:17px;margin:0}
+p{margin:6px 0}
+a{color:var(--accent)}
+.sub{color:var(--muted)}
+.marca{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.marca i{width:28px;height:28px;border-radius:8px;background:var(--accent);display:inline-block}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cta{display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}
+.cta.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:10px 16px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.hero .lead{font-size:19px;color:var(--muted);margin:14px 0 22px}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;font-size:14px}
+.b{max-width:85%;padding:8px 11px;border-radius:12px;white-space:pre-line}
+.b.eu{justify-self:end;background:var(--zap);color:var(--zap-fg);border-bottom-right-radius:3px}
+.b.nos{justify-self:start;background:var(--soft);border-bottom-left-radius:3px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.n{font-weight:700;color:var(--accent);font-size:14px}
+.plano.destaque{border:2px solid var(--accent)}
+.preco{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.preco small{font-size:15px;color:var(--muted);font-weight:500}
+.tag{justify-self:start;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent);border-radius:99px;padding:2px 10px}
+ul.ok{list-style:none;padding:0;margin:4px 0;display:grid;gap:6px}
+ul.ok li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.ciclo{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;margin:10px 0 18px;background:var(--card)}
+.ciclo button{font:inherit;border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;cursor:pointer}
+.ciclo button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600}
+details{border-top:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600}
+.cnpj{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.conta{display:grid;gap:10px}
+.conta label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.conta input{font:inherit;font-size:max(16px,1em);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.res{font-size:15px}
+.res b{font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+ol.passos{margin:6px 0;padding-left:20px;display:grid;gap:4px}
+@media (max-width:760px){.cnpj{grid-template-columns:1fr}}
+.faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
+footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
+@media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
+
+.rasc{background:#fff3d6;color:#8a5a00;border-radius:10px;padding:10px 12px;font-size:14px}
+.res b.neg{color:#9b1c1c}
+.conta input,.conta select{width:100%;box-sizing:border-box;min-width:0;font:inherit;font-size:max(16px,1em);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}.cnpj>*{min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.ponte{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.ponte{grid-template-columns:1fr}}
+table.cmp{width:100%;border-collapse:collapse;font-size:15px}table.cmp td,table.cmp th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}table.cmp .n2{text-align:right;font-variant-numeric:tabular-nums}
+main>*{min-width:0}.res{min-width:0;overflow-wrap:anywhere}table.cmp{table-layout:fixed}table.cmp b{font-size:inherit;color:inherit}table.cmp th:first-child,table.cmp td:first-child{width:38%}@media(max-width:520px){table.cmp{font-size:13px}.preco{font-size:28px}}
+
+/* ===== camada visual da marca (17/11/2026): logo oficial, paleta navy/verde, topo escuro, movimento. Textos, preços e regras NÃO foram tocados ===== */
+:root{--accent:#00875F;--accent-fg:#fff;--navy:#02214F;--soft:#e2f3ec;--bg:#f3f7f6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent:#2fd4a0;--accent-fg:#03140e}}
+:root[data-theme="dark"]{--accent:#2fd4a0;--accent-fg:#03140e}
+.marca i{display:none}.marca img{height:34px;width:auto;display:block}
+.hero{background:radial-gradient(900px 420px at 85% 10%,rgba(0,168,118,.35),transparent 60%),linear-gradient(160deg,#02214F 0%,#03306e 100%);color:#fff;border-radius:28px;padding:clamp(22px,4vw,44px);position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(2,33,79,.28)}
+.hero::after{content:"";position:absolute;right:-60px;bottom:-70px;width:320px;height:320px;background:url(simbolo-saude-escuro.png) center/contain no-repeat;opacity:.07;pointer-events:none}
+.hero>*{position:relative;z-index:1}.hero h1,.hero .lead{color:#fff}.hero .lead{opacity:.92}.hero .sub{color:#7be0bd}
+.hero .cta{background:#00a676;color:#03140e;box-shadow:0 8px 22px rgba(0,166,118,.38)}
+.hero .chat{background:rgba(255,255,255,.96);color:#17231e;border:0;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.hero .chat .b.nos{background:#eef3f1;color:#17231e}.hero .chat .b.eu{background:#dcf8c6;color:#17231e}
+.card{border-top:3px solid var(--accent)}
+.prog{position:fixed;left:0;top:0;height:3px;width:0;background:linear-gradient(90deg,#00a676,#7be0bd);z-index:30}
+@keyframes sobe2{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes flutua3{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media (prefers-reduced-motion:no-preference){.hero h1,.hero .lead,.hero .cta{animation:sobe2 .8s both}.hero .lead{animation-delay:.2s}.hero .cta{animation-delay:.4s}.hero .chat{animation:flutua3 7s ease-in-out infinite}
+ .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}.rv.vis{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="rasc" id="rasc"><b>Rascunho para revisão, não publicado.</b> Textos, preços e a regra de desconto aguardam a aprovação do Demerval e a revisão do contador e do advogado. Esta faixa sai na publicação.</div>
+  <div class="topo"><span class="marca"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture></span><span><a class="cta sec" href="../venda.html">Sou autônoma (CPF)</a> <a class="cta sec" href="entrar.html">Entrar</a></span></div>
+
+  <section class="hero">
+    <div>
+      <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Contabilidade • Gestão • Tecnologia</p>
+      <h1>Você cuida de quem atende. A gente cuida da sua empresa, lado a lado.</h1>
+      <p class="lead">Contabilidade completa para a sua empresa no Simples Nacional, com até 3 funcionários: imposto, folha, notas, balanço e um resumo de uma página todo mês. Com tecnologia moderna e com gente de verdade: a gente conversa, entende o seu momento e cresce junto com você.</p>
+      <a class="cta" href="entrar.html">Testar sem cartão</a>
+      <p class="sub" style="font-size:14px;margin-top:10px">7 dias no plano mensal, 30 dias no anual. Sem cartão. Cancela quando quiser.</p>
+    </div>
+    <div class="chat" aria-label="Exemplo do resumo mensal no WhatsApp">
+      <div class="b nos">Clínica Exemplo: resumo de outubro de 2027
+Entrou R$ 18.400,00 (+6% sobre o mês anterior).
+Imposto do Simples: R$ 1.104,00, vence em 20/11.</div>
+      <div class="b nos">Despesas: R$ 7.250,00. Sobrou no mês: R$ 10.046,00 (54,6% da receita).
+Saldo no banco: R$ 31.870,00.</div>
+      <div class="b nos">O que fazer: 1) Pagar o DAS até 20/11. 2) Emitir a nota de 1 recebimento sem nota.
+Estimativa; o contador confere.</div>
+      <div class="b eu">ok, pago hoje</div>
+      <div class="b nos">Anotado. Obrigado! Se o pagamento aparecer no extrato, eu dou baixa sozinho.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>O que a gente cuida na sua empresa</h2>
+    <p class="sub">As mesmas cinco frentes de quem atende como autônoma, agora no tamanho da empresa.</p>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><span class="n">1</span><h3>Contabilidade completa</h3><p class="sub">Imposto do Simples (DAS), notas fiscais, escrituração, conciliação do banco, balancete, balanço e DEFIS. Pró-labore e retirada de lucros do jeito certo.</p></div>
+      <div class="card"><span class="n">2</span><h3>Financeiro</h3><p class="sub">Quanto entrou, quanto saiu, quanto sobrou e o que vence. Um resumo de uma página por mês, com os números da sua empresa.</p></div>
+      <div class="card"><span class="n">3</span><h3>Presença nas redes</h3><p class="sub">Instagram, Facebook, LinkedIn e o Perfil da sua empresa no Google, com o responsável técnico, dentro das regras do seu conselho. Contratação à parte.</p></div>
+      <div class="card"><span class="n">4</span><h3>Plano de evolução e assessoria</h3><p class="sub">Com os números da contabilidade na mão: margem, valor da hora, momento de contratar, o que priorizar. Contratação à parte.</p></div>
+      <div class="card"><span class="n">5</span><h3>Imposto de renda</h3><p class="sub">A declaração anual da empresa (DEFIS) está no plano. O imposto de renda de cada sócio é uma declaração própria, contratada à parte.</p></div>
+      <div class="card"><span class="n">+</span><h3>Folha de pagamento</h3><p class="sub">Até 3 funcionários: holerite, férias, 13º, rescisão, FGTS e eSocial, conferidos pelo contador. No plano Empresa com folha.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Como funciona, mês a mês</h2>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><span class="n">até o 5º dia útil</span><h3>Você envia o que aconteceu</h3><p class="sub">Notas emitidas, extrato do banco e, se tiver funcionário, as faltas e horas extras. Pelo app ou pelo WhatsApp. Sem dado clínico.</p></div>
+      <div class="card"><span class="n">até o dia 20</span><h3>Nós conferimos e fechamos</h3><p class="sub">Conciliamos o extrato, calculamos o imposto e a folha, e o contador revisa. O DAS, o FGTS e o eSocial saem no prazo.</p></div>
+      <div class="card"><span class="n">no fim do mês</span><h3>Você recebe o resumo</h3><p class="sub">Uma página: entrou, saiu, sobrou, o que vence e o que fazer. E, a cada trimestre, uma conversa de 30 minutos com os números.</p></div>
+    </div>
+  </section>
+
+  <section id="comecar">
+    <h2>Como começar</h2>
+    <p class="sub">Nada é enviado à Receita antes de o contrato estar assinado. Cada passo tem dono e prazo, e você acompanha tudo no app.</p>
+    <ol class="passos sub">
+      <li><b>Conversa e conta na tela.</b> Vemos o que você tem hoje (empresa aberta ou a abrir, funcionários, como recebe).</li>
+      <li><b>Contrato e acessos.</b> Contrato de serviços contábeis, procurações no e-CAC e na nota fiscal, certificado digital da empresa (se quiser, a gente ajuda a emitir).</li>
+      <li><b>Casa em ordem.</b> Plano de contas, histórico de receita e folha, calendário de vencimentos ligado. Se você vem de outro contador, antes disso olhamos a sua situação fiscal e dizemos o que precisa ser regularizado.</li>
+      <li><b>Primeiro mês conferido linha a linha.</b> O contador confere tudo antes de seguir.</li>
+      <li><b>Reunião de entrega.</b> 20 minutos: o que você faz todo mês, o que é nosso.</li>
+    </ol>
+  </section>
+
+  <section id="conta">
+    <h2>Faça a conta da sua empresa</h2>
+    <div class="cnpj">
+      <div>
+        <p class="sub">Informe os números do mês. A conta mostra o imposto do Simples, o pró-labore que mantém a empresa na tabela mais barata e a comparação com atender como autônoma. É uma estimativa com os números que você informar; o contador confirma.</p>
+        <p class="sub">Ficam de fora desta conta o ISS fixo da pessoa física, taxas de cartão e outras diferenças do seu caso.</p>
+      </div>
+      <form class="card conta" id="f-conta" onsubmit="return false">
+        <h3>Números do mês</h3>
+        <label>Receita por mês (R$)<input id="s-rec" inputmode="decimal" value="10.000" autocomplete="off"></label>
+        <label>Despesas por mês (R$)<input id="s-desp" inputmode="decimal" value="1.500" autocomplete="off"></label>
+        <label>Funcionários (0 a 3)<select id="s-n"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+        <label>Salário de cada funcionário (R$)<input id="s-sal" inputmode="decimal" value="2.200" autocomplete="off"></label>
+        <div class="res" id="s-res" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="planos">
+    <h2>Planos</h2>
+    <p class="sub">Escolha pelo que a sua empresa tem hoje. Mensal ou anual (paga 10 meses e leva 12).</p>
+    <div class="ciclo" role="group" aria-label="Ciclo do plano"><button type="button" id="c-m" aria-pressed="true">Mensal</button><button type="button" id="c-a" aria-pressed="false">Anual: paga 10, leva 12</button></div>
+    <div class="grid2">
+      <div class="card plano"><h3>Empresa</h3><div class="preco"><span data-m="299" data-a="2.990">R$ 299</span><small data-s="/mês">/mês</small></div>
+        <ul class="ok"><li>Contabilidade completa, sem funcionário</li><li>DAS, notas, escrituração, conciliação do banco e balanço</li><li>Pró-labore, lucros e DEFIS</li><li>Resumo de uma página por mês</li><li>Contador responsável conferindo</li></ul></div>
+      <div class="card plano destaque"><span class="tag">com funcionários</span><h3>Empresa com folha</h3><div class="preco"><span data-m="399" data-a="3.990">R$ 399</span><small data-s="/mês">/mês</small></div>
+        <ul class="ok"><li>Tudo do plano Empresa</li><li>Folha de até 3 funcionários: holerite, férias, 13º e rescisão</li><li>FGTS Digital e eSocial</li><li>Conferência de cada folha pelo contador</li></ul></div>
+    </div>
+    <p class="sub" style="font-size:14px;margin-top:12px">Abertura do CNPJ: sem custo de serviço com 12 meses de plano; avulsa, R$ 297. As taxas públicas (Junta Comercial, prefeitura, conselho e certificado digital) são pagas por você, com o valor mostrado antes: em 2026, cerca de R$ 1.000 a R$ 1.500 no primeiro ano na Grande Vitória. Mais de 3 funcionários, filial e outros regimes ficam fora por enquanto.</p>
+  </section>
+
+  <section id="a-parte">
+    <h2>Serviços à parte, só se você quiser</h2>
+    <div class="grid3">
+      <div class="card"><h3>Imposto de renda do sócio</h3><p class="sub">A partir de R$ 197 por sócio, com valor combinado após a análise (pró-labore, lucros e outras rendas).</p></div>
+      <div class="card"><h3>Presença nas redes</h3><p class="sub">Base R$ 197/mês (Instagram, 8 carrosséis) ou Completa R$ 347/mês (Instagram e LinkedIn ou Facebook, 12 carrosséis, 4 roteiros de stories e o Perfil no Google). Sem promessa de resultado.</p></div>
+      <div class="card"><h3>Assessoria para a sua atuação</h3><p class="sub">Questionário de 15 minutos, conversa de 30 a 40, um Raio-X de 1 página e um plano com 2 ou 3 prioridades, prazos e acompanhamento mensal com os números da sua empresa. Diagnóstico R$ 297, plano de ação R$ 397, os dois por R$ 597 e acompanhamento de R$ 147 por mês. Se o diagnóstico não valer a pena, devolvemos o valor dele.</p></div>
+    </div>
+    <p class="sub" style="font-size:14px;margin-top:10px">Clientes ativos do plano Empresa têm 20% de desconto em redes e consultoria de apoio.</p>
+  </section>
+
+  <section class="ponte">
+    <div class="card"><h3>Ainda atende como autônoma?</h3><p class="sub">Comece pelo plano de autônoma: recibo, Carnê-Leão e financeiro pelo WhatsApp. Quando abrir a sua empresa, o seu histórico vem junto.</p><a class="cta sec" href="../venda.html">Ver o plano de autônoma</a></div>
+    <div class="card"><h3>Quer abrir o seu CNPJ?</h3><p class="sub">A gente abre: viabilidade, contrato social, Junta, opção pelo Simples, alvará, conselho, certificado e nota fiscal de teste, com cada passo no seu app.</p><a class="cta sec" href="entrar.html">Quero abrir minha empresa</a></div>
+  </section>
+
+  <section id="quem">
+    <h2>Quem está por trás</h2>
+    <p>A Lado a Lado Saúde nasceu na Assessoria Lado a Lado, com a pegada do Demerval: estar perto, entender antes de mudar e crescer junto. Antes de qualquer contrato, a gente conversa para ver se faz sentido para os dois lados. A inteligência artificial trabalha por trás, nas contas repetitivas e nos lembretes; quem decide, confere e responde são pessoas, e você fala com uma delas quando quiser.</p>
+    <p class="sub">A contabilidade é feita pelo nosso contador parceiro, [nome], CRC-ES nº [número], que assina o contrato contábil com você e confere tudo antes de pagar ou enviar à Receita. A Lado a Lado Saúde cuida da tecnologia, da coleta dos dados, dos lembretes, do atendimento e da cobrança, e não presta serviço contábil. Dado clínico e prontuário não entram: só valores, notas (com o nome de quem paga) e o que a lei exige, como o CPF de quem paga quando a declaração pede. <a href="../seguranca.html">Segurança e quem está por trás</a>.</p>
+  </section>
+
+  <section id="perguntas">
+    <h2>Perguntas</h2>
+    <details><summary>Já tenho contador. E agora?</summary><p>Você pode trocar quando quiser. Antes de começar, olhamos a sua situação fiscal (pendências, parcelamentos, histórico de 12 meses), pedimos os documentos ao contador anterior e dizemos o que precisa ser regularizado. Condições iguais às de quem começa conosco.</p></details>
+    <details><summary>Preciso de certificado digital?</summary><p>Sim, o certificado da empresa (e-CNPJ A1), que vale 1 ano e custa de R$ 150 a R$ 300. É pago por você, e a gente lembra da renovação.</p></details>
+    <details><summary>E o prazo da opção pelo Simples?</summary><p>Quem abre a empresa tem 30 dias do último deferimento da inscrição, no máximo 60 dias da abertura do CNPJ. Perdendo o prazo, só em janeiro. O app avisa com antecedência.</p></details>
+    <details><summary>Posso cancelar?</summary><p>Sim. Aviso prévio de 30 dias (60 dias de janeiro a abril, para não deixar a sua empresa sem contador no período da DEFIS e do imposto de renda). Devolvemos todos os seus documentos e arquivos em até 10 dias úteis, sem reter.</p></details>
+    <details><summary>Vocês veem os dados clínicos dos meus pacientes?</summary><p>Não. A contabilidade usa valores, notas (com o nome de quem paga) e categorias. Prontuário, queixa e diagnóstico ficam fora do sistema.</p></details>
+    <details><summary>Os números do app são exatos?</summary><p>São estimativas feitas com os números que você informa. Quem confere e assina é o contador responsável.</p></details>
+  </section>
+
+  <section class="faixa">
+    <h2>Teste sem cartão</h2>
+    <p class="sub">7 dias no plano mensal, 30 no anual. Nada é enviado à Receita antes do contrato.</p>
+    <a class="cta" href="entrar.html">Começar meu teste</a>
+  </section>
+</main>
+<footer>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+<script src="../regras.js"></script>
+<script src="contab.js"></script>
+<script>
+const $=id=>document.getElementById(id),B=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const num=id=>{const v=String($(id).value||'').replace(/\./g,'').replace(',','.');return v===''||isNaN(+v)?0:+v};
+function conta(){const rec=num('s-rec'),desp=num('s-desp'),n=+$('s-n').value,sal=num('s-sal'),emp=Array.from({length:n},()=>({salario:Math.max(sal,SM)}));
+  if(!(rec>0)){$('s-res').textContent='Informe a receita do mês.';return}
+  const s=simulaPJ({receita:rec,despesas:desp,emp}),mais=s.diferenca>=0;
+  $('s-res').innerHTML=`<p>Imposto do Simples: <b>${B(s.das)}</b> por mês (Anexo ${s.anexo}).</p>
+   <p>Pró-labore que mantém a empresa na tabela mais barata: <b>${B(s.proLabore)}</b>.</p>
+   <table class="cmp"><tr><th></th><th class="n2">Autônoma</th><th class="n2">Empresa</th></tr><tr><td>Imposto e INSS</td><td class="n2">${B(s.pf.impostos)}</td><td class="n2">${B(s.pj.impostos)}</td></tr><tr><td>Contabilidade</td><td class="n2">${B(0)}</td><td class="n2">${B(s.contador)}</td></tr><tr><td><b>Sobra no mês</b></td><td class="n2"><b>${B(s.pf.liquido)}</b></td><td class="n2"><b>${B(s.pj.liquido)}</b></td></tr></table>
+   <p>${mais?`Com estes números, a empresa deixa cerca de <b>${B(s.diferenca)}</b> a mais por mês.`:`Com estes números, ficar como autônoma deixa cerca de <b class="neg">${B(-s.diferenca)}</b> a mais por mês.`}</p>
+   <p class="sub" style="font-size:13px">${s.aviso}${s.perto?' Atenção: '+s.perto+'.':''}</p>`}
+['s-rec','s-desp','s-sal'].forEach(i=>$(i).addEventListener('input',conta));$('s-n').addEventListener('change',conta);conta();
+function ciclo(a){$('c-m').setAttribute('aria-pressed',!a);$('c-a').setAttribute('aria-pressed',a);
+  document.querySelectorAll('.preco span').forEach(s=>s.textContent='R$ '+(a?s.dataset.a:s.dataset.m));
+  document.querySelectorAll('.preco small').forEach(s=>s.textContent=a?'/ano':'/mês')}
+$('c-m').onclick=()=>ciclo(false);$('c-a').onclick=()=>ciclo(true);
+</script>
+<script>
+(function(){var rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ var pr=document.createElement('div');pr.className='prog';pr.setAttribute('aria-hidden','true');document.body.appendChild(pr);
+ addEventListener('scroll',function(){var h=document.documentElement;pr.style.width=Math.min(100,(h.scrollTop/((h.scrollHeight-h.clientHeight)||1))*100)+'%'},{passive:true});
+ if(rm||!('IntersectionObserver' in window))return;
+ var els=document.querySelectorAll('main>section:not(.hero)');els.forEach(function(e){e.classList.add('rv')});
+ var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('vis');io.unobserve(x.target)}})},{threshold:.08});els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

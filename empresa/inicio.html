@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lado a Lado Saúde: recibo, contabilidade e gestão para quem atende</title>
+<meta name="description" content="Para profissionais da saúde, como autônomo ou com empresa: recibo, contabilidade, imposto de renda, abertura de CNPJ, redes e assessoria para a sua atuação.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#02214f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
+:root{--bg:#f4f7f8;--card:#fff;--fg:#0b1b33;--muted:#5d6e66;--line:#d9e2dd;--accent:#00875f;--navy:#02214f;--accent-fg:#fff;--soft:#e2f3ec;
+  --zap:#dcf8c6;--zap-fg:#17231e;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;
+  --accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:56px;padding:20px 0 64px}
+h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(22px,4vw,30px);margin:0 0 6px;text-wrap:balance}
+h3{font-size:17px;margin:0}
+p{margin:6px 0}
+a{color:var(--accent)}
+.sub{color:var(--muted)}
+.marca{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.marca i{width:28px;height:28px;border-radius:8px;background:var(--accent);display:inline-block}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cta{display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}
+.cta.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:10px 16px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.hero .lead{font-size:19px;color:var(--muted);margin:14px 0 22px}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;font-size:14px}
+.b{max-width:85%;padding:8px 11px;border-radius:12px;white-space:pre-line}
+.b.eu{justify-self:end;background:var(--zap);color:var(--zap-fg);border-bottom-right-radius:3px}
+.b.nos{justify-self:start;background:var(--soft);border-bottom-left-radius:3px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.n{font-weight:700;color:var(--accent);font-size:14px}
+.plano.destaque{border:2px solid var(--accent)}
+.preco{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.preco small{font-size:15px;color:var(--muted);font-weight:500}
+.tag{justify-self:start;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent);border-radius:99px;padding:2px 10px}
+ul.ok{list-style:none;padding:0;margin:4px 0;display:grid;gap:6px}
+ul.ok li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.ciclo{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;margin:10px 0 18px;background:var(--card)}
+.ciclo button{font:inherit;border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;cursor:pointer}
+.ciclo button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600}
+details{border-top:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600}
+.cnpj{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.conta{display:grid;gap:10px}
+.conta label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.conta input{font:inherit;font-size:max(16px,1em);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.res{font-size:15px}
+.res b{font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+ol.passos{margin:6px 0;padding-left:20px;display:grid;gap:4px}
+@media (max-width:760px){.cnpj{grid-template-columns:1fr}}
+.faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
+footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
+@media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
+
+main>*{min-width:0}
+.rasc{background:#fff3d6;color:#8a5a00;border-radius:10px;padding:10px 12px;font-size:14px}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grande{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:24px;display:grid;gap:12px;align-content:start;text-decoration:none;color:inherit}
+.grande:hover,.grande:focus-visible{border-color:var(--accent)}
+.grande h2{font-size:clamp(22px,3.4vw,28px);margin:0}
+.grande .quem{color:var(--muted);margin:0;font-size:16px}
+.grande ul{list-style:none;padding:0;margin:4px 0 8px;display:grid;gap:6px}
+.grande li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.grande .cta{justify-self:start}
+.peq{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mini{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start;text-decoration:none;color:inherit}
+.mini:hover,.mini:focus-visible{border-color:var(--accent)}
+.mini h3{margin:0;font-size:17px}.mini p{margin:0;color:var(--muted);font-size:14px}
+.mini .tag{font-size:12px}
+.abre{font-size:clamp(24px,5vw,38px);font-weight:700;line-height:1.2;margin:0;max-width:30ch;text-wrap:balance}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.chips .breve{background:transparent;border:1px dashed var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{font-size:13px;font-weight:600;background:var(--soft);color:var(--accent);border-radius:99px;padding:4px 12px}
+.confia{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;color:var(--muted);font-size:14px;text-align:center}
+.ponte-l{font-size:14px;color:var(--muted)}
+@media (max-width:900px){.peq{grid-template-columns:1fr 1fr}}
+@media (max-width:700px){.duas{grid-template-columns:1fr}.grande{padding:18px}}
+@media (max-width:340px){.peq{grid-template-columns:1fr}}
+
+.heroi{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:center}
+.logo{height:56px;width:auto;display:block}.marca{text-decoration:none}
+.dor{background:var(--soft);border-radius:12px;padding:12px 14px;font-size:15px;margin-top:14px}
+.heroi .acoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.heroi .acoes .cta{flex:1 1 220px;text-align:center}
+.teste{font-size:15px;color:var(--muted);margin:10px 0 0}.teste b{color:var(--accent)}
+.passos3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+.passos3 .card p{margin:0;color:var(--muted);font-size:15px}
+.quem2{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.avatar{width:96px;height:96px;border-radius:50%;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px;text-align:center;padding:8px;border:2px dashed var(--accent)}
+.promessa{display:grid;gap:8px}.promessa h2{margin:0}
+@media (max-width:760px){.heroi,.passos3{grid-template-columns:1fr}.quem2{grid-template-columns:1fr;justify-items:start}}
+
+.prof{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.prof button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:8px 14px;border-radius:99px;cursor:pointer;min-height:40px}
+.prof button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.prof-l{font-size:14px;color:var(--muted);margin:14px 0 0;font-weight:600}
+.muda{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:12px}
+.muda .card p{margin:0;color:var(--muted);font-size:15px}.muda .ic{font-size:26px;line-height:1}
+@media (max-width:900px){.muda{grid-template-columns:1fr 1fr}}@media (max-width:560px){.muda{gap:10px}.muda .card{padding:14px}.muda .card p{font-size:14px}.muda .ic2{width:44px;height:44px}}
+.zapfix{position:fixed;right:16px;bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:20;background:#25d366;color:#06331a;font-weight:700;text-decoration:none;padding:13px 18px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.25);min-height:48px;display:inline-flex;align-items:center}
+.chat .b{opacity:1;transform:none;transition:opacity .45s,transform .45s}
+.chat.anim .b{opacity:0;transform:translateY(8px)}.chat.anim .b.v{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.chat .b{transition:none}.chat.anim .b{opacity:1;transform:none}}
+
+/* ===== camada visual (17/11/2026): hero escuro da marca, celular com a conversa, ícones, faixas ===== */
+.heroi{background:radial-gradient(900px 420px at 85% 10%,rgba(0,168,118,.35),transparent 60%),linear-gradient(160deg,#02214f 0%,#03306e 100%);color:#fff;border-radius:28px;padding:clamp(22px,4vw,44px);position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(2,33,79,.28)}
+.heroi::after{content:"";position:absolute;right:-60px;bottom:-70px;width:340px;height:340px;background:url(simbolo-saude-escuro.png) center/contain no-repeat;opacity:.07;pointer-events:none}
+.heroi h1,.heroi .lead{color:#fff}.heroi .lead{opacity:.9;margin:16px 0 0!important}.heroi .chips{margin-top:18px}
+.heroi .sub{color:#7be0bd!important}
+.heroi .teste{color:#cfe0f5}.heroi .teste b{color:#7be0bd}
+.heroi .dor{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
+.heroi .prof-l{color:#cfe0f5}.heroi .prof button{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28);color:#fff}
+.heroi .prof button[aria-pressed="true"]{background:#00a676;border-color:#00a676;color:#03140e}
+.heroi .cta{background:#00a676;color:#03140e;box-shadow:0 8px 22px rgba(0,166,118,.38)}.heroi .cta.sec{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6);box-shadow:none}
+.fone{justify-self:center;width:min(300px,100%);background:#0b1020;border-radius:36px;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.45),inset 0 0 0 2px #26304a;position:relative;z-index:1;transform:rotate(2deg)}
+.fone .tela{background:#e9e2d6;border-radius:28px;overflow:hidden;min-height:430px;display:flex;flex-direction:column}
+.fone .topo-z{background:#075e54;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+.fone .topo-z img{width:30px;height:30px;border-radius:50%;background:#fff;padding:3px}
+.fone .topo-z small{display:block;font-weight:400;opacity:.8;font-size:12px}
+.fone .chat{background:transparent;border:0;border-radius:0;padding:14px 12px;flex:1;align-content:start;font-size:13.5px;color:#111}
+.fone .b.nos{background:#fff;color:#111;box-shadow:0 1px 1px rgba(0,0,0,.12)}.fone .b.eu{background:#d9fdd3;color:#111;box-shadow:0 1px 1px rgba(0,0,0,.12)}
+.fone .sub{color:#5b6b66!important;font-size:12px!important}
+.fone .rodape-z{background:#f0f0f0;color:#777;font-size:12px;padding:9px 14px;text-align:left}
+.ic2{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#00a676,#02214f);display:grid;place-items:center;color:#fff;flex:none}
+.ic2 svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.muda .card{border-top:4px solid var(--accent)}.muda .card h3{margin-top:4px}
+.grande{position:relative;overflow:hidden}.grande::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#00a676,#02214f)}
+.grande .cab{display:flex;align-items:center;gap:14px}
+.grande:hover{box-shadow:0 14px 34px rgba(2,33,79,.16);transform:translateY(-2px)}.grande,.mini{transition:box-shadow .25s,transform .25s,border-color .25s}
+.mini .ic2{width:42px;height:42px;border-radius:12px}.mini .ic2 svg{width:22px;height:22px}
+.mini:hover{box-shadow:0 10px 24px rgba(2,33,79,.14);transform:translateY(-2px)}
+.banda{background:linear-gradient(160deg,#02214f,#03306e);color:#fff;border-radius:28px;padding:clamp(22px,4vw,40px)}
+.banda h2,.banda h3{color:#fff}.banda .sub,.banda .card p{color:#cfe0f5}
+.banda .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18)}.banda .n{color:#7be0bd}
+.faixa{background:linear-gradient(135deg,#00875f,#02214f);color:#fff;border:0}.faixa h2{color:#fff}.faixa .sub{color:#d6ece4}
+.faixa .cta{background:#fff;color:#02214f}.faixa .cta.sec{background:transparent;color:#fff;border:1.5px solid #fff}
+@media (prefers-reduced-motion:reduce){.grande,.mini{transition:none}.grande:hover,.mini:hover{transform:none}}
+@media (max-width:760px){.fone{transform:none}.heroi::after{width:240px;height:240px}}
+
+/* ===== movimento (17/11/2026): tudo desligado em "reduzir movimento"; sem JS a página aparece completa ===== */
+@keyframes flutua{0%,100%{transform:translateY(0) rotate(2deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+@keyframes brilha{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,30px) scale(1.15)}}
+@keyframes sobe{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}70%{box-shadow:0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+@keyframes pontos{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.prog{position:fixed;left:0;top:0;height:3px;width:0;background:linear-gradient(90deg,#00a676,#7be0bd);z-index:30;transition:width .1s}
+.dig{display:flex;gap:4px;padding:10px 12px}.dig i{width:7px;height:7px;border-radius:50%;background:#8a8f98;display:block;animation:pontos 1s infinite}.dig i:nth-child(2){animation-delay:.15s}.dig i:nth-child(3){animation-delay:.3s}
+.grande{--mx:50%;--my:0%}
+.grande::after{content:"";position:absolute;inset:0;background:radial-gradient(260px circle at var(--mx) var(--my),rgba(0,166,118,.14),transparent 60%);opacity:0;transition:opacity .25s;pointer-events:none}
+.grande:hover::after{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+ .heroi::before{content:"";position:absolute;left:-80px;top:-60px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(0,166,118,.45),transparent 65%);animation:brilha 14s ease-in-out infinite;pointer-events:none}
+ .fone{animation:flutua 7s ease-in-out infinite}
+ .heroi .abre,.heroi .lead,.heroi>div>p.sub{animation:sobe .8s both}.heroi .abre{animation-delay:.1s}.heroi .lead{animation-delay:.3s}
+ .heroi .chips span{animation:sobe .6s both}
+ .heroi .chips span:nth-child(1){animation-delay:.5s}.heroi .chips span:nth-child(2){animation-delay:.6s}.heroi .chips span:nth-child(3){animation-delay:.7s}.heroi .chips span:nth-child(4){animation-delay:.8s}.heroi .chips span:nth-child(5){animation-delay:.9s}.heroi .chips span:nth-child(6){animation-delay:1s}.heroi .chips span:nth-child(7){animation-delay:1.1s}.heroi .chips span:nth-child(8){animation-delay:1.2s}.heroi .chips span:nth-child(9){animation-delay:1.3s}
+ .zapfix{animation:pulsa 2.4s infinite}
+ .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}.rv.vis{opacity:1;transform:none}
+ .mini.rv:nth-child(2){transition-delay:.08s}.mini.rv:nth-child(3){transition-delay:.16s}.mini.rv:nth-child(4){transition-delay:.24s}.grande.rv:nth-child(2){transition-delay:.12s}
+}
+@media (max-width:760px){.heroi .lead{margin:0!important}.heroi{gap:16px}.heroi>div:first-child{display:contents}.heroi .abre{order:2}.heroi .lead{order:3}.heroi .colagem{order:4}.heroi .chips{order:5}.heroi>div>p.sub{order:1;margin:0}}
+
+/* ===== fotos de ambiente (17/11/2026): imagens ILUSTRATIVAS geradas por IA, a trocar por fotos reais ===== */
+.colagem{position:relative;justify-self:center;width:min(430px,100%);padding:6px 0 40px;z-index:1;min-height:560px}
+.colagem .foto{position:absolute;border-radius:22px;object-fit:cover;box-shadow:0 18px 40px rgba(0,0,0,.4);border:3px solid rgba(255,255,255,.9)}
+.colagem .f1{width:100%;height:270px;left:0;top:0;transform:rotate(-2deg);object-position:50% 30%}
+.colagem .fone{position:relative;width:min(255px,62%);margin:215px 0 0 auto;transform:rotate(2deg)}
+.colagem .ilus{position:absolute;left:6px;bottom:4px;font-size:12px;color:#cfe0f5;opacity:.85}
+@media (prefers-reduced-motion:no-preference){.colagem .f1{animation:flutua2 10s ease-in-out infinite}}
+@keyframes flutua2{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media (max-width:760px){.colagem{width:min(350px,100%);margin:0 auto;min-height:520px}.colagem .f1{height:215px}.colagem .fone{width:min(225px,64%);margin-top:175px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-recibo" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+<symbol id="i-predio" viewBox="0 0 24 24"><path d="M4 21V5l8-2 8 2v16"/><path d="M2 21h20M9 9h2M13 9h2M9 13h2M13 13h2M10 21v-4h4v4"/></symbol>
+<symbol id="i-lua" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></symbol>
+<symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5L16 9.5"/></symbol>
+<symbol id="i-moeda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9c-.5-1-1.5-1.5-2.7-1.5-1.5 0-2.6.8-2.6 2s1 1.7 2.8 2.1c1.8.4 2.8 1 2.8 2.2 0 1.2-1.1 2-2.7 2-1.3 0-2.4-.6-2.9-1.6M12 6v1.5M12 16.5V18"/></symbol>
+<symbol id="i-coracao" viewBox="0 0 24 24"><path d="M12 20s-8-4.8-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.2 12 20 12 20z"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></symbol>
+<symbol id="i-chave" viewBox="0 0 24 24"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M18 12v3M15 12v2"/></symbol>
+<symbol id="i-redes" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></symbol>
+<symbol id="i-mapa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></symbol>
+</defs></svg>
+<main>
+  <div class="rasc">Rascunho da página inicial para revisão, não publicado. Layout e textos aguardam a aprovação do Demerval.</div>
+  <div class="topo"><a class="marca" href="#" aria-label="Lado a Lado Saúde"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture></a><a class="cta sec" href="entrar.html">Entrar</a></div>
+
+  <section class="heroi">
+    <div>
+      <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Contabilidade • Gestão • Tecnologia</p>
+      <h1 class="abre">Para profissionais da saúde obrigados a emitir recibos pelo Receita Saúde e para quem já tem CNPJ.</h1>
+      <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado realizando a gestão desde a sua agenda, registro do atendimento (se precisar), emissão do recibo no Receita Saúde (autônomo) e notas fiscais (CNPJ). Além de cuidarmos das suas contas, da contabilidade (com o nosso contador parceiro), redes sociais, abertura de CNPJ, imposto de renda e assessoria para a sua atuação.</p>
+      <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade com contador parceiro</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
+    </div>
+    <div class="colagem">
+      <img class="foto f1" src="img/conversa.jpg" alt="Conversa entre o Demerval e um profissional, lado a lado, em um escritório claro" loading="eager" width="900" height="596">
+      <div class="fone" aria-label="Exemplo do que você recebe no WhatsApp"><div class="tela">
+      <div class="topo-z"><img src="simbolo-saude-claro.png" alt=""><span>Lado a Lado Saúde<small>conta comercial</small></span></div>
+      <div class="chat" role="log"><p class="sub" style="margin:0;font-weight:700;text-align:center">EXEMPLO</p>
+        <div class="b nos">Recibo emitido no Receita Saúde ✓
+Paciente: M. S. · R$ 200,00
+Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
+        <div class="b eu">Perfeito. Pode gerar a guia?</div>
+        <div class="b nos">Guia pronta. Recibo, Carnê-Leão e declaração conferidos entre si.</div></div>
+      <div class="rodape-z">Mensagem</div></div></div>
+      <span class="ilus">cena ilustrativa</span>
+    </div>
+  </section>
+
+  <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
+    <a class="grande" href="../venda.html" id="g-auto">
+      <div class="cab"><span class="ic2" aria-hidden="true"><svg><use href="#i-recibo"/></svg></span><h2>Sou profissional autônomo(a)</h2></div>
+      <p class="quem">Atendo com o meu CPF.</p>
+      <ul><li>Recibo do Receita Saúde</li><li>Carnê-Leão e DARF prontos</li><li>Financeiro pelo WhatsApp</li><li>Imposto de renda</li></ul>
+      <span class="cta">Ver o plano de autônomo</span>
+      <span class="ponte-l">Vai abrir seu CNPJ? A gente abre e segue com você.</span>
+    </a>
+    <a class="grande" href="index.html" id="g-emp">
+      <div class="cab"><span class="ic2" aria-hidden="true"><svg><use href="#i-predio"/></svg></span><h2>Tenho empresa de saúde (CNPJ)</h2></div>
+      <p class="quem">Simples Nacional, até 3 funcionários.</p>
+      <ul><li>Contabilidade completa e imposto do Simples</li><li>Folha de pagamento (em breve)</li><li>Financeiro e resumo de uma página por mês</li><li>Imposto de renda dos sócios</li></ul>
+      <span class="cta">Ver o plano para empresa</span>
+      <span class="ponte-l">Ainda é autônoma? Comece pelo plano ao lado e migre quando abrir.</span>
+    </a>
+  </section>
+
+  <section>
+    <h2>E mais, para os dois caminhos</h2>
+    <div class="peq" style="margin-top:12px">
+      <a class="mini" href="../venda.html#servicos" id="t-ir"><span class="ic2" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><span class="tag">autônomos e empresas</span><h3>Imposto de renda</h3><p>A gente faz a sua declaração, conferida pelo contador.</p></a>
+      <a class="mini" href="entrar.html" id="t-cnpj"><span class="ic2" aria-hidden="true"><svg><use href="#i-chave"/></svg></span><span class="tag">para quem vai abrir</span><h3>Abrimos o seu CNPJ</h3><p>Do contrato social à nota fiscal de teste, com cada passo no seu app.</p></a>
+      <a class="mini" href="../venda.html#servicos" id="t-redes"><span class="ic2" aria-hidden="true"><svg><use href="#i-redes"/></svg></span><span class="tag">autônomos e empresas</span><h3>Presença nas redes</h3><p>Instagram, Facebook, LinkedIn e Perfil no Google, dentro das regras do seu conselho.</p></a>
+      <a class="mini" href="../venda.html#servicos" id="t-apoio"><span class="ic2" aria-hidden="true"><svg><use href="#i-mapa"/></svg></span><span class="tag">autônomos e empresas</span><h3>Assessoria para a sua atuação</h3><p>Você conta o seu momento em 15 minutos. A gente devolve um retrato de 1 página e um plano de 90 dias com 3 prioridades, e acompanha todo mês.</p></a>
+    </div>
+  </section>
+
+  <section class="faixa" aria-label="Começar">
+    <h2>Pronto para começar?</h2>
+    <p class="sub">Teste sem cartão: 7 dias no plano mensal, 30 dias no anual. Prefere conversar? WhatsApp 27 99971-2727.</p>
+    <p><a class="cta" href="../venda.html">Começar como autônomo(a)</a> <a class="cta sec" href="index.html">Começar com a minha empresa</a></p>
+  </section>
+
+  <section class="confia" aria-label="Por que confiar">
+    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
+  </section>
+</main>
+<a class="zapfix" href="https://wa.me/5527999712727" id="zapfix">Falar no WhatsApp</a>
+<footer><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+<script>
+// Movimento e gatilhos visuais: barra de progresso, aparecer ao rolar, brilho que segue o dedo/mouse, "digitando..." no WhatsApp
+(function(){var rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ var pr=document.createElement('div');pr.className='prog';pr.setAttribute('aria-hidden','true');document.body.appendChild(pr);
+ addEventListener('scroll',function(){var h=document.documentElement;pr.style.width=Math.min(100,(h.scrollTop/(h.scrollHeight-h.clientHeight||1))*100)+'%'},{passive:true});
+ document.querySelectorAll('.grande').forEach(function(g){g.addEventListener('pointermove',function(e){var r=g.getBoundingClientRect();g.style.setProperty('--mx',(e.clientX-r.left)+'px');g.style.setProperty('--my',(e.clientY-r.top)+'px')})});
+ if(rm||!('IntersectionObserver' in window))return;
+ var els=document.querySelectorAll('.grande,.mini,.faixa,.confia,main>section:not(.heroi)>h2');els.forEach(function(e){e.classList.add('rv')});
+ var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('vis');io.unobserve(x.target)}})},{threshold:.15});els.forEach(function(e){io.observe(e)});
+})();
+(function(){var c=document.querySelector('.chat');if(!c||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;
+ c.classList.add('anim');var bb=[].slice.call(c.querySelectorAll('.b')),run=false;
+ function mostra(i){if(i>=bb.length)return;var x=bb[i],d=null;if(x.classList.contains('nos')&&i>0){d=document.createElement('div');d.className='b nos dig';d.innerHTML='<i></i><i></i><i></i>';d.style.opacity=1;d.style.transform='none';c.insertBefore(d,x)}
+  setTimeout(function(){if(d)d.remove();x.classList.add('v');setTimeout(function(){mostra(i+1)},700)},d?900:600)}
+ new IntersectionObserver(function(e,o){if(e[0].isIntersecting&&!run){run=true;o.disconnect();mostra(0)}},{threshold:.4}).observe(c)})();
+</script>
+<script>
+// Leva a origem (?o=) e a indicação (?ind=) da propaganda até o cadastro, como fazem a venda e a captação
+(function(){var q=new URLSearchParams(location.search),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),i=(q.get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!o&&!i)return;
+ document.querySelectorAll('a[href]').forEach(function(a){var h=a.getAttribute('href');if(/^(https?:|mailto:|tel:|#)/.test(h))return;var p=h.split('#'),u=new URL(p[0],location.href);if(o)u.searchParams.set('o',o);if(i)u.searchParams.set('ind',i);a.setAttribute('href',u.pathname+u.search+(p[1]?'#'+p[1]:''))})})();
+</script>
+</body>
+</html>

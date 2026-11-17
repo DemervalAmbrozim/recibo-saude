@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Módulos do contador, Minha empresa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: abas com um módulo por vez, dados de exemplo já preenchidos; o que o Demerval vai conferir um a um. */
+:root{--bg:#f3f6f4;--card:#ffffff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#ffffff;--soft:#e2efe9;--warn:#8a5a00;--warnbg:#fff3d6;--bad:#9b1c1c;--badbg:#fde4e4;--blue:#1d4f8a;--bluebg:#e4eefa;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--warn:#f2c36b;--warnbg:#3a2f12;--bad:#ff9d9d;--badbg:#3d1a1a;--blue:#8fb8ee;--bluebg:#1b2a3d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--warn:#f2c36b;--warnbg:#3a2f12;--bad:#ff9d9d;--badbg:#3d1a1a;--blue:#8fb8ee;--bluebg:#1b2a3d;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+main{max-width:980px;margin:0 auto;display:grid;gap:16px}main>*{min-width:0}
+h1{font-size:clamp(24px,5vw,34px);line-height:1.15;margin:0}h2{font-size:19px;margin:0 0 8px}h3{font-size:15px;margin:10px 0 4px}
+p{margin:0}.sub{color:var(--muted);font-size:14px}
+.rasc{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{font:inherit;padding:9px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:42px}
+nav button[aria-selected=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+section{display:none}section.on{display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input,select,textarea{font:inherit;font-size:max(16px,1em);padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--fg);width:100%;box-sizing:border-box;min-width:0}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;min-height:150px}
+label.chk{display:flex;gap:8px;align-items:center;color:var(--fg)}label.chk input{width:auto}
+button.p{font:inherit;padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer;min-height:42px}
+.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.big{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent)}
+.tag.at{background:var(--warnbg);color:var(--warn)}.tag.ruim{background:var(--badbg);color:var(--bad)}.tag.az{background:var(--bluebg);color:var(--blue)}
+.alerta{padding:8px 11px;border-radius:9px;background:var(--warnbg);color:var(--warn);font-size:14px;margin-top:6px}.alerta.crit{background:var(--badbg);color:var(--bad)}
+.passo{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}.passo.bloq{opacity:.5}
+.zap{display:grid;gap:6px}.bub{max-width:min(520px,92%);padding:8px 11px;border-radius:12px;white-space:pre-line;background:var(--soft);font-size:14px}.bub .v{background:var(--warnbg);color:var(--warn);border-radius:4px;padding:0 3px}
+.meta{font-size:12px;color:var(--muted);margin:10px 0 2px}
+#resumoBox{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:12px;padding:6px;background:#fff;color:#17231e}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="rasc" id="rasc"><b>Rascunho interno, não publicado.</b> Os números são <b>estimativas</b> sobre os dados de exemplo ou digitados aqui: o contador responsável confere, apura e assina. Nada disto está no site nem vai ao cliente antes da revisão do contador e do advogado.</div>
+  <header><h1>Minha empresa: módulos do contador</h1><p class="sub">Cada aba usa o módulo real do app (os mesmos dos testes automáticos). Mude os números e veja o resultado. Conferido por você: marque na sua lista, não aqui.</p></header>
+  <div class="card" id="cx"><b>Banco da empresa:</b> <span id="cx-st">verificando…</span> <label id="cx-l" hidden style="margin-top:6px">Empresa<select id="cx-emp"></select></label></div>
+  <nav role="tablist" id="abas">
+    <button role="tab" data-t="sim" aria-selected="true">1 Simulação</button><button role="tab" data-t="abre" aria-selected="false">2 Abertura</button><button role="tab" data-t="folha" aria-selected="false">3 Folha</button>
+    <button role="tab" data-t="conc" aria-selected="false">4 Conciliação</button><button role="tab" data-t="res" aria-selected="false">5 Resumo do mês</button><button role="tab" data-t="luc" aria-selected="false">6 Lucros</button>
+    <button role="tab" data-t="vir" aria-selected="false">7 Virada e baixa</button><button role="tab" data-t="cal" aria-selected="false">8 Calendário</button><button role="tab" data-t="zap" aria-selected="false">9 Mensagens do zap</button><button role="tab" data-t="pai" aria-selected="false">10 Painel do contador</button><button role="tab" data-t="soc" aria-selected="false">11 Sócio e sem movimento</button><button role="tab" data-t="dia" aria-selected="false">12 Entrada com CNPJ</button><button role="tab" data-t="cna" aria-selected="false">13 CNAE e Anexo</button>
+      <button role="tab" data-t="eve" aria-selected="false">14 Eventos da empresa</button>
+  </nav>
+
+  <section id="t-sim" class="on"><div class="card"><h2>Simulação: autônoma × empresa</h2>
+    <div class="grid"><label>Receita por mês (R$)<input id="s-rec" value="10.000" inputmode="decimal"></label><label>Despesas por mês (R$)<input id="s-desp" value="1.500" inputmode="decimal"></label>
+    <label>Funcionários<select id="s-n"><option>0</option><option>1</option><option>2</option><option>3</option></select></label><label>Salário de cada (R$)<input id="s-sal" value="2.200" inputmode="decimal"></label></div>
+    <div id="s-out" style="margin-top:12px"></div></div></section>
+
+  <section id="t-abre"><div class="card"><h2>Abertura do CNPJ: 17 passos</h2><p class="sub">Cada passo só libera quando os anteriores terminam. Marque para ver o próximo passo abrir.</p>
+    <div class="grid" style="margin:10px 0"><label>Data da abertura do CNPJ<input type="date" id="a-ab"></label><label>Último deferimento (alvará ou inscrição)<input type="date" id="a-df"></label></div>
+    <p id="a-prazo"></p><div id="a-lista"></div></div>
+    <div class="card"><h2>Custos públicos do 1º ano</h2><div class="grid"><label>Cidade<select id="a-cid"><option value="vitoria">Vitória</option><option value="vila velha">Vila Velha</option><option value="serra">Serra</option><option value="cariacica">Cariacica</option></select></label>
+    <label>Profissão<select id="a-prof"><option>fisioterapia</option><option>psicologia</option><option>terapia ocupacional</option><option>medicina</option></select></label></div><div id="a-custos" class="tbl" style="margin-top:10px"></div></div><div class="card"><h2>Passos no banco</h2><p class="sub">Conclui um passo da empresa escolhida, com a prova (protocolo, número ou data). O banco só deixa concluir na ordem.</p><div id="bd-passos"></div><div class="grid" style="margin-top:10px"><label>Passo<select id="bd-p"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option></select></label><label>Prova<input id="bd-prova" placeholder="ex.: protocolo 12345"></label></div><p style="margin-top:10px"><button class="p" id="bd-conc-passo" disabled title="Entre na sua conta e escolha a empresa">Concluir passo no banco</button> <button class="p" id="bd-cria" disabled title="Entre na sua conta e escolha a empresa" style="background:var(--blue)">Criar os 17 passos</button></p><div id="bd-abre-out" class="sub"></div></div></section>
+
+  <section id="t-folha"><div class="card"><h2>Folha de pagamento própria</h2>
+    <label style="max-width:320px">Cálculo<select id="f-tipo"><option value="mes">Folha do mês</option><option value="ferias">Férias</option><option value="d13">13º salário</option><option value="resc">Rescisão</option></select></label>
+    <div id="f-form" class="grid" style="margin-top:12px"></div><div id="f-out" style="margin-top:12px"></div></div><div class="card"><h2>Guardar folha do mês</h2><p class="sub">Vale para a opção "Folha do mês". Entra como <b>folha-sombra</b>; a aprovação é só do contador, no banco.</p><div class="grid"><label>Empregado<select id="bd-emp"></select></label><label>Mês<input type="month" id="bd-fcomp"></label></div><p style="margin-top:10px"><button class="p" id="bd-folha" disabled title="Entre na sua conta e escolha a empresa">Guardar como folha-sombra</button></p><div id="bd-folha-out" class="sub"></div></div></section>
+
+  <section id="t-conc"><div class="card"><h2>Conciliação bancária</h2><p class="sub">Cole um extrato (CSV ou OFX). O exemplo já está preenchido. As notas abertas do exemplo: N1 R$ 350, N2 R$ 400, N3 R$ 200, N4 R$ 200.</p>
+    <textarea id="c-txt" spellcheck="false"></textarea><div style="margin-top:10px"><button class="p" id="c-go">Conciliar</button></div><div id="c-out" style="margin-top:12px"></div></div><div class="card"><p><button class="p" id="bd-conc" disabled title="Entre na sua conta e escolha a empresa">Lançar na escrituração da empresa</button></p><p class="sub">Grava no livro da empresa os lançamentos gerados acima. Só o contador pode lançar. Cada lançamento é conferido pelo banco (partidas dobradas).</p><div id="bd-conc-out"></div></div></section>
+
+  <section id="t-res"><div class="card"><h2>Resumo do mês (uma página para a cliente)</h2><p class="sub">Gerado da escrituração de dois meses de exemplo. É o que a cliente recebe no fim de cada mês.</p>
+    <div class="grid" style="margin:10px 0"><label>Competência<select id="r-comp"><option value="2027-02">fevereiro de 2027</option><option value="2027-01">janeiro de 2027</option></select></label><label>Lançamentos do extrato sem classificação<input id="r-pend" value="3" inputmode="numeric"></label></div>
+    <h3>No WhatsApp</h3><div class="zap" id="r-zap"></div><h3>No app (uma página)</h3><div id="resumoBox"></div></div><div class="card"><p><button class="p" id="bd-res" disabled title="Entre na sua conta e escolha a empresa">Guardar este relatório do mês</button></p><div id="bd-res-out" class="sub"></div></div></section>
+
+  <section id="t-luc"><div class="card"><h2>Lucros e pró-labore</h2>
+    <div class="grid"><label>Receita do ano (R$)<input id="l-rec" value="120.000" inputmode="decimal"></label><label>IRPJ e CSLL pagos no DAS do ano (R$)<input id="l-irpj" value="540" inputmode="decimal"></label>
+    <label>Lucro da escrituração no ano (R$)<input id="l-luc" value="61.000" inputmode="decimal"></label><label>Já distribuído no ano (R$)<input id="l-dist" value="0" inputmode="decimal"></label>
+    <label>Quer distribuir agora (R$)<input id="l-val" value="30.000" inputmode="decimal"></label><label class="chk"><input type="checkbox" id="l-esc" checked> Escrituração contábil completa</label></div><div id="l-out" style="margin-top:12px"></div>
+    <h3>Pró-labore que mantém o Fator R em 28%</h3><div class="grid"><label>Receita dos 11 meses anteriores (R$)<input id="p-r11" value="110.000" inputmode="decimal"></label><label>Folha dos 11 meses anteriores (R$)<input id="p-f11" value="30.800" inputmode="decimal"></label><label>Receita do mês (R$)<input id="p-rm" value="10.000" inputmode="decimal"></label></div><div id="p-out" style="margin-top:10px"></div></div></section>
+
+  <section id="t-vir"><div class="card"><h2>Virada para empresa e regime misto</h2><p class="sub">Cada atendimento sai por um documento só. A empresa fica apta a emitir nota em:</p>
+    <label style="max-width:240px;margin:8px 0">Empresa apta desde<input type="date" id="v-ap" value="2027-02-10"></label><div id="v-out" class="tbl"></div></div>
+    <div class="card"><h2>Voltar para a pessoa física (baixa do CNPJ)</h2><p class="sub">Marque o que já foi feito; só abre o passo cujas dependências terminaram.</p><div id="v-baixa"></div></div></section>
+
+  <section id="t-cal"><div class="card"><h2>Calendário fiscal de 12 meses</h2><label class="chk" style="margin-bottom:8px"><input type="checkbox" id="k-folha" checked> Empresa com funcionários</label><div id="k-out" class="tbl"></div></div></section>
+
+  <section id="t-zap"><div class="card"><h2>Mensagens do WhatsApp</h2><p class="sub">Textos para você aprovar. Os campos entre chaves viram os dados da cliente (destacados). Nunca pedimos senha, documento ou dado de paciente por aqui.</p>
+    <label style="max-width:260px;margin:8px 0">Mostrar<select id="z-fr"><option value="">todas</option><option value="comum">comuns</option><option value="autonoma">autônoma</option><option value="empresa">empresa</option><option value="ponte">ponte (virar CNPJ)</option></select></label><div id="z-out"></div></div></section>
+
+  <section id="t-pai"><div class="card"><h2>Painel do contador: fila de prioridades</h2><p class="sub">Carteira de exemplo com 4 clientes e a data de hoje fixa em 18/03/2027. A fila mostra o que olhar primeiro.</p><div id="p-fila" class="tbl"></div>
+    <h3>Vencimentos dos próximos 7 dias</h3><div id="p-sem" class="tbl"></div><h3>Tempo e margem do mês</h3><div id="p-ind"></div></div></section>
+
+  <section id="t-soc"><div class="card"><h2>Informe anual do sócio</h2>
+    <div class="grid"><label>Participação do sócio (%)<input id="o-part" value="100" inputmode="decimal"></label><label>Lucros recebidos por mês (R$)<input id="o-luc" value="2.500" inputmode="decimal"></label><label>Receita do ano (R$)<input id="o-rec" value="120.000" inputmode="decimal"></label><label>IRPJ e CSLL pagos no DAS (R$)<input id="o-irpj" value="540" inputmode="decimal"></label><label class="chk"><input type="checkbox" id="o-esc" checked> Escrituração contábil completa</label><label>Lucro da escrituração (R$)<input id="o-lc" value="61.000" inputmode="decimal"></label></div><div id="o-out" style="margin-top:12px"></div></div>
+    <div class="card"><h2>Empresa sem movimento: o que continua obrigatório</h2><div class="grid"><label class="chk"><input type="checkbox" id="m-pl"> Há sócio com pró-labore</label><label>Empregados<select id="m-emp"><option>0</option><option>1</option><option>2</option><option>3</option></select></label></div><div id="m-out" style="margin-top:10px"></div></div></section>
+
+  <section id="t-dia"><div class="card"><h2>Entrada de quem já tem CNPJ: diagnóstico fiscal</h2><p class="sub">O contador levanta no e-CAC com a procuração; o sistema organiza e diz o nível de risco, o orçamento de regularização e a recomendação.</p>
+    <div class="grid"><label>DAS em atraso (quantos meses)<input id="d-das" value="2" inputmode="numeric"></label><label>DEFIS pendentes<input id="d-def" value="0" inputmode="numeric"></label><label>Pendências no eSocial<input id="d-es" value="0" inputmode="numeric"></label><label>Mensagens não lidas no e-CAC<input id="d-cp" value="2" inputmode="numeric"></label><label>Meses de histórico disponíveis (de 12)<input id="d-hist" value="12" inputmode="numeric"></label>
+    <label>Certidão federal<select id="d-cf"><option value="negativa">Negativa</option><option value="positiva_com_efeitos">Positiva com efeitos de negativa</option><option value="positiva">Positiva</option></select></label><label>Regime<select id="d-reg"><option value="simples">Simples Nacional</option><option value="mei">MEI</option><option value="presumido">Lucro presumido</option></select></label><label class="chk"><input type="checkbox" id="d-pr" checked> Procuração ativa</label><label class="chk"><input type="checkbox" id="d-ce" checked> Certificado válido</label></div><div id="d-out" style="margin-top:12px"></div></div></section>
+
+  <section id="t-cna"><div class="card"><h2>CNAE e Anexo do Simples</h2><p class="sub">Digite o CNAE (ex.: 8650-0/04) ou a profissão (ex.: medicina).</p><label>CNAE ou profissão<input id="cx-q" value="8650004"></label><div id="cx-out" style="margin-top:12px"></div></div></section>
+
+  <section id="t-eve"><div class="card"><h2>Eventos da empresa</h2><p class="sub">Entrada ou saída de sócio, alteração do contrato, endereço, atividade e baixa: o passo a passo, quem faz e o que o contador precisa conferir.</p>
+    <div class="grid" style="margin:10px 0"><label>Evento<select id="e-tipo"></select></label><label>Registro da sociedade<select id="e-reg"><option value="cartorio">Cartório de Pessoas Jurídicas (sociedade simples)</option><option value="junta">Junta Comercial (sociedade empresária)</option></select></label>
+    <label>Sócios hoje<input id="e-soc" value="2" inputmode="numeric"></label><label>Empregados<input id="e-emp" value="0" inputmode="numeric"></label></div>
+    <label class="chk"><input type="checkbox" id="e-saldo"> Há saldo em banco na empresa</label>
+    <div id="e-out" style="margin-top:12px"></div></div></section>
+</main>
+<script src="../regras.js"></script>
+<script src="contab.js"></script>
+<script src="folha.js"></script>
+<script src="contabil.js"></script>
+<script src="concilia.js"></script>
+<script src="relatorio.js"></script>
+<script src="lucros.js"></script>
+<script src="virada.js"></script>
+<script src="painel.js"></script>
+<script src="socios.js"></script>
+<script src="diagnostico.js"></script>
+<script src="cnae.js"></script>
+<script src="eventos.js"></script>
+<script src="../config.js"></script>
+<script src="pj-dados.js"></script>
+<script>
+var ZAP={mensagens:[]};
+// Interface da demonstração: usa os módulos reais (regras, contab, folha, contabil, concilia, relatorio, lucros, virada) com dados de exemplo.
+var $=function(i){return document.getElementById(i)};
+var B=function(v){return (v==null||isNaN(v))?'-':v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
+var P=function(v){return (v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var num=function(id){var v=String($(id).value||'').replace(/\./g,'').replace(',','.');return v===''||isNaN(+v)?0:+v};
+var D=function(s){return s.split('-').reverse().join('/')};
+var tab=function(h,rows,cls){return '<div class="tbl"><table>'+(h?'<tr>'+h.map(function(x,i){return '<th'+(cls&&cls[i]?' class="n"':'')+'>'+esc(x)+'</th>'}).join('')+'</tr>':'')+rows.map(function(r){return '<tr>'+r.map(function(x,i){return '<td'+(cls&&cls[i]?' class="n"':'')+'>'+x+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>'};
+function abas(){document.querySelectorAll('#abas button').forEach(function(b){b.onclick=function(){document.querySelectorAll('#abas button').forEach(function(x){x.setAttribute('aria-selected',x===b)});document.querySelectorAll('main>section').forEach(function(s){s.classList.toggle('on',s.id==='t-'+b.dataset.t)});try{history.replaceState(null,'','#'+b.dataset.t)}catch(e){}}})}
+// 1 simulação
+function sim(){var rec=num('s-rec'),n=+$('s-n').value,emp=[];for(var i=0;i<n;i++)emp.push({salario:Math.max(num('s-sal'),SM)});
+  if(!(rec>0)){$('s-out').textContent='Informe a receita.';return}
+  var s=simulaPJ({receita:rec,despesas:num('s-desp'),emp:emp});
+  $('s-out').innerHTML='<div class="grid"><div><div class="sub">Tabela do Simples</div><div class="big">Anexo '+s.anexo+'</div><div class="sub">Fator R '+P(s.fatorR)+' · '+s.porte+'</div></div><div><div class="sub">Pró-labore sugerido</div><div class="big">'+B(s.proLabore)+'</div></div><div><div class="sub">DAS por mês</div><div class="big">'+B(s.das)+'</div><div class="sub">'+P(s.efetiva)+' da receita</div></div></div>'
+   +tab(['','Autônoma','Empresa'],[['Impostos e INSS',B(s.pf.impostos),B(s.pj.impostos)],['Contabilidade',B(0),B(s.contador)],['Folha de empregados',B(s.custoFolha),B(s.custoFolha)],['<b>Sobra no mês</b>','<b>'+B(s.pf.liquido)+'</b>','<b>'+B(s.pj.liquido)+'</b>']],[0,1,1])
+   +'<p>'+(s.diferenca>=0?'A empresa deixa cerca de <b>'+B(s.diferenca)+'</b> a mais por mês.':'Ficar como autônoma deixa cerca de <b>'+B(-s.diferenca)+'</b> a mais por mês.')+'</p><p class="sub">'+esc(s.aviso)+'</p>'}
+// 2 abertura
+var feitos=[];
+function abre(){var prox={};proximosPassos(feitos).forEach(function(p){prox[p.id]=1});
+  $('a-lista').innerHTML=PASSOS.map(function(p){var ok=feitos.indexOf(p.id)>=0,lib=!!prox[p.id];return '<div class="passo'+(!ok&&!lib?' bloq':'')+'"><input type="checkbox" data-p="'+p.id+'" id="p'+p.id+'"'+(ok?' checked':'')+(!ok&&!lib?' disabled':'')+'><label for="p'+p.id+'" style="color:var(--fg)">'+p.id+'. '+esc(p.titulo)+'</label><span class="tag az">'+p.dono+'</span></div>'}).join('');
+  document.querySelectorAll('#a-lista input').forEach(function(c){c.onchange=function(){var id=+c.dataset.p;feitos=c.checked?feitos.concat([id]):feitos.filter(function(x){return x!==id&&PASSOS.filter(function(q){return q.id===x})[0].depende.indexOf(id)<0});abre()}});
+  var ab=$('a-ab').value;$('a-prazo').innerHTML=ab?'<span class="tag ruim">Prazo da opção pelo Simples: '+D(prazoOpcaoSimples(ab,$('a-df').value||null))+'</span> <span class="sub">30 dias do último deferimento, no máximo 60 da abertura. Perdeu, só em janeiro.</span>':'<span class="sub">Informe a data de abertura do CNPJ para ver o prazo da opção.</span>';
+  var c=custosAbertura($('a-cid').value,$('a-prof').value);
+  $('a-custos').innerHTML=tab(null,c.itens.map(function(i){return [esc(i.n)+'<br><span class="sub">'+esc(i.nota||'')+'</span>',i.faixa?B(i.faixa[0])+' a '+B(i.faixa[1]):i.v==null?'a confirmar':B(i.v)]}).concat([['<b>Faixa do 1º ano</b><br><span class="sub">'+esc(c.txt)+'</span>','<b>'+B(c.min)+' a '+B(c.max)+'</b>']]),[0,1])}
+// 3 folha
+var FORM={mes:[['f-s','Salário (R$)','3.000'],['f-he','Horas extras 50%','10'],['f-fa','Faltas (dias)','0'],['f-co','Comissão (R$)','0'],['f-de','Dependentes','1'],['f-vt','Custo do vale-transporte (R$)','200']],
+ ferias:[['f-s','Salário (R$)','3.000'],['f-gz','Dias de gozo','20'],['f-ab','Dias de abono','10'],['f-md','Média de variáveis (R$)','0'],['f-in','Início das férias','','date']],
+ d13:[['f-s','Salário (R$)','3.000'],['f-av','Avos (1 a 12)','12'],['f-md','Média de variáveis (R$)','0']],
+ resc:[['f-s','Salário (R$)','3.000'],['f-ad','Admissão','2024-03-01','date'],['f-sa','Saída','2026-08-20','date'],['f-ve','Períodos de férias vencidos','0'],['f-fg','Saldo do FGTS (R$)','8.000']]};
+function folhaForm(){var t=$('f-tipo').value,h='';FORM[t].forEach(function(f){h+='<label>'+f[1]+'<input id="'+f[0]+'" value="'+f[2]+'"'+(f[3]?' type="'+f[3]+'"':' inputmode="decimal"')+'></label>'});
+  if(t==='resc')h+='<label>Tipo<select id="f-tp"><option value="sem_justa_causa">Sem justa causa</option><option value="pedido_demissao">Pedido de demissão</option><option value="justa_causa">Justa causa</option><option value="acordo">Acordo (art. 484-A)</option><option value="termino_contrato">Término de contrato</option></select></label><label class="chk"><input type="checkbox" id="f-ai" checked> Aviso indenizado</label>';
+  $('f-form').innerHTML=h;$('f-form').querySelectorAll('input,select').forEach(function(e){e.oninput=folhaOut;e.onchange=folhaOut});folhaOut()}
+function rub(L){return tab(['Cód.','Descrição','Ref.','Valor'],L.map(function(x){return [x.cod,esc(x.desc),esc(x.ref),B(x.valor)]}),[0,0,0,1])}
+function folhaOut(){var t=$('f-tipo').value,o='',r;
+  if(t==='mes'){r=window.ULT_F=calculaFolha({salario:num('f-s'),dependentes:num('f-de'),vtCusto:num('f-vt')},{heNormais:num('f-he'),faltasDias:num('f-fa'),comissao:num('f-co')});
+    o=!r.ok?r.erros.map(function(e){return '<div class="alerta crit">'+esc(e)+'</div>'}).join(''):tab(['Cód.','Descrição','Ref.','Proventos','Descontos'],r.proventos.map(function(x){return [x.cod,esc(x.desc),esc(x.ref),B(x.valor),'']}).concat(r.descontos.map(function(x){return [x.cod,esc(x.desc),esc(x.ref),'',B(x.valor)]})),[0,0,0,1,1])+'<p class="big">'+B(r.liquido)+'</p><p class="sub">FGTS do mês '+B(r.fgts)+' (dia 20, FGTS Digital). Custo estimado para a empresa '+B(r.custoMensal)+' com 13º e férias provisionados.</p>'}
+  if(t==='ferias'){r=calculaFerias({salario:num('f-s')},{diasGozo:num('f-gz'),diasAbono:num('f-ab'),mediaVariaveis:num('f-md')});
+    var pz=$('f-in').value?prazosFerias($('f-in').value):null;
+    o=!r.ok?r.erros.map(function(e){return '<div class="alerta crit">'+esc(e)+'</div>'}).join(''):rub(r.proventos)+'<p>INSS '+B(r.inss)+' · IRRF '+B(r.irrf)+' · FGTS '+B(r.fgts)+'</p><p class="big">'+B(r.liquido)+'</p>'+(pz?'<p class="sub">Aviso até '+D(pz.avisoAte)+' e pagamento até '+D(pz.pagarAte)+'.</p>':'<p class="sub">Informe o início para ver os prazos de aviso (30 dias antes) e pagamento (2 dias antes).</p>')}
+  if(t==='d13'){r=calculaDecimoTerceiro({salario:num('f-s')},{avos:num('f-av'),mediaVariaveis:num('f-md')});
+    o=!r.ok?r.erros.map(function(e){return '<div class="alerta crit">'+esc(e)+'</div>'}).join(''):tab(null,[['13º total ('+r.avos+'/12)',B(r.total)],['1ª parcela, até '+D(r.parcela1.vence)+' (sem descontos)',B(r.parcela1.liquido)],['2ª parcela, até '+D(r.parcela2.vence)+': bruto',B(r.parcela2.bruto)],['INSS e IRRF sobre o 13º inteiro',B(r.parcela2.inss)+' e '+B(r.parcela2.irrf)],['<b>2ª parcela líquida</b>','<b>'+B(r.parcela2.liquido)+'</b>'],['FGTS total',B(r.fgtsTotal)]],[0,1])+'<p class="sub">'+esc(r.aviso)+'</p>'}
+  if(t==='resc'){r=calculaRescisao({salario:num('f-s')},{tipo:$('f-tp').value,admissao:$('f-ad').value,saida:$('f-sa').value,avisoIndenizado:$('f-ai').checked,periodosVencidos:num('f-ve'),saldoFgts:num('f-fg')});
+    o=!r.ok?r.erros.map(function(e){return '<div class="alerta crit">'+esc(e)+'</div>'}).join(''):tab(['Cód.','Descrição','Ref.','Proventos','Descontos'],r.proventos.map(function(x){return [x.cod,esc(x.desc),esc(x.ref),B(x.valor),'']}).concat(r.descontos.map(function(x){return [x.cod,esc(x.desc),esc(x.ref),'',B(x.valor)]})),[0,0,0,1,1])+'<p class="big">'+B(r.liquido)+'</p><p>FGTS: depósito '+B(r.fgts.deposito)+' · multa '+B(r.fgts.multa)+' ('+(r.fgts.multaPct*100)+'%) · saque '+(r.fgts.saquePct*100)+'%. Pagar até <b>'+D(r.vencimento)+'</b>.</p>'+r.notas.concat(r.alertas).map(function(a){return '<div class="alerta">'+esc(a)+'</div>'}).join('')+'<p class="sub">'+esc(r.aviso)+'</p>'}
+  $('f-out').innerHTML=o}
+// 4 conciliação
+var CSV='Data;Histórico;Valor\n10/01/2027;PIX RECEBIDO MARIA SILVA;350,00\n11/01/2027;PIX RECEBIDO JOAO SOUZA;400,00\n12/01/2027;PAGTO ALUGUEL SALA;-1.500,00\n15/01/2027;TARIFA PACOTE DE SERVICOS;-29,90\n20/01/2027;DAS SIMPLES NACIONAL;-600,00\n21/01/2027;COMPRA XYZ LTDA;-123,45\n22/01/2027;CIELO LIQUIDACAO VENDA CARTAO;400,00\n23/01/2027;PIX RECEBIDO FULANO;77,00\n';
+var NOTAS=[{ref:'N1',valor:350,data:'2027-01-05',tomador:'Maria Silva'},{ref:'N2',valor:400,data:'2027-01-06',tomador:'João Souza'},{ref:'N3',valor:200,data:'2027-01-07',tomador:'Ana Lima'},{ref:'N4',valor:200,data:'2027-01-08',tomador:'Beto Cruz'}];
+function concilia(){var t=$('c-txt').value,ex=/<STMTTRN>/i.test(t)?parseOFX(t):parseCSV(t);
+  var r=classifica(ex.transacoes,{notasAbertas:NOTAS}),rs=resumo(r),cor={conciliado:'',sugerido:'at',pendente:'ruim',duplicado:'az',ignorado:'az'};
+  var L=criaLivro();L.gera.capital('2027-01-02',2000);NOTAS.forEach(function(n){L.gera.notaEmitida(n.data,n.valor,n.ref)});L.gera.dasApurado('2026-12-31',600,'2026-12');
+  var g=window.ULT_G=geraLancamentos(L,r.itens,{notasAbertas:NOTAS}),d=L.dre('2027-01-01','2027-01-31'),b=L.balanco('2027-01-31');
+  $('c-out').innerHTML=(ex.erros.length?ex.erros.map(function(e){return '<div class="alerta crit">Linha '+e.linha+': '+esc(e.motivo)+'</div>'}).join(''):'')
+   +'<p><b>'+rs.conciliado+'</b> conciliados sozinhos ('+rs.automatico+'%), <b>'+rs.sugerido+'</b> para confirmar, <b>'+rs.pendente+'</b> pendentes, '+rs.duplicado+' duplicados.</p>'
+   +tab(['Data','Descrição','Valor','Situação','Destino'],r.itens.map(function(i){return [D(i.data),esc(i.descricao),B(i.valor),'<span class="tag '+cor[i.status]+'">'+i.status+'</span>',esc((i.nota?'nota '+i.nota:i.notas?'notas '+i.notas.join('+'):i.conta?i.conta:i.tipo||'revisão')+(i.aviso?' ('+i.aviso+')':''))]}),[0,0,1,0,0])
+   +'<h3>Lançamentos gerados na escrituração</h3><p>'+g.lancamentos.length+' lançamentos, '+g.falhas.length+' que precisam de confirmação. Balanço fecha: <b>'+(b.fecha?'sim':'não')+'</b>. Resultado do mês pelo DRE: '+B(d.resultado)+'.</p>'}
+// 5 resumo
+function resumoMes(){var L=criaLivro();L.gera.capital('2027-01-02',10000);
+  [['2027-01',10000,2800,600,1500],['2027-02',12000,2800,720,1500]].forEach(function(m){L.gera.notaEmitida(m[0]+'-10',m[1],'N'+m[0]);L.gera.recebimento(m[0]+'-15',m[1],'N'+m[0]);L.gera.despesaPaga(m[0]+'-05',m[4],'P10.01.00002','Aluguel');L.gera.dasApurado(m[0]+'-28',m[3],m[0]);L.gera.proLabore(m[0]+'-28',m[2],Math.round(m[2]*11)/100,0,m[0])});
+  var R=window.ULT_R=relatorioMes({livro:L,empresa:{nome:'Clínica Exemplo',cnpj:'00.000.000/0001-00'},comp:$('r-comp').value,pendencias:{naoClassificados:num('r-pend')}});
+  $('r-zap').innerHTML='<div class="bub">'+esc(R.texto)+'</div>';
+  var host=$('resumoBox');if(!host.shadowRoot)host.attachShadow({mode:'open'});host.shadowRoot.innerHTML=R.html.replace(/<!doctype html>/i,'')}
+// 6 lucros
+function lucros(){var a=avaliaDistribuicao({valor:num('l-val'),distribuidoAno:num('l-dist'),receitaAno:num('l-rec'),irpjCsllAno:num('l-irpj'),lucroContabilAno:num('l-luc'),escrituracaoCompleta:$('l-esc').checked,lucroDisponivel:num('l-luc')-num('l-dist')});
+  $('l-out').innerHTML=tab(null,[['Limite isento no ano','<b>'+B(a.limite)+'</b>'],['Regra',esc(a.regra)],['Isento nesta distribuição',B(a.isento)],['Tributável nesta distribuição',B(a.tributavel)],['Permitido pelo lucro disponível',a.permitido?'sim':'não']],[0,1])+a.avisos.map(function(x){return '<div class="alerta">'+esc(x)+'</div>'}).join('');
+  var p=proLaboreParaFatorR({receita11:num('p-r11'),folha11:num('p-f11'),receitaMes:num('p-rm')});
+  $('p-out').innerHTML='<p>Pró-labore deste mês: <span class="big">'+B(p.proLabore)+'</span> · Fator R dos 12 meses '+P(p.fatorR)+' · <b>Anexo '+p.anexo+'</b>'+(p.noMinimo?' (já no mínimo)':'')+'</p>'}
+// 7 virada
+var ATS=[['2027-02-05','pessoa',200,'auto'],['2027-02-12','pessoa',250,'auto'],['2027-02-20','convenio',100,'auto'],['2027-02-22','pessoa',150,'cpf'],['2027-03-02','pessoa',180,'auto']];
+function virada(){var ap=$('v-ap').value||null,rows=ATS.map(function(a){var c=classificaAtendimento({dataServico:a[0],pagador:a[1],preferencia:a[3],valor:a[2]},ap);return [D(a[0]),a[1]==='convenio'?'convênio':'paciente'+(a[3]==='cpf'?' (quer CPF)':''),B(a[2]),'<span class="tag '+(c.documento==='nota_pj'?'':'at')+'">'+(c.documento==='nota_pj'?'nota da empresa':'recibo pessoal')+'</span>',esc(c.motivo)]});
+  var r=resumoVirada(ATS.map(function(a){return {dataServico:a[0],pagador:a[1],preferencia:a[3],valor:a[2]}}),ap);
+  $('v-out').innerHTML=tab(['Data','Atendimento','Valor','Documento','Por quê'],rows,[0,0,1,0,0])+'<p style="margin-top:8px">Por nota: <b>'+r.nota_pj+'</b> ('+B(r.valorNota)+') · por recibo pessoal: <b>'+r.recibo_pf+'</b> ('+B(r.valorRecibo)+').'+(ap?' Planos de autônoma e empresa juntos até '+D(fimSobreposicao(ap))+'.':'')+'</p>'+r.avisos.map(function(x){return '<div class="alerta">'+esc(x)+'</div>'}).join('')}
+var bx=[];function baixa(){var pr={};proximosPassosBaixa(bx).forEach(function(p){pr[p.id]=1});
+  $('v-baixa').innerHTML=PASSOS_BAIXA.map(function(p){var ok=bx.indexOf(p.id)>=0,lib=!!pr[p.id];return '<div class="passo'+(!ok&&!lib?' bloq':'')+'"><input type="checkbox" data-b="'+p.id+'" id="b'+p.id+'"'+(ok?' checked':'')+(!ok&&!lib?' disabled':'')+'><label for="b'+p.id+'" style="color:var(--fg)">'+esc(p.titulo)+'</label><span class="tag az">'+p.dono+'</span></div>'}).join('');
+  document.querySelectorAll('#v-baixa input').forEach(function(c){c.onchange=function(){var id=c.dataset.b;bx=c.checked?bx.concat([id]):bx.filter(function(x){return x!==id&&PASSOS_BAIXA.filter(function(q){return q.id===x})[0].depende.indexOf(id)<0});baixa()}})}
+// 8 calendário
+function cal(){var hoje=new Date(2027,0,1),ev=calendario('2027-01',{folha:$('k-folha').checked});
+  $('k-out').innerHTML=tab(['Data','O que','Tipo'],ev.map(function(e){return [D(e.data),esc(e.titulo),'<span class="tag '+(e.critico?'ruim':'')+'">'+(e.critico?'prazo legal':e.tipo)+'</span>']}))}
+// 9 zap
+var VARX={nome:'Ana',empresa:'Clínica Exemplo',data:'20/03/2027',valor:'600,00',mes:'março',dias:'7',pendencia:'procuração da nota fiscal',fator:'26%',pct:'85%',descricao:'PIX RECEBIDO',nota_sugerida:'Nota N1 (R$ 350)',n:'5',passo:'Opção pelo Simples',faltam:'11',proximo:'Alvará',conselho:'CREFITO-15',regra:'pelo plano contratado',resumo:'(o resumo do mês, como na aba 5)'};
+function zap(){var f=$('z-fr').value,ms=ZAP.mensagens.filter(function(m){return !f||m.frente===f});
+  $('z-out').innerHTML=ms.map(function(m){var t=esc(m.texto).replace(/\{(\w+)\}/g,function(_,k){return '<span class="v">'+esc(k.indexOf('link_')===0?'link do app':(VARX[k]||k))+'</span>'});
+    return '<div class="meta"><b>'+esc(m.id)+'</b> · '+esc(m.quando)+' · '+(m.de==='auto'?'automática':'equipe')+' · <span class="tag '+(m.nivel==='critico'?'ruim':m.nivel==='atencao'?'at':'')+'">'+m.nivel+'</span></div><div class="zap"><div class="bub">'+t+'</div>'+(m.regra?'<div class="sub" style="font-size:12px">Regra: '+esc(m.regra)+'</div>':'')+'</div>'}).join('')}
+// 10 painel
+var CART=[{id:'A',nome:'Ana Fisio',plano:'empresa',preco:299,situacao:'ativa',contratoAssinado:true,enviouMes:true,dasPago:false,empregados:0,pendencias:{},folha:null,ciclosSombraAprovados:2},
+ {id:'B',nome:'Bruno Fono',plano:'empresa_folha',preco:399,situacao:'ativa',contratoAssinado:true,enviouMes:true,dasPago:true,empregados:2,pendencias:{naoClassificados:4,recebimentosSemNota:1},folha:{status:'sombra'},ciclosSombraAprovados:1},
+ {id:'C',nome:'Clara Psi',plano:'empresa',preco:299,situacao:'abertura',contratoAssinado:true,dataAbertura:'2027-01-10',deferimento:'2027-03-02',passosFeitos:[0,1,2,3,4],empregados:0,pendencias:{}},
+ {id:'D',nome:'Diego Odonto',plano:'empresa',preco:299,situacao:'ativa',contratoAssinado:false,enviouMes:false,dasPago:true,empregados:0,pendencias:{}}];
+var TEMPOS=[];[['A','2027-03-05','conciliacao',30],['A','2027-03-10','apuracao',30],['B','2027-03-06','folha',300],['D','2027-03-09','atendimento',45]].forEach(function(t){registraTempo(TEMPOS,{clienteId:t[0],data:t[1],tarefa:t[2],minutos:t[3]})});
+function painel(){var H='2027-03-18',f=fila(CART,H),s=semana(CART,H),I=indicadores(CART,TEMPOS,'2027-03');
+  $('p-fila').innerHTML=tab(['Prioridade','Cliente','O que','Prazo'],f.map(function(x){return ['<span class="tag '+(x.prioridade>=85?'ruim':x.prioridade>=55?'at':'')+'">'+x.prioridade+'</span>',esc(x.cliente),esc(x.texto),x.prazo?D(x.prazo):'']}),[0,0,0,0]);
+  $('p-sem').innerHTML=tab(['Data','Cliente','Vencimento'],s.map(function(x){return [D(x.data),esc(x.cliente),esc(x.titulo)+(x.critico?' <span class="tag ruim">prazo legal</span>':'')]}));
+  $('p-ind').innerHTML='<p>Clientes ativos: <b>'+I.clientesAtivos+'</b> · receita mensal <b>'+B(I.receitaMensal)+'</b> · horas no mês <b>'+I.horasNoMes+'</b> · carga do contador <b>'+I.cargaDoContador+'</b>'+(I.alertaCapacidade?' <span class="tag at">'+esc(I.alertaCapacidade)+'</span>':'')+'</p>'+tab(['Cliente','Horas','Custo','Margem'],I.linhas.map(function(l){return [esc(l.cliente),String(l.horas),B(l.custo),B(l.margem)+' ('+(l.margemPct==null?'-':l.margemPct+'%')+')']}),[0,1,1,1])}
+// 11 sócio e sem movimento
+function socio(){var m=num('o-luc'),r=informeSocio({ano:2027,socio:{nome:'Sócia Exemplo',cpf:'',participacao:num('o-part')},proLaboreAnual:33600,inssAnual:3696,irrfAnual:0,lucrosPorMes:Array.from({length:12},function(){return m}),receitaAno:num('o-rec'),irpjCsllAno:num('o-irpj'),lucroContabilAno:num('o-lc'),escrituracaoCompleta:$('o-esc').checked});
+  $('o-out').innerHTML=tab(null,[['Pró-labore do ano (tributável)',B(r.rendimentosTributaveis.proLabore)],['INSS do pró-labore (dedução)',B(r.rendimentosTributaveis.inssPrevidenciaOficial)],['Limite isento do sócio',B(r.rendimentosIsentos.limiteDoSocio)],['Lucros recebidos no ano',B(r.lucrosTotais)],['Isentos',B(r.rendimentosIsentos.lucrosEDividendos)],['Acima do limite (pode ser tributado)',B(r.lucrosAcimaDoLimite)],['Regra',esc(r.rendimentosIsentos.regra)]],[0,1])+r.avisos.map(function(x){return '<div class="alerta">'+esc(x)+'</div>'}).join('')+'<p class="sub">'+esc(r.aviso)+'</p>';
+  var o=obrigacoesSemMovimento({empregados:+$('m-emp').value,proLabore:$('m-pl').checked});
+  $('m-out').innerHTML=tab(['Obrigação','Prazo'],o.obrigacoes.map(function(x){return [esc(x.obrigacao),esc(x.prazo)]}))+'<p class="sub">Cobrança: '+esc(o.cobranca)+'</p>'}
+// 12 diagnóstico
+function diag(){var n=function(i){return Math.max(0,Math.floor(num(i)))},das=[];for(var i=0;i<n('d-das');i++)das.push({comp:'m'+i,valor:300});
+  var r=diagnosticoFiscal({dasAtrasados:das,defisPendentes:Array.from({length:n('d-def')},function(_,i){return 2025+i}),parcelamentos:[],esocialPendencias:n('d-es'),certidoes:{federal:$('d-cf').value,fgts:'negativa',trabalhista:'negativa',municipal:'negativa'},caixaPostalNaoLida:n('d-cp'),mesesDeHistoricoDisponivel:n('d-hist'),regime:$('d-reg').value,procuracaoAtiva:$('d-pr').checked,certificadoValido:$('d-ce').checked});
+  var cor={verde:'',amarelo:'at',vermelho:'ruim'};
+  $('d-out').innerHTML='<p>Nível: <span class="tag '+cor[r.nivel]+'">'+r.nivel+'</span> · recomendação: <b>'+esc(r.recomendacao.replace(/_/g,' '))+'</b></p><p>'+esc(r.mensagem)+'</p>'+(r.achados.length?tab(['Gravidade','Achado','O que fazer'],r.achados.map(function(a){return ['<span class="tag '+(a.gravidade==='alta'?'ruim':a.gravidade==='media'?'at':'')+'">'+a.gravidade+'</span>',esc(a.texto),esc(a.acao)]})):'<p class="sub">Sem achados.</p>')+'<p>Horas estimadas de regularização: <b>'+r.orcamentoRegularizacao.horasEstimadas+'</b>. <span class="sub">'+esc(r.orcamentoRegularizacao.observacao)+'</span></p><p class="sub">'+esc(r.aviso)+'</p>'}
+// 13 cnae
+function cnae(){var q=$('cx-q').value.trim(),r=/\d{4}/.test(q)?buscaCnae(q):null,o=$('cx-out');
+  if(r){o.innerHTML=r.achou?'<p><b>'+esc(r.cod)+'</b> · '+esc(r.prof)+' · Anexo <b>'+esc(r.anexo)+'</b> · Fator R: '+(r.fatorR?'sim':'não')+' · ISS '+esc(r.iss||'-')+' · MEI: não</p>'+r.avisos.map(function(a){return '<div class="alerta">'+esc(a)+'</div>'}).join(''):'<div class="alerta">'+esc(r.motivo)+'</div>';return}
+  var s=sugereCnae(q);o.innerHTML=s.length?tab(['CNAE','Profissão','Anexo'],s.map(function(x){return [esc(x.cod),esc(x.prof),esc(x.anexo)]})):'<p class="sub">Digite ao menos 3 letras da profissão ou o código com 7 dígitos.</p>'}
+// ligações
+abas();
+['s-rec','s-desp','s-sal'].forEach(function(i){$(i).oninput=sim});$('s-n').onchange=sim;sim();
+['a-ab','a-df','a-cid','a-prof'].forEach(function(i){$(i).oninput=abre;$(i).onchange=abre});abre();
+$('f-tipo').onchange=folhaForm;folhaForm();
+$('c-txt').value=CSV;$('c-go').onclick=concilia;concilia();
+$('r-comp').onchange=resumoMes;$('r-pend').oninput=resumoMes;resumoMes();
+['l-rec','l-irpj','l-luc','l-dist','l-val','l-esc','p-r11','p-f11','p-rm'].forEach(function(i){$(i).oninput=lucros;$(i).onchange=lucros});lucros();
+$('v-ap').oninput=virada;virada();baixa();
+$('k-folha').onchange=cal;cal();
+$('z-fr').onchange=zap;fetch("zap-mensagens.json").then(function(r){return r.json()}).then(function(x){ZAP=x;zap()}).catch(function(){$("z-out")&&($("z-out").innerHTML="<p class=\"sub\">Mensagens não carregadas.</p>")});
+painel();['o-part','o-luc','o-rec','o-irpj','o-lc','o-esc','m-pl','m-emp'].forEach(function(i){$(i).oninput=socio;$(i).onchange=socio});socio();
+['d-das','d-def','d-es','d-cp','d-hist','d-cf','d-reg','d-pr','d-ce'].forEach(function(i){$(i).oninput=diag;$(i).onchange=diag});diag();
+$('cx-q').oninput=cnae;cnae();
+var h=location.hash.slice(1);if(h){var b=document.querySelector('#abas button[data-t="'+h+'"]');if(b)b.click()}
+
+function eventos(){var t=$('e-tipo').value,p=planoEvento(t,{registro:$('e-reg').value,socios:Math.max(1,Math.floor(num('e-soc'))),empregados:Math.max(0,Math.floor(num('e-emp'))),temSaldoBanco:$('e-saldo').checked});
+  $('e-out').innerHTML=p.fora.map(function(x){return '<div class="alerta crit">'+esc(x)+'</div>'}).join('')+'<h3>'+esc(p.nome)+': '+p.total+' passos ('+p.conferir+' para o contador conferir)</h3>'
+   +tab(['#','Quem','O que fazer'],p.passos.map(function(s,i){return [i+1,esc(s.quem),esc(s.texto)+(s.conferir?' <span class="tag at">conferir</span>':'')]}))+p.avisos.map(function(x){return '<div class="alerta">'+esc(x)+'</div>'}).join('')}
+(function(){var s=$('e-tipo');TIPOS_EVENTO.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=NOMES_EVENTO[k];s.appendChild(o)});
+ ['e-tipo','e-reg','e-soc','e-emp','e-saldo'].forEach(function(i){$(i).oninput=eventos;$(i).onchange=eventos});eventos()})();
+
+// ===== ligação com o banco (pj-dados.js). Sem login ou sem a frente Empresa no servidor, tudo continua em modo exemplo =====
+(function(){var DB=null,EMP=null,BT=['bd-conc-passo','bd-cria','bd-conc','bd-res','bd-folha'];
+ function msg(id,t,er){var e=$(id);e.textContent=t;e.style.color=er?'var(--bad)':''}
+ function liga(on){BT.forEach(function(b){var e=$(b);e.disabled=!on;if(on)e.removeAttribute('title')})}
+ async function passos(){var h='';try{var L=await DB.passos(EMP);h=L.length?tab(['Passo','Situação','Quem'],L.map(function(x){return [x.passo,'<span class="tag '+(x.status==='feito'?'':'at')+'">'+esc(x.status)+'</span>',esc(x.dono)]})):'<p class="sub">Esta empresa ainda não tem passos. Use "Criar os 17 passos".</p>'}catch(e){h='<p class="sub">'+esc(traduzErroPj(e))+'</p>'}$('bd-passos').innerHTML=h}
+ async function empregados(){var s=$('bd-emp');s.innerHTML='';try{(await DB.empregados(EMP)).forEach(function(x){var o=document.createElement('option');o.value=x.id;o.textContent=x.nome;s.appendChild(o)})}catch(e){}if(!s.options.length){var o=document.createElement('option');o.value='';o.textContent='(nenhum empregado cadastrado)';s.appendChild(o)}}
+ async function escolhe(id){EMP=id;await passos();await empregados()}
+ function carrega(){return new Promise(function(res){if(window.__SB_MOCK||typeof supabase!=='undefined')return res();var s=document.createElement('script'),t=setTimeout(res,5000);s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';s.onload=s.onerror=function(){clearTimeout(t);res()};document.head.appendChild(s)})}
+ async function init(){await carrega();var sb=window.__SB_MOCK||(typeof supabase!=='undefined'&&typeof CONFIG!=='undefined'?supabase.createClient(CONFIG.url,CONFIG.chave):null),st=$('cx-st');
+  if(!sb){st.textContent='modo exemplo (sem conexão com o banco)';return}
+  try{var s=await sb.auth.getSession();if(!s.data||!s.data.session){st.innerHTML='modo exemplo. Para gravar, <a href="entrar.html">entre com o seu e-mail</a>.';return}
+   DB=criaDados(sb);var es=await DB.empresas();if(!es.length){st.textContent='você ainda não tem empresa cadastrada.';return}
+   var sel=$('cx-emp');es.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=(e.razao_social||'Empresa sem nome')+(e.cnpj?' · '+e.cnpj:'');sel.appendChild(o)});$('cx-l').hidden=es.length<2;
+   sel.onchange=function(){escolhe(sel.value)};st.textContent='conectado: '+(es[0].razao_social||'empresa');liga(true);await escolhe(es[0].id)}
+  catch(e){st.textContent=traduzErroPj(e)}}
+ var SAIDA={'bd-conc-passo':'bd-abre-out','bd-cria':'bd-abre-out','bd-conc':'bd-conc-out','bd-res':'bd-res-out','bd-folha':'bd-folha-out'};
+ function onc(id,fn){$(id).onclick=async function(){var b=this;b.disabled=true;try{await fn()}catch(e){msg(SAIDA[id],traduzErroPj(e),true)}b.disabled=!DB}}
+ onc('bd-conc-passo',async function(){await DB.concluirPasso(EMP,+$('bd-p').value,$('bd-prova').value);msg('bd-abre-out','Passo '+$('bd-p').value+' concluído.');await passos()});
+ onc('bd-cria',async function(){await DB.criarPassos(EMP);msg('bd-abre-out','Passos criados (os que já existiam foram mantidos).');await passos()});
+ onc('bd-conc',async function(){var g=window.ULT_G;if(!g||!g.lancamentos.length){msg('bd-conc-out','Gere os lançamentos acima primeiro.',true);return}var r=await DB.lancarLote(EMP,g.lancamentos);
+   $('bd-conc-out').innerHTML='<p><b>'+r.ok+'</b> lançamentos gravados'+(r.falhas.length?', <b>'+r.falhas.length+'</b> com problema:':'.')+'</p>'+r.falhas.map(function(f){return '<div class="alerta crit">'+esc(f.ref)+': '+esc(f.motivo)+'</div>'}).join('')});
+ onc('bd-res',async function(){var R=window.ULT_R;if(!R){msg('bd-res-out','Gere o resumo primeiro.',true);return}var d={};Object.keys(R).forEach(function(k){if(k!=='html')d[k]=R[k]});await DB.guardarRelatorio(EMP,$('r-comp').value,d);msg('bd-res-out','Relatório de '+$('r-comp').value+' guardado.')});
+ onc('bd-folha',async function(){var f=window.ULT_F,e=$('bd-emp').value,c=$('bd-fcomp').value;if($('f-tipo').value!=='mes'||!f||!f.ok){msg('bd-folha-out','Escolha "Folha do mês" e calcule sem erros primeiro.',true);return}
+   if(!e){msg('bd-folha-out','Escolha um empregado cadastrado.',true);return}if(!c){msg('bd-folha-out','Escolha o mês.',true);return}await DB.guardarFolha(EMP,e,c,f,'folha.js 2026-11-17','sombra');msg('bd-folha-out','Folha de '+c+' guardada como sombra. O contador aprova no banco.')});
+ var d=new Date();$('bd-fcomp').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');init()})();
+</script>
+
+</body>
+</html>
