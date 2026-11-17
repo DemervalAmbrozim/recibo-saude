@@ -86,6 +86,18 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 @media (max-width:900px){.peq{grid-template-columns:1fr 1fr}}
 @media (max-width:700px){.duas{grid-template-columns:1fr}.grande{padding:18px}}
 @media (max-width:340px){.peq{grid-template-columns:1fr}}
+
+.heroi{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:center}
+.heroi img{width:100%;height:auto;border-radius:18px;display:block;aspect-ratio:7/5;object-fit:cover}
+.heroi .acoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.heroi .acoes .cta{flex:1 1 220px;text-align:center}
+.teste{font-size:15px;color:var(--muted);margin:10px 0 0}.teste b{color:var(--accent)}
+.passos3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+.passos3 .card p{margin:0;color:var(--muted);font-size:15px}
+.quem2{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.avatar{width:96px;height:96px;border-radius:50%;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px;text-align:center;padding:8px;border:2px dashed var(--accent)}
+.promessa{display:grid;gap:8px}.promessa h2{margin:0}
+@media (max-width:760px){.heroi,.passos3{grid-template-columns:1fr}.quem2{grid-template-columns:1fr;justify-items:start}}
 </style>
 </head>
 <body>
@@ -93,14 +105,18 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
   <div class="rasc">Rascunho da página inicial para revisão, não publicado. Layout e textos aguardam a aprovação do Demerval.</div>
   <div class="topo"><span class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</span><a class="cta sec" href="entrar.html">Entrar</a></div>
 
-  <section>
-    <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Contabilidade • Gestão • Tecnologia</p>
-    <h1 class="abre">Para profissionais da saúde obrigados a emitir recibos pelo Receita Saúde e para quem já tem CNPJ.</h1>
-    <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado realizando a gestão desde a sua agenda, registro do atendimento (se precisar), emissão do recibo no Receita Saúde (autônomo) e notas fiscais (CNPJ). Além de cuidarmos das suas contas, da contabilidade (com o nosso contador parceiro), redes sociais, abertura de CNPJ, imposto de renda e assessoria para a sua atuação.</p>
-    <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade com contador parceiro</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
+  <section class="heroi">
+    <div>
+      <p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px">Lado a Lado Saúde</p>
+      <h1 class="abre">Você atende com carinho. A gente fica lado a lado com você.</h1>
+      <p class="lead" style="font-size:19px;margin:14px 0 0;max-width:56ch">Recibo, contas, contabilidade, imposto de renda, redes e a abertura do seu CNPJ. Com tecnologia moderna e com gente de verdade, que conversa, entende o seu momento e cresce junto com você.</p>
+      <div class="acoes"><a class="cta" href="#caminhos">Ver o meu caminho</a><a class="cta sec" href="https://wa.me/5527999712727">Conversar no WhatsApp</a></div>
+      <p class="teste"><b>Teste sem cartão:</b> 7 dias no plano mensal, 30 dias no anual.</p>
+    </div>
+    <img src="aperto-de-mao.jpg" width="900" height="643" alt="Aperto de mão: duas pessoas fechando uma parceria" fetchpriority="high">
   </section>
 
-  <section class="duas" aria-label="Escolha o seu caminho">
+  <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
     <a class="grande" href="../venda.html" id="g-auto">
       <h2>Sou profissional autônomo(a)</h2>
       <p class="quem">Atendo com o meu CPF.</p>
@@ -111,10 +127,20 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
     <a class="grande" href="index.html" id="g-emp">
       <h2>Tenho empresa de saúde (CNPJ)</h2>
       <p class="quem">Simples Nacional, até 3 funcionários.</p>
-      <ul><li>Contabilidade completa e imposto do Simples</li><li>Folha de pagamento</li><li>Financeiro e resumo de uma página por mês</li><li>Imposto de renda dos sócios</li></ul>
+      <ul><li>Contabilidade completa e imposto do Simples</li><li>Folha de pagamento (em breve)</li><li>Financeiro e resumo de uma página por mês</li><li>Imposto de renda dos sócios</li></ul>
       <span class="cta">Ver o plano para empresa</span>
       <span class="ponte-l">Ainda é autônoma? Comece pelo plano ao lado e migre quando abrir.</span>
     </a>
+  </section>
+
+  <section>
+    <h2>Aqui você começa conversando, não preenchendo formulário</h2>
+    <p class="sub">Antes de qualquer contrato, a gente quer entender o seu momento e ver se faz sentido para os dois lados. Se fizer, seguimos juntos. Se não fizer, a gente diz com sinceridade.</p>
+    <div class="passos3">
+      <div class="card"><span class="n">1</span><h3>Você conta o seu momento</h3><p>Em uma conversa curta pelo WhatsApp, sem compromisso.</p></div>
+      <div class="card"><span class="n">2</span><h3>Você testa sem cartão</h3><p>Vê tudo funcionando com os seus números, por 7 dias no mensal ou 30 no anual.</p></div>
+      <div class="card"><span class="n">3</span><h3>Um contador confere</h3><p>O que importa passa por um contador registrado, e nada vai à Receita sem a sua autorização.</p></div>
+    </div>
   </section>
 
   <section>
@@ -124,6 +150,15 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
       <a class="mini" href="entrar.html" id="t-cnpj"><span class="tag">para quem vai abrir</span><h3>Abrimos o seu CNPJ</h3><p>Do contrato social à nota fiscal de teste, com cada passo no seu app.</p></a>
       <a class="mini" href="../venda.html#servicos" id="t-redes"><span class="tag">autônomos e empresas</span><h3>Presença nas redes</h3><p>Instagram, Facebook, LinkedIn e Perfil no Google, dentro das regras do seu conselho.</p></a>
       <a class="mini" href="../venda.html#servicos" id="t-apoio"><span class="tag">autônomos e empresas</span><h3>Assessoria para a sua atuação</h3><p>Você conta o seu momento em 15 minutos. A gente devolve um retrato de 1 página e um plano de 90 dias com 3 prioridades, e acompanha todo mês.</p></a>
+    </div>
+  </section>
+
+  <section class="quem2" aria-label="Quem está por trás">
+    <div class="avatar" role="img" aria-label="Espaço da foto do Demerval">foto do Demerval (aguarda aval)</div>
+    <div class="promessa">
+      <h2>Gente de verdade, de perto de você</h2>
+      <p>A Lado a Lado nasceu na Assessoria Lado a Lado, com a pegada do Demerval: estar perto, entender antes de mudar e crescer junto, sempre acreditando que vai dar certo. Aqui na saúde, ele leva essa presença para o seu dia a dia, com um contador responsável conferindo a contabilidade.</p>
+      <p><b>E a inteligência artificial?</b> Ela trabalha por trás, nas contas repetitivas e nos lembretes de prazo. Quem decide, confere e responde são pessoas, e você fala com uma delas quando quiser, pelo WhatsApp 27 99971-2727.</p>
     </div>
   </section>
 
