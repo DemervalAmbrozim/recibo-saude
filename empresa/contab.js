@@ -4,6 +4,7 @@
 // Fontes lidas: LC 123/2006 art. 3º, 18 §5º-B XVI/XIX/XX/XXI e §5º-M (Anexo III; abaixo de 28% de folha, Anexo V), art. 26 §2º; CGSN art. 6º §5º I (opção
 // pelo Simples: 30 dias do último deferimento, no máximo 60 dias da abertura do CNPJ). Ver projeto/contabilidade-pj-conferencia-oficial-2026-11-16.md.
 
+// ATENÇÃO: tabelas dos Anexos III e V e base do Fator R VIGENTES EM 2026. A Res. CGSN 190/2026 reescreve os Anexos I a V e muda o Fator R a partir de 2027, e a DEFIS é substituída por informações dentro do PGDAS-D (art. 72 revogado em 01/01/2027): ATUALIZAR antes de 01/01/2027.
 const A5=[[180e3,.155,0],[360e3,.18,4500],[720e3,.195,9900],[1.8e6,.205,17100],[3.6e6,.23,62100],[4.8e6,.305,540000]]; // Anexo V, LC 155/2016 (igual a ferramentas/das.py)
 const LIM_ME=360e3, LIM_EPP=4.8e6;
 // INSS do empregado 2026 (progressivo; teto = TETO de regras.js): faixas sobre o salário mínimo e o teto da Portaria MPS/MF 13/2026
@@ -80,7 +81,7 @@ function calendario(de,{folha=false,proLabore=true,abertura=null}={}){const [a0,
     if(m===11&&folha)add(`${a}-12-20`,'13º salário, 2ª parcela','pessoal');
     if(m===11)add(`${a}-12-10`,'Planejar o pró-labore do próximo ano (Fator R)','planejamento');
     if(m===1)add(dISO(ultimoDiaUtil(a,1)),'DMED (último dia útil de fevereiro)','anual',true);
-    if(m===2)add(`${a}-03-31`,'DEFIS do Simples','anual',true);
+    if(m===2)add(`${a}-03-31`,'DEFIS do Simples (conferir a transição para o PGDAS-D em 2027)','anual',true);
     if(m===3)add(`${a}-04-30`,'IRPF dos sócios (confirmar o prazo do ano)','anual')}
   if(abertura)add(prazoOpcaoSimples(abertura,null),'Último dia para a opção pelo Simples (60 dias da abertura)','fiscal',true);
   const lo=de+'-01',hi=dISO(new Date(a0,m0-1+13,0));

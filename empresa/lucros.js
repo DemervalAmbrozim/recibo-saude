@@ -1,6 +1,7 @@
 // Lucros e pró-labore da ME do Simples (módulo C4, 17/11/2026): quanto pode ser distribuído SEM imposto, alerta de distribuição acima do limite, pró-labore que mantém o Fator R de 28%.
 // Fontes lidas em 16/11 (projeto/contabilidade-pj-conferencia-oficial-2026-11-16.md): LC 123/2006 art. 14 §§ 1º e 2º e Res. CGSN 140/2018 art. 145 (isenção do lucro: base presumida da Lei 9.249 art. 15 aplicada à receita,
 // menos o IRPJ e a CSLL devidos no Simples; o que passar disso só é isento se a escrituração contábil mostrar lucro maior); Lei 15.270/2025 (retenção de 10% a partir de R$ 50 mil por mês: o texto lido não cita o Simples).
+// ATENÇÃO (leitura de 17/11, projeto/cnae-anexo-defis-irpf-socios-2026-11-17.md): a Receita diz que a retenção de 10% vale também para o Simples e que a regra do art. 14 da LC 123 deixou de se aplicar nesse ponto; é controverso (ADI 7.917). Nunca afirmar que 'lucro do Simples é sempre isento'.
 // ESTIMATIVA: o contador confirma. O valor real de IRPJ e CSLL vem da apuração do PGDAS-D (ferramentas/das.py: tributos 1001 e 1002); a tabela abaixo serve só à prévia.
 
 const PRESUNCAO={servicos:0.32,hospitalar:0.08}; // Lei 9.249 art. 15 §1º III: serviços em geral 32%; serviços hospitalares 8% (exigem requisitos próprios) [conferir o caso]
@@ -22,7 +23,7 @@ function avaliaDistribuicao({valor,distribuidoAno=0,receitaAno,irpjCsllAno=0,luc
   const avisos=[];
   if(lucroDisponivel!=null&&valor>lucroDisponivel+0.005)avisos.push('acima do lucro contábil disponível: a distribuição não é permitida');
   if(tributavel>0)avisos.push('R$ '+tributavel.toFixed(2).replace('.',',')+' acima do limite isento do ano: pode ser tributado; falar com o contador'+(escrituracaoCompleta?'':' (sem escrituração contábil completa, vale só o lucro presumido)'));
-  if(distribuidoMes+valor>50000)avisos.push('mais de R$ 50 mil no mês para a mesma pessoa: regra de retenção da Lei 15.270/2025; o contador confere se se aplica ao Simples');
+  if(distribuidoMes+valor>50000)avisos.push('mais de R$ 50 mil no mês para a mesma pessoa: retenção de 10% da Lei 15.270/2025. A Receita entende que vale também para o Simples (Perguntas e Respostas de 19/12/2025); há tese contrária e uma ADI em andamento: o contador decide e orienta');
   return {limite:L.limite,regra:L.regra,presumido:L.presumido,contabil:L.contabil,isento:Math.round(isento*100)/100,tributavel,totalAno:Math.round(total*100)/100,permitido:!(lucroDisponivel!=null&&valor>lucroDisponivel+0.005),avisos}}
 
 // Pró-labore deste mês que mantém o Fator R em 28% olhando os 12 meses terminados nele (os 11 anteriores + este). Nunca abaixo de 1 salário mínimo.
