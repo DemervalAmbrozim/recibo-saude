@@ -96,6 +96,26 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <section id="folha">
   <div class="card"><h2>Folha de pagamento estimada</h2>
     <p class="sub">Simples nos Anexos I a III: sem INSS patronal (vai no DAS); FGTS de 8%. Ajuste os salários na aba 1.</p><div id="folhaTab"></div></div>
+  <div class="card"><h2>Fechar a folha do mês (1 empregado por vez)</h2>
+    <p class="sub">Fase 1 da folha própria: salário, extras, noturno, faltas, comissão, INSS, IRRF, FGTS e vale-transporte. Férias, 13º e rescisão vêm nas próximas fases. O contador confere antes de pagar.</p>
+    <div class="grid">
+      <label>Empregado<select id="fe"></select></label>
+      <label>Nome no holerite<input id="fnome" placeholder="Nome do empregado"></label>
+      <label>Horas extras 50%<input id="fhe" inputmode="decimal" value="0"></label>
+      <label>Horas extras 100%<input id="fhd" inputmode="decimal" value="0"></label>
+      <label>Horas noturnas<input id="fhn" inputmode="decimal" value="0"></label>
+      <label>Faltas (dias)<input id="ffa" inputmode="decimal" value="0"></label>
+      <label>DSR perdidos<input id="fds" inputmode="decimal" value="0"></label>
+      <label>Atrasos (horas)<input id="fat" inputmode="decimal" value="0"></label>
+      <label>Comissões (R$)<input id="fco" inputmode="decimal" value="0"></label>
+      <label>Dias úteis do mês<input id="fdu" inputmode="decimal" value="25"></label>
+      <label>Domingos e feriados<input id="fdd" inputmode="decimal" value="5"></label>
+      <label>Dependentes (IR)<input id="fdep" inputmode="decimal" value="0"></label>
+      <label>Filhos para salário-família<input id="fsf" inputmode="decimal" value="0"></label>
+      <label>Custo do vale-transporte (R$)<input id="fvt" inputmode="decimal" value="0"></label>
+    </div>
+    <div id="folhaRes" style="margin-top:12px"></div>
+    <button class="p" id="fholerite" style="margin-top:10px">Abrir holerite para imprimir ou salvar em PDF</button></div>
 </section>
 
 <section id="agenda">
@@ -111,6 +131,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 </main>
 <script src="regras.js"></script>
 <script src="contab.js"></script>
+<script src="folha.js"></script>
 <script>
 const $=id=>document.getElementById(id),B=v=>(v==null||isNaN(v)?'-':v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})),P=v=>(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -179,7 +200,25 @@ function renderPainel(){const cl=lsGet('pj_clientes',[]);
     [['serv','servidor'],['cons','conselhoPendente'],['pend','pendencia'],['conv','convenio'],['ant','contadorAnterior'],['bronze','govBronze']].forEach(([id,k])=>$(id).checked=!!c.r[k]);$('mei').checked=c.r.regime==='mei';
     document.querySelector('nav button[data-t=ficha]').click()})}
 
-function render(){const f=ficha(),s=renderFicha(f);renderAbertura(f);renderFolha(f,s);renderAgenda(f);renderPainel()}
+const fnum=id=>{const v=String($(id).value||'0').replace(/\./g,'').replace(',','.');return isNaN(+v)?0:+v};
+let ultimoHolerite=null;
+function folhaMes(){const f=ficha(),sel=$('fe'),i=+sel.value||0;
+  if(sel.options.length!==f.emp.length){sel.innerHTML=f.emp.map((e,k)=>`<option value="${k}">Empregado ${k+1} (${B(e.salario)})</option>`).join('')}
+  if(!f.emp.length){$('folhaRes').innerHTML='<p class="sub">Escolha de 1 a 3 empregados na aba 1.</p>';$('fholerite').disabled=true;return}
+  $('fholerite').disabled=false;const e=f.emp[Math.min(i,f.emp.length-1)];
+  const r=calculaFolha({salario:e.salario,dependentes:fnum('fdep'),filhosSF:fnum('fsf'),vtCusto:fnum('fvt')},
+    {heNormais:fnum('fhe'),heDescanso:fnum('fhd'),horasNoturnas:fnum('fhn'),faltasDias:fnum('ffa'),dsrPerdidos:fnum('fds'),atrasoHoras:fnum('fat'),comissao:fnum('fco'),diasUteis:fnum('fdu'),diasDescanso:fnum('fdd')});
+  if(!r.ok){ultimoHolerite=null;$('folhaRes').innerHTML=r.erros.map(x=>`<p class="alerta crit">${esc(x)}</p>`).join('');$('fholerite').disabled=true;return}
+  ultimoHolerite=r;
+  $('folhaRes').innerHTML=`<table><tr><th>Cód.</th><th>Descrição</th><th>Ref.</th><th class="num">Proventos</th><th class="num">Descontos</th></tr>
+  ${r.proventos.map(x=>`<tr><td>${x.cod}</td><td>${esc(x.desc)}</td><td>${esc(x.ref)}</td><td class="num">${B(x.valor)}</td><td></td></tr>`).join('')}
+  ${r.descontos.map(x=>`<tr><td>${x.cod}</td><td>${esc(x.desc)}</td><td>${esc(x.ref)}</td><td></td><td class="num">${B(x.valor)}</td></tr>`).join('')}
+  <tr><td colspan="3"><b>Líquido a receber</b></td><td class="num"><b>${B(r.totalProventos)}</b></td><td class="num"><b>${B(r.totalDescontos)}</b></td></tr></table>
+  <p class="big">${B(r.liquido)}</p><p class="sub">FGTS do mês ${B(r.fgts)} (vence no dia 20, pelo FGTS Digital). Custo estimado para a empresa ${B(r.custoMensal)} com 13º e férias provisionados. ${esc(r.aviso)}</p>`}
+['fe','fhe','fhd','fhn','ffa','fds','fat','fco','fdu','fdd','fdep','fsf','fvt'].forEach(id=>$(id).addEventListener('input',folhaMes));
+$('fholerite').onclick=()=>{if(!ultimoHolerite)return;const f=ficha(),h=holeriteHTML(ultimoHolerite,{nome:'Empresa da profissional',cnpj:''},{nome:$('fnome').value||'Empregado',cpf:'',cargo:''},new Date().toISOString().slice(0,7));
+  const u=URL.createObjectURL(new Blob([h],{type:'text/html'}));window.open(u,'_blank')};
+function render(){const f=ficha(),s=renderFicha(f);renderAbertura(f);renderFolha(f,s);renderAgenda(f);renderPainel();folhaMes()}
 $('nemp').onchange=()=>{salariosCampos();render()};
 ['nome','prof','cidade','local','rec','desp','pl','serv','cons','pend','conv','mei','ant','bronze','dabre','ddef'].forEach(id=>$(id).addEventListener('input',render));
 $('salvar').onclick=()=>{const f=ficha(),cl=lsGet('pj_clientes',[]);cl.push(f);lsSet('pj_clientes',cl);renderPainel();$('salvar').textContent='Salvo (painel, aba 5)';setTimeout(()=>$('salvar').textContent='Salvar esta ficha como cliente',2500)};
