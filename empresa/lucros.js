@@ -5,8 +5,8 @@
 // ESTIMATIVA: o contador confirma. O valor real de IRPJ e CSLL vem da apuração do PGDAS-D (ferramentas/das.py: tributos 1001 e 1002); a tabela abaixo serve só à prévia.
 
 const PRESUNCAO={servicos:0.32,hospitalar:0.08}; // Lei 9.249 art. 15 §1º III: serviços em geral 32%; serviços hospitalares 8% (exigem requisitos próprios) [conferir o caso]
-// Participação (IRPJ + CSLL) dentro do DAS por faixa de RBT12, a CONFERIR na LC 123 (repartição dos Anexos); só para a prévia
-const PART_IRPJ_CSLL={III:[.075,.075,.075,.075,.5,.5],V:[.40,.38,.39,.36,.355,.50]};
+// IRPJ + CSLL dentro do DAS, CONFERIDOS na Res. CGSN 190/2026 (partilha de 2027-2028; Anexo III igual em 2026): III 7,5% nas faixas 1 a 5 e 50,13% na 6ª; V 40, 38, 39, 36, 35,5 e 50,64%. A partilha de 2026 do Anexo V não foi lida: usa a de 2027 como estimativa.
+const PART_IRPJ_CSLL={III:[.075,.075,.075,.075,.075,.5013],V:[.40,.38,.39,.36,.355,.5064]};
 const FAIXAS_RBT=[180e3,360e3,720e3,1.8e6,3.6e6,4.8e6];
 function irpjCsllEstimado(das,anexo,rbt12){const i=FAIXAS_RBT.findIndex(x=>rbt12<=x),f=i<0?5:i;return Math.round(das*(PART_IRPJ_CSLL[anexo]||PART_IRPJ_CSLL.III)[f]*100)/100}
 

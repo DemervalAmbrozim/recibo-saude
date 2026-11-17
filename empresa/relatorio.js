@@ -13,14 +13,16 @@ const nomeComp=comp=>{const [a,m]=comp.split('-').map(Number);return NOME_MES[m-
 const dBR=iso=>iso.split('-').reverse().join('/');
 
 // Receita e folha dos últimos 12 meses (até a competência), tirados da escrituração. Folha = pró-labore + salários + FGTS (provisão de férias e 13º fica de fora: não é pago no mês).
-function histDoLivro(livro,comp){const out=[];for(let k=11;k>=0;k--){const m=mesAnt(comp,k),[de,ate]=periodo(m),d=livro.dre(de,ate);
+// Janela: até 2026, os 12 meses anteriores ao mês da apuração; desde 2027, os 12 meses anteriores ao mês anterior (Res. CGSN 190/2026, art. 26).
+function histDoLivro(livro,comp){const at=+comp.slice(0,4)>=2027?2:1,out=[];for(let k=11+at;k>=at;k--){const m=mesAnt(comp,k),[de,ate]=periodo(m),d=livro.dre(de,ate);
   const folha=livro.saldoConta('3.2.1.01.001',ate,de)+livro.saldoConta('3.2.1.01.002',ate,de)+livro.saldoConta('3.2.1.01.003',ate,de);
   out.push({mes:m,receita:d.receitaBruta,folha:Math.round(folha*100)/100})}return out}
 
 // Fator R e porte. Se a empresa tem menos de 12 meses de movimento, usa a média dos meses com movimento × 12 (regra de início de atividade) e avisa.
-function fatorRDoHist(hist){const ativos=hist.filter(x=>x.receita>0||x.folha>0),m=ativos.length;if(!m)return null;
+function fatorRDoHist(hist,ano,mesesAtividade){if(mesesAtividade!=null&&mesesAtividade>=1&&mesesAtividade<=2)return {...anexoSaude(0,0,ano),fatorR:0.28,anexo:'III',rbt12:0,folha12:0,mesesComMovimento:mesesAtividade,primeiroAno:true,fixoInicio:true,porte:'ME'};
+  const ativos=hist.filter(x=>x.receita>0||x.folha>0),m=ativos.length;if(!m)return null;
   let rec=ativos.reduce((s,x)=>s+x.receita,0),fol=ativos.reduce((s,x)=>s+x.folha,0);if(m<12){rec=rec/m*12;fol=fol/m*12}
-  return {...anexoSaude(rec,fol),rbt12:Math.round(rec*100)/100,folha12:Math.round(fol*100)/100,mesesComMovimento:m,primeiroAno:m<12}}
+  return {...anexoSaude(rec,fol,ano),rbt12:Math.round(rec*100)/100,folha12:Math.round(fol*100)/100,mesesComMovimento:m,primeiroAno:m<12}}
 
 // opts: {livro, empresa:{nome,cnpj}, comp:'AAAA-MM', pendencias:{naoClassificados,notasSemBaixa,recebimentosSemNota,documentosFaltando}, hoje:'AAAA-MM-DD', folhaAtiva:bool}
 function relatorioMes({livro,empresa={},comp,pendencias={},hoje=null,folhaAtiva=false}){
@@ -28,7 +30,7 @@ function relatorioMes({livro,empresa={},comp,pendencias={},hoje=null,folhaAtiva=
   const entrou=d.receitaBruta,das=d.deducoes,despesas=Math.round((d.despesasPessoal+d.despesasAdministrativas+d.despesasTributarias+d.despesasFinanceiras+d.outrasDespesas)*100)/100,sobrou=d.resultado;
   const sa=livro.saldos(de,ate),recebido=(sa['1.1.2.01']?sa['1.1.2.01'].c:0)/100,aReceber=livro.saldoConta('1.1.2.01',ate),caixa=livro.saldoConta('1.1.1.02',ate);
   const proLabore=livro.saldoConta('3.2.1.01.001',ate,de),distrib=(sa['2.3.3.01']?sa['2.3.3.01'].d:0)/100,lucroDisp=livro.lucroDisponivel(ate);
-  const hist=histDoLivro(livro,comp),fr=fatorRDoHist(hist);
+  const hist=histDoLivro(livro,comp),primeiroMes=livro.lancamentos().map(l=>l.data.slice(0,7)).sort()[0],mesesAtividade=primeiroMes?(+comp.slice(0,4)-+primeiroMes.slice(0,4))*12+(+comp.slice(5,7)-+primeiroMes.slice(5,7))+1:0,fr=fatorRDoHist(hist,+comp.slice(0,4),mesesAtividade);
   const [a,m]=comp.split('-').map(Number),venc=`${m===12?a+1:a}-${String(m===12?1:m+1).padStart(2,'0')}-20`;
   const hojeI=hoje||`${m===12?a+1:a}-${String(m===12?1:m+1).padStart(2,'0')}-01`;
   const var_=(x,y)=>y>0?Math.round((x-y)/y*1000)/10:null;
@@ -44,7 +46,8 @@ function relatorioMes({livro,empresa={},comp,pendencias={},hoje=null,folhaAtiva=
   if(das>0)P.push(`Pagar o imposto do Simples (DAS) de ${brlR(das)} até ${dBR(venc)}.`);
   if(fr&&fr.anexo==='V'&&!fr.primeiroAno)A.push(`A folha (incluindo seu pró-labore) está em ${pctR(fr.fatorR)} da receita dos últimos 12 meses, abaixo de 28%: o imposto passa a ser calculado pela tabela mais cara (Anexo V). Peça ao contador para revisar o pró-labore.`);
   else if(fr&&fr.fatorR<0.3&&fr.anexo==='III')A.push(`A folha está em ${pctR(fr.fatorR)} da receita, perto do mínimo de 28% para ficar na tabela mais barata (Anexo III). Vale conversar sobre o pró-labore.`);
-  if(fr&&fr.primeiroAno)A.push(`Sua empresa tem ${fr.mesesComMovimento} mês(es) de movimento; o enquadramento do imposto usa a média desses meses até completar 12.`);
+  if(fr&&fr.fixoInicio)A.push('Nos 2 primeiros meses de atividade o Fator R vale 28% por regra (Anexo III).');
+  else if(fr&&fr.primeiroAno)A.push(`Sua empresa tem ${fr.mesesComMovimento} mês(es) de movimento na janela; o enquadramento do imposto usa a média desses meses até completar 12.`);
   if(fr&&fr.perto)A.push(`Sua receita acumulada está ${fr.perto}.`);
   if(fr&&fr.porte==='acima do Simples')A.push('A receita dos últimos 12 meses passou do limite do Simples: falar com o contador agora.');
   if(distrib>lucroDisp+0.005&&lucroDisp<0)A.push('Houve retirada de lucro maior que o lucro registrado: sem lucro escriturado, o excesso pode ser tributado. Falar com o contador.');

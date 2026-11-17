@@ -6,6 +6,9 @@
 
 // ATENÇÃO: tabelas dos Anexos III e V e base do Fator R VIGENTES EM 2026. A Res. CGSN 190/2026 reescreve os Anexos I a V e muda o Fator R a partir de 2027, e a DEFIS é substituída por informações dentro do PGDAS-D (art. 72 revogado em 01/01/2027): ATUALIZAR antes de 01/01/2027.
 const A5=[[180e3,.155,0],[360e3,.18,4500],[720e3,.195,9900],[1.8e6,.205,17100],[3.6e6,.23,62100],[4.8e6,.305,540000]]; // Anexo V, LC 155/2016 (igual a ferramentas/das.py)
+// 2027 e 2028 (Res. CGSN 190/2026, art. 6º, lido nos PDFs oficiais em 17/11/2026, projeto/simples-2027-res-cgsn-190-2026-11-17.md): só a 6ª faixa muda (III 32,9%, V 30,4%); de 2029 voltam 33% e 30,5%.
+const A3_2027=A3.slice(0,5).concat([[4.8e6,.329,648000]]),A5_2027=A5.slice(0,5).concat([[4.8e6,.304,540000]]);
+const tabelaAnexo=(anexo,ano)=>{const a=ano&&ano>=2027&&ano<=2028;return anexo==='III'?(a?A3_2027:A3):(a?A5_2027:A5)};
 const LIM_ME=360e3, LIM_EPP=4.8e6;
 // INSS do empregado 2026 (progressivo; teto = TETO de regras.js): faixas sobre o salário mínimo e o teto da Portaria MPS/MF 13/2026
 const INSS_EMP=[[1621,.075],[2902.84,.09],[4354.27,.12],[8475.55,.14]];
@@ -16,8 +19,8 @@ const r2c=x=>Math.round(x*100)/100;
 function efetivaAnexo(tab,rbt){const f=tab.find(x=>rbt<=x[0])||tab[tab.length-1];return rbt>0?Math.max(0,(rbt*f[1]-f[2])/rbt):tab[0][1]}
 
 // Anexo III se folha de 12 meses ÷ receita de 12 meses >= 28%; senão Anexo V (LC 123 art. 18 §5º-M). Pró-labore entra na folha (§24).
-function anexoSaude(rbt12,folha12){const fr=rbt12>0?folha12/rbt12:0,anexo=fr>=.28?'III':'V';
-  const ef=efetivaAnexo(anexo==='III'?A3:A5,rbt12);
+function anexoSaude(rbt12,folha12,ano){const fr=rbt12>0?folha12/rbt12:0,anexo=fr>=.28?'III':'V';
+  const ef=efetivaAnexo(tabelaAnexo(anexo,ano),rbt12);
   return {fatorR:r2c(fr*10000)/10000,anexo,efetiva:ef,porte:rbt12>LIM_EPP?'acima do Simples':rbt12>LIM_ME?'EPP':'ME',perto:rbt12>.8*LIM_ME&&rbt12<=LIM_ME?'perto do limite de ME (80%)':null}}
 
 function inssEmpregado(sal){let t=0,ant=0;for(const [teto,al] of INSS_EMP){if(sal>ant)t+=(Math.min(sal,teto)-ant)*al;ant=teto}return r2c(t)}
@@ -81,7 +84,7 @@ function calendario(de,{folha=false,proLabore=true,abertura=null}={}){const [a0,
     if(m===11&&folha)add(`${a}-12-20`,'13º salário, 2ª parcela','pessoal');
     if(m===11)add(`${a}-12-10`,'Planejar o pró-labore do próximo ano (Fator R)','planejamento');
     if(m===1)add(dISO(ultimoDiaUtil(a,1)),'DMED (último dia útil de fevereiro)','anual',true);
-    if(m===2)add(`${a}-03-31`,'DEFIS do Simples (conferir a transição para o PGDAS-D em 2027)','anual',true);
+    if(m===2)add(`${a}-03-31`,a>=2027?'Informações socioeconômicas no PGDAS-D (a DEFIS foi substituída em 2027: conferir o leiaute e o prazo no Portal)':'DEFIS do Simples','anual',true);
     if(m===3)add(`${a}-04-30`,'IRPF dos sócios (confirmar o prazo do ano)','anual')}
   if(abertura)add(prazoOpcaoSimples(abertura,null),'Último dia para a opção pelo Simples (60 dias da abertura)','fiscal',true);
   const lo=de+'-01',hi=dISO(new Date(a0,m0-1+13,0));
@@ -105,7 +108,8 @@ function alertas(r){const L=[],add=(nivel,txt)=>L.push({nivel,txt});
   return L}
 
 // Fator R mês a mês (12 meses móveis): avisa quando o Anexo muda, para o contador ajustar o pró-labore.
-function fatorRMovel(hist){const out=[];for(let i=11;i<hist.length;i++){const j=hist.slice(i-11,i+1),r=j.reduce((s,x)=>s+x.receita,0),f=j.reduce((s,x)=>s+x.folha,0);
-  out.push({mes:hist[i].mes,...anexoSaude(r,f)})}return out}
+// Janela do Fator R: até 2026, os 12 meses anteriores ao mês de apuração; desde 01/01/2027 (Res. CGSN 190/2026, art. 26), os 12 meses anteriores ao mês anterior (um mês a mais de atraso). Esta função usa a janela que TERMINA em cada mês de hist; `atraso` empurra a janela para trás.
+function fatorRMovel(hist,{atraso=0,ano}={}){const out=[];for(let i=11+atraso;i<hist.length;i++){const j=hist.slice(i-11-atraso,i+1-atraso),r=j.reduce((s,x)=>s+x.receita,0),f=j.reduce((s,x)=>s+x.folha,0);
+  out.push({mes:hist[i].mes,...anexoSaude(r,f,ano)})}return out}
 
 if(typeof module!=='undefined')module.exports={anexoSaude,inssEmpregado,holerite,simulaPJ,prazoOpcaoSimples,custosAbertura,PASSOS,proximosPassos,calendario,alertas,fatorRMovel};
