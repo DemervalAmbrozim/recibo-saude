@@ -168,7 +168,19 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
  .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}.rv.vis{opacity:1;transform:none}
  .mini.rv:nth-child(2){transition-delay:.08s}.mini.rv:nth-child(3){transition-delay:.16s}.mini.rv:nth-child(4){transition-delay:.24s}.grande.rv:nth-child(2){transition-delay:.12s}
 }
-@media (max-width:760px){.heroi .lead{margin:0!important}.heroi{gap:16px}.heroi>div:first-child{display:contents}.heroi .abre{order:2}.heroi .lead{order:3}.heroi .fone{order:4;margin:6px auto}.heroi .chips{order:5}.heroi>div>p.sub{order:1;margin:0}}
+@media (max-width:760px){.heroi .lead{margin:0!important}.heroi{gap:16px}.heroi>div:first-child{display:contents}.heroi .abre{order:2}.heroi .lead{order:3}.heroi .colagem{order:4}.heroi .chips{order:5}.heroi>div>p.sub{order:1;margin:0}}
+
+/* ===== fotos de ambiente (17/11/2026): imagens ILUSTRATIVAS geradas por IA, a trocar por fotos reais ===== */
+.colagem{position:relative;justify-self:center;width:min(380px,100%);padding:28px 0 36px;z-index:1}
+.colagem .foto{position:absolute;border-radius:22px;object-fit:cover;box-shadow:0 18px 40px rgba(0,0,0,.4);border:3px solid rgba(255,255,255,.9)}
+.colagem .f1{width:78%;height:300px;left:-2%;top:0;transform:rotate(-5deg)}
+.colagem .f2{width:46%;height:150px;right:-8%;top:6px;transform:rotate(4deg)}
+.colagem .f3{width:46%;height:150px;left:-2%;bottom:10px;transform:rotate(-3deg)}
+.colagem .fone{position:relative;width:min(250px,64%);margin:60px 0 0 auto;transform:rotate(2deg)}
+.colagem .ilus{position:absolute;right:4px;bottom:2px;font-size:12px;color:#cfe0f5;opacity:.8}
+@media (prefers-reduced-motion:no-preference){.colagem .f2{animation:flutua2 8s ease-in-out infinite}.colagem .f3{animation:flutua2 9s ease-in-out infinite reverse}.colagem .f1{animation:flutua2 10s ease-in-out infinite}}
+@keyframes flutua2{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media (max-width:760px){.colagem{width:min(340px,100%);margin:0 auto;padding-bottom:40px}.colagem .f1{left:-4%;width:72%;height:240px}.colagem .f2{right:0;width:42%;height:120px}.colagem .f3{left:0;width:42%;height:120px}.colagem .fone{width:min(220px,64%)}}
 </style>
 </head>
 <body>
@@ -195,6 +207,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
       <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado realizando a gestão desde a sua agenda, registro do atendimento (se precisar), emissão do recibo no Receita Saúde (autônomo) e notas fiscais (CNPJ). Além de cuidarmos das suas contas, da contabilidade (com o nosso contador parceiro), redes sociais, abertura de CNPJ, imposto de renda e assessoria para a sua atuação.</p>
       <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade com contador parceiro</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
     </div>
+    <div class="colagem">
+      <img class="foto f1" src="img/psicologia.jpg" alt="Profissional de saúde atendendo com atenção" loading="eager" width="760" height="507">
+      <img class="foto f2" src="img/fisio.jpg" alt="Fisioterapeuta em atendimento" width="760" height="507">
+      <img class="foto f3" src="img/nutri.jpg" alt="Nutricionista com plano alimentar" width="760" height="507">
     <div class="fone" aria-label="Exemplo do que você recebe no WhatsApp"><div class="tela">
       <div class="topo-z"><img src="simbolo-saude-claro.png" alt=""><span>Lado a Lado Saúde<small>conta comercial</small></span></div>
       <div class="chat" role="log"><p class="sub" style="margin:0;font-weight:700;text-align:center">EXEMPLO</p>
@@ -204,6 +220,8 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
         <div class="b eu">Perfeito. Pode gerar a guia?</div>
         <div class="b nos">Guia pronta. Recibo, Carnê-Leão e declaração conferidos entre si.</div></div>
       <div class="rodape-z">Mensagem</div></div></div>
+      <span class="ilus">imagens ilustrativas</span>
+    </div>
   </section>
 
   <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
