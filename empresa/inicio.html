@@ -115,7 +115,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 /* ===== camada visual (17/11/2026): hero escuro da marca, celular com a conversa, ícones, faixas ===== */
 .heroi{background:radial-gradient(900px 420px at 85% 10%,rgba(0,168,118,.35),transparent 60%),linear-gradient(160deg,#02214f 0%,#03306e 100%);color:#fff;border-radius:28px;padding:clamp(22px,4vw,44px);position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(2,33,79,.28)}
 .heroi::after{content:"";position:absolute;right:-60px;bottom:-70px;width:340px;height:340px;background:url(simbolo-saude-escuro.png) center/contain no-repeat;opacity:.07;pointer-events:none}
-.heroi h1,.heroi .lead{color:#fff}.heroi .lead{opacity:.88}
+.heroi h1,.heroi .lead{color:#fff}.heroi .lead{opacity:.9;margin:16px 0 0!important}.heroi .chips{margin-top:18px}
 .heroi .sub{color:#7be0bd!important}
 .heroi .teste{color:#cfe0f5}.heroi .teste b{color:#7be0bd}
 .heroi .dor{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
@@ -167,14 +167,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 
   <section class="heroi">
     <div>
-      <p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px;color:var(--accent)">Para profissionais da saúde: recibo, contas e imposto em dia</p>
-      <h1 class="abre" id="h1">Você atende com carinho. A gente fica lado a lado com você.</h1>
-      <p class="lead" style="font-size:19px;margin:14px 0 0;max-width:56ch">Recibo, contas, contabilidade, imposto de renda, redes e a abertura do seu CNPJ. Com tecnologia moderna e com gente de verdade, que conversa, entende o seu momento e cresce junto com você.</p>
-      <p class="prof-l" id="prof-l">Qual é a sua área? (opcional)</p>
-      <div class="prof" id="prof" role="group" aria-labelledby="prof-l"><button type="button" data-p="Psicologia" aria-pressed="false">Psicologia</button><button type="button" data-p="Fisioterapia" aria-pressed="false">Fisioterapia</button><button type="button" data-p="Nutrição" aria-pressed="false">Nutrição</button><button type="button" data-p="Fonoaudiologia" aria-pressed="false">Fonoaudiologia</button><button type="button" data-p="Terapia ocupacional" aria-pressed="false">Terapia ocupacional</button><button type="button" data-p="Medicina" aria-pressed="false">Medicina</button><button type="button" data-p="Odontologia" aria-pressed="false">Odontologia</button><button type="button" data-p="Outra área da saúde" aria-pressed="false">Outra</button></div>
-      <div class="acoes"><a class="cta" href="#caminhos">Ver o meu caminho</a><a class="cta sec" href="https://wa.me/5527999712727">Conversar no WhatsApp</a></div>
-      <p class="dor"><b>Receita Saúde é obrigatório.</b> Os recibos alimentam o Carnê-Leão e a declaração do seu paciente: se algo não bate, os dois podem cair na malha fina. A gente deixa tudo conferido.</p>
-      <p class="teste"><b>Teste sem cartão:</b> 7 dias no plano mensal, 30 dias no anual.</p>
+      <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Contabilidade • Gestão • Tecnologia</p>
+      <h1 class="abre">Para profissionais da saúde obrigados a emitir recibos pelo Receita Saúde e para quem já tem CNPJ.</h1>
+      <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado realizando a gestão desde a sua agenda, registro do atendimento (se precisar), emissão do recibo no Receita Saúde (autônomo) e notas fiscais (CNPJ). Além de cuidarmos das suas contas, da contabilidade (com o nosso contador parceiro), redes sociais, abertura de CNPJ, imposto de renda e assessoria para a sua atuação.</p>
+      <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade com contador parceiro</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
     </div>
     <div class="fone" aria-label="Exemplo do que você recebe no WhatsApp"><div class="tela">
       <div class="topo-z"><img src="simbolo-saude-claro.png" alt=""><span>Lado a Lado Saúde<small>conta comercial</small></span></div>
@@ -185,17 +181,6 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
         <div class="b eu">Perfeito. Pode gerar a guia?</div>
         <div class="b nos">Guia pronta. Recibo, Carnê-Leão e declaração conferidos entre si.</div></div>
       <div class="rodape-z">Mensagem</div></div></div>
-  </section>
-
-  <section aria-label="O que muda na sua rotina">
-    <h2 id="muda-h">O que muda na sua rotina</h2>
-    <p class="sub">Quem atende não deveria perder a noite com prazo, recibo e imposto.</p>
-    <div class="muda">
-      <div class="card"><span class="ic2" aria-hidden="true"><svg><use href="#i-lua"/></svg></span><h3>Tranquilidade</h3><p>A gente avisa os prazos pelo WhatsApp antes de vencer. Você não precisa lembrar de tudo.</p></div>
-      <div class="card"><span class="ic2" aria-hidden="true"><svg><use href="#i-escudo"/></svg></span><h3>Segurança</h3><p>Recibo, Carnê-Leão e declaração conferidos entre si, para não ter surpresa com a Receita.</p></div>
-      <div class="card"><span class="ic2" aria-hidden="true"><svg><use href="#i-moeda"/></svg></span><h3>Dinheiro claro</h3><p>Você vê quanto entrou, quanto vai de imposto e quanto realmente sobra.</p></div>
-      <div class="card"><span class="ic2" aria-hidden="true"><svg><use href="#i-coracao"/></svg></span><h3>Mais tempo para o paciente</h3><p>Menos burocracia na sua cabeça e mais atenção para quem você atende.</p></div>
-    </div>
   </section>
 
   <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
@@ -215,16 +200,6 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
     </a>
   </section>
 
-  <section class="banda">
-    <h2>Aqui você começa conversando, não preenchendo formulário</h2>
-    <p class="sub">Antes de qualquer contrato, a gente quer entender o seu momento e ver se faz sentido para os dois lados. Se fizer, seguimos juntos. Se não fizer, a gente diz com sinceridade.</p>
-    <div class="passos3">
-      <div class="card"><span class="n">1</span><h3>Você conta o seu momento</h3><p>Em uma conversa curta pelo WhatsApp, sem compromisso.</p></div>
-      <div class="card"><span class="n">2</span><h3>Você testa sem cartão</h3><p>Vê tudo funcionando com os seus números, por 7 dias no mensal ou 30 no anual.</p></div>
-      <div class="card"><span class="n">3</span><h3>Um contador confere</h3><p>O que importa passa por um contador registrado, e nada vai à Receita sem a sua autorização.</p></div>
-    </div>
-  </section>
-
   <section>
     <h2>E mais, para os dois caminhos</h2>
     <div class="peq" style="margin-top:12px">
@@ -235,15 +210,6 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
     </div>
   </section>
 
-  <section class="quem2" aria-label="Quem está por trás">
-    <div class="avatar" role="img" aria-label="Espaço da foto do Demerval">foto do Demerval (aguarda aval)</div>
-    <div class="promessa">
-      <h2>Gente de verdade, de perto de você</h2>
-      <p>A Lado a Lado nasceu na Assessoria Lado a Lado, com a pegada do Demerval: estar perto, entender antes de mudar e crescer junto, sempre acreditando que vai dar certo. Aqui na saúde, ele leva essa presença para o seu dia a dia, com um contador responsável conferindo a contabilidade.</p>
-      <p><b>E a inteligência artificial?</b> Ela trabalha por trás, nas contas repetitivas e nos lembretes de prazo. Quem decide, confere e responde são pessoas, e você fala com uma delas quando quiser, pelo WhatsApp 27 99971-2727.</p>
-    </div>
-  </section>
-
   <section class="faixa" aria-label="Começar">
     <h2>Pronto para começar?</h2>
     <p class="sub">Teste sem cartão: 7 dias no plano mensal, 30 dias no anual. Prefere conversar? WhatsApp 27 99971-2727.</p>
@@ -251,18 +217,13 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
   </section>
 
   <section class="confia" aria-label="Por que confiar">
-    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador registrado no CRC confere a contabilidade</span><span>Regras de 2026, atualizado em 17/11/2026</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
+    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
   </section>
 </main>
 <a class="zapfix" href="https://wa.me/5527999712727" id="zapfix">Falar no WhatsApp</a>
 <footer><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
 <script>
-// Área opcional: só troca o texto de apoio e o exemplo; não é triagem nem obriga nada (ver padrão de material, 17/11/2026)
-(function(){var P={"Psicologia":["psicólogas e psicólogos","Paciente: M. S. · sessão · R$ 180,00"],"Fisioterapia":["fisioterapeutas","Paciente: M. S. · sessão · R$ 150,00"],"Nutrição":["nutricionistas","Paciente: M. S. · consulta · R$ 250,00"],"Fonoaudiologia":["fonoaudiólogas e fonoaudiólogos","Paciente: M. S. · sessão · R$ 160,00"],"Terapia ocupacional":["terapeutas ocupacionais","Paciente: M. S. · sessão · R$ 160,00"],"Medicina":["médicas e médicos","Paciente: M. S. · consulta · R$ 300,00"],"Odontologia":["dentistas","Paciente: M. S. · consulta · R$ 250,00"],"Outra área da saúde":["profissionais da saúde","Paciente: M. S. · atendimento · R$ 200,00"]};
- var bs=document.querySelectorAll('#prof button'),eu=document.querySelector('.hero .sub,.heroi .sub'),ex=document.querySelector('.chat .b.nos');
- bs.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-p'),v=P[k];bs.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
-  if(eu)eu.textContent='Para '+v[0]+': recibo, contas e imposto em dia';if(ex)ex.textContent='Recibo emitido no Receita Saúde \u2713\n'+v[1]+'\nCarnê-Leão do mês: já calculado, vence no último dia útil do mês seguinte.';})});
- var c=document.querySelector('.chat');if(c&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&'IntersectionObserver' in window){c.classList.add('anim');var bb=c.querySelectorAll('.b'),run=false;
+(function(){var c=document.querySelector('.chat');if(c&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&'IntersectionObserver' in window){c.classList.add('anim');var bb=c.querySelectorAll('.b'),run=false;
   new IntersectionObserver(function(e,o){if(e[0].isIntersecting&&!run){run=true;o.disconnect();bb.forEach(function(x,i){setTimeout(function(){x.classList.add('v')},500+i*900)})}},{threshold:.4}).observe(c)}})();
 </script>
 <script>
