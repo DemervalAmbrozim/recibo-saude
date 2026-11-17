@@ -33,6 +33,7 @@ function holerite(sal,{dependentes=0,vt=0}={}){const inss=inssEmpregado(sal),ir=
   return {salario:sal,inss,ir,vtDesconto:vtd,liquido,fgts,custoMensal:custo}}
 
 // Simulação PJ x PF para a mesma receita. emp = [{salario}]. proLabore = null: o app propõe o menor que fecha o Fator R de 28%.
+// Auditoria 17/11/2026: a folha usada no Fator R aqui é salário + FGTS; as normas incluem também 13º, 1/3 de férias e encargos, então esta simulação pode SUBESTIMAR a folha e sugerir pró-labore maior que o necessário. O contador calcula o Fator R oficial.
 function simulaPJ({receita,despesas=0,emp=[],proLabore=null}){
   const R=+receita||0,rbt=R*12,folhaEmp=emp.reduce((s,e)=>s+e.salario*1.08,0); // salário + FGTS
   const alvo=Math.max(SM,r2c(.28*R-folhaEmp));
@@ -48,6 +49,7 @@ function simulaPJ({receita,despesas=0,emp=[],proLabore=null}){
     contador,custoFolha,folha,pj:{impostos:pjImp,liquido:pjLiquido},pf:{impostos:pfImp,liquido:pfLiquido},diferenca:r2c(pjLiquido-pfLiquido),
     aviso:'Estimativa com os números informados. Fica de fora o ISS fixo da pessoa física, o cartão e outras diferenças; o contador confirma.'}}
 
+// ATENÇÃO (auditoria 17/11/2026): a Res. CGSN 183/2025 (DOU 13/10/2025) mudou o fluxo da empresa nova: a opção pode ser pedida junto com a inscrição do CNPJ; o texto consolidado do art. 6º da Res. 140 NÃO foi lido. Regra abaixo = anterior; o contador confirma.
 // Prazo da opção pelo Simples para empresa nova: 30 dias do último deferimento (municipal ou estadual), no máximo 60 dias da abertura do CNPJ.
 function prazoOpcaoSimples(abertura,deferimento){const d=s=>new Date(s+'T12:00:00'),mais=(x,n)=>{const y=new Date(x);y.setDate(y.getDate()+n);return dISO(y)};
   const a=mais(d(abertura),60),b=deferimento?mais(d(deferimento),30):a;return b<a?b:a}
@@ -74,8 +76,8 @@ const PASSOS=[[0,'Contrato e proposta assinados','contador',[]],[1,'Viabilidade:
   .map(([id,titulo,dono,depende])=>({id,titulo,dono,depende}));
 function proximosPassos(feitos){const f=new Set(feitos||[]);return PASSOS.filter(p=>!f.has(p.id)&&p.depende.every(d=>f.has(d)))}
 
-// Calendário fiscal de 12 meses a partir de `de` (aaaa-mm). folha: tem empregado. O dia 20 não é antecipado nem adiado aqui: confirmar com o contador.
-function calendario(de,{folha=false,proLabore=true,abertura=null}={}){const [a0,m0]=de.split('-').map(Number),ev=[],add=(data,titulo,tipo,critico)=>ev.push({data,titulo,tipo,critico:!!critico});
+// Calendário fiscal de 12 meses a partir de `de` (aaaa-mm). folha: tem empregado. O dia 20 não é movido aqui. Auditoria 17/11/2026: DAS vencido em dia sem expediente bancário vai para o dia útil SEGUINTE (nota da Receita); FGTS Digital, fontes secundárias dizem que ANTECIPA para o dia útil anterior (não confirmado no portal): o contador confere cada vencimento.
+function calendario(de,{folha=false,proLabore=true,abertura=null,entraNoSimples2027=false}={}){const [a0,m0]=de.split('-').map(Number),ev=[],add=(data,titulo,tipo,critico)=>ev.push({data,titulo,tipo,critico:!!critico});
   for(let k=0;k<12;k++){const t=new Date(a0,m0-1+k,1),a=t.getFullYear(),m=t.getMonth(),mm=String(m+1).padStart(2,'0'),n=new Date(a,m+1,1),an=n.getFullYear(),mn=String(n.getMonth()+1).padStart(2,'0');
     add(`${an}-${mn}-20`,'DAS do Simples (competência '+mm+'/'+a+')','fiscal',true);
     if(proLabore)add(`${an}-${mn}-20`,'INSS do pró-labore','fiscal');
@@ -86,7 +88,8 @@ function calendario(de,{folha=false,proLabore=true,abertura=null}={}){const [a0,
     if(m===1)add(dISO(ultimoDiaUtil(a,1)),'DMED (último dia útil de fevereiro)','anual',true);
     if(m===2)add(`${a}-03-31`,a>=2027?'Informações socioeconômicas no PGDAS-D (a DEFIS foi substituída em 2027: conferir o leiaute e o prazo no Portal)':'DEFIS do Simples','anual',true);
     if(m===3)add(`${a}-04-30`,'IRPF dos sócios (confirmar o prazo do ano)','anual')}
-  if(abertura)add(prazoOpcaoSimples(abertura,null),'Último dia para a opção pelo Simples (60 dias da abertura)','fiscal',true);
+  if(entraNoSimples2027){add('2026-12-20','Informar receita e folha de dez/2025 a nov/2026 no módulo "Receitas Anteriores à Opção" (Res. CGSN 190/2026, arts. 144-D e 144-E; conferir no Portal)','fiscal',true);add('2027-01-20','Informar receita e folha de dez/2026 no módulo "Receitas Anteriores à Opção" (arts. 144-D e 144-E; conferir no Portal)','fiscal',true)}
+  if(abertura)add(prazoOpcaoSimples(abertura,null),'Último dia para a opção pelo Simples (60 dias da abertura; conferir com o contador: a Res. CGSN 183/2025 mudou o fluxo)','fiscal',true);
   const lo=de+'-01',hi=dISO(new Date(a0,m0-1+13,0));
   return ev.filter(e=>e.data>=lo&&e.data<=hi).sort((x,y)=>x.data<y.data?-1:x.data>y.data?1:x.titulo.localeCompare(y.titulo))}
 
@@ -100,7 +103,7 @@ function alertas(r){const L=[],add=(nivel,txt)=>L.push({nivel,txt});
   if((+r.rbtPrevisto||0)>LIM_EPP)add('crítico','Receita prevista acima de R$ 4,8 milhões: fora do Simples.');
   if((+r.empregados||0)>3)add('atenção','Mais de 3 empregados: fora do escopo do pacote; orçamento à parte.');
   if(r.local==='consultorio'||r.local==='sala')add('atenção','Atendimento presencial: PGR/PCMSO costumam ser obrigatórios (a dispensa não vale com agente biológico); VISA e CNES conforme o município.');
-  if(r.cnpjAberto&&!r.optouSimples&&r.diasAbertura!=null&&r.diasAbertura<=60)add('crítico','CNPJ aberto sem a opção pelo Simples e ainda dentro dos 60 dias: fazer a opção hoje.');
+  if(r.cnpjAberto&&!r.optouSimples&&r.diasAbertura!=null&&r.diasAbertura<=60)add('crítico','CNPJ aberto sem a opção pelo Simples e ainda dentro dos 60 dias: fazer a opção hoje. [conferir: a Res. CGSN 183/2025 mudou o fluxo (a opção pode ser pedida junto com o CNPJ); o contador confirma o prazo vigente]');
   if(r.regime==='mei')add('crítico','MEI: nenhuma profissão de saúde regulamentada cabe no MEI (Anexo XI); desenquadrar com o contador.');
   if(r.contadorAnterior)add('atenção','Há contabilidade anterior ativa: formalizar o distrato e pedir os documentos.');
   if(r.govBronze)add('atenção','gov.br nível bronze: subir para prata ou ouro para a procuração e o e-CAC.');

@@ -13,7 +13,7 @@ function tabelaFolha(ano){const t=TABELAS_FOLHA[ano];if(!t)throw new Error('Tabe
 
 function inssFolha(base,ano){const t=tabelaFolha(ano);let tot=0,ant=0;for(const [teto,al] of t.inss){if(base>ant)tot+=(Math.min(base,teto)-ant)*al;ant=teto}return r2f(tot)}
 
-// emp: {salario, divisor (220 = 44 h/semana; 200 = 40 h; 180 = 36 h), dependentes (IR), filhosSF (menores de 14 ou inválidos), vtCusto (custo mensal do transporte, 0 = não optou)}
+// emp: {salario, divisor (220 = 44 h/semana; 200 = 40 h; 180 = 36 h), dependentes (IR), filhosSF (até 14 anos ou inválidos; conferir a idade-limite na Portaria do ano), vtCusto (custo mensal do transporte, 0 = não optou)}
 // mov: movimentos do mês. Retorna rubricas com incidência, bases, líquido e custo estimado. Lança erro em dado impossível (nunca "chuta").
 // INSS com truncamento por faixa: o leiaute do eSocial (S-5001) calcula assim, segundo a leitura de 17/11 (projeto/esocial-leiaute-fase4-2026-11-17.md); o `inssFolha` arredonda o total e pode diferir em centavos. A escolha do contador na 1ª folha sombra decide qual vale.
 function inssFolhaTruncado(base,ano){const t=tabelaFolha(ano);let tot=0,ant=0;for(const [teto,al] of t.inss){if(base>ant)tot+=Math.floor((Math.min(base,teto)-ant)*al*100+1e-9)/100;ant=teto}return r2f(tot)}
@@ -103,7 +103,7 @@ function prazosFerias(inicio){return {avisoAte:somaDias(inicio,-30),pagarAte:som
 
 // Recibo de férias. o: {diasGozo, diasAbono, mediaVariaveis, faltasPeriodo, outrasRemuneracoesMes}. INSS e IRRF saem pelo método marginal:
 // imposto sobre (outras remunerações do mês + férias) menos o imposto sobre as outras remunerações do mês. Sem outras = recibo isolado.
-// Incidências adotadas: férias gozadas e 1/3: INSS, IRRF e FGTS. Abono pecuniário: nenhum (Lei 8.212 art. 28 §9º, e). 1/3 do abono: só IRRF (Solução de Consulta Cosit 8/2015) [conferir]; FGTS e INSS não.
+// Incidências adotadas: férias gozadas e 1/3: INSS, IRRF e FGTS. Abono pecuniário: nenhum (Lei 8.212 art. 28 §9º, e). 1/3 do abono: só IRRF (Solução de Consulta Cosit 209/2021, fonte secundária; o texto oficial não foi aberto: o contador confere) [conferir]; FGTS e INSS não.
 function calculaFerias(emp,o={},ano=2026){const T=tabelaFolha(ano),erros=[];
   const S=+emp.salario,g=+(o.diasGozo||0),ab=+(o.diasAbono||0),media=+(o.mediaVariaveis||0),faltas=+(o.faltasPeriodo||0),outras=+(o.outrasRemuneracoesMes||0);
   if(!(S>0))erros.push('salário inválido');
@@ -218,4 +218,7 @@ function calculaRescisao(emp,o={},ano){
     fgts:{deposito:dep,multa,multaPct,saquePct:saqPct,saqueEstimado:r2f((sg+dep)*saqPct)},vencimento,projecaoAte:fim,notas:nota,alertas,
     aviso:'Estimativa; o contador confere cada rescisão e o advogado trabalhista revisa as primeiras. O termo de rescisão (TRCT) oficial é gerado a partir destes valores.'}}
 
-if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,inssFolhaTruncado,calculaProLabore,calculaRescisao,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};
+
+// Multa do art. 477 §8º da CLT: se as verbas rescisórias passarem do prazo (vencimento da rescisão), a multa é de um salário do empregado. Fonte: resumo de acórdãos (TRT-3/TST); o texto do artigo no Planalto NÃO foi aberto: o contador/advogado confere. Datas em aaaa-mm-dd.
+function multaAtraso477(salario,vencimento,pagamento){const atrasou=!!(vencimento&&pagamento&&pagamento>vencimento);return {atrasou,multa:atrasou?r2f(+salario||0):0,fonte:'CLT art. 477 §8º (a conferir no texto oficial)'}}
+if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,inssFolhaTruncado,calculaProLabore,calculaRescisao,multaAtraso477,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};

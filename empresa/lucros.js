@@ -23,7 +23,7 @@ function avaliaDistribuicao({valor,distribuidoAno=0,receitaAno,irpjCsllAno=0,luc
   const avisos=[];
   if(lucroDisponivel!=null&&valor>lucroDisponivel+0.005)avisos.push('acima do lucro contábil disponível: a distribuição não é permitida');
   if(tributavel>0)avisos.push('R$ '+tributavel.toFixed(2).replace('.',',')+' acima do limite isento do ano: pode ser tributado; falar com o contador'+(escrituracaoCompleta?'':' (sem escrituração contábil completa, vale só o lucro presumido)'));
-  if(distribuidoMes+valor>50000)avisos.push('mais de R$ 50 mil no mês para a mesma pessoa: retenção de 10% da Lei 15.270/2025. A Receita entende que vale também para o Simples (Perguntas e Respostas de 19/12/2025); há tese contrária e uma ADI em andamento: o contador decide e orienta');
+  if(distribuidoMes+valor>50000)avisos.push('mais de R$ 50 mil no mês para a mesma pessoa: retenção de 10% da Lei 15.270/2025. A Receita entende que vale também para o Simples (Perguntas e Respostas da Receita, dezembro de 2025; conferir a data exata na fonte); há tese contrária e uma ADI em andamento: o contador decide e orienta');
   return {limite:L.limite,regra:L.regra,presumido:L.presumido,contabil:L.contabil,isento:Math.round(isento*100)/100,tributavel,totalAno:Math.round(total*100)/100,permitido:!(lucroDisponivel!=null&&valor>lucroDisponivel+0.005),avisos}}
 
 // Pró-labore deste mês que mantém o Fator R em 28% olhando os 12 meses terminados nele (os 11 anteriores + este). Nunca abaixo de 1 salário mínimo.
