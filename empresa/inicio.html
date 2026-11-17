@@ -7,11 +7,11 @@
 <meta name="description" content="Para profissionais da saúde, como autônomo ou com empresa: recibo, contabilidade, imposto de renda, abertura de CNPJ, redes e assessoria para a sua atuação.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../icone.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0f6b55">
+<meta name="theme-color" content="#02214f">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
-:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;
+:root{--bg:#f4f7f8;--card:#fff;--fg:#0b1b33;--muted:#5d6e66;--line:#d9e2dd;--accent:#00875f;--navy:#02214f;--accent-fg:#fff;--soft:#e2f3ec;
   --zap:#dcf8c6;--zap-fg:#17231e;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;
   --accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}}
@@ -88,7 +88,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 @media (max-width:340px){.peq{grid-template-columns:1fr}}
 
 .heroi{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:center}
-.heroi img{width:100%;height:auto;border-radius:18px;display:block;aspect-ratio:7/5;object-fit:cover}
+.logo{height:44px;width:auto;display:block}.marca{text-decoration:none}
+.dor{background:var(--soft);border-radius:12px;padding:12px 14px;font-size:15px;margin-top:14px}
 .heroi .acoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .heroi .acoes .cta{flex:1 1 220px;text-align:center}
 .teste{font-size:15px;color:var(--muted);margin:10px 0 0}.teste b{color:var(--accent)}
@@ -103,17 +104,23 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 <body>
 <main>
   <div class="rasc">Rascunho da página inicial para revisão, não publicado. Layout e textos aguardam a aprovação do Demerval.</div>
-  <div class="topo"><span class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</span><a class="cta sec" href="entrar.html">Entrar</a></div>
+  <div class="topo"><a class="marca" href="#" aria-label="Lado a Lado Saúde"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture></a><a class="cta sec" href="entrar.html">Entrar</a></div>
 
   <section class="heroi">
     <div>
-      <p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px">Lado a Lado Saúde</p>
+      <p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px;color:var(--accent)">Para profissionais da saúde: recibo, contas e imposto em dia</p>
       <h1 class="abre">Você atende com carinho. A gente fica lado a lado com você.</h1>
       <p class="lead" style="font-size:19px;margin:14px 0 0;max-width:56ch">Recibo, contas, contabilidade, imposto de renda, redes e a abertura do seu CNPJ. Com tecnologia moderna e com gente de verdade, que conversa, entende o seu momento e cresce junto com você.</p>
       <div class="acoes"><a class="cta" href="#caminhos">Ver o meu caminho</a><a class="cta sec" href="https://wa.me/5527999712727">Conversar no WhatsApp</a></div>
+      <p class="dor"><b>Receita Saúde é obrigatório.</b> Os recibos alimentam o Carnê-Leão e a declaração do seu paciente: se algo não bate, os dois podem cair na malha fina. A gente deixa tudo conferido.</p>
       <p class="teste"><b>Teste sem cartão:</b> 7 dias no plano mensal, 30 dias no anual.</p>
     </div>
-    <img src="aperto-de-mao.jpg" width="900" height="643" alt="Aperto de mão: duas pessoas fechando uma parceria" fetchpriority="high">
+    <div class="chat" aria-label="Exemplo de aviso no WhatsApp"><p class="sub" style="margin:0;font-size:12px;font-weight:700">EXEMPLO DO QUE VOCÊ RECEBE NO WHATSAPP</p>
+      <div class="b nos">Recibo emitido no Receita Saúde ✓
+Paciente: M. S. · R$ 200,00
+Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
+      <div class="b eu">Perfeito. Pode gerar a guia?</div>
+      <div class="b nos">Guia pronta. Recibo, Carnê-Leão e declaração conferidos entre si.</div></div>
   </section>
 
   <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
@@ -169,10 +176,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
   </section>
 
   <section class="confia" aria-label="Por que confiar">
-    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
+    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador registrado no CRC confere a contabilidade</span><span>Regras de 2026, atualizado em 17/11/2026</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
   </section>
 </main>
-<footer>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+<footer><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
 <script>
 // Leva a origem (?o=) e a indicação (?ind=) da propaganda até o cadastro, como fazem a venda e a captação
 (function(){var q=new URLSearchParams(location.search),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),i=(q.get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!o&&!i)return;
