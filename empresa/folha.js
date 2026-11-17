@@ -15,6 +15,12 @@ function inssFolha(base,ano){const t=tabelaFolha(ano);let tot=0,ant=0;for(const 
 
 // emp: {salario, divisor (220 = 44 h/semana; 200 = 40 h; 180 = 36 h), dependentes (IR), filhosSF (menores de 14 ou inválidos), vtCusto (custo mensal do transporte, 0 = não optou)}
 // mov: movimentos do mês. Retorna rubricas com incidência, bases, líquido e custo estimado. Lança erro em dado impossível (nunca "chuta").
+// INSS com truncamento por faixa: o leiaute do eSocial (S-5001) calcula assim, segundo a leitura de 17/11 (projeto/esocial-leiaute-fase4-2026-11-17.md); o `inssFolha` arredonda o total e pode diferir em centavos. A escolha do contador na 1ª folha sombra decide qual vale.
+function inssFolhaTruncado(base,ano){const t=tabelaFolha(ano);let tot=0,ant=0;for(const [teto,al] of t.inss){if(base>ant)tot+=Math.floor((Math.min(base,teto)-ant)*al*100+1e-9)/100;ant=teto}return r2f(tot)}
+// Pró-labore do sócio (categoria 723 no eSocial; natureza de rubrica 3508; S-2300, S-1200 e S-1210): INSS de 11% sobre o valor até o teto, sem FGTS; IRRF pela tabela mensal (com o desconto simplificado e a redução da Lei 15.270, como o resto da folha). [conferir a regra do IRRF do pró-labore com o contador]
+function calculaProLabore(socio,ano=2026){const T=tabelaFolha(ano),P=+socio.proLabore;if(!(P>0))return {ok:false,erros:['pró-labore inválido']};
+  const inss=r2f(.11*Math.min(P,T.teto)),irrf=r2f(carneLeao(P,inss+(socio.dependentes||0)*T.depIR).devido);
+  return {ok:true,bruto:r2f(P),inss,irrf,fgts:0,liquido:r2f(P-inss-irrf),categoriaESocial:723,naturezaRubrica:'3508',codReceitaIRRF:'056107',aviso:'Estimativa; o contador confere. Pró-labore não paga FGTS; INSS limitado ao teto.'}}
 function calculaFolha(emp,mov={},ano=2026){
   const T=tabelaFolha(ano),erros=[];
   const S=+emp.salario,div=emp.divisor||220;
@@ -212,4 +218,4 @@ function calculaRescisao(emp,o={},ano){
     fgts:{deposito:dep,multa,multaPct,saquePct:saqPct,saqueEstimado:r2f((sg+dep)*saqPct)},vencimento,projecaoAte:fim,notas:nota,alertas,
     aviso:'Estimativa; o contador confere cada rescisão e o advogado trabalhista revisa as primeiras. O termo de rescisão (TRCT) oficial é gerado a partir destes valores.'}}
 
-if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,calculaRescisao,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};
+if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,inssFolhaTruncado,calculaProLabore,calculaRescisao,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};
