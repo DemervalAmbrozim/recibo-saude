@@ -155,7 +155,7 @@
     "3",
     "4"
    ],
-   "regra": "Resposta 3 gera alerta de recebimento sem nota fiscal para o contador. Sem dado de paciente: só valor, data e a descrição do banco."
+   "regra": "Resposta 3 gera alerta de recebimento sem nota fiscal para o contador. Sem dado clínico: só valor, data e a descrição do banco."
   },
   {
    "id": "empresa-recebimento-sem-nota",

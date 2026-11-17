@@ -76,8 +76,10 @@ main>*{min-width:0}
 .mini{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start;text-decoration:none;color:inherit}
 .mini:hover,.mini:focus-visible{border-color:var(--accent)}
 .mini h3{margin:0;font-size:17px}.mini p{margin:0;color:var(--muted);font-size:14px}
-.mini .tag{font-size:11px}
+.mini .tag{font-size:12px}
 .abre{font-size:clamp(24px,5vw,38px);font-weight:700;line-height:1.2;margin:0;max-width:30ch;text-wrap:balance}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.chips .breve{background:transparent;border:1px dashed var(--accent)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{font-size:13px;font-weight:600;background:var(--soft);color:var(--accent);border-radius:99px;padding:4px 12px}
 .confia{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;color:var(--muted);font-size:14px;text-align:center}
 .ponte-l{font-size:14px;color:var(--muted)}
@@ -95,7 +97,7 @@ main>*{min-width:0}
     <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Contabilidade • Gestão • Tecnologia</p>
     <h1 class="abre">Para profissionais da saúde obrigados a emitir recibos pelo Receita Saúde e para quem já tem CNPJ.</h1>
     <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado realizando a gestão desde a sua agenda, registro do atendimento (se precisar), emissão do recibo no Receita Saúde (autônomo) e notas fiscais (CNPJ). Além de cuidarmos das suas contas, contabilidade, redes sociais, abertura de CNPJ, imposto de renda e assessoria de apoio.</p>
-    <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade</span><span>Folha de pagamento</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
+    <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
   </section>
 
   <section class="duas" aria-label="Escolha o seu caminho">
@@ -132,9 +134,14 @@ main>*{min-width:0}
   </section>
 
   <section class="confia" aria-label="Por que confiar">
-    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Não usamos dado de paciente</span>
+    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
   </section>
 </main>
 <footer>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+<script>
+// Leva a origem (?o=) e a indicação (?ind=) da propaganda até o cadastro, como fazem a venda e a captação
+(function(){var q=new URLSearchParams(location.search),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),i=(q.get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!o&&!i)return;
+ document.querySelectorAll('a[href]').forEach(function(a){var h=a.getAttribute('href');if(/^(https?:|mailto:|tel:|#)/.test(h))return;var p=h.split('#'),u=new URL(p[0],location.href);if(o)u.searchParams.set('o',o);if(i)u.searchParams.set('ind',i);a.setAttribute('href',u.pathname+u.search+(p[1]?'#'+p[1]:''))})})();
+</script>
 </body>
 </html>
