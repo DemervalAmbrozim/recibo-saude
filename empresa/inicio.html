@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lado a Lado Saúde: recibo, contabilidade e gestão para quem atende</title>
+<meta name="description" content="Para profissionais da saúde, como autônomo ou com empresa: recibo, contabilidade, imposto de renda, abertura de CNPJ, redes e assessoria de apoio.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f6b55">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;
+  --zap:#dcf8c6;--zap-fg:#17231e;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;
+  --accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--zap:#1f4a3a;--zap-fg:#e4ede8;color-scheme:dark}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:56px;padding:20px 0 64px}
+h1{font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(22px,4vw,30px);margin:0 0 6px;text-wrap:balance}
+h3{font-size:17px;margin:0}
+p{margin:6px 0}
+a{color:var(--accent)}
+.sub{color:var(--muted)}
+.marca{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.marca i{width:28px;height:28px;border-radius:8px;background:var(--accent);display:inline-block}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cta{display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}
+.cta.sec{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:10px 16px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.hero .lead{font-size:19px;color:var(--muted);margin:14px 0 22px}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;font-size:14px}
+.b{max-width:85%;padding:8px 11px;border-radius:12px;white-space:pre-line}
+.b.eu{justify-self:end;background:var(--zap);color:var(--zap-fg);border-bottom-right-radius:3px}
+.b.nos{justify-self:start;background:var(--soft);border-bottom-left-radius:3px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.n{font-weight:700;color:var(--accent);font-size:14px}
+.plano.destaque{border:2px solid var(--accent)}
+.preco{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.preco small{font-size:15px;color:var(--muted);font-weight:500}
+.tag{justify-self:start;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent);border-radius:99px;padding:2px 10px}
+ul.ok{list-style:none;padding:0;margin:4px 0;display:grid;gap:6px}
+ul.ok li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.ciclo{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;margin:10px 0 18px;background:var(--card)}
+.ciclo button{font:inherit;border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;cursor:pointer}
+.ciclo button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600}
+details{border-top:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600}
+.cnpj{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.conta{display:grid;gap:10px}
+.conta label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.conta input{font:inherit;font-size:max(16px,1em);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.res{font-size:15px}
+.res b{font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+ol.passos{margin:6px 0;padding-left:20px;display:grid;gap:4px}
+@media (max-width:760px){.cnpj{grid-template-columns:1fr}}
+.faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
+footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
+@media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
+
+main>*{min-width:0}
+.rasc{background:#fff3d6;color:#8a5a00;border-radius:10px;padding:10px 12px;font-size:14px}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grande{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:24px;display:grid;gap:12px;align-content:start;text-decoration:none;color:inherit}
+.grande:hover,.grande:focus-visible{border-color:var(--accent)}
+.grande h2{font-size:clamp(22px,3.4vw,28px);margin:0}
+.grande .quem{color:var(--muted);margin:0;font-size:16px}
+.grande ul{list-style:none;padding:0;margin:4px 0 8px;display:grid;gap:6px}
+.grande li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.grande .cta{justify-self:start}
+.peq{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mini{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start;text-decoration:none;color:inherit}
+.mini:hover,.mini:focus-visible{border-color:var(--accent)}
+.mini h3{margin:0;font-size:17px}.mini p{margin:0;color:var(--muted);font-size:14px}
+.mini .tag{font-size:11px}
+.confia{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;color:var(--muted);font-size:14px;text-align:center}
+.ponte-l{font-size:14px;color:var(--muted)}
+@media (max-width:900px){.peq{grid-template-columns:1fr 1fr}}
+@media (max-width:700px){.duas{grid-template-columns:1fr}.grande{padding:18px}}
+@media (max-width:340px){.peq{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <div class="rasc">Rascunho da página inicial para revisão, não publicado. Layout e textos aguardam a aprovação do Demerval.</div>
+  <div class="topo"><span class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</span><a class="cta sec" href="entrar.html">Entrar</a></div>
+
+  <section>
+    <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Contabilidade • Gestão • Tecnologia</p>
+    <h1>Você atende. A gente cuida do resto.</h1>
+    <p class="sub" style="font-size:18px">Para profissionais da saúde, como autônomo ou com empresa. Escolha o seu caminho.</p>
+  </section>
+
+  <section class="duas" aria-label="Escolha o seu caminho">
+    <a class="grande" href="../venda.html" id="g-auto">
+      <h2>Sou profissional autônomo(a)</h2>
+      <p class="quem">Atendo com o meu CPF.</p>
+      <ul><li>Recibo do Receita Saúde</li><li>Carnê-Leão e DARF prontos</li><li>Financeiro pelo WhatsApp</li><li>Imposto de renda</li></ul>
+      <span class="cta">Ver o plano de autônomo</span>
+      <span class="ponte-l">Vai abrir seu CNPJ? A gente abre e segue com você.</span>
+    </a>
+    <a class="grande" href="index.html" id="g-emp">
+      <h2>Tenho empresa de saúde (CNPJ)</h2>
+      <p class="quem">Simples Nacional, até 3 funcionários.</p>
+      <ul><li>Contabilidade completa e imposto do Simples</li><li>Folha de pagamento</li><li>Financeiro e resumo de uma página por mês</li><li>Imposto de renda dos sócios</li></ul>
+      <span class="cta">Ver o plano para empresa</span>
+      <span class="ponte-l">Ainda é autônoma? Comece pelo plano ao lado e migre quando abrir.</span>
+    </a>
+  </section>
+
+  <section>
+    <h2>E mais, para os dois caminhos</h2>
+    <div class="peq" style="margin-top:12px">
+      <a class="mini" href="../venda.html#servicos" id="t-ir"><span class="tag">autônomos e empresas</span><h3>Imposto de renda</h3><p>A gente faz a sua declaração, conferida pelo contador.</p></a>
+      <a class="mini" href="entrar.html" id="t-cnpj"><span class="tag">para quem vai abrir</span><h3>Abrimos o seu CNPJ</h3><p>Do contrato social à nota fiscal de teste, com cada passo no seu app.</p></a>
+      <a class="mini" href="../venda.html#servicos" id="t-redes"><span class="tag">autônomos e empresas</span><h3>Presença nas redes</h3><p>Instagram, Facebook e LinkedIn com conteúdo dentro das regras do seu conselho.</p></a>
+      <a class="mini" href="../venda.html#servicos" id="t-apoio"><span class="tag">autônomos e empresas</span><h3>Assessoria de apoio</h3><p>Diagnóstico e plano de ação para o seu momento, com acompanhamento.</p></a>
+    </div>
+  </section>
+
+  <section class="confia" aria-label="Por que confiar">
+    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Não usamos dado de paciente</span>
+  </section>
+</main>
+<footer>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+</body>
+</html>

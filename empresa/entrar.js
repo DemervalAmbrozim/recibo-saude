@@ -47,13 +47,13 @@ $('b-cod').onclick=async()=>{const t=so($('cod').value);if(t.length<6){avisa('Di
   const r=await sb.auth.verifyOtp({email:$('email').value.trim(),token:t,type:'email'});
   if(r.error){avisa('Código vencido ou errado. Peça um e-mail novo.',true);return}$('cod-box').hidden=true;$('email-ok').hidden=true;inicio()};
 
-// Passo 2: dados da profissional (função já existente da frente Autônoma)
+// Passo 2: dados da titular da empresa (pj_cadastrar_titular: NÃO cria o teste da frente Autônoma; contas separadas por trás)
 $('e-prof').onsubmit=async e=>{e.preventDefault();
   const nome=$('p-nome').value.trim().replace(/\s+/g,' '),cpf=so($('p-cpf').value),tel=telLimpo($('p-tel').value);
   if(nome.split(' ').length<2){avisa('Escreva o nome completo, como no CPF.',true);return}
   if(!cpfOk(cpf)){avisa(ERROS['cpf invalido'],true);return}
   if(!/^\d{10,11}$/.test(tel)){avisa(ERROS['whatsapp invalido'],true);return}
-  const r=await sb.rpc('cadastrar_profissional',{p_nome:nome,p_cpf:cpf,p_ocupacao:$('p-ocup').value,p_registro:$('p-reg').value,p_telefone:tel,p_cidade:$('p-cid').value,p_aceite:TERMOS});
+  const r=await sb.rpc('pj_cadastrar_titular',{p_nome:nome,p_cpf:cpf,p_ocupacao:$('p-ocup').value,p_registro:$('p-reg').value,p_telefone:tel,p_cidade:$('p-cid').value,p_aceite:TERMOS,p_origem:ORIGEM});
   if(r.error){avisa(traduz(r.error.message),true);return}mostra('e-emp')};
 
 // Passo 3: empresa
