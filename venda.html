@@ -61,6 +61,7 @@ ol.passos{margin:6px 0;padding-left:20px;display:grid;gap:4px}
 .faixa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center;display:grid;gap:10px;justify-items:center}
 footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color:var(--muted);max-width:980px;margin:0 auto}
 @media (max-width:760px){.hero,.grid3{grid-template-columns:1fr}.hero{gap:20px}}
+#ponte-empresa[hidden]{display:none!important}
 </style>
 <link rel="apple-touch-icon" href="icone-192.png">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Lado a Lado Saúde"><meta property="og:title" content="Lado a Lado Saúde: recibo do Receita Saúde e Carnê-Leão pelo WhatsApp"><meta property="og:description" content="Você atende. A gente cuida do recibo e das suas contas. Fisioterapeutas, psicólogos e profissionais da saúde. teste grátis, sem cartão (7 dias no mensal, 30 no anual)."><meta property="og:image" content="https://ladoaladosaude.com.br/social-venda.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="pt_BR"><meta name="twitter:card" content="summary_large_image">
@@ -191,6 +192,14 @@ Maria Silva · R$ 180,00 · Pix · hoje
     </div>
   </section>
 
+  <section id="ponte-empresa" hidden>
+    <div class="card" style="gap:10px">
+      <h2 style="margin:0">Vai abrir seu CNPJ? A gente abre e segue com você</h2>
+      <p class="sub" style="margin:0">Quando a sua empresa abrir, o seu histórico vem junto e você passa para o plano Empresa: contabilidade completa, folha e um resumo de uma página por mês. Se já atende com empresa, pode ir direto.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="cta" href="empresa/entrar.html">Quero abrir meu CNPJ</a><a class="cta sec" href="empresa/index.html">Ver o plano para empresa</a></div>
+    </div>
+  </section>
+
   <section id="quem">
     <h2>Quem está por trás</h2>
     <p class="sub"><b>Demerval Júnior Ambrozim</b> é administrador de empresas, com mais de duas décadas em gestão financeira, planejamento, controladoria, fluxo de caixa e governança, junto a diretorias, gestores e equipes. Na Lado a Lado Saúde essa experiência vira um método simples: controlar o que entra e o que sai, emitir o recibo no prazo e decidir com a conta na mão.</p>
@@ -255,5 +264,6 @@ function conta(){const R=numBR(document.getElementById('cj-rec').value),dp=numBR
 </script>
 <script>// Indicação: leva o ?ind= da venda para o cadastro
 (()=>{const q=new URLSearchParams(location.search),i=q.get('ind'),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),p=[];if(i)p.push('ind='+encodeURIComponent(i));if(o)p.push('o='+o);if(p.length)document.querySelectorAll('a[href="entrar.html"]').forEach(a=>a.href='entrar.html?'+p.join('&'))})();</script>
+<script>if(typeof CONFIG!=='undefined'&&CONFIG.empresa){var pe=document.getElementById('ponte-empresa');if(pe)pe.hidden=false}</script>
 </body>
 </html>
