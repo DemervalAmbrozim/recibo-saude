@@ -21,8 +21,8 @@ function calculaFolha(emp,mov={},ano=2026){
   if(!(S>0))erros.push('salário inválido');
   if(![180,200,220].includes(div)&&!(div>0&&div<=300))erros.push('divisor de jornada inválido');
   if(S>0&&S<T.sm&&!emp.jornadaParcial)erros.push('salário abaixo do mínimo ('+T.sm+'): só para jornada parcial proporcional ou piso diferente por convenção');
-  const m={heNormais:0,heDescanso:0,horasNoturnas:0,faltasDias:0,dsrPerdidos:0,atrasoHoras:0,comissao:0,diasUteis:25,diasDescanso:5,outrosProventos:[],outrosDescontos:[],...mov};
-  for(const k of['heNormais','heDescanso','horasNoturnas','faltasDias','dsrPerdidos','atrasoHoras','comissao'])if(!(m[k]>=0))erros.push('valor negativo ou inválido em '+k);
+  const m={diasFerias:0,heNormais:0,heDescanso:0,horasNoturnas:0,faltasDias:0,dsrPerdidos:0,atrasoHoras:0,comissao:0,diasUteis:25,diasDescanso:5,outrosProventos:[],outrosDescontos:[],...mov};
+  for(const k of['diasFerias','heNormais','heDescanso','horasNoturnas','faltasDias','dsrPerdidos','atrasoHoras','comissao'])if(!(m[k]>=0))erros.push('valor negativo ou inválido em '+k);
   if(m.diasUteis<=0||m.diasDescanso<0||m.diasUteis+m.diasDescanso<28||m.diasUteis+m.diasDescanso>31)erros.push('dias úteis + descanso devem fechar o mês (28 a 31)');
   if(m.faltasDias>31)erros.push('faltas acima de 31 dias');
   if(erros.length)return {ok:false,erros};
@@ -43,6 +43,7 @@ function calculaFolha(emp,mov={},ano=2026){
   add(D,'101','Faltas injustificadas',m.faltasDias+' dias',dFalta,{base:true});
   add(D,'102','DSR perdido por falta',m.dsrPerdidos+' dias',dDsr,{base:true});
   add(D,'103','Atrasos e saídas antecipadas',m.atrasoHoras+' h',dAtraso,{base:true});
+  add(D,'104','Dias de férias (pagos no recibo de férias)',m.diasFerias+' dias',S/30*m.diasFerias,{base:true});
   const redBase=D.filter(x=>x.base).reduce((s,x)=>s+x.valor,0);
   const bruto=r2f(tributavel-redBase),baseINSS=Math.max(0,bruto),baseFGTS=baseINSS;
   const inss=inssFolha(baseINSS,ano);
@@ -78,4 +79,60 @@ ${linhas.map(l=>`<tr><td>${l[0]}</td><td>${esc2(l[1])}</td><td>${esc2(l[2])}</td
 <p class="peq">Documento gerado pelo sistema como estimativa até a conferência do contador responsável. ${esc2(r.aviso)}</p>
 <p class="peq">Recebi o valor líquido acima. Data: ____/____/______ Assinatura: ______________________________</p></html>`}
 
-if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML};
+
+// ===== Fase 2: férias e 13º salário (17/11/2026) =====
+// Fontes: CLT arts. 129 a 153 (férias), art. 130 (escala por faltas), art. 134 §1º (fracionamento), art. 135 (aviso 30 dias), art. 145 (pagar até 2 dias antes), art. 143-144 (abono);
+// Lei 4.090/62 e 4.749/65 (13º); Lei 15.270/2025 (a redução do IRRF vale também para o 13º, fonte secundária). Pontos ainda a conferir no texto oficial estão marcados [conferir].
+const dIsoF=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const somaDias=(iso,n)=>{const [a,m,d]=iso.split('-').map(Number),x=new Date(a,m-1,d+n);return dIsoF(x)};
+// Dias de férias a que tem direito conforme faltas injustificadas no período aquisitivo (CLT art. 130) [conferir o texto]
+function direitoFerias(faltas){return faltas<=5?30:faltas<=14?24:faltas<=23?18:faltas<=32?12:0}
+// Fracionamento: até 3 períodos, um com 14 dias ou mais, os outros com 5 ou mais (CLT art. 134 §1º, Reforma Trabalhista) [conferir]
+function fracionamentoOk(periodos){if(!Array.isArray(periodos)||!periodos.length||periodos.length>3)return {ok:false,motivo:'até 3 períodos'};
+  if(periodos.some(d=>!(d>=5)))return {ok:false,motivo:'nenhum período pode ter menos de 5 dias'};
+  if(periodos.length>1&&!periodos.some(d=>d>=14))return {ok:false,motivo:'um dos períodos precisa ter 14 dias ou mais'};
+  return {ok:true}}
+// Aviso até 30 dias antes do início; pagamento até 2 dias antes (CLT arts. 135 e 145)
+function prazosFerias(inicio){return {avisoAte:somaDias(inicio,-30),pagarAte:somaDias(inicio,-2)}}
+
+// Recibo de férias. o: {diasGozo, diasAbono, mediaVariaveis, faltasPeriodo, outrasRemuneracoesMes}. INSS e IRRF saem pelo método marginal:
+// imposto sobre (outras remunerações do mês + férias) menos o imposto sobre as outras remunerações do mês. Sem outras = recibo isolado.
+// Incidências adotadas: férias gozadas e 1/3: INSS, IRRF e FGTS. Abono pecuniário: nenhum (Lei 8.212 art. 28 §9º, e). 1/3 do abono: só IRRF (Solução de Consulta Cosit 8/2015) [conferir]; FGTS e INSS não.
+function calculaFerias(emp,o={},ano=2026){const T=tabelaFolha(ano),erros=[];
+  const S=+emp.salario,g=+(o.diasGozo||0),ab=+(o.diasAbono||0),media=+(o.mediaVariaveis||0),faltas=+(o.faltasPeriodo||0),outras=+(o.outrasRemuneracoesMes||0);
+  if(!(S>0))erros.push('salário inválido');
+  const dir=direitoFerias(faltas);if(dir===0)erros.push('mais de 32 faltas injustificadas: perde o direito às férias deste período (art. 130)');
+  if(!(g>=0)||!(ab>=0)||g+ab<=0)erros.push('informe os dias de gozo e/ou de abono');
+  if(dir&&g+ab>dir)erros.push('gozo + abono ('+(g+ab)+') acima dos '+dir+' dias a que tem direito');
+  if(dir&&ab>Math.floor(dir/3))erros.push('o abono pecuniário é de no máximo 1/3 das férias ('+Math.floor(dir/3)+' dias)');
+  if(o.periodos){const f=fracionamentoOk(o.periodos);if(!f.ok)erros.push('fracionamento inválido: '+f.motivo);else if(o.periodos.reduce((s,x)=>s+x,0)!==g)erros.push('a soma dos períodos deve fechar os dias de gozo')}
+  if(erros.length)return {ok:false,erros};
+  const base=S+media,vd=base/30,fer=r2f(vd*g),t1=r2f(fer/3),abono=r2f(vd*ab),t1ab=r2f(abono/3);
+  const tribINSS=fer+t1,tribIRRF=fer+t1+t1ab,dep=(emp.dependentes||0)*T.depIR;
+  const inssTot=inssFolha(outras+tribINSS,ano),inssOut=inssFolha(outras,ano),inss=r2f(inssTot-inssOut);
+  const irTot=carneLeao(outras+tribIRRF,inssTot+dep).devido,irOut=outras>0?carneLeao(outras,inssOut+dep).devido:0,irrf=r2f(Math.max(0,irTot-irOut));
+  const fgts=r2f(tribINSS*T.fgts),bruto=r2f(fer+t1+abono+t1ab),liquido=r2f(bruto-inss-irrf);
+  const P=[['201','Férias gozadas',g+' dias',fer],['202','1/3 constitucional sobre férias',' ',t1],['203','Abono pecuniário',ab+' dias',abono],['204','1/3 sobre o abono pecuniário',' ',t1ab]].filter(x=>x[3]>0).map(([cod,desc,ref,valor])=>({cod,desc,ref,valor}));
+  return {ok:true,ano,diasDireito:dir,proventos:P,bruto,inss,irrf,fgts,liquido,valorDia:r2f(vd),
+    aviso:'Estimativa; o contador confere. Prazos: aviso até 30 dias antes e pagamento até 2 dias antes do início (use prazosFerias).'}}
+
+// IRRF do 13º: cálculo separado do salário, tributação exclusiva na fonte. Sem desconto simplificado por padrão [conferir se a Receita o admite no 13º];
+// a redução da Lei 15.270 vale também para o 13º (fonte secundária; mesma fórmula do mensal: até R$ 5.000 zera, entre 5.000 e 7.350 reduz).
+function irrf13(rend,inss,dependentes,T,{simplificado=false,reducao=true}={}){const ded=inss+dependentes*T.depIR,d=simplificado?Math.max(ded,SIMPL):ded,base=Math.max(0,rend-d);
+  const [,al,pd]=TAB.find(f=>base<=f[0]),bruto=Math.max(0,base*al-pd);
+  const red=!reducao?0:rend<=LIM?Math.min(bruto,312.89):rend<=LIM2?Math.max(0,978.62-0.133145*rend):0;
+  return r2f(Math.max(0,bruto-red))}
+// 13º: avos = meses com 15 dias ou mais trabalhados no ano. 1ª parcela (até 30/11): metade do 13º, sem INSS nem IRRF, com FGTS. 2ª (até 20/12): saldo menos INSS e IRRF calculados sobre o 13º inteiro.
+function calculaDecimoTerceiro(emp,o={},ano=2026){const T=tabelaFolha(ano),erros=[];
+  const S=+emp.salario,avos=o.avos==null?12:+o.avos,media=+(o.mediaVariaveis||0);
+  if(!(S>0))erros.push('salário inválido');
+  if(!(avos>=1&&avos<=12)||!Number.isInteger(avos))erros.push('avos deve ser um número inteiro de 1 a 12');
+  if(erros.length)return {ok:false,erros};
+  const total=r2f((S+media)/12*avos),p1=r2f(total/2),inss=inssFolha(total,ano),ir=irrf13(total,inss,emp.dependentes||0,T,{simplificado:!!o.simplificado13,reducao:o.reducao13!==false});
+  const p2bruto=r2f(total-p1),p2liq=r2f(p2bruto-inss-ir);
+  if(p2liq<0)return {ok:false,erros:['2ª parcela negativa: revisar']};
+  return {ok:true,ano,avos,total,parcela1:{valor:p1,inss:0,irrf:0,liquido:p1,fgts:r2f(p1*T.fgts),vence:ano+'-11-30'},
+    parcela2:{bruto:p2bruto,inss,irrf:ir,liquido:p2liq,fgts:r2f(p2bruto*T.fgts),vence:ano+'-12-20'},fgtsTotal:r2f(total*T.fgts),
+    aviso:'Estimativa; IRRF do 13º sem desconto simplificado (a conferir) e com a redução da Lei 15.270.'}}
+
+if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13};
