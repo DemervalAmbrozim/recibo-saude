@@ -99,6 +99,18 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 .avatar{width:96px;height:96px;border-radius:50%;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px;text-align:center;padding:8px;border:2px dashed var(--accent)}
 .promessa{display:grid;gap:8px}.promessa h2{margin:0}
 @media (max-width:760px){.heroi,.passos3{grid-template-columns:1fr}.quem2{grid-template-columns:1fr;justify-items:start}}
+
+.prof{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.prof button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:8px 14px;border-radius:99px;cursor:pointer;min-height:40px}
+.prof button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.prof-l{font-size:14px;color:var(--muted);margin:14px 0 0;font-weight:600}
+.muda{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:12px}
+.muda .card p{margin:0;color:var(--muted);font-size:15px}.muda .ic{font-size:26px;line-height:1}
+@media (max-width:900px){.muda{grid-template-columns:1fr 1fr}}@media (max-width:560px){.muda{grid-template-columns:1fr}}
+.zapfix{position:fixed;right:16px;bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:20;background:#25d366;color:#06331a;font-weight:700;text-decoration:none;padding:13px 18px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.25);min-height:48px;display:inline-flex;align-items:center}
+.chat .b{opacity:1;transform:none;transition:opacity .45s,transform .45s}
+.chat.anim .b{opacity:0;transform:translateY(8px)}.chat.anim .b.v{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.chat .b{transition:none}.chat.anim .b{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -109,8 +121,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
   <section class="heroi">
     <div>
       <p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px;color:var(--accent)">Para profissionais da saúde: recibo, contas e imposto em dia</p>
-      <h1 class="abre">Você atende com carinho. A gente fica lado a lado com você.</h1>
+      <h1 class="abre" id="h1">Você atende com carinho. A gente fica lado a lado com você.</h1>
       <p class="lead" style="font-size:19px;margin:14px 0 0;max-width:56ch">Recibo, contas, contabilidade, imposto de renda, redes e a abertura do seu CNPJ. Com tecnologia moderna e com gente de verdade, que conversa, entende o seu momento e cresce junto com você.</p>
+      <p class="prof-l" id="prof-l">Qual é a sua área? (opcional)</p>
+      <div class="prof" id="prof" role="group" aria-labelledby="prof-l"><button type="button" data-p="Psicologia" aria-pressed="false">Psicologia</button><button type="button" data-p="Fisioterapia" aria-pressed="false">Fisioterapia</button><button type="button" data-p="Nutrição" aria-pressed="false">Nutrição</button><button type="button" data-p="Fonoaudiologia" aria-pressed="false">Fonoaudiologia</button><button type="button" data-p="Terapia ocupacional" aria-pressed="false">Terapia ocupacional</button><button type="button" data-p="Medicina" aria-pressed="false">Medicina</button><button type="button" data-p="Odontologia" aria-pressed="false">Odontologia</button><button type="button" data-p="Outra área da saúde" aria-pressed="false">Outra</button></div>
       <div class="acoes"><a class="cta" href="#caminhos">Ver o meu caminho</a><a class="cta sec" href="https://wa.me/5527999712727">Conversar no WhatsApp</a></div>
       <p class="dor"><b>Receita Saúde é obrigatório.</b> Os recibos alimentam o Carnê-Leão e a declaração do seu paciente: se algo não bate, os dois podem cair na malha fina. A gente deixa tudo conferido.</p>
       <p class="teste"><b>Teste sem cartão:</b> 7 dias no plano mensal, 30 dias no anual.</p>
@@ -121,6 +135,17 @@ Paciente: M. S. · R$ 200,00
 Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
       <div class="b eu">Perfeito. Pode gerar a guia?</div>
       <div class="b nos">Guia pronta. Recibo, Carnê-Leão e declaração conferidos entre si.</div></div>
+  </section>
+
+  <section aria-label="O que muda na sua rotina">
+    <h2 id="muda-h">O que muda na sua rotina</h2>
+    <p class="sub">Quem atende não deveria perder a noite com prazo, recibo e imposto.</p>
+    <div class="muda">
+      <div class="card"><span class="ic" aria-hidden="true">🌙</span><h3>Tranquilidade</h3><p>A gente avisa os prazos pelo WhatsApp antes de vencer. Você não precisa lembrar de tudo.</p></div>
+      <div class="card"><span class="ic" aria-hidden="true">✅</span><h3>Segurança</h3><p>Recibo, Carnê-Leão e declaração conferidos entre si, para não ter surpresa com a Receita.</p></div>
+      <div class="card"><span class="ic" aria-hidden="true">💰</span><h3>Dinheiro claro</h3><p>Você vê quanto entrou, quanto vai de imposto e quanto realmente sobra.</p></div>
+      <div class="card"><span class="ic" aria-hidden="true">🤝</span><h3>Mais tempo para o paciente</h3><p>Menos burocracia na sua cabeça e mais atenção para quem você atende.</p></div>
+    </div>
   </section>
 
   <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
@@ -179,7 +204,17 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
     <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador registrado no CRC confere a contabilidade</span><span>Regras de 2026, atualizado em 17/11/2026</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
   </section>
 </main>
+<a class="zapfix" href="https://wa.me/5527999712727" id="zapfix">Falar no WhatsApp</a>
 <footer><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+<script>
+// Área opcional: só troca o texto de apoio e o exemplo; não é triagem nem obriga nada (ver padrão de material, 17/11/2026)
+(function(){var P={"Psicologia":["psicólogas e psicólogos","Paciente: M. S. · sessão · R$ 180,00"],"Fisioterapia":["fisioterapeutas","Paciente: M. S. · sessão · R$ 150,00"],"Nutrição":["nutricionistas","Paciente: M. S. · consulta · R$ 250,00"],"Fonoaudiologia":["fonoaudiólogas e fonoaudiólogos","Paciente: M. S. · sessão · R$ 160,00"],"Terapia ocupacional":["terapeutas ocupacionais","Paciente: M. S. · sessão · R$ 160,00"],"Medicina":["médicas e médicos","Paciente: M. S. · consulta · R$ 300,00"],"Odontologia":["dentistas","Paciente: M. S. · consulta · R$ 250,00"],"Outra área da saúde":["profissionais da saúde","Paciente: M. S. · atendimento · R$ 200,00"]};
+ var bs=document.querySelectorAll('#prof button'),eu=document.querySelector('.hero .sub,.heroi .sub'),ex=document.querySelector('.chat .b.nos');
+ bs.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-p'),v=P[k];bs.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+  if(eu)eu.textContent='Para '+v[0]+': recibo, contas e imposto em dia';if(ex)ex.textContent='Recibo emitido no Receita Saúde \u2713\n'+v[1]+'\nCarnê-Leão do mês: já calculado, vence no último dia útil do mês seguinte.';})});
+ var c=document.querySelector('.chat');if(c&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&'IntersectionObserver' in window){c.classList.add('anim');var bb=c.querySelectorAll('.b'),run=false;
+  new IntersectionObserver(function(e,o){if(e[0].isIntersecting&&!run){run=true;o.disconnect();bb.forEach(function(x,i){setTimeout(function(){x.classList.add('v')},500+i*900)})}},{threshold:.4}).observe(c)}})();
+</script>
 <script>
 // Leva a origem (?o=) e a indicação (?ind=) da propaganda até o cadastro, como fazem a venda e a captação
 (function(){var q=new URLSearchParams(location.search),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),i=(q.get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!o&&!i)return;
