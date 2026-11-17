@@ -82,12 +82,13 @@ details p{margin:8px 0 0;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .marca{display:flex;align-items:center;gap:8px}.marca i{width:24px;height:24px;border-radius:7px;background:var(--accent);flex:none}
 a{color:var(--accent)}
+.marca i{display:none}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
 <body>
 <main>
   <header class="head">
-    <h1 class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</h1>
+    <h1 class="marca"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="" style="height:34px;width:auto;display:block"></picture><span class="vh">Lado a Lado Saúde</span></h1>
     <span class="sub">Recibo • Gestão • Tecnologia</span>
   </header>
   <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>

@@ -82,13 +82,14 @@ a{color:var(--accent)}
 
 fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}fieldset label{display:flex;gap:8px;align-items:center;font-weight:400;color:var(--fg)}fieldset input[type=radio],label.chk input{width:auto}label.chk{display:flex;gap:8px;align-items:center}
 .rasc{background:#fff3d6;color:#8a5a00;border-radius:10px;padding:10px 12px;font-size:14px}
+.marca i{display:none}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
 <body>
 <main>
   <div class="rasc">Rascunho para revisão, não publicado. O cadastro só funciona depois que o banco da frente Empresa (migração 048) for aplicado com o "pode publicar" do Demerval.</div>
   <header class="head">
-    <h1 class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde · Minha empresa</h1>
+    <h1 class="marca" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="" style="height:34px;width:auto;display:block"></picture><span class="vh">Lado a Lado Saúde · </span><span style="font-size:15px;font-weight:600">Minha empresa</span></h1>
     <a class="sub" href="../entrar.html">Sou autônoma</a>
   </header>
   <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>
