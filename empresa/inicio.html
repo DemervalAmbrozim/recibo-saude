@@ -347,6 +347,17 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 <style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
 <style>@media (max-width:370px){.topo{flex-wrap:wrap!important;gap:8px}.topo .logo{height:38px!important}.entrar-conta{margin-left:auto}}</style>
 <style>.arte .rt figcaption,.mgrp figcaption{white-space:normal;line-height:1.15}.arte .rt figcaption{padding:4px 8px}</style>
+<style>
+/* Barra fixa no topo (18/11/2026, pedido dele): logo oficial COLORIDA e "Já sou cliente" sempre à vista, em fundo branco nos dois modos (claro e escuro) */
+.topo{position:sticky;top:0;z-index:40;background:#fff!important;color:#02214f;padding:4px 0;margin:0 0 4px!important;box-shadow:0 0 0 100vmax #fff;clip-path:inset(0 -100vmax);border-bottom:1px solid #e3ebe7}
+.topo .logo,.topo .marca img{height:36px!important;width:auto!important;display:block}
+.topo .cta.sec,.topo .entrar-conta{background:#fff!important;color:#00724f!important;border:1.5px solid #00724f!important;box-shadow:none!important}
+.topo .entrar-conta small{color:#2f6b57!important;opacity:1}
+@media (max-width:760px){.topo .logo,.topo .marca img{height:34px!important}}
+@media (max-width:370px){.topo .logo,.topo .marca img{height:32px!important}}
+</style>
+<style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
+@media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -363,7 +374,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 </defs></svg>
 <a class="pula" href="#caminhos">Pular para os caminhos</a>
 <main>
-  <div class="topo"><a class="marca" href="#" aria-label="Lado a Lado Saúde"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture></a><a class="cta sec entrar-conta" data-cta="topo-entrar" href="../entrar.html" aria-label="Já sou cliente: entrar na minha conta"><small>Já sou cliente</small><b>Entrar na minha conta</b></a></div>
+  <div class="topo"><a class="marca" href="#" aria-label="Lado a Lado Saúde"><picture><img class="logo logo-marca" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture></a><a class="cta sec entrar-conta" data-cta="topo-entrar" href="../entrar.html" aria-label="Já sou cliente: entrar na minha conta"><small>Já sou cliente</small><b>Entrar na minha conta</b></a></div>
 
   <section class="heroi">
     <div>
@@ -458,7 +469,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 
 </main>
 <a class="zapfix" data-cta="zap-flutuante" href="https://wa.me/5527999712727" id="zapfix">Falar no WhatsApp</a>
-<footer><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
+<footer><picture><img class="logo logo-marca" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
 <script>
 // Movimento e gatilhos visuais: barra de progresso, aparecer ao rolar, brilho que segue o dedo/mouse, "digitando..." no WhatsApp
 (function(){var rm=matchMedia('(prefers-reduced-motion: reduce)').matches;

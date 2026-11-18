@@ -34,11 +34,13 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
 <meta name="description" content="Termos de uso e política de privacidade do Lado a Lado Saúde.">
 <style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
 <style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
+<style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
+@media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
 </head>
 <body>
 <main>
   <header>
-    <picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56" style="height:44px;width:auto;display:block;margin-bottom:6px"></picture>
+    <picture><img class="logo-marca" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56" style="height:44px;width:auto;display:block;margin-bottom:6px"></picture>
     <div class="sub">Lado a Lado Saúde · Assessoria Lado a Lado Ltda</div>
     <h1>Termos de uso, privacidade e contrato de dados</h1>
     <div class="sub">Minuta de 28/10/2026 (versão <code>minuta-2026-10-28b</code>): plano Empresa, prazo do bônus e privacidade completa (novidades, foto do comprovante, nota fiscal, menores, prazos de guarda).</div>

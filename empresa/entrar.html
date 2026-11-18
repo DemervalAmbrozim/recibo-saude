@@ -85,12 +85,14 @@ fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-w
 .marca i{display:none}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <style>@font-face{font-family:"Instrument Sans";src:url(../fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
+@media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
 </head>
 <body>
 <main>
   <div class="rasc">Versão de teste, antes do lançamento. O banco da frente Empresa já está ligado, e o cadastro vale só para quem recebeu este link.</div>
   <header class="head">
-    <h1 class="marca" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="" style="height:34px;width:auto;display:block"></picture><span class="vh">Lado a Lado Saúde · </span><span style="font-size:15px;font-weight:600">Minha empresa</span></h1>
+    <h1 class="marca" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><picture><img class="logo-marca" src="logo-saude-claro.png" alt="" style="height:34px;width:auto;display:block"></picture><span class="vh">Lado a Lado Saúde · </span><span style="font-size:15px;font-weight:600">Minha empresa</span></h1>
     <a class="sub" href="../entrar.html">Sou autônoma</a>
   </header>
   <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>
