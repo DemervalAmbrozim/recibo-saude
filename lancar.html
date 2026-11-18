@@ -89,6 +89,9 @@ a{color:var(--accent)}
 #q-campos textarea,#imp-txt,#canc-motivo{font-size:16px}
 </style>
 <style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>/* Alvos de toque de 44 px (auditoria 18/11/2026): botões pequenos e títulos de seções que abrem */
+button.small,a.small{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}</style>
 </head>
 <body>
 <main>
@@ -203,7 +206,7 @@ a{color:var(--accent)}
       <div class="sub">O recibo só sai quando o dinheiro entra. Recebeu uma parcela? Toque em Recebi e informe o valor: cada parcela vira um recibo.</div>
     </div>
     <div class="card" id="i-conccard" hidden>
-      <h2>Conciliação</h2>
+      <h2 data-recolhe="1">Conciliação</h2>
       <div class="sub" id="conc-res"></div>
       <div class="list" id="conc-lista"></div>
       <div class="sub">Recebimento sem comprovação no extrato fica <b>pendente de recebimento</b>. Mande o extrato do mês em OFX (aba Lançar, "Conferir com o extrato do banco"): o que bater sai daqui sozinho. Dinheiro, cartão de maquininha ou outra conta: marque aqui como recebeu. Nada é bloqueado.</div>
@@ -258,7 +261,7 @@ a{color:var(--accent)}
       <div style="display:grid;gap:12px;margin-top:12px">
         <div class="sub"><b>Isto é só o cadastro</b> (nome e CPF): não cria atendimento nem recibo. Os atendimentos vêm no passo 2 ou no Lançar.</div>
         <div class="sub">Copie as colunas da sua planilha (nome, CPF e, se tiver, WhatsApp e e-mail) e cole abaixo. Ou escolha um arquivo .csv ou de contatos (.vcf). O CPF é obrigatório: é ele que vai no recibo.</div>
-        <textarea id="imp-txt" rows="5" placeholder="Maria Silva	529.982.247-25	27 99999-1111"></textarea>
+        <textarea id="imp-txt" aria-label="Cole aqui a lista de pacientes: nome, CPF e WhatsApp" rows="5" placeholder="Maria Silva	529.982.247-25	27 99999-1111"></textarea>
         <input type="file" id="imp-arq" aria-label="Escolher o arquivo de pacientes" accept=".csv,.txt,.vcf,text/csv,text/vcard">
         <div class="sub" id="imp-prev" aria-live="polite"></div>
         <button class="pri" type="button" id="b-imp" hidden>Importar</button>
@@ -338,7 +341,7 @@ a{color:var(--accent)}
       <button type="button" class="small" id="b-desp-ext">Abrir o extrato do banco</button>
     </div>
     <div class="card">
-      <div class="head"><h2>Despesas do mês</h2><input id="d-mes" type="month" style="width:auto;padding:6px 8px"></div>
+      <div class="head"><h2>Despesas do mês</h2><input id="d-mes" aria-label="Mês das despesas" type="month" style="width:auto;padding:6px 8px"></div>
       <div class="list" id="l-desp"></div>
     </div>
     <div class="card">
@@ -348,7 +351,7 @@ a{color:var(--accent)}
       <details id="drive-card"><summary>Guardo as contas no meu Google Drive</summary>
         <div style="display:grid;gap:8px;margin-top:8px">
           <div class="sub">Crie uma pasta no <b>seu</b> Drive, ponha nela as contas do mês (PDF ou foto) e compartilhe com a Lado a Lado Saúde ("qualquer pessoa com o link pode ver"). Cole o link aqui: todo mês a Lado a Lado Saúde confere e lança o que faltar. A pasta é sua: você tira o acesso quando quiser.</div>
-          <input id="drive-url" placeholder="https://drive.google.com/drive/folders/..." autocomplete="off">
+          <input id="drive-url" aria-label="Link da pasta do Google Drive com os comprovantes" placeholder="https://drive.google.com/drive/folders/..." autocomplete="off">
           <button type="button" class="small" id="b-drive">Salvar o link</button>
         </div></details>
       <details><summary>+ Nova conta fixa</summary>
@@ -385,13 +388,24 @@ a{color:var(--accent)}
   <section id="t-ag" hidden style="display:grid;gap:16px">
     <div class="card">
       <h2>Agenda fiscal</h2>
-      <div class="sub">Seus vencimentos dos próximos 90 dias. Em breve, os lembretes chegam também pelo WhatsApp.</div>
+      <div class="sub">Seus vencimentos dos próximos 90 dias. Quer lembrar no seu celular? Baixe as datas e abra o arquivo: elas entram na sua agenda (Google, Apple ou Outlook).</div>
+      <button type="button" class="small" id="b-ics">Baixar as datas para a minha agenda</button>
       <div class="list" id="ag-lista"></div>
     </div>
   </section>
 
   <!-- AJUDA -->
   <section id="t-aj" hidden style="display:grid;gap:16px">
+    <nav class="card" id="aj-indice" aria-label="Atalhos da Ajuda">
+      <h2>O que você procura?</h2>
+      <div class="indice-aj">
+        <button type="button" class="small" data-vai="aj-plano">Meu plano</button>
+        <button type="button" class="small" data-vai="aj-empresa">Minha empresa</button>
+        <button type="button" class="small" data-vai="aj-dados">Meus dados e privacidade</button>
+        <button type="button" class="small" data-vai="aj-ir">Relatórios (IR e mês)</button>
+        <button type="button" class="small" data-vai="aj-duvida">Dúvidas e suporte</button>
+      </div>
+    </nav>
     <!-- 8i: grupo da clínica (supabase/025 minha_clinica / sair_clinica) -->
     <div class="card" id="aj-cli" hidden></div>
     <!-- 15/11: serviços à parte (supabase/041) -->
@@ -494,17 +508,17 @@ a{color:var(--accent)}
       <div class="sub">Baixe tudo num arquivo só: planilhas (pacientes, atendimentos, despesas, livro-caixa de cada mês) e os PDFs dos recibos. Os dados são seus: leve quando quiser.</div>
       <button id="b-exportar" type="button">Baixar todos os meus dados</button>
       <div class="sub" id="exp-st" aria-live="polite"></div>
-      <h2 style="margin-top:14px">Seus direitos (LGPD)</h2>
+      <h2 id="aj-lgpd" style="margin-top:14px">Seus direitos (LGPD)</h2>
       <div class="sub">Você pode baixar o seu cadastro e o que guardamos de você e dos seus pacientes em um arquivo, e pedir a exclusão da sua conta. Recibos e lançamentos têm guarda fiscal de 5 anos: a gente apaga o que a lei permite e anonimiza o resto. Resposta em até 15 dias.</div>
       <button id="b-lgpd-json" type="button" class="small">Baixar o meu cadastro (arquivo)</button>
       <label style="margin-top:8px">Motivo do pedido de exclusão (opcional)<input id="lgpd-motivo" maxlength="500" autocomplete="off"></label>
       <button id="b-lgpd-excluir" type="button" class="small">Pedir a exclusão da minha conta</button>
       <div class="sub" id="lgpd-st" aria-live="polite"></div>
-      <h2 style="margin-top:14px">Relatório do ano para o IR</h2>
+      <h2 id="aj-ir" style="margin-top:14px">Relatório do ano para o IR</h2>
       <div class="sub">Mês a mês: o que recebeu, as despesas que abateram, o INSS e o Carnê-Leão. Leve para quem faz a sua declaração.</div>
-      <div class="row" style="align-items:center"><select id="ir-ano" style="width:auto"></select>
+      <div class="row" style="align-items:center"><select id="ir-ano" aria-label="Ano do relatório do IR" style="width:auto"></select>
         <button id="b-ir-pdf" type="button" class="small">PDF</button><button id="b-ir-csv" type="button" class="small">Planilha</button><button id="b-ir-prev" type="button" class="small pri">Prévia para validar</button></div>
-      <h2 style="margin-top:14px">Relatório do mês</h2>
+      <h2 id="aj-mes" style="margin-top:14px">Relatório do mês</h2>
       <div class="sub">Fechamento de um mês em PDF (recebido, livro-caixa, INSS, Carnê-Leão, DARF) para mandar ao seu contador. Depois do PDF, confira o mês com o Demonstrativo do Carnê-Leão Web.</div>
       <div class="row" style="align-items:center"><input id="rm-mes" type="month" style="width:auto" aria-label="Mês do relatório">
         <button id="b-rm-pdf" type="button" class="small">PDF do mês</button><button id="b-rm-cl" type="button" class="small pri">Conferir com o Carnê-Leão Web</button></div>
@@ -527,7 +541,7 @@ a{color:var(--accent)}
     </div>
     <div class="card" id="aj-lista"></div>
     <div class="card">
-      <h2>Ficou alguma dúvida?</h2>
+      <h2 id="aj-duvida">Ficou alguma dúvida?</h2>
       <button class="pri" id="b-duvida" type="button">Perguntar à Lado a Lado Saúde pelo WhatsApp</button>
       <button id="b-sair" type="button" hidden>Sair deste aparelho</button>
     </div>

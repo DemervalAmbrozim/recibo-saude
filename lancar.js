@@ -191,6 +191,19 @@ $('b-meus-rec').onclick=async()=>{const box=$('meus-rec'),b=$('b-meus-rec');b.di
       box.innerHTML=Object.keys(por).sort().reverse().map(k=>`<div class="item"><b>${k==='0000-00'?'Outros':k.split('-').reverse().join('/')}</b></div>`+por[k].map(p=>`<div class="item"><div>${esc(String(p.nome).replace(/\.pdf$/i,'').replace(/^recibos?\/.*\//i,''))}</div><a class="small" href="${esc(p.url)}" target="_blank" rel="noopener" download>Baixar</a></div>`).join('')).join('')}}
   catch(e){box.textContent='Não consegui abrir agora. Tente de novo.'}
   b.disabled=false};
+// Índice da Ajuda (18/11/2026): rola até o bloco, sem mexer na URL (o # guarda o código do link)
+document.querySelectorAll('#aj-indice [data-vai]').forEach(b=>b.onclick=()=>{const e=$(b.dataset.vai);if(e){e.scrollIntoView({behavior:'smooth',block:'start'});const d=e.querySelector&&e.querySelector('details');if(d)d.open=true}});
+// Início: blocos de apoio recolhíveis (abertos só se tiver algo a fazer); "Seu mês" e "Aguardando recibo" ficam sempre abertos
+(function(){const alvo=['i-conccard','i-recibos'];alvo.forEach(id=>{const c=$(id);if(!c)return;const h=c.querySelector('h2');if(!h)return;
+  const corpo=[...c.children].filter(x=>x!==h);const b=document.createElement('button');b.type='button';b.className='small recolhe-b';b.setAttribute('aria-expanded','false');b.textContent='Abrir';
+  const fecha=v=>{corpo.forEach(x=>x.style.display=v?'none':'');b.textContent=v?'Abrir':'Fechar';b.setAttribute('aria-expanded',String(!v))};
+  h.dataset.recolhe='1';h.appendChild(b);fecha(true);b.onclick=()=>fecha(b.getAttribute('aria-expanded')==='true')})})();
+// Agenda: baixar as datas (.ics, funciona no Google, Apple e Outlook); sem servidor, sem dado do paciente
+$('b-ics').onclick=()=>{const it=agenda(),z=n=>String(n).padStart(2,'0'),dia=d=>`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}`,agora=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  const linhas=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Lado a Lado Saude//Agenda fiscal//PT-BR','CALSCALE:GREGORIAN'];
+  it.forEach((x,i)=>{const fim=new Date(x.d);fim.setDate(fim.getDate()+1);const tx=t=>String(t).replace(/[\\;,]/g,m=>'\\'+m).replace(/\n/g,'\\n');
+    linhas.push('BEGIN:VEVENT',`UID:lls-${dia(x.d)}-${i}@ladoaladosaude.com.br`,`DTSTAMP:${agora}`,`DTSTART;VALUE=DATE:${dia(x.d)}`,`DTEND;VALUE=DATE:${dia(fim)}`,`SUMMARY:${tx(x.t)}`,`DESCRIPTION:${tx(x.s)}`,'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Amanhã: '+tx(x.t),'END:VALARM','END:VEVENT')});
+  linhas.push('END:VCALENDAR');const u=URL.createObjectURL(new Blob([linhas.join('\r\n')],{type:'text/calendar'})),a=document.createElement('a');a.href=u;a.download='agenda-fiscal-lado-a-lado-saude.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
 // Área da empresa (frente Empresa ligada no config.js): atalho na Ajuda para quem tem ou vai abrir CNPJ
 if(typeof CONFIG!=='undefined'&&CONFIG.empresa){$('aj-empresa').hidden=false;$('b-empresa').onclick=()=>{location.href='empresa/cliente.html'}}
 // Direitos do titular (LGPD art. 18, SQL 054): arquivo do cadastro e pedido de exclusão (2 toques, sem janela de confirmação do navegador)
@@ -379,7 +392,7 @@ function telaConc(){const h=hojeISO(),ini=new Date(h+'T12:00');ini.setDate(ini.g
     +(dias===null?' Você ainda não mandou nenhum extrato: comece pelo do mês passado.':dias>35?` Último extrato conferido há ${dias} dias: mande o do mês.`:'');
   $('conc-lista').innerHTML=l.slice(0,12).map(x=>`<div class="item" style="flex-wrap:wrap"><div><b>${esc(x.paciente)}</b><div class="meta">${dBR(x.data)} · ${brl(x.valor)} · lançado como ${esc(x.forma)}</div></div>
     <div class="row" style="gap:6px;align-items:center"><select data-concf="${x.id}" style="width:auto;padding:6px 8px" aria-label="Como recebeu">${CONC_FORMAS.map(([k,n])=>`<option value="${k}"${zN(x.forma).startsWith(k.slice(0,4))?' selected':''}>${n}</option>`).join('')}</select>
-    <input data-conco="${x.id}" placeholder="de quem / obs." style="width:9em;padding:6px 8px"><button class="small" type="button" data-conc="${x.id}">Conferi</button></div></div>`).join('')
+    <input aria-label="De quem veio o dinheiro ou observação" data-conco="${x.id}" placeholder="de quem / obs." style="width:9em;padding:6px 8px"><button class="small" type="button" data-conc="${x.id}">Conferi</button></div></div>`).join('')
     +(l.length>12?`<div class="sub">E mais ${l.length-12}. O extrato em OFX confere todos de uma vez.</div>`:'')}
 const zN=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 // Corrigir antes de emitir (item 22): data, valor e forma, só enquanto não virou recibo
