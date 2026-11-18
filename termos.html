@@ -127,15 +127,18 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
       <tr><td>E-mail e WhatsApp</td><td>Entrar no app, lembretes, fechamento, cobrança</td><td>Execução do contrato (art. 7º, V)</td></tr>
       <tr><td>Recebimentos, despesas, impostos</td><td>Livro-caixa, Carnê-Leão, recibos</td><td>Execução do contrato e obrigação legal sua (art. 7º, II e V)</td></tr>
       <tr><td>Dados de pagamento do plano</td><td>Cobrança e nota fiscal</td><td>Execução do contrato e obrigação legal nossa</td></tr>
-      <tr><td>Registros de acesso (data, hora, IP)</td><td>Segurança</td><td>Obrigação legal (Marco Civil, art. 15: 6 meses)</td></tr>
+      <tr><td>Registros técnicos de acesso (data, hora, IP)</td><td>Segurança</td><td>Hoje ficam nos provedores de infraestrutura (Supabase e GitHub), pelo prazo que cada um mantém. Estamos implantando o nosso registro próprio, guardado por 6 meses (Marco Civil, art. 15); esta linha será atualizada quando estiver no ar.</td></tr>
       <tr><td>Aceite de novidades pelo WhatsApp</td><td>Avisos comerciais (por exemplo, a conta PF × CNPJ)</td><td>Consentimento (art. 7º, I): você desliga quando quiser em Ajuda &gt; Seus dados</td></tr>
       <tr><td>Foto ou PDF do comprovante de despesa</td><td>Livro-caixa e, se ligada, leitura automática do valor</td><td>Execução do contrato (art. 7º, V)</td></tr>
       <tr><td>CNPJ, faturamento e dados da nota (modo Empresa)</td><td>DAS estimado, Fator R, nota fiscal, DMED</td><td>Execução do contrato e obrigação legal sua (art. 7º, II e V)</td></tr>
       <tr><td>Código de indicação</td><td>Dar o mês grátis a quem indicou e à indicada</td><td>Execução do contrato (art. 7º, V)</td></tr>
     </table>
     <h3>Com quem compartilhamos</h3>
+    <p class="sub">Lista atualizada em 18/11/2026 (inclui o envio de e-mail e a rede de entrega da biblioteca). Minuta em revisão pelo advogado.</p>
     <ul>
-      <li><b>Supabase</b> (banco de dados, servidor em São Paulo) e <b>GitHub</b> (só o código do app, sem dados).</li>
+      <li><b>Supabase</b> (banco de dados, servidor em São Paulo) e <b>GitHub</b> (hospeda o código e as páginas do site, sem dados de cadastro; como qualquer site, vê o endereço IP de quem acessa).</li>
+      <li><b>Resend</b> (envio do e-mail com o link de acesso e o código de 6 números): recebe o seu e-mail para entregar a mensagem; transferência internacional com as garantias do art. 33 da LGPD.</li>
+      <li><b>jsDelivr</b> (rede de entrega da biblioteca do banco, carregada com verificação de integridade): vê o endereço IP de quem abre o app, como qualquer site, e nenhum dado de cadastro.</li>
       <li><b>Meta / WhatsApp</b> (mensagens): pode haver transferência internacional, feita com as garantias do art. 33 da LGPD. O registro das mensagens no nosso banco guarda só o tipo, nunca o texto.</li>
       <li><b>Asaas</b> (cobrança): só os seus dados, nunca os dos pacientes.</li>
       <li><b>Anthropic</b> (leitura automática da foto do comprovante de despesa, só se estiver ligada): transferência internacional com as garantias do art. 33; o fornecedor não usa as imagens para treinar modelos.</li>

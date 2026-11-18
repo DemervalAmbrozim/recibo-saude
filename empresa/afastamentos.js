@@ -49,7 +49,7 @@ function diasFeriasPorFaltas(faltasInjustificadas){
   const dias=n<=5?30:n<=14?24:n<=23?18:n<=32?12:0;
   return{ok:true,erros:[],dias,conferir:n>5,fonte:'CLT art. 130 (inciso I lido; II a IV conferir)'};
 }
-// Desconto de falta injustificada de mensalista: dia = salário/30 por falta + descontar o DSR da semana em que houve falta (Lei 605/1949, art. 6º: texto não lido nesta fase, conferir).
+// Desconto de falta injustificada de mensalista: dia = salário/30 por falta + descontar o DSR da semana em que houve falta (Lei 605/1949, art. 6º: caput e §1º/§2º LIDOS no Planalto em 18/11/2026; o repouso não é devido quando, sem motivo justificado, o empregado não cumpre integralmente o horário da semana anterior; são justificados os motivos do art. 473 da CLT, a ausência abonada pela empresa, a falta por acidente de trabalho e a doença comprovada).
 // Falta justificada (atestado, art. 473) não desconta nem perde DSR. Se vierem as datas das faltas, o DSR é contado por semana (seg-dom) com falta; sem datas, supõe uma semana por falta (valor máximo) e avisa.
 function calculaAtestado(o={}){
   const {salario,dias=0,faltasInjustificadas=0,datasFaltasInjustificadas=null,inicio=null}=o,e=[];
@@ -128,13 +128,13 @@ function salarioMaternidade(o={}){
   const mensal=teto?Math.min(base,teto):base;
   if(teto&&base>teto)avisos.push('Valor limitado ao teto informado: conferir o teto aplicável (Constituição, art. 248, e Lei 8.213).');
   const total=r2a(mensal/30*diasLicenca),do120=r2a(mensal/30*120);
-  if(empresaCidada)avisos.push('Empresa Cidadã (+60 dias): conferir se a empresa do Simples pode aderir e se há dedução; sem compensação, os 60 dias extras são custo da empresa (Lei 11.770: conferir).');
+  if(empresaCidada)avisos.push('Empresa Cidadã (+60 dias): a adesão é voluntária da pessoa jurídica (Lei 11.770/2008, art. 1º, lido em 18/11/2026). A dedução do imposto devido SÓ existe para empresa tributada pelo lucro real (art. 5º, lido): empresa do Simples Nacional não deduz, e os 60 dias extras são custo dela. A remuneração na prorrogação é integral (art. 3º).');
   avisos.push('A empresa paga o salário-maternidade e compensa as contribuições sobre a folha (Lei 8.213, art. 72, §1º); como compensar no Simples: conferir.');
   avisos.push(AVISO);
   const fim=somaD(inicio,diasLicenca-1);
   return{ok:true,erros:[],inicio,fim,diasLicenca,retorno:somaD(fim,1),valorMensal:mensal,valorTotal:total,valorCompensavel:do120,valorSemCompensacao:r2a(total-do120),quemPaga:'empresa (compensa com o INSS no recolhimento)',
     estabilidade:{tipo:'gestante',regra:'Da confirmação da gravidez até 5 meses após o parto (ADCT, art. 10, II, b: conferir texto)'},avisos,
-    fontes:['Lei 8.213 arts. 71 e 72 §1º (lidos)','CLT art. 392 (conferir)','Lei 11.770/2008 (conferir)']};
+    fontes:['Lei 8.213 arts. 71 e 72 §1º (lidos)','CLT art. 392 (conferir)','Lei 11.770/2008 arts. 1º, 1º-A, 3º e 5º (lidos em 18/11/2026)']};
 }
 // Licença-paternidade: 5 dias até 31/12/2026 (CF art. 7º XIX e ADCT art. 10 §1º, este último ainda sem texto oficial lido). LEI 15.371, de 31/03/2026 (Planalto, lida em 17/11/2026 na auditoria externa): art. 11: 10 dias a partir de 01/01/2027, 15 dias a partir de 01/01/2028 e 20 dias a partir de 01/01/2029;
 // os 20 dias de 2029 DEPENDEM do cumprimento da meta fiscal do Anexo de Metas Fiscais da LDO (art. 11 §§1º e 2º): sem confirmação da meta, vale 15. Quem paga: a EMPRESA paga o salário-paternidade e é reembolsada pela Previdência (Lei 8.213 art. 73-D; ME e pequena empresa têm direito ao reembolso). Art. 4º: veda a dispensa arbitrária ou sem justa causa até 1 mês após o fim da licença. Art. 10: Empresa Cidadã prorroga em 15 dias.
