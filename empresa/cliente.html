@@ -41,7 +41,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 <body>
 <main>
   <div class="rasc">Versão de teste, antes do lançamento. Os números mostrados são <b>estimativas</b> até o contador conferir e assinar.</div>
-  <div class="topo"><picture><img class="logo-marca" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><span><a class="cta" style="background:transparent;color:var(--accent);border:1px solid var(--accent)" href="entrar.html?nova=1">Cadastrar outra empresa</a></span></div>
+  <div class="topo"><picture><img class="logo-marca" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><span><a class="cta" style="background:transparent;color:var(--accent);border:1px solid var(--accent)" href="entrar.html?nova=1">Cadastrar outra empresa</a></span><a class="cta sec" id="volta-aut" href="../lancar.html" hidden style="background:transparent;color:var(--accent);border:1px solid var(--accent)">Minha conta de autônoma</a></div>
   <h1>Minha empresa</h1>
   <div class="card" id="estado"><p id="st" role="status" aria-live="polite">Verificando a sua conta…</p><label id="sel-l" hidden style="margin-top:8px">Empresa<select id="sel"></select></label></div>
 
@@ -104,7 +104,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
    DB=criaDados(sb);EMPS=await DB.empresas();
    if(!EMPS.length){st.innerHTML='Você ainda não cadastrou uma empresa. <a href="entrar.html">Cadastrar agora</a>.';return}
    var sel=$('sel');EMPS.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=e.razao_social||'Empresa em abertura';sel.appendChild(o)});$('sel-l').hidden=EMPS.length<2;sel.onchange=function(){escolhe(sel.value)};
-   st.textContent='Conta conectada.';$('area').hidden=false;await escolhe(EMPS[0].id)}
+   st.textContent='Conta conectada.';$('area').hidden=false;try{var ti=await DB.souTitular();if(ti&&ti.autonoma_ativa){var v=$('volta-aut');if(v)v.hidden=false}}catch(e){}await escolhe(EMPS[0].id)}
   catch(e){st.textContent=traduzErroPj(e,'ler')}})();
 })();
 </script>

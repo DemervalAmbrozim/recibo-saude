@@ -114,6 +114,12 @@ a{color:var(--accent)}
 
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
   <section id="t-ini" hidden style="display:grid;gap:16px">
+    <div class="card" id="i-proxima" aria-live="polite">
+      <div class="sub">Sua próxima ação</div>
+      <h2 id="px-t">Carregando...</h2>
+      <div class="sub" id="px-s"></div>
+      <button type="button" id="px-b" hidden></button>
+    </div>
     <div class="card" id="i-emp" hidden>
       <h2>Sua empresa <span class="sub" id="emp-cnpj"></span></h2>
       <label>Mês <input type="month" id="emp-mes"></label>
@@ -201,6 +207,12 @@ a{color:var(--accent)}
       <div class="sub" id="conc-res"></div>
       <div class="list" id="conc-lista"></div>
       <div class="sub">Recebimento sem comprovação no extrato fica <b>pendente de recebimento</b>. Mande o extrato do mês em OFX (aba Lançar, "Conferir com o extrato do banco"): o que bater sai daqui sozinho. Dinheiro, cartão de maquininha ou outra conta: marque aqui como recebeu. Nada é bloqueado.</div>
+    </div>
+    <div class="card" id="i-recibos">
+      <h2>Meus recibos</h2>
+      <div class="sub">Os PDFs dos recibos já emitidos, por mês, para ver ou baixar quando precisar.</div>
+      <button type="button" class="small" id="b-meus-rec">Ver meus recibos</button>
+      <div class="list" id="meus-rec" aria-live="polite"></div>
     </div>
     <div class="card" id="i-pendcard">
       <h2>Aguardando recibo</h2>
@@ -471,6 +483,11 @@ a{color:var(--accent)}
       <div id="meu-link" class="sub" aria-live="polite"></div>
       <label>Trocou de número? Seu WhatsApp novo <input id="meu-zap" inputmode="tel" placeholder="27 99999-9999"></label>
       <button type="button" class="small" id="b-meu-zap">Salvar o número novo</button>
+    </div>
+    <div class="card" id="aj-empresa" hidden>
+      <h2>Minha empresa (CNPJ)</h2>
+      <div class="sub">Abertura do CNPJ, contabilidade, relatório do mês e pedidos da sua empresa. Se ainda não tem empresa, você pode cadastrar por lá.</div>
+      <button type="button" class="small" id="b-empresa">Abrir a área da empresa</button>
     </div>
     <div class="card" id="aj-dados">
       <h2>Seus dados</h2>

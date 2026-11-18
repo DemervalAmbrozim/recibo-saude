@@ -18,7 +18,7 @@ function avisa(t,err){const a=$('aviso');a.textContent=t;a.className='msg'+(err?
 const mostra=id=>['e-email','e-cad','e-ok','e-equipe'].forEach(x=>$(x).hidden=x!==id);
 
 // Erros do banco em português claro
-const ERROS={'cpf invalido':'CPF inválido. Confira os números.','cpf ja cadastrado':'Esse CPF já tem conta. Entre com o e-mail usado no cadastro ou fale com a Assessoria pelo WhatsApp.',
+const ERROS={'cpf invalido':'CPF inválido. Confira os números.','cpf ja cadastrado':'Esse CPF já tem conta. Entre com o e-mail usado no cadastro ou fale com a Lado a Lado Saúde pelo WhatsApp.',
   'conta ja cadastrada':'Esta conta já tem cadastro.','nome invalido':'Escreva o nome completo.','registro invalido':'Escreva o registro no conselho.',
   'whatsapp invalido':'WhatsApp inválido. Use o DDD e o número, ex.: 27 99999-9999.','precisa aceitar os termos':'Marque que leu e aceita como funciona.'};
 const traduz=m=>Object.entries(ERROS).find(([k])=>String(m).includes(k))?.[1]||'Não consegui criar a conta. Confira a internet e tente de novo.';
@@ -44,7 +44,7 @@ $('e-email').onsubmit=async e=>{e.preventDefault();
   // Sem servidor de e-mail próprio o Supabase manda poucos e-mails por hora: o erro de limite vira orientação
   if(!r.error&&CONFIG.codigo){$('cod-box').hidden=false;$('cod').focus()}
   ok.textContent=!r.error?(CONFIG.codigo?'E-mail enviado. Digite o código de 6 números ou toque no link do e-mail (veja também o spam).':'Link enviado. Abra seu e-mail neste celular e toque no link (veja também o spam).')
-    :/rate|limit|seconds/i.test(r.error.message)?'Muitos pedidos agora. Espere alguns minutos e tente de novo, ou fale com a Assessoria pelo WhatsApp.'
+    :/rate|limit|seconds/i.test(r.error.message)?'Muitos pedidos agora. Espere alguns minutos e tente de novo, ou fale com a Lado a Lado Saúde pelo WhatsApp.'
     :'Não consegui enviar o link. Confira o e-mail e tente de novo.';
 };
 

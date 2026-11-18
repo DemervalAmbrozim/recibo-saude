@@ -138,7 +138,7 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
 
 // ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
 let EX=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();
+async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();try{proximaAcao()}catch(e){}
   // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
   $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
   const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
@@ -171,6 +171,28 @@ $('b-meu-link').onclick=async()=>{if(!confirm('Gerar link novo? Os aparelhos e o
 $('b-meu-zap').onclick=async()=>{const r=await sb.rpc('meu_whatsapp',{p_fone:$('meu-zap').value});
   if(r.error){avisa(/invalido/.test(r.error.message)?'WhatsApp com DDD, ex.: 27 99999-9999.':'Não consegui salvar. Esse número pode já estar em outra conta.',true);return}
   $('meu-zap').value='';avisa('Número salvo: o zap já reconhece. A Lado a Lado Saúde confere a troca por segurança.')};
+// Próxima ação (18/11/2026): um único recado no topo do Início, na ordem de importância
+function proximaAcao(){const t=$('px-t'),sub=$('px-s'),b=$('px-b');if(!t)return;
+  const pend=(typeof pagos==='function'?pagos().filter(x=>!x.emitido):[]),proc=$('i-proc')&&!$('i-proc').hidden&&EX&&EX.procuracao!=='enviada'&&EX.procuracao!=='conferida';
+  const mes=new Date().toISOString().slice(0,7),dosMes=(typeof pagos==='function'?pagos():[]).filter(x=>String(x.data||'').startsWith(mes));
+  const vai=(titulo,texto,rot,fn)=>{t.textContent=titulo;sub.textContent=texto;b.hidden=!rot;if(rot){b.textContent=rot;b.onclick=fn}};
+  if(proc)return vai('Falta a sua procuração na Receita','É o que permite à Lado a Lado Saúde emitir os recibos em seu nome. Leva poucos minutos e você cancela quando quiser.','Ver o passo a passo',()=>{$('i-proc').scrollIntoView({behavior:'smooth',block:'start'});const d=$('proc-passos');if(d)d.open=true});
+  if(pend.length)return vai(`${pend.length} atendimento${pend.length>1?'s':''} aguardando recibo`,`Total de ${brl(pend.reduce((s,x)=>s+ +x.valor,0))}. Peça o recibo e você recebe em até 24 horas.`,'Pedir o recibo agora',()=>$('i-pendcard').scrollIntoView({behavior:'smooth',block:'start'}));
+  if(!dosMes.length)return vai('Lance o primeiro atendimento do mês','É rápido: paciente, valor e forma de pagamento. O resto a gente organiza.','Lançar agora',()=>document.querySelector('nav button[data-t=t-lan]').click());
+  vai('Tudo em dia por aqui ✅','Seus atendimentos do mês estão lançados e sem recibo pendente. Veja abaixo o seu mês.','',null)}
+// Meus recibos (18/11/2026): lista os PDFs já emitidos, por mês, com os links de 1 hora que a função zap devolve (os mesmos do "baixar tudo")
+$('b-meus-rec').onclick=async()=>{const box=$('meus-rec'),b=$('b-meus-rec');b.disabled=true;box.textContent='Procurando seus recibos...';
+  try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
+    const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'exportar',tok:TOK})});
+    const pdfs=f.ok?((await f.json()).pdfs||[]):null;
+    if(pdfs===null){box.textContent='Não consegui abrir agora. Tente de novo daqui a pouco ou escreva "recibos" no WhatsApp.'}
+    else if(!pdfs.length){box.textContent='Ainda não há recibos emitidos. Quando houver, eles aparecem aqui.'}
+    else{const por={};pdfs.forEach(p=>{const m=(String(p.nome).match(/ - (\d{2})-(\d{4}) - /)||[]);const k=m[2]?m[2]+'-'+m[1]:'0000-00';(por[k]=por[k]||[]).push(p)});
+      box.innerHTML=Object.keys(por).sort().reverse().map(k=>`<div class="item"><b>${k==='0000-00'?'Outros':k.split('-').reverse().join('/')}</b></div>`+por[k].map(p=>`<div class="item"><div>${esc(String(p.nome).replace(/\.pdf$/i,'').replace(/^recibos?\/.*\//i,''))}</div><a class="small" href="${esc(p.url)}" target="_blank" rel="noopener" download>Baixar</a></div>`).join('')).join('')}}
+  catch(e){box.textContent='Não consegui abrir agora. Tente de novo.'}
+  b.disabled=false};
+// Área da empresa (frente Empresa ligada no config.js): atalho na Ajuda para quem tem ou vai abrir CNPJ
+if(typeof CONFIG!=='undefined'&&CONFIG.empresa){$('aj-empresa').hidden=false;$('b-empresa').onclick=()=>{location.href='empresa/cliente.html'}}
 // Direitos do titular (LGPD art. 18, SQL 054): arquivo do cadastro e pedido de exclusão (2 toques, sem janela de confirmação do navegador)
 $('b-lgpd-json').onclick=async()=>{const r=await sb.rpc('link_exportar_dados',{tok:TOK});
   if(r.error){$('lgpd-st').textContent='Não consegui gerar agora. Tente de novo daqui a pouco ou escreva *suporte* no WhatsApp.';return}
@@ -339,6 +361,7 @@ function telaIni(){telaDarf();
     <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-cor="${x.id}" type="button">Corrigir</button> <button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
     +`<div class="item"><b>Total</b><b class="num">${brl(pend.reduce((s,x)=>s+ +x.valor,0))}</b></div>`
     :'<div class="sub">Nada aguardando recibo. Lance os atendimentos na aba Lançar.</div>';
+  try{proximaAcao()}catch(e){}
   $('b-zap').hidden=!pend.length;
   telaConc();
 }
