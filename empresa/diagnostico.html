@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Diagnóstico fiscal da sua empresa · Lado a Lado Saúde</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#02214F">
+<style>
+/* Área da cliente (17/11/2026): a empresa dela em linguagem simples. Lê o que o contador e a equipe registram; ela conclui só os passos que são dela. Rascunho: a frente Empresa só liga com empresa:true. */
+:root{--bg:#f3f7f6;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#007a56;--accent-fg:#fff;--soft:#e2f3ec;--field:#76867e;--warn:#8a5a00;--warnbg:#fff3d6;--bad:#9b1c1c;--badbg:#fde4e4;--navy:#02214F;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#2fd4a0;--accent-fg:#03140e;--soft:#1d332b;--field:#7b9086;--warn:#f2c36b;--warnbg:#3a2f12;--bad:#ff9d9d;--badbg:#3d1a1a;color-scheme:dark}}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:760px;margin:0 auto;display:grid;gap:16px;padding:16px 0 64px}main>*{min-width:0}
+h1{font-size:clamp(24px,5vw,32px);line-height:1.15;margin:0}h2{font-size:19px;margin:0 0 8px}p{margin:6px 0}.sub{color:var(--muted);font-size:14px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.topo img{height:34px;width:auto;display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.rasc{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px}
+.cta,button.p{font:inherit;display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:12px 18px;border:0;border-radius:10px;cursor:pointer;min-height:44px;box-sizing:border-box}
+button.p:disabled{opacity:.5;cursor:not-allowed}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input,select{font:inherit;font-size:max(16px,1em);padding:10px;min-height:44px;border:1px solid var(--field);border-radius:9px;background:var(--bg);color:var(--fg);width:100%;box-sizing:border-box;min-width:0}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent)}.tag.at{background:var(--warnbg);color:var(--warn)}
+.passo{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.passo:last-child{border-bottom:0}.passo.prox{background:var(--soft);border-radius:10px;padding:9px 10px}
+.bol{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--line);color:var(--fg)}.bol.f{background:var(--accent);color:var(--accent-fg)}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.bub{background:var(--soft);border-radius:12px;padding:10px 12px;white-space:pre-line;font-size:15px}
+.alerta{padding:9px 12px;border-radius:10px;background:var(--warnbg);color:var(--warn);font-size:14px;margin-top:8px}.alerta.crit{background:var(--badbg);color:var(--bad)}
+.grid{display:grid;gap:10px}@media (min-width:600px){.grid.d2{grid-template-columns:1fr 1fr}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+<style>@font-face{font-family:"Instrument Sans";src:url(../fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>.res{display:grid;gap:8px}.nivel{display:inline-block;padding:4px 14px;border-radius:99px;font-weight:800}.nivel.verde{background:#d9f5ea;color:#0b5e45}.nivel.amarelo{background:var(--warnbg);color:var(--warn)}.nivel.vermelho{background:var(--badbg);color:var(--bad)}.ach{padding:10px 12px;border-radius:10px;border:1px solid var(--line);display:grid;gap:2px}.ach b{font-size:14px}.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.chk{display:flex;gap:10px;align-items:center;min-height:44px}.chk input{width:22px;min-height:22px;height:22px}</style>
+</head>
+<body>
+<main>
+  <div class="rasc" id="banco-st">Modo exemplo: calcula na sua tela. Entre na sua conta para guardar o diagnóstico.</div>
+  <div class="topo"><picture><source srcset="../logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="../logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture><a class="cta sec" href="index.html" style="background:transparent;color:var(--accent);border:1px solid var(--accent)">Voltar</a></div>
+  <header><h1>Diagnóstico fiscal de quem já tem CNPJ</h1><p class="sub">Antes de assumir a contabilidade, a gente organiza a situação da empresa: o que está em dia, o que merece atenção e quanto custa regularizar.</p></header>
+  <section class="card"><h2>O que foi levantado no e-CAC</h2>
+    <div class="grid2">
+      <label>Competências de DAS em atraso<input id="d-das" type="number" min="0" value="0" inputmode="numeric"></label>
+      <label>Valor total do DAS em atraso (R$)<input id="d-valor" type="number" min="0" step="0.01" value="0" inputmode="decimal"></label>
+      <label>DEFIS pendentes (anos, separados por vírgula)<input id="d-defis" placeholder="ex.: 2024, 2025"></label>
+      <label>Parcelas atrasadas de parcelamento ativo<input id="d-parc" type="number" min="0" value="0" inputmode="numeric"></label>
+      <label>Pendências no eSocial<input id="d-eso" type="number" min="0" value="0" inputmode="numeric"></label>
+      <label>Mensagens não lidas na caixa postal<input id="d-cx" type="number" min="0" value="0" inputmode="numeric"></label>
+      <label>Meses de histórico disponíveis (de 12)<input id="d-meses" type="number" min="0" max="12" value="12" inputmode="numeric"></label>
+      <label>Regime<select id="d-reg"><option value="simples">Simples Nacional</option><option value="mei">MEI</option><option value="presumido">Lucro presumido</option><option value="real">Lucro real</option><option value="nao_sei">Não sei</option></select></label>
+      <label>Certidão federal<select id="d-cf"><option value="negativa">Negativa</option><option value="positiva_com_efeitos">Positiva com efeitos de negativa</option><option value="positiva">Positiva (há débito)</option><option value="nao_consultada">Ainda não consultada</option></select></label>
+    </div>
+    <label class="chk"><input id="d-proc" type="checkbox" checked> Procuração eletrônica ativa</label>
+    <label class="chk"><input id="d-cert" type="checkbox" checked> Certificado digital válido</label>
+    <label class="chk"><input id="d-cnae" type="checkbox"> CNAE impeditivo ou ambíguo para o Simples</label>
+    <button class="p" id="d-go">Ver o diagnóstico</button>
+  </section>
+  <section class="card" id="d-saida" aria-live="polite"><p class="sub">Preencha e toque em "Ver o diagnóstico".</p></section>
+  <section class="card" id="d-guardar" hidden><button class="p" id="d-salvar">Guardar este diagnóstico na minha empresa</button> <span class="sub" id="d-salvo" aria-live="polite"></span></section>
+  <p class="sub">Estimativa e organização do que foi levantado. As decisões de enquadramento e de regularização são do contador responsável. <a href="../seguranca.html">Segurança e quem está por trás</a>.</p>
+</main>
+<script src="../config.js"></script>
+<script src="pj-dados.js"></script>
+<script src="diagnostico.js"></script>
+<script>
+var DB=null,EMP=null,SB_PODE=false;
+function carrega(){return new Promise(function(res){if(typeof supabase!=='undefined')return res();var s=document.createElement('script'),t=setTimeout(res,5000);s.integrity='sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT';s.crossOrigin='anonymous';s.onload=function(){clearTimeout(t);res()};s.onerror=function(){clearTimeout(t);res()};s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';document.head.appendChild(s)})}
+
+(async function(){var st=document.getElementById('banco-st');try{await carrega();if(typeof supabase==='undefined'||typeof CONFIG==='undefined'){st.textContent='Modo exemplo: sem conexão com o banco.';return}
+ var sb=supabase.createClient(CONFIG.url,CONFIG.chave),s=await sb.auth.getSession();if(!s.data||!s.data.session){st.innerHTML='Modo exemplo. Para guardar, <a href="entrar.html">entre com o seu e-mail</a>.';return}
+ DB=criaDados(sb);var L=await DB.empresas();if(!L.length){st.textContent='Modo exemplo: você ainda não tem empresa cadastrada.';return}
+ EMP=L[0].id;SB_PODE=true;st.textContent='Conectada à empresa: '+(L[0].razao_social||'em abertura')+'.';if(typeof aoConectar==='function')aoConectar()}
+ catch(e){st.textContent=(typeof traduzErroPj==='function'?traduzErroPj(e,'ler'):'Modo exemplo.')}})();
+var ULT=null,ENT=null;
+function $(i){return document.getElementById(i)}
+function esc(t){return String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+$('d-go').onclick=function(){
+  var nDas=+$('d-das').value||0,v=+$('d-valor').value||0,das=[];for(var k=0;k<nDas;k++)das.push({comp:'',valor:nDas?v/nDas:0});
+  var defis=$('d-defis').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var r=diagnosticoFiscal({dasAtrasados:das,defisPendentes:defis,parcelamentos:+$('d-parc').value?[{ativo:true,parcelasAtrasadas:+$('d-parc').value}]:[],esocialPendencias:+$('d-eso').value||0,
+    certidoes:{federal:$('d-cf').value},caixaPostalNaoLida:+$('d-cx').value||0,mesesDeHistoricoDisponivel:+$('d-meses').value,regime:$('d-reg').value,procuracaoAtiva:$('d-proc').checked,certificadoValido:$('d-cert').checked,cnaeImpeditivo:$('d-cnae').checked});
+  var rot={verde:'Situação tranquila',amarelo:'Pontos de atenção',vermelho:'Pendências graves'}[r.nivel];
+  ULT=r;ENT={das:nDas,valor:v,defis:defis,regime:$('d-reg').value,certidaoFederal:$('d-cf').value};$('d-guardar').hidden=!SB_PODE;$('d-salvo').textContent='';
+  $('d-saida').innerHTML='<h2>Resultado</h2><p class="res"><span class="nivel '+r.nivel+'" id="d-nivel">'+rot+'</span></p><p>'+esc(r.mensagem)+'</p>'
+   +'<div class="res">'+r.achados.map(function(a){return '<div class="ach"><b>'+esc(a.gravidade.toUpperCase())+' · '+esc(a.texto)+'</b><span class="sub">'+esc(a.acao)+'</span></div>'}).join('')+'</div>'
+   +'<p class="sub" id="d-horas">Orçamento de regularização: cerca de '+r.orcamentoRegularizacao.horasEstimadas+' hora(s) do contador. '+esc(r.orcamentoRegularizacao.observacao)+'</p><p class="sub">'+esc(r.aviso)+'</p>'}
+function aoConectar(){$('d-guardar').hidden=!ULT}
+$('d-salvar').onclick=async function(){var b=this;if(!ULT||!DB)return;b.disabled=true;try{await DB.guardarDiagnostico(EMP,ENT,ULT);$('d-salvo').textContent='Diagnóstico guardado.'}catch(e){$('d-salvo').textContent=traduzErroPj(e)}b.disabled=false};
+</script>
+</body>
+</html>

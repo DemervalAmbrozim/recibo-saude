@@ -2,13 +2,21 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Lado a Lado Saúde: recibo, contabilidade e gestão para quem atende</title>
 <meta name="description" content="Para profissionais da saúde, como autônomo ou com empresa: recibo, contabilidade, imposto de renda, abertura de CNPJ, redes e assessoria para a sua atuação.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../icone.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/InstrumentSans-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:type" content="website"><meta property="og:locale" content="pt_BR"><meta property="og:site_name" content="Lado a Lado Saúde">
+<meta property="og:title" content="Lado a Lado Saúde: recibo, contabilidade e gestão para quem atende">
+<meta property="og:description" content="Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado na gestão: recibo, contabilidade, imposto de renda, abertura de CNPJ, redes e assessoria.">
+<meta property="og:image" content="https://ladoaladosaude.com.br/empresa/og-capa.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Lado a Lado Saúde: Recibo, Contabilidade, Gestão, Tecnologia">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Lado a Lado Saúde"><meta name="twitter:description" content="Você atende com carinho e cuidado; nós estaremos lado a lado na gestão."><meta name="twitter:image" content="https://ladoaladosaude.com.br/empresa/og-capa.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Lado a Lado Saúde","legalName":"Assessoria Lado a Lado Ltda","url":"https://ladoaladosaude.com.br/","logo":"https://ladoaladosaude.com.br/empresa/logo-saude-claro.png","description":"Recibo, contabilidade e gestão para profissionais da saúde, autônomos ou com empresa.","areaServed":"BR","contactPoint":{"@type":"ContactPoint","telephone":"+55-27-99971-2727","contactType":"customer service","availableLanguage":"pt-BR"}}</script>
+
 <meta name="theme-color" content="#02214f">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
 :root{--bg:#f4f7f8;--card:#fff;--fg:#0b1b33;--muted:#5d6e66;--line:#d9e2dd;--accent:#00875f;--navy:#02214f;--accent-fg:#fff;--soft:#e2f3ec;
@@ -179,7 +187,166 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 @media (prefers-reduced-motion:no-preference){.colagem .f1{animation:flutua2 10s ease-in-out infinite}}
 @keyframes flutua2{0%,100%{translate:0 0}50%{translate:0 -7px}}
 @media (max-width:760px){.colagem{width:min(350px,100%);margin:0 auto;min-height:520px}.colagem .f1{height:215px}.colagem .fone{width:min(225px,64%);margin-top:175px}}
+
+/* ===== fechamento da capa (17/11/2026): ação acima da dobra, faixa de confiança sob o hero, leitura mais firme ===== */
+.hcta{display:flex;gap:12px;flex-wrap:nowrap;align-items:stretch;margin-top:22px}
+.hcta .cta{flex:1 1 0;min-width:0;min-height:52px;display:inline-flex;align-items:center;justify-content:center;text-align:center;font-size:15px;line-height:1.2;padding:10px 14px;transition:transform .15s ease,box-shadow .15s ease}
+.hcta .cta:hover{transform:translateY(-2px)}
+.hcta .cta:focus-visible,.zapfix:focus-visible,.grande:focus-visible,.mini:focus-visible{outline:3px solid #7be0bd;outline-offset:3px}
+.heroi .abre{max-width:34ch}
+@media (min-width:761px){.heroi .lead{font-size:18px!important;max-width:60ch!important}.heroi{padding:clamp(22px,3.2vw,38px)}}
+.confia{margin-top:-24px}
+.confia span{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 14px;color:var(--fg)}
+.confia span::before{content:"✓ ";color:var(--accent);font-weight:700}
+@media (max-width:760px){.heroi .hcta{order:4;margin-top:4px;flex-direction:column}.heroi .colagem{order:5}.heroi .chips{order:6}.hcta .cta{flex:0 0 auto;width:100%;box-sizing:border-box;font-size:16px}}
+
+.zapfix.esc{opacity:0;pointer-events:none;transform:translateY(14px)}
+.zapfix{transition:opacity .25s ease,transform .25s ease}
+@media (max-width:760px){.heroi .lead{font-size:17px!important;line-height:1.5}.heroi .abre{font-size:clamp(24px,6.4vw,30px)}.heroi{padding:20px 18px}}
+@media (prefers-reduced-motion:reduce){.zapfix{transition:none}}
+
+/* ===== arte própria da marca (17/11 noite, v3): marca d'água grande do "lado a lado" ao fundo; primeiro plano = produto (celular + 3 cartões de prova). Sem foto de banco e sem pessoa inventada ===== */
+@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}
+.colagem.arte{position:relative;width:min(450px,100%);min-height:540px;padding:0;justify-self:center;align-self:start;margin-top:6px}
+.arte .halo{position:absolute;left:-12%;top:-4%;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(0,166,118,.5),rgba(0,166,118,0) 66%);filter:blur(4px)}
+.arte .anel{position:absolute;border-radius:50%;border:1.5px solid rgba(123,224,189,.28)}
+.arte .a1{left:-6%;top:2%;width:400px;height:400px}.arte .a2{left:-18%;top:-6%;width:500px;height:500px;border-color:rgba(123,224,189,.14)}
+.arte .sim{position:absolute;left:-6%;top:2%;width:112%;max-width:none;height:auto;opacity:.10;pointer-events:none}
+.arte .fone{position:absolute;left:0;top:0;margin:0;width:min(238px,53%);transform:rotate(-1.5deg)}
+.arte .fc{position:absolute;right:0;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:16px;padding:9px 14px 9px 10px;color:#fff;box-shadow:0 14px 30px rgba(0,0,0,.3);width:min(182px,41%);z-index:3}
+.arte .fc b{display:block;font-size:14px;line-height:1.2}.arte .fc small{display:block;font-size:12px;color:#cfe0f5;line-height:1.3}
+.arte .fc .ic2{width:36px;height:36px;border-radius:11px;background:#00a676;color:#03140e;flex:none}
+.arte .fc1{top:40px}.arte .fc2{top:215px}.arte .fc3{top:390px}
+@media (prefers-reduced-motion:no-preference){.arte .fc1{animation:flutua2 7s ease-in-out infinite}.arte .fc2{animation:flutua2 8.5s ease-in-out infinite reverse}.arte .fc3{animation:flutua2 9.5s ease-in-out infinite}.arte .a1{animation:giraAnel 50s linear infinite}}
+@keyframes giraAnel{to{transform:rotate(360deg)}}
+@media (max-width:760px){.colagem.arte{min-height:500px;width:min(360px,100%);align-self:center}.arte .halo{width:380px;height:380px}.arte .a1{width:320px;height:320px}.arte .a2{width:400px;height:400px}.arte .fone{width:min(205px,58%)}.arte .fc{padding:6px 10px 6px 7px;width:min(150px,44%)}.arte .fc b{font-size:12.5px}.arte .fc .ic2{width:30px;height:30px}.arte .fc1{top:36px}.arte .fc2{top:190px}.arte .fc3{top:344px}.arte .ex{top:6px}}
+/* auditoria externa: contraste AA, faixa, fonte e animações mais curtas */
+:root{--accent:#007a56}
+.faixa{background:linear-gradient(135deg,#006e4d,#02214f)!important}.faixa .sub{color:#fff!important}
+.fone .rodape-z{color:#5c5c5c}
+.heroi .chips span:nth-child(n){animation-delay:.25s!important}
+.quem-h{margin:14px 0 0;font-size:14px;color:#cfe0f5}.quem-h a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.pula{position:absolute;left:-999px;top:8px;background:#fff;color:#02214f;padding:10px 14px;border-radius:8px;z-index:40;font-weight:700}.pula:focus{left:12px}
+.confia a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:760px){.heroi .quem-h{order:5;margin:0}.heroi .colagem{order:6}.heroi .chips{order:7}}
+
+.arte .ianota{position:absolute;right:0;bottom:0;margin:0;z-index:3;font-size:12px;color:#cfe0f5;text-align:right}
+/* v31: retratos no hero, ao lado da mensagem */
+.colagem.arte{height:600px;min-height:0}
+.arte .rt{position:absolute;margin:0;border-radius:22px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.4);border:3px solid rgba(255,255,255,.92);background:#02214f}
+.arte .rt img{display:block;width:100%;height:auto;aspect-ratio:7/9;object-fit:cover}
+.arte .rt figcaption{position:absolute;left:10px;top:10px;background:#02214f;color:#fff;font-size:13px;font-weight:700;padding:5px 11px;border-radius:99px}
+.arte .rt1{left:0;top:0;width:60%;z-index:1}.arte .rt2{right:0;top:12%;width:44%;z-index:1}.arte .rt3{left:20%;top:49%;width:50%;z-index:2}
+.arte .fc1{top:1%;right:0}.arte .fc2{top:60%;right:0}.arte .fc3{top:74%;left:0;right:auto}
+.exemplo{display:grid;justify-items:center;gap:10px;margin:26px 0}.exemplo .fone{transform:none;animation:none;width:min(300px,100%)}.exemplo .sub{margin:0;text-align:center}
+@media (max-width:760px){.colagem.arte{height:490px;width:min(360px,100%)}.arte .rt figcaption{font-size:12px;padding:4px 9px}}
+.areas{margin:22px 0}.areas .trilho{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.areas figure{margin:0;position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card)}.areas img{display:block;width:100%;height:auto;aspect-ratio:7/9;object-fit:cover}
+.areas figcaption{position:absolute;left:6px;top:6px;right:6px;background:#02214f;color:#fff;font-size:12px;font-weight:700;padding:4px 8px;border-radius:99px;text-align:center}
+@media (max-width:760px){.areas .trilho{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}.areas figure{flex:0 0 38%;scroll-snap-align:start}}
+/* v33: os 7 retratos no hero (mosaico escalonado) */
+.colagem.arte{height:auto;min-height:0;display:grid;gap:12px;align-self:center;margin-top:0}
+.arte .mosaico{display:flex;gap:10px;position:relative;z-index:1}
+.arte .col{flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center;min-width:0}
+.arte .rt{position:relative;left:auto;right:auto;top:auto;width:auto;border-radius:16px;border-width:2px}
+.arte .rt figcaption{left:6px;right:6px;top:6px;font-size:12px;padding:4px 6px;text-align:center;border-radius:12px;line-height:1.15}
+.arte .ianota{position:static;text-align:left;margin:0;font-size:12px;z-index:1}
+.arte .provas{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:3}
+.arte .provas .fc{position:static;width:auto;animation:none;padding:6px 12px 6px 8px;gap:8px;box-shadow:none}
+.arte .provas .fc small{display:none}.arte .provas .fc b{font-size:13px}.arte .provas .fc .ic2{width:28px;height:28px}
+@media (max-width:760px){.colagem.arte{height:auto;width:min(380px,100%)}.arte .rt figcaption{font-size:12px;letter-spacing:-.3px;padding:4px 2px;left:4px;right:4px}}
+/* v34 mobile: 4 retratos abaixo do eyebrow, 3 abaixo do título */
+.mgrp{display:none}
+@media (max-width:760px){
+.colagem.arte{display:contents}
+.arte .halo,.arte .anel,.arte .sim,.arte .mosaico,.arte .provas{display:none}
+.heroi>div:first-child>p.sub{order:1}.mga{order:2}.heroi .abre{order:3}.mgb{order:4}.heroi .lead{order:5}.heroi .hcta{order:6}.heroi .quem-h{order:7}.arte .ianota{order:8}.heroi .chips{order:9}
+.mgrp{display:grid;gap:8px;margin:0}
+.mga{grid-template-columns:repeat(4,1fr)}.mgb{grid-template-columns:repeat(3,1fr)}
+.mgrp figure{margin:0;min-width:0}
+.mgrp img{display:block;width:100%;height:auto;aspect-ratio:7/9;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,.9)}
+.mgrp figcaption{font-size:12px;font-weight:700;color:#fff;text-align:center;margin-top:4px;line-height:1.15;overflow-wrap:break-word}
+.arte .ianota{margin:0}
+}
+.heroi .lead strong{color:#7be0bd;font-weight:700}.heroi .lead .mais{display:inline}@media (max-width:760px){.heroi .lead .mais{display:block;margin-top:10px}}
+.simples{margin-top:16px}.simples .duo{display:grid;grid-template-columns:.8fr 1.2fr;gap:12px;align-items:start}
+.simples figure{margin:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:8px;overflow:hidden}
+.simples img{display:block;width:100%;height:auto;border-radius:10px;background:#fff}
+.simples figcaption{color:#fff;font-size:13px;line-height:1.3;margin-top:8px}.simples figcaption b{display:block;color:#7be0bd;font-size:14px}
+.simples .nota{margin:8px 0 0;font-size:12px;color:#cfe0f5}
+@media (max-width:760px){.heroi .simples{order:7}.heroi .quem-h{order:8}.simples .duo{grid-template-columns:1fr 1fr}.simples figure{padding:6px}.simples figcaption{font-size:12px}}
+.entrar-conta{display:inline-flex;flex-direction:column;align-items:center;line-height:1.2;padding:8px 14px;text-align:center}.entrar-conta small{font-size:12px;font-weight:500;opacity:.9}.entrar-conta b{font-size:15px}
+@media (max-width:760px){.topo{flex-wrap:nowrap}.topo .logo{height:44px;width:auto}.entrar-conta{padding:6px 10px;flex:0 0 auto}.entrar-conta b{font-size:14px}}
+.zapfix{font-size:14px;padding:8px 14px;min-height:44px;right:12px}
+/* v43: lista "o que cuidamos" em grade organizada (antes: pílulas soltas) */
+.heroi .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.heroi .chips span{display:flex;align-items:center;gap:8px;border-radius:12px;padding:9px 12px;min-height:46px;font-size:13.5px;line-height:1.25;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.heroi .chips span::before{content:"✓";flex:none;color:#7be0bd;font-weight:800}
+.heroi .chips span.breve{background:transparent;border:1px dashed rgba(123,224,189,.7);color:#cfe0f5}.heroi .chips span.breve::before{content:"…"}
+@media (max-width:760px){.heroi .chips{grid-template-columns:1fr 1fr}.heroi .chips span:last-child{grid-column:1/-1}}
+.hcta .cta{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;gap:2px}.hcta .cta{padding:8px 12px}.hcta .cta b{font-size:15.5px}.hcta .cta small{font-size:12.5px;font-weight:500;opacity:.92}
+@media (min-width:761px){.heroi{align-items:start;padding-top:26px}.heroi .lead{font-size:18px!important}}
+/* v44: figura e movimento nos dois caminhos */
+.vis{position:relative;border-radius:14px;overflow:hidden}
+.vis-a{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:visible}.vis-a img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:14px}
+.vis-e{display:flex;align-items:center;min-height:120px;background:linear-gradient(135deg,rgba(0,166,118,.18),rgba(2,33,79,.25));padding:14px}
+.vis-e .avs{display:flex}.vis-e .avs img{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid var(--card);margin-left:-18px}.vis-e .avs img:first-child{margin-left:0}
+.vis .pop{position:absolute;right:10px;bottom:10px;background:#00a676;color:#03140e;font-weight:700;font-size:13px;padding:6px 12px;border-radius:99px;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+.vis .pop.p2{bottom:auto;top:10px;background:#fff;color:#02214f}
+@media (prefers-reduced-motion:no-preference){.vis .pop{animation:flutua2 5s ease-in-out infinite}.vis .pop.p2{animation-duration:6.5s;animation-direction:reverse}.vis-a img{animation:flutua2 7s ease-in-out infinite}.vis-a img+img{animation-delay:.8s;animation-direction:reverse}.vis-e .avs img{animation:flutua2 6s ease-in-out infinite}.vis-e .avs img:nth-child(2){animation-delay:.6s}.vis-e .avs img:nth-child(3){animation-delay:1.2s}}
+@keyframes zoomLento{to{transform:scale(1.06)}}
+/* v46: "E mais, para os dois caminhos" no celular: uma coluna, ícone ao lado do texto */
+@media (max-width:760px){
+.peq{grid-template-columns:1fr!important;gap:10px}
+.peq .mini{grid-template-columns:48px 1fr;column-gap:14px;row-gap:2px;align-items:start;padding:14px;position:relative}
+.peq .mini .ic2{grid-row:1/5;width:48px;height:48px;align-self:start}
+.peq .mini>:not(.ic2){grid-column:2}
+.peq .mini .tag{font-size:12px;white-space:nowrap;margin-bottom:2px}
+.peq .mini h3{font-size:18px;line-height:1.2}
+.peq .mini p{font-size:14.5px;line-height:1.4}
+.peq .mini::after{content:"›";position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:26px;color:var(--accent);opacity:.7}
+.peq .mini h3,.peq .mini p{padding-right:22px}
+}
+/* v47: cada cartão "E mais" ganha uma figura que explica o serviço */
+.mv{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.mv-ir i{font-style:normal;font-size:12.5px;font-weight:600;background:var(--soft);color:var(--accent);border-radius:99px;padding:4px 10px}
+.mv-ir .barra{flex-basis:100%;height:8px;border-radius:99px;background:var(--line);overflow:hidden;display:block}.mv-ir .barra u{display:block;height:100%;width:100%;background:linear-gradient(90deg,#00a676,#7be0bd);border-radius:99px;transform-origin:left}
+.mv-cn{flex-wrap:nowrap;gap:0;justify-content:space-between;position:relative}
+.mv-cn::before{content:"";position:absolute;left:14px;right:14px;top:14px;border-top:2px dashed var(--accent);opacity:.5}
+.mv-cn em{position:relative;font-style:normal;font-size:12px;font-weight:600;text-align:center;display:grid;justify-items:center;gap:4px;flex:1;line-height:1.2;color:var(--fg)}
+.mv-cn s{text-decoration:none;width:28px;height:28px;border-radius:50%;background:#00a676;color:#03140e;font-weight:800;display:grid;place-items:center;font-size:13px}
+.mv-rd{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mv-rd img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:10px;display:block;align-self:start}
+.mv-as{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mv-as em{font-style:normal;font-size:12px;font-weight:600;text-align:center;background:var(--soft);color:var(--accent);border-radius:12px;padding:6px 2px;display:grid;line-height:1.15}.mv-as b{font-size:20px;line-height:1.1}
+@media (max-width:760px){.peq .mini .mv{grid-column:1/-1}}
+@media (prefers-reduced-motion:no-preference){.mv-ir .barra u{animation:enche 3.2s ease-in-out infinite alternate}@keyframes enche{from{transform:scaleX(.35)}to{transform:scaleX(1)}}.mv-cn s{animation:pulsaPasso 3s ease-in-out infinite}.mv-cn em:nth-child(2) s{animation-delay:1s}.mv-cn em:nth-child(3) s{animation-delay:2s}@keyframes pulsaPasso{0%,70%,100%{transform:scale(1)}35%{transform:scale(1.18)}}.mv-rd img{animation:flutua2 6s ease-in-out infinite}.mv-rd img:nth-child(even){animation-delay:.9s;animation-direction:reverse}.mv-as em{animation:flutua2 6s ease-in-out infinite}.mv-as em:nth-child(even){animation-delay:.7s}}
+/* v49: fechamento que anima a começar */
+.fecha{gap:14px;padding:clamp(24px,5vw,44px);text-align:center;position:relative;overflow:hidden}
+.fecha .selo{background:#7be0bd;color:#03140e;font-weight:800;font-size:13px;letter-spacing:.3px;border-radius:99px;padding:6px 14px}
+.fecha h2{font-size:clamp(26px,6vw,38px);line-height:1.12;margin:0;max-width:20ch}
+.fecha .sub{max-width:52ch;margin:0;color:#e4f2ee!important;font-size:17px}
+.fecha .passos{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:10px;width:100%;max-width:640px;text-align:left}
+.fecha .passos li{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:12px 14px}
+.fecha .passos b{flex:none;width:36px;height:36px;border-radius:50%;background:#7be0bd;color:#03140e;display:grid;place-items:center;font-size:17px}
+.fecha .passos span{font-weight:700;font-size:16px;line-height:1.25;color:#fff}.fecha .passos small{display:block;font-weight:500;font-size:13px;color:#cfe0f5;margin-top:2px}
+.fecha .avs-f{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.fecha .avs-f img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #fff;margin-left:-10px}.fecha .avs-f img:first-child{margin-left:0}
+.fecha .avs-f span{flex-basis:100%;margin-top:8px;font-size:14px;color:#e4f2ee}
+.fecha .acoes-f{display:grid;gap:12px;width:100%;max-width:420px;margin-top:4px}
+.fecha .grande-cta{font-size:19px;padding:16px 20px;background:#00e5a0;color:#03140e;border:0;box-shadow:0 10px 28px rgba(0,229,160,.45)}
+.fecha .acoes-f .cta{width:100%;box-sizing:border-box;text-align:center}
+.fecha .peq-f{font-size:14px!important}.fecha .peq-f a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.fecha .conf-f{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;margin:0;font-size:13px;color:#cfe0f5}
+@media (prefers-reduced-motion:no-preference){.fecha .grande-cta{animation:pulsaCta 2.6s ease-in-out infinite}@keyframes pulsaCta{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}.fecha .passos li{animation:sobe .6s both}.fecha .passos li:nth-child(2){animation-delay:.12s}.fecha .passos li:nth-child(3){animation-delay:.24s}}
+.fecha .seguro{width:100%;max-width:640px;text-align:left;background:rgba(0,0,0,.22);border:1px solid #7be0bd;border-radius:16px;padding:14px 16px;color:#fff}
+.fecha .seguro b{display:block;font-size:16px;margin-bottom:6px;color:#7be0bd}
+.fecha .seguro ul{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px;font-size:14.5px;line-height:1.35}
+.fecha .seguro li::before{content:"✓ ";color:#7be0bd;font-weight:800}
+.fecha .seguro a{color:#fff;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}
+.fecha .conf-f a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 </style>
+<style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
+<style>@media (max-width:370px){.topo{flex-wrap:wrap!important;gap:8px}.topo .logo{height:38px!important}.entrar-conta{margin-left:auto}}</style>
+<style>.arte .rt figcaption,.mgrp figcaption{white-space:normal;line-height:1.15}.arte .rt figcaption{padding:4px 8px}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -194,35 +361,45 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 <symbol id="i-redes" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></symbol>
 <symbol id="i-mapa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></symbol>
 </defs></svg>
+<a class="pula" href="#caminhos">Pular para os caminhos</a>
 <main>
-  <div class="rasc">Rascunho da página inicial para revisão, não publicado. Layout e textos aguardam a aprovação do Demerval.</div>
-  <div class="topo"><a class="marca" href="#" aria-label="Lado a Lado Saúde"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture></a><a class="cta sec" href="entrar.html">Entrar</a></div>
+  <div class="topo"><a class="marca" href="#" aria-label="Lado a Lado Saúde"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56"></picture></a><a class="cta sec entrar-conta" href="../entrar.html" aria-label="Já sou cliente: entrar na minha conta"><small>Já sou cliente</small><b>Entrar na minha conta</b></a></div>
 
   <section class="heroi">
     <div>
       <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Contabilidade • Gestão • Tecnologia</p>
       <h1 class="abre">Para profissionais da saúde obrigados a emitir recibos pelo Receita Saúde e para quem já tem CNPJ.</h1>
-      <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos lado a lado realizando a gestão desde a sua agenda, registro do atendimento (se precisar), emissão do recibo no Receita Saúde (autônomo) e notas fiscais (CNPJ). Além de cuidarmos das suas contas, da contabilidade (com o nosso contador parceiro), redes sociais, abertura de CNPJ, imposto de renda e assessoria para a sua atuação.</p>
+      <p class="lead" style="font-size:19px;margin:0;max-width:62ch">Você atende os pacientes com carinho e cuidado e nós estaremos <strong>lado a lado</strong> realizando a <strong>gestão</strong> desde a sua <strong>agenda</strong>, <strong>registro do atendimento</strong> (se precisar), <strong>emissão do recibo no Receita Saúde</strong> (autônomo) e <strong>notas fiscais</strong> (CNPJ). <span class="mais">Além de cuidarmos das suas <strong>contas</strong>, da <strong>contabilidade</strong> (com o nosso contador parceiro), <strong>redes sociais</strong>, <strong>abertura de CNPJ</strong>, <strong>imposto de renda</strong> e <strong>assessoria</strong> para a sua atuação.</span></p>
+      <div class="hcta"><a class="cta" data-cta="hero-autonomo" href="../venda.html"><b>Sou profissional autônomo(a)</b><small>Atendo com o meu CPF: recibo e Carnê-Leão</small></a><a class="cta sec" data-cta="hero-empresa" href="index.html"><b>Tenho empresa de saúde (CNPJ)</b><small>Simples Nacional, até 3 funcionários</small></a></div>
+      <div class="simples"><p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px">Super simples: pelo WhatsApp e pela plataforma web</p>
+        <div class="duo">
+          <figure><img src="img/tela-whatsapp-recibo.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.</figcaption></figure>
+          <figure><img src="img/tela-web-seu-mes.webp" width="420" height="253" loading="lazy" decoding="async" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão"><figcaption><b>Na plataforma web</b>Veja o seu mês: recebido, despesas e imposto.</figcaption></figure>
+        </div>
+        <p class="nota">Telas reais do sistema com dados de teste (profissional fictícia).</p></div>
       <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade com contador parceiro</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
     </div>
-    <div class="colagem">
-      <img class="foto f1" src="img/conversa.jpg" alt="Conversa entre o Demerval e um profissional, lado a lado, em um escritório claro" loading="eager" width="900" height="596">
-      <div class="fone" aria-label="Exemplo do que você recebe no WhatsApp"><div class="tela">
-      <div class="topo-z"><img src="simbolo-saude-claro.png" alt=""><span>Lado a Lado Saúde<small>conta comercial</small></span></div>
-      <div class="chat" role="log"><p class="sub" style="margin:0;font-weight:700;text-align:center">EXEMPLO</p>
-        <div class="b nos">Recibo emitido no Receita Saúde ✓
-Paciente: M. S. · R$ 200,00
-Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
-        <div class="b eu">Perfeito. Pode gerar a guia?</div>
-        <div class="b nos">Guia pronta. Recibo, Carnê-Leão e declaração conferidos entre si.</div></div>
-      <div class="rodape-z">Mensagem</div></div></div>
-      <span class="ilus">cena ilustrativa</span>
+    <div class="colagem arte">
+      <div class="halo" aria-hidden="true"></div><div class="anel a1" aria-hidden="true"></div><div class="anel a2" aria-hidden="true"></div>
+      <img class="sim" src="simbolo-saude-escuro.png" alt="" width="520" height="520" loading="lazy" decoding="async">
+      <div class="mosaico"><div class="col"><figure class="rt"><img src="img/retrato-fisioterapia.webp" width="448" height="576" decoding="async" alt="Ilustração: fisioterapeuta de jaleco orientando uma paciente"><figcaption>Fisioterapia</figcaption></figure><figure class="rt"><img src="img/retrato-fonoaudiologia.webp" width="448" height="576" decoding="async" alt="Ilustração: fonoaudióloga mostrando cartões a uma criança"><figcaption>Fonoaudiologia</figcaption></figure></div><div class="col meio"><figure class="rt"><img src="img/retrato-psicologia.webp" width="448" height="576" decoding="async" alt="Ilustração: psicólogo com caderno em consultório"><figcaption>Psicologia</figcaption></figure><figure class="rt"><img src="img/retrato-nutricao.webp" width="448" height="576" decoding="async" alt="Ilustração: nutricionista com prato de legumes"><figcaption>Nutrição</figcaption></figure><figure class="rt"><img src="img/retrato-medicina.webp" width="448" height="576" decoding="async" alt="Ilustração: médica de jaleco com estetoscópio"><figcaption>Medicina</figcaption></figure></div><div class="col"><figure class="rt"><img src="img/retrato-terapia-ocupacional.webp" width="448" height="576" decoding="async" alt="Ilustração: terapeuta ocupacional exercitando as mãos de uma idosa"><figcaption>Terapia ocupacional</figcaption></figure><figure class="rt"><img src="img/retrato-odontologia.webp" width="448" height="576" decoding="async" alt="Ilustração: dentista sorrindo em consultório odontológico"><figcaption>Odontologia</figcaption></figure></div></div>
+      <div class="mgrp mga"><figure><img src="img/retrato-fisioterapia.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: fisioterapeuta de jaleco orientando uma paciente"><figcaption>Fisioterapia</figcaption></figure><figure><img src="img/retrato-psicologia.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: psicólogo com caderno em consultório"><figcaption>Psicologia</figcaption></figure><figure><img src="img/retrato-nutricao.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: nutricionista com prato de legumes"><figcaption>Nutrição</figcaption></figure><figure><img src="img/retrato-medicina.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: médica de jaleco com estetoscópio"><figcaption>Medicina</figcaption></figure></div><div class="mgrp mgb"><figure><img src="img/retrato-fonoaudiologia.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: fonoaudióloga mostrando cartões a uma criança"><figcaption>Fonoaudiologia</figcaption></figure><figure><img src="img/retrato-terapia-ocupacional.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: terapeuta ocupacional exercitando as mãos de uma idosa"><figcaption>Terapia ocupacional</figcaption></figure><figure><img src="img/retrato-odontologia.webp" width="448" height="576" loading="lazy" decoding="async" alt="Ilustração: dentista sorrindo em consultório odontológico"><figcaption>Odontologia</figcaption></figure></div>
+      <div class="provas">
+      <div class="fc fc1" aria-hidden="true"><span class="ic2"><svg><use href="#i-recibo"/></svg></span><span><b>Recibo emitido</b><small>Receita Saúde ✓</small></span></div>
+      <div class="fc fc2" aria-hidden="true"><span class="ic2"><svg><use href="#i-doc"/></svg></span><span><b>Carnê-Leão calculado</b><small>vence em 30/11</small></span></div>
+      <div class="fc fc3" aria-hidden="true"><span class="ic2"><svg><use href="#i-predio"/></svg></span><span><b>Nota fiscal do CNPJ</b><small>emitida e guardada</small></span></div>
+      </div>
     </div>
+  </section>
+
+  <section class="confia" aria-label="Por que confiar">
+    <span><a href="../termos.html">Teste sem cartão: 7 dias</a></span><span><a href="../seguranca.html">Contador responsável confere</a></span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
   </section>
 
   <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
     <a class="grande" href="../venda.html" id="g-auto">
       <div class="cab"><span class="ic2" aria-hidden="true"><svg><use href="#i-recibo"/></svg></span><h2>Sou profissional autônomo(a)</h2></div>
+      <div class="vis vis-a"><img src="img/card-fisio.webp" width="320" height="320" loading="lazy" decoding="async" alt="Ilustração: fisioterapeuta de jaleco orientando uma paciente"><img src="img/card-fono.webp" width="320" height="320" loading="lazy" decoding="async" alt="Ilustração: fonoaudióloga atendendo uma criança"><span class="pop">Recibo emitido ✓</span></div>
       <p class="quem">Atendo com o meu CPF.</p>
       <ul><li>Recibo do Receita Saúde</li><li>Carnê-Leão e DARF prontos</li><li>Financeiro pelo WhatsApp</li><li>Imposto de renda</li></ul>
       <span class="cta">Ver o plano de autônomo</span>
@@ -230,6 +407,7 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
     </a>
     <a class="grande" href="index.html" id="g-emp">
       <div class="cab"><span class="ic2" aria-hidden="true"><svg><use href="#i-predio"/></svg></span><h2>Tenho empresa de saúde (CNPJ)</h2></div>
+      <div class="vis vis-e"><span class="avs"><img src="img/avatar-nutricao.webp" width="160" height="160" loading="lazy" decoding="async" alt="Ilustração: nutricionista"><img src="img/avatar-medicina.webp" width="160" height="160" loading="lazy" decoding="async" alt="Ilustração: médica"><img src="img/avatar-odontologia.webp" width="160" height="160" loading="lazy" decoding="async" alt="Ilustração: dentista"></span><span class="pop">Nota fiscal emitida ✓</span><span class="pop p2">Contas em dia ✓</span></div>
       <p class="quem">Simples Nacional, até 3 funcionários.</p>
       <ul><li>Contabilidade completa e imposto do Simples</li><li>Folha de pagamento (em breve)</li><li>Financeiro e resumo de uma página por mês</li><li>Imposto de renda dos sócios</li></ul>
       <span class="cta">Ver o plano para empresa</span>
@@ -240,22 +418,44 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
   <section>
     <h2>E mais, para os dois caminhos</h2>
     <div class="peq" style="margin-top:12px">
-      <a class="mini" href="../venda.html#servicos" id="t-ir"><span class="ic2" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><span class="tag">autônomos e empresas</span><h3>Imposto de renda</h3><p>A gente faz a sua declaração, conferida pelo contador.</p></a>
-      <a class="mini" href="entrar.html" id="t-cnpj"><span class="ic2" aria-hidden="true"><svg><use href="#i-chave"/></svg></span><span class="tag">para quem vai abrir</span><h3>Abrimos o seu CNPJ</h3><p>Do contrato social à nota fiscal de teste, com cada passo no seu app.</p></a>
-      <a class="mini" href="../venda.html#servicos" id="t-redes"><span class="ic2" aria-hidden="true"><svg><use href="#i-redes"/></svg></span><span class="tag">autônomos e empresas</span><h3>Presença nas redes</h3><p>Instagram, Facebook, LinkedIn e Perfil no Google, dentro das regras do seu conselho.</p></a>
-      <a class="mini" href="../venda.html#servicos" id="t-apoio"><span class="ic2" aria-hidden="true"><svg><use href="#i-mapa"/></svg></span><span class="tag">autônomos e empresas</span><h3>Assessoria para a sua atuação</h3><p>Você conta o seu momento em 15 minutos. A gente devolve um retrato de 1 página e um plano de 90 dias com 3 prioridades, e acompanha todo mês.</p></a>
+      <a class="mini" href="../venda.html#servicos" id="t-ir"><span class="ic2" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><span class="tag">autônomos e empresas</span><h3>Imposto de renda</h3><p>A gente faz a sua declaração, conferida pelo contador.</p><span class="mv mv-ir" aria-hidden="true"><i>Rendimentos ✓</i><i>Despesas ✓</i><i>Conferida pelo contador ✓</i><b class="barra"><u></u></b></span></a>
+      <a class="mini" href="../venda.html#cnpj" id="t-cnpj"><span class="ic2" aria-hidden="true"><svg><use href="#i-chave"/></svg></span><span class="tag">para quem vai abrir</span><h3>Abrimos o seu CNPJ</h3><p>Do contrato social à nota fiscal de teste, com cada passo no seu app.</p><span class="mv mv-cn" aria-hidden="true"><em><s>1</s>Contrato social</em><em><s>2</s>CNPJ</em><em><s>3</s>Nota de teste</em></span></a>
+      <a class="mini" href="../venda.html#servicos" id="t-redes"><span class="ic2" aria-hidden="true"><svg><use href="#i-redes"/></svg></span><span class="tag">autônomos e empresas</span><h3>Presença nas redes</h3><p>Instagram, Facebook, LinkedIn e Perfil no Google, dentro das regras do seu conselho.</p><span class="mv mv-rd" aria-hidden="true"><img src="img/card-fisio.webp" alt="" width="320" height="320" loading="lazy" decoding="async"><img src="img/card-fono.webp" alt="" width="320" height="320" loading="lazy" decoding="async"><img src="img/avatar-nutricao.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-medicina.webp" alt="" width="160" height="160" loading="lazy" decoding="async"></span></a>
+      <a class="mini" href="../venda.html#servicos" id="t-apoio"><span class="ic2" aria-hidden="true"><svg><use href="#i-mapa"/></svg></span><span class="tag">autônomos e empresas</span><h3>Assessoria para a sua atuação</h3><p>Você conta o seu momento em 15 minutos. A gente devolve um retrato de 1 página e um plano de 90 dias com 3 prioridades, e acompanha todo mês.</p><span class="mv mv-as" aria-hidden="true"><em><b>15</b>minutos</em><em><b>1</b>página</em><em><b>90</b>dias</em><em><b>3</b>prioridades</em></span></a>
     </div>
   </section>
 
-  <section class="faixa" aria-label="Começar">
-    <h2>Pronto para começar?</h2>
-    <p class="sub">Teste sem cartão: 7 dias no plano mensal, 30 dias no anual. Prefere conversar? WhatsApp 27 99971-2727.</p>
-    <p><a class="cta" href="../venda.html">Começar como autônomo(a)</a> <a class="cta sec" href="index.html">Começar com a minha empresa</a></p>
+  <section class="exemplo" aria-label="Exemplo no WhatsApp">
+    <div class="fone" role="img" aria-label="Exemplo no WhatsApp: a profissional escreve pedir recibo; a Lado a Lado Saúde confirma o pedido com prazo de até 24 horas, devolve o PDF para encaminhar à paciente ou ao plano de saúde e informa o Carnê-Leão estimado do mês"><div class="tela" aria-hidden="true">
+      <div class="topo-z"><img src="simbolo-saude-claro.png" alt=""><span>Lado a Lado Saúde<small>conta comercial</small></span></div>
+      <div class="chat"><p class="sub" style="margin:0;font-weight:700;text-align:center">EXEMPLO</p>
+        <div class="b eu">pedir recibo</div>
+        <div class="b nos">Pedido recebido ✅ Você recebe o recibo, ou o motivo de não termos conseguido, em no máximo 24 horas. Para acompanhar, mande <b>status</b>.</div>
+        <div class="b nos">Mandei 1 PDF de novembro/2026. Para entregar: toque e segure no PDF &gt; Encaminhar &gt; escolha a paciente, ou quem ela pediu (filha, plano de saúde).</div>
+        <div class="b eu">resumo</div>
+        <div class="b nos">Carnê-Leão estimado deste mês: R$ 126,42, vence 30/11.</div></div>
+    </div></div>
+    <p class="sub">Você pede pelo WhatsApp. A gente emite no Receita Saúde e devolve o PDF; se você autorizar, o recibo vai direto ao paciente.</p>
   </section>
 
-  <section class="confia" aria-label="Por que confiar">
-    <span>Teste sem cartão: 7 dias no mensal, 30 no anual</span><span>Contador responsável confere</span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
+  <section class="faixa fecha" aria-label="Começar">
+    <span class="selo">7 dias para testar, sem cartão</span>
+    <h2>Sua rotina mais leve começa hoje</h2>
+    <p class="sub">Em 3 passos você deixa o recibo, as contas e o imposto com a gente e volta a cuidar de quem importa.</p>
+    <ol class="passos">
+      <li><b>1</b><span>Crie a sua conta<small>sem cartão de crédito</small></span></li>
+      <li><b>2</b><span>Dê uma procuração só para o Carnê-Leão<small>sem a sua senha do gov.br, e a gente te guia</small></span></li>
+      <li><b>3</b><span>Mande os atendimentos pelo WhatsApp<small>a gente emite e organiza tudo</small></span></li>
+    </ol>
+    <div class="seguro" role="note"><b><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path fill="currentColor" d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V7z"/></svg>Seu gov.br continua só seu</b>
+      <ul><li>Nunca pedimos a sua senha do gov.br.</li><li>No plano de autônomo, a procuração vale só para o serviço “IRPF – Carnê-Leão Web”, nada além.</li><li>Você cancela quando quiser, no próprio e-CAC.</li><li>Na empresa (CNPJ), a nota fiscal usa a procuração do Emissor Nacional: é você quem define o prazo e os serviços liberados.</li></ul>
+      <a href="../seguranca.html">Veja como protegemos os seus dados</a></div>
+    <div class="avs-f" aria-hidden="true"><img src="img/avatar-nutricao.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-medicina.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-odontologia.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/card-fisio.webp" alt="" width="320" height="320" loading="lazy" decoding="async"><span>Para profissionais da saúde que querem tempo de volta</span></div>
+    <div class="acoes-f"><a class="cta grande-cta" href="../venda.html">Começar como autônomo(a)</a><a class="cta sec" href="index.html">Começar com a minha empresa</a></div>
+    <p class="sub peq-f">Prefere conversar antes? <a href="https://wa.me/5527999712727">Chame no WhatsApp 27 99971-2727</a></p>
+    <p class="conf-f"><span>✓ Contador responsável confere</span><span>✓ Nenhum dado clínico</span><span>✓ <a href="../termos.html">Você cancela quando quiser (veja os termos)</a></span></p>
   </section>
+
 </main>
 <a class="zapfix" href="https://wa.me/5527999712727" id="zapfix">Falar no WhatsApp</a>
 <footer><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img class="logo" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>
@@ -279,6 +479,10 @@ Carnê-Leão de outubro: já calculado, vence em 30/11.</div>
 // Leva a origem (?o=) e a indicação (?ind=) da propaganda até o cadastro, como fazem a venda e a captação
 (function(){var q=new URLSearchParams(location.search),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),i=(q.get('ind')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!o&&!i)return;
  document.querySelectorAll('a[href]').forEach(function(a){var h=a.getAttribute('href');if(/^(https?:|mailto:|tel:|#)/.test(h))return;var p=h.split('#'),u=new URL(p[0],location.href);if(o)u.searchParams.set('o',o);if(i)u.searchParams.set('ind',i);a.setAttribute('href',u.pathname+u.search+(p[1]?'#'+p[1]:''))})})();
+</script>
+<script>
+// Botão do WhatsApp só aparece depois de rolar (não cobre os botões do topo); sem JS ele fica sempre visível
+(function(){var z=document.getElementById('zapfix');if(!z)return;z.classList.add('esc');function t(){z.classList.toggle('esc',(window.scrollY||document.documentElement.scrollTop)<480)}addEventListener('scroll',t,{passive:true});t()})();
 </script>
 </body>
 </html>

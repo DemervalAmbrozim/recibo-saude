@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Como funciona · Lado a Lado Saúde</title>
 <meta name="description" content="Recibo do Receita Saúde em no máximo 24 horas, controle do mês, Carnê-Leão e DARF. Para fisioterapeutas, psicólogos, fonoaudiólogos, terapeutas ocupacionais, dentistas, médicos e demais profissionais da saúde. Teste grátis, sem cartão.">
@@ -9,7 +10,6 @@
 <meta property="og:type" content="website"><meta property="og:site_name" content="Lado a Lado Saúde"><meta property="og:title" content="Como funciona · Lado a Lado Saúde"><meta property="og:description" content="Você atende. A gente cuida do recibo e das suas contas. Recibo em no máximo 24 horas. Teste grátis, sem cartão."><meta property="og:image" content="https://ladoaladosaude.com.br/social-venda.png"><meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 
 /* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
@@ -70,10 +70,14 @@ main{gap:36px;max-width:640px}
 .lista li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 .lista b{display:block}
 </style>
+<style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>footer a,.sub a{display:inline-block;padding:8px 2px}</style>
+<style>.entrar-conta{display:inline-flex;flex-direction:column;align-items:center;line-height:1.2;padding:8px 14px;text-align:center}.entrar-conta small{font-size:12px;font-weight:500;opacity:.9}.entrar-conta b{font-size:15px}@media (max-width:760px){.topo{flex-wrap:nowrap}.entrar-conta{padding:6px 10px;flex:0 0 auto}.entrar-conta b{font-size:14px}}</style>
+<style>@media (max-width:370px){.topo{flex-wrap:wrap!important;gap:8px}.topo .logo{height:38px!important}.entrar-conta{margin-left:auto}}</style>
 </head>
 <body>
 <main>
-  <div class="topo"><span class="marca"><i aria-hidden="true"></i>Lado a Lado Saúde</span><a class="cta sec" href="entrar.html">Entrar</a></div>
+  <div class="topo"><span class="marca"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56" style="height:44px;width:auto;display:block"></picture></span><a class="cta sec entrar-conta" href="entrar.html" aria-label="Já sou cliente: entrar na minha conta"><small>Já sou cliente</small><b>Entrar na minha conta</b></a></div>
   <section>
     <p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.3px">Recibo • Gestão • Tecnologia</p>
     <h1>Como funciona, passo a passo</h1>

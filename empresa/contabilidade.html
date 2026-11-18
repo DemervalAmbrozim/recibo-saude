@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Contabilidade PJ da saúde: protótipo</title>
 <meta name="robots" content="noindex">
@@ -13,7 +14,7 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d332b;--warn:#f2c36b;--warnbg:#3a2f12;--bad:#ff9d9d;--badbg:#3d1a1a;color-scheme:dark}}
 html,body{background:var(--bg);margin:0}
 body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.5;padding:0 max(16px,env(safe-area-inset-left,0px))}
-main{max-width:920px;margin:0 auto;padding:16px 0 64px;display:grid;gap:16px}
+main{max-width:920px;margin:0 auto;padding:16px 0 64px;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}main>*{min-width:0}
 h1{font-size:clamp(24px,5vw,34px);margin:0}h2{font-size:20px;margin:0 0 8px}h3{font-size:16px;margin:0 0 6px}
 .sub{color:var(--muted);font-size:14px}.faixa{background:var(--warnbg);color:var(--warn);padding:10px 12px;border-radius:10px;font-size:14px}
 nav{display:flex;gap:6px;flex-wrap:wrap}
@@ -36,6 +37,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .passo.bloq{opacity:.5}.barra{height:8px;background:var(--soft);border-radius:99px;overflow:hidden}.barra i{display:block;height:100%;background:var(--accent)}
 @media (max-width:520px){.num{white-space:normal}}
 </style>
+<style>section.on{overflow-x:auto;max-width:100%}</style>
 </head>
 <body>
 <main>

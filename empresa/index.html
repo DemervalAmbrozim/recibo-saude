@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Lado a Lado Saúde para a sua empresa: contabilidade, folha e gestão</title>
 <meta name="description" content="Contabilidade completa para empresas de saúde no Simples Nacional, com até 3 funcionários: imposto, folha, notas, balanço e um resumo de uma página por mês.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="../icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Página de venda (27/10/2026). Preços lidos da tabela planos (supabase/013); sem banco, valem os números escritos aqui. */
 :root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;
@@ -89,11 +89,17 @@ main>*{min-width:0}.res{min-width:0;overflow-wrap:anywhere}table.cmp{table-layou
 @media (prefers-reduced-motion:no-preference){.hero h1,.hero .lead,.hero .cta{animation:sobe2 .8s both}.hero .lead{animation-delay:.2s}.hero .cta{animation-delay:.4s}.hero .chat{animation:flutua3 7s ease-in-out infinite}
  .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}.rv.vis{opacity:1;transform:none}}
 </style>
+<style>@font-face{font-family:"Instrument Sans";src:url(../fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
+<style>.entrar-conta{display:inline-flex;flex-direction:column;align-items:center;line-height:1.2;padding:8px 14px;text-align:center}.entrar-conta small{font-size:12px;font-weight:500;opacity:.9}.entrar-conta b{font-size:15px}@media (max-width:760px){.topo{flex-wrap:nowrap}.entrar-conta{padding:6px 10px;flex:0 0 auto}.entrar-conta b{font-size:14px}}</style>
+<style>@media (max-width:370px){.topo{flex-wrap:wrap!important;gap:8px}.topo .logo{height:38px!important}.entrar-conta{margin-left:auto}}</style>
+<style>.areas7{margin:18px 0;min-width:0;max-width:100%}.areas7 .tr{min-width:0;max-width:100%}main>*{min-width:0}.areas7 p.t{margin:0 0 8px;font-weight:700;color:var(--accent)}.areas7 .tr{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.areas7 figure{margin:0;text-align:center}.areas7 img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:50%;border:3px solid var(--card);box-shadow:0 6px 16px rgba(0,0,0,.18)}.areas7 figcaption{font-size:12.5px;font-weight:600;margin-top:6px;line-height:1.2;color:var(--fg)}@media (max-width:760px){.areas7 .tr{display:flex;overflow-x:auto;gap:12px;padding-bottom:6px}.areas7 figure{flex:0 0 84px}}</style>
+<style>.ferr{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:14px 0}.ferr-c{display:grid;gap:4px;text-decoration:none;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.ferr-c b{color:var(--accent)}.ferr-c span{font-size:14px;color:var(--muted)}.ferr-c:hover,.ferr-c:focus-visible{border-color:var(--accent)}</style>
+<style>.fecha{background:linear-gradient(135deg,#006e4d,#02214f);color:#fff;border-radius:18px;display:grid;gap:14px;justify-items:center}.fecha{gap:14px;padding:clamp(24px,5vw,44px);text-align:center;position:relative;overflow:hidden}.fecha .selo{background:#7be0bd;color:#03140e;font-weight:800;font-size:13px;letter-spacing:.3px;border-radius:99px;padding:6px 14px}.fecha h2{font-size:clamp(26px,6vw,38px);line-height:1.12;margin:0;max-width:20ch}.fecha .sub{max-width:52ch;margin:0;color:#e4f2ee!important;font-size:17px}.fecha .passos{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:10px;width:100%;max-width:640px;text-align:left}.fecha .passos li{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:12px 14px}.fecha .passos b{flex:none;width:36px;height:36px;border-radius:50%;background:#7be0bd;color:#03140e;display:grid;place-items:center;font-size:17px}.fecha .passos span{font-weight:700;font-size:16px;line-height:1.25;color:#fff}.fecha .passos small{display:block;font-weight:500;font-size:13px;color:#cfe0f5;margin-top:2px}.fecha .avs-f{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}.fecha .avs-f img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #fff;margin-left:-10px}.fecha .avs-f img:first-child{margin-left:0}.fecha .avs-f span{flex-basis:100%;margin-top:8px;font-size:14px;color:#e4f2ee}.fecha .acoes-f{display:grid;gap:12px;width:100%;max-width:420px;margin-top:4px}.fecha .grande-cta{font-size:19px;padding:16px 20px;background:#00e5a0;color:#03140e;border:0;box-shadow:0 10px 28px rgba(0,229,160,.45)}.fecha .acoes-f .cta{width:100%;box-sizing:border-box;text-align:center}.fecha .peq-f{font-size:14px!important}.fecha .peq-f a{color:#fff;text-decoration:underline;text-underline-offset:3px}.fecha .conf-f{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;margin:0;font-size:13px;color:#cfe0f5}.fecha .grande-cta{animation:pulsaCta 2.6s ease-in-out infinite}.fecha .passos li{animation:sobe .6s both}.fecha .passos li:nth-child(2){animation-delay:.12s}.fecha .passos li:nth-child(3){animation-delay:.24s}.fecha .seguro{width:100%;max-width:640px;text-align:left;background:rgba(0,0,0,.22);border:1px solid #7be0bd;border-radius:16px;padding:14px 16px;color:#fff}.fecha .seguro b{display:block;font-size:16px;margin-bottom:6px;color:#7be0bd}.fecha .seguro ul{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px;font-size:14.5px;line-height:1.35}.fecha .seguro li::before{content:"✓ ";color:#7be0bd;font-weight:800}.fecha .seguro a{color:#fff;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}.fecha .conf-f a{color:inherit;text-decoration:underline;text-underline-offset:3px}@media (prefers-reduced-motion:no-preference){.fecha .grande-cta{animation:pulsaCta 2.6s ease-in-out infinite}@keyframes pulsaCta{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}}</style>
 </head>
 <body>
 <main>
-  <div class="rasc" id="rasc"><b>Rascunho para revisão, não publicado.</b> Textos, preços e a regra de desconto aguardam a aprovação do Demerval e a revisão do contador e do advogado. Esta faixa sai na publicação.</div>
-  <div class="topo"><span class="marca"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture></span><span><a class="cta sec" href="../venda.html">Sou autônoma (CPF)</a> <a class="cta sec" href="entrar.html">Entrar</a></span></div>
+  <div class="topo"><span class="marca"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture></span><span><a class="cta sec" href="../venda.html">Sou autônoma (CPF)</a> <a class="cta sec entrar-conta" href="entrar.html" aria-label="Já sou cliente: entrar na minha conta"><small>Já sou cliente</small><b>Entrar na minha conta</b></a></span></div>
 
   <section class="hero">
     <div>
@@ -114,6 +120,11 @@ Estimativa; o contador confere.</div>
       <div class="b eu">ok, pago hoje</div>
       <div class="b nos">Anotado. Obrigado! Se o pagamento aparecer no extrato, eu dou baixa sozinho.</div>
     </div>
+  </section>
+  <section class="areas7" aria-label="Áreas da saúde atendidas"><p class="t">Para profissionais de 7 áreas da saúde</p><div class="tr"><figure><img src="img/retrato-fisioterapia.webp" alt="Ilustração: profissional de fisioterapia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Fisioterapia</figcaption></figure><figure><img src="img/retrato-psicologia.webp" alt="Ilustração: profissional de psicologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Psicologia</figcaption></figure><figure><img src="img/retrato-nutricao.webp" alt="Ilustração: profissional de nutrição" width="448" height="576" loading="lazy" decoding="async"><figcaption>Nutrição</figcaption></figure><figure><img src="img/retrato-fonoaudiologia.webp" alt="Ilustração: profissional de fonoaudiologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Fonoaudiologia</figcaption></figure><figure><img src="img/retrato-terapia-ocupacional.webp" alt="Ilustração: profissional de terapia ocupacional" width="448" height="576" loading="lazy" decoding="async"><figcaption>Terapia ocupacional</figcaption></figure><figure><img src="img/retrato-medicina.webp" alt="Ilustração: profissional de medicina" width="448" height="576" loading="lazy" decoding="async"><figcaption>Medicina</figcaption></figure><figure><img src="img/retrato-odontologia.webp" alt="Ilustração: profissional de odontologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Odontologia</figcaption></figure></div></section>
+  <section class="ferr" aria-label="Para quem já tem CNPJ ou vai mudar">
+    <a class="ferr-c" href="diagnostico.html"><b>Já tem CNPJ? Veja a sua situação fiscal</b><span>A gente organiza o que está em dia, o que merece atenção e quanto custa regularizar.</span></a>
+    <a class="ferr-c" href="virada.html"><b>Vai mudar de autônoma para empresa (ou voltar)?</b><span>Veja como cada atendimento sai e os passos da baixa, um de cada vez.</span></a>
   </section>
 
   <section>
@@ -212,10 +223,22 @@ Estimativa; o contador confere.</div>
     <details><summary>Os números do app são exatos?</summary><p>São estimativas feitas com os números que você informa. Quem confere e assina é o contador responsável.</p></details>
   </section>
 
-  <section class="faixa">
-    <h2>Teste sem cartão</h2>
-    <p class="sub">7 dias no plano mensal, 30 no anual. Nada é enviado à Receita antes do contrato.</p>
-    <a class="cta" href="entrar.html">Começar meu teste</a>
+  <section class="fecha" aria-label="Começar">
+    <span class="selo">7 dias para testar, sem cartão</span>
+    <h2>Sua rotina mais leve começa hoje</h2>
+    <p class="sub">Em 3 passos você deixa o recibo, as contas e o imposto com a gente e volta a cuidar de quem importa.</p>
+    <ol class="passos">
+      <li><b>1</b><span>Crie a sua conta<small>sem cartão de crédito</small></span></li>
+      <li><b>2</b><span>Dê uma procuração só para o Carnê-Leão<small>sem a sua senha do gov.br, e a gente te guia</small></span></li>
+      <li><b>3</b><span>Mande os atendimentos pelo WhatsApp<small>a gente emite e organiza tudo</small></span></li>
+    </ol>
+    <div class="seguro" role="note"><b><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path fill="currentColor" d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V7z"/></svg>Seu gov.br continua só seu</b>
+      <ul><li>Nunca pedimos a sua senha do gov.br.</li><li>No plano de autônomo, a procuração vale só para o serviço “IRPF – Carnê-Leão Web”, nada além.</li><li>Você cancela quando quiser, no próprio e-CAC.</li><li>Na empresa (CNPJ), a nota fiscal usa a procuração do Emissor Nacional: é você quem define o prazo e os serviços liberados.</li></ul>
+      <a href="../seguranca.html">Veja como protegemos os seus dados</a></div>
+    <div class="avs-f" aria-hidden="true"><img src="img/avatar-nutricao.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-medicina.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-odontologia.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/card-fisio.webp" alt="" width="320" height="320" loading="lazy" decoding="async"><span>Para profissionais da saúde que querem tempo de volta</span></div>
+    <div class="acoes-f"><a class="cta grande-cta" href="entrar.html">Começar com a minha empresa</a><a class="cta sec" href="../venda.html">Sou autônomo(a)</a></div>
+    <p class="sub peq-f">Prefere conversar antes? <a href="https://wa.me/5527999712727">Chame no WhatsApp 27 99971-2727</a></p>
+    <p class="conf-f"><span>✓ Contador responsável confere</span><span>✓ Nenhum dado clínico</span><span>✓ <a href="../termos.html">Você cancela quando quiser (veja os termos)</a></span></p>
   </section>
 </main>
 <footer>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a></footer>

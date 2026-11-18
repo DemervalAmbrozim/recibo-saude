@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Módulos do contador, Minha empresa</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: abas com um módulo por vez, dados de exemplo já preenchidos; o que o Demerval vai conferir um a um. */
 :root{--field:#76867e;--bg:#f3f6f4;--card:#ffffff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#ffffff;--soft:#e2efe9;--warn:#8a5a00;--warnbg:#fff3d6;--bad:#9b1c1c;--badbg:#fde4e4;--blue:#1d4f8a;--bluebg:#e4eefa;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -40,6 +40,7 @@ button.p{font:inherit;padding:10px 16px;border-radius:10px;border:0;background:v
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
+<style>@font-face{font-family:"Instrument Sans";src:url(../fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
 </head>
 <body>
 <main>
@@ -270,7 +271,7 @@ function eventos(){var t=$('e-tipo').value,p=planoEvento(t,{registro:$('e-reg').
  async function passos(){var h='';try{var L=await DB.passos(EMP);h=L.length?tab(['Passo','Situação','Quem'],L.map(function(x){return [esc(String(x.passo)),'<span class="tag '+(x.status==='feito'?'':'at')+'">'+esc(x.status)+'</span>',esc(x.dono)]})):'<p class="sub">Esta empresa ainda não tem passos. Use "Criar os 17 passos".</p>'}catch(e){h='<p class="sub">'+esc(traduzErroPj(e))+'</p>'}$('bd-passos').innerHTML=h}
  async function empregados(){var s=$('bd-emp');s.innerHTML='';try{(await DB.empregados(EMP)).forEach(function(x){var o=document.createElement('option');o.value=x.id;o.textContent=x.nome;s.appendChild(o)})}catch(e){}if(!s.options.length){var o=document.createElement('option');o.value='';o.textContent='(nenhum empregado cadastrado)';s.appendChild(o)}}
  async function escolhe(id){EMP=id;await passos();await empregados();window.__bdEmpregados=empregados;if(window.__bdLiga)await window.__bdLiga(DB,id)}
- function carrega(){return new Promise(function(res){if(window.__SB_MOCK||typeof supabase!=='undefined')return res();var s=document.createElement('script'),t=setTimeout(res,5000);s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';s.integrity='sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT';s.crossOrigin='anonymous';s.onload=s.onerror=function(){clearTimeout(t);res()};document.head.appendChild(s)})}
+ function carrega(){return new Promise(function(res){if(window.__SB_MOCK||typeof supabase!=='undefined')return res();var s=document.createElement('script'),t=setTimeout(res,5000);s.integrity='sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT';s.crossOrigin='anonymous';s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';s.integrity='sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT';s.crossOrigin='anonymous';s.onload=s.onerror=function(){clearTimeout(t);res()};document.head.appendChild(s)})}
  async function init(){await carrega();var sb=window.__SB_MOCK||(typeof supabase!=='undefined'&&typeof CONFIG!=='undefined'?supabase.createClient(CONFIG.url,CONFIG.chave):null),st=$('cx-st');
   if(!sb){st.textContent='modo exemplo (sem conexão com o banco)';return}
   try{var s=await sb.auth.getSession();if(!s.data||!s.data.session){st.innerHTML='modo exemplo. Para gravar, <a href="entrar.html">entre com o seu e-mail</a>.';return}

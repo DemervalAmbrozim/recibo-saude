@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Lado a Lado Saúde</title>
 <meta name="robots" content="noindex">
@@ -10,7 +11,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: app de uma coluna para celular, abas fixas embaixo, cartões só onde há ação */
 :root{
@@ -88,6 +88,7 @@ body.leitura [data-rec],body.leitura [data-del],body.leitura [data-ddesp],body.l
 a{color:var(--accent)}
 #q-campos textarea,#imp-txt,#canc-motivo{font-size:16px}
 </style>
+<style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
 </head>
 <body>
 <main>
@@ -476,6 +477,12 @@ a{color:var(--accent)}
       <div class="sub">Baixe tudo num arquivo só: planilhas (pacientes, atendimentos, despesas, livro-caixa de cada mês) e os PDFs dos recibos. Os dados são seus: leve quando quiser.</div>
       <button id="b-exportar" type="button">Baixar todos os meus dados</button>
       <div class="sub" id="exp-st" aria-live="polite"></div>
+      <h2 style="margin-top:14px">Seus direitos (LGPD)</h2>
+      <div class="sub">Você pode baixar o seu cadastro e o que guardamos de você e dos seus pacientes em um arquivo, e pedir a exclusão da sua conta. Recibos e lançamentos têm guarda fiscal de 5 anos: a gente apaga o que a lei permite e anonimiza o resto. Resposta em até 15 dias.</div>
+      <button id="b-lgpd-json" type="button" class="small">Baixar o meu cadastro (arquivo)</button>
+      <label style="margin-top:8px">Motivo do pedido de exclusão (opcional)<input id="lgpd-motivo" maxlength="500" autocomplete="off"></label>
+      <button id="b-lgpd-excluir" type="button" class="small">Pedir a exclusão da minha conta</button>
+      <div class="sub" id="lgpd-st" aria-live="polite"></div>
       <h2 style="margin-top:14px">Relatório do ano para o IR</h2>
       <div class="sub">Mês a mês: o que recebeu, as despesas que abateram, o INSS e o Carnê-Leão. Leve para quem faz a sua declaração.</div>
       <div class="row" style="align-items:center"><select id="ir-ano" style="width:auto"></select>
@@ -516,7 +523,7 @@ a{color:var(--accent)}
   <button data-t="t-ag">Agenda</button>
   <button data-t="t-aj">Ajuda</button>
 </nav>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js" integrity="sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT" crossorigin="anonymous"></script>
 <script src="config.js?v=52"></script>
 <script src="regras.js?v=52"></script>
 <script src="importar.js?v=52"></script>

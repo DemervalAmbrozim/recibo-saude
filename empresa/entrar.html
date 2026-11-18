@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Cadastro da sua empresa · Lado a Lado Saúde</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="../icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Entrada da profissional: e-mail, cadastro e boas-vindas pelo WhatsApp. Mesmo visual do app (lancar.html). */
 :root{
@@ -84,6 +84,7 @@ fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-w
 .rasc{background:#fff3d6;color:#8a5a00;border-radius:10px;padding:10px 12px;font-size:14px}
 .marca i{display:none}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
+<style>@font-face{font-family:"Instrument Sans";src:url(../fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
 </head>
 <body>
 <main>
@@ -164,7 +165,7 @@ fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-w
   <section id="e-equipe" class="card" hidden><h2>Você é da equipe</h2><div class="sub">Sua conta abre o painel.</div><a href="../index.html">Abrir o painel</a></section>
   <button id="b-sair" type="button" hidden>Sair desta conta</button>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js" integrity="sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT" crossorigin="anonymous"></script>
 <script src="../config.js"></script>
 <script src="entrar.js"></script>
 </body>

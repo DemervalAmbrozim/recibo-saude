@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Painel · Lado a Lado Saúde</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0f6b55">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: app de uma coluna para celular, abas fixas embaixo, cartões só onde há ação */
 :root{
@@ -78,6 +78,7 @@ a{color:var(--accent)}
 </style>
 <link rel="apple-touch-icon" href="icone-192.png">
 <meta name="description" content="Painel da Assessoria Lado a Lado Saúde.">
+<style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
 </head>
 <body>
 <main>
@@ -387,7 +388,7 @@ a{color:var(--accent)}
   <button data-t="t-adm" id="nav-adm" hidden>Admin</button>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js" integrity="sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT" crossorigin="anonymous"></script>
 <script src="config.js"></script>
 <script src="regras.js"></script>
 <script src="app.js"></script>

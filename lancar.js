@@ -171,6 +171,16 @@ $('b-meu-link').onclick=async()=>{if(!confirm('Gerar link novo? Os aparelhos e o
 $('b-meu-zap').onclick=async()=>{const r=await sb.rpc('meu_whatsapp',{p_fone:$('meu-zap').value});
   if(r.error){avisa(/invalido/.test(r.error.message)?'WhatsApp com DDD, ex.: 27 99999-9999.':'Não consegui salvar. Esse número pode já estar em outra conta.',true);return}
   $('meu-zap').value='';avisa('Número salvo: o zap já reconhece. A Lado a Lado Saúde confere a troca por segurança.')};
+// Direitos do titular (LGPD art. 18, SQL 054): arquivo do cadastro e pedido de exclusão (2 toques, sem janela de confirmação do navegador)
+$('b-lgpd-json').onclick=async()=>{const r=await sb.rpc('link_exportar_dados',{tok:TOK});
+  if(r.error){$('lgpd-st').textContent='Não consegui gerar agora. Tente de novo daqui a pouco ou escreva *suporte* no WhatsApp.';return}
+  const b=new Blob([JSON.stringify(r.data,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),l=document.createElement('a');l.href=u;l.download='meus-dados-lado-a-lado-saude.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+  $('lgpd-st').textContent='Arquivo gerado e baixado. Guarde em lugar seguro: ele tem dados dos seus pacientes.'};
+$('b-lgpd-excluir').onclick=async()=>{const b=$('b-lgpd-excluir');
+  if(!b.dataset.ok){b.dataset.ok='1';b.textContent='Confirmar o pedido de exclusão';$('lgpd-st').textContent='Atenção: a conta deixa de funcionar quando a exclusão for feita. Toque de novo para confirmar.';return}
+  const r=await sb.rpc('link_pedir_exclusao',{tok:TOK,p_motivo:$('lgpd-motivo').value});delete b.dataset.ok;b.textContent='Pedir a exclusão da minha conta';
+  if(r.error){$('lgpd-st').textContent=/em andamento/.test(r.error.message)?'Você já tem um pedido de exclusão em andamento.':'Não consegui registrar agora. Escreva *suporte* no WhatsApp.';return}
+  $('lgpd-st').textContent='Pedido registrado. A equipe responde até '+new Date(r.data.prazo_ate).toLocaleDateString('pt-BR')+'. '+r.data.aviso};
 $('pf-recpac').onchange=async e=>{const r=await sb.rpc('link_recibo_paciente',{tok:TOK,p_ok:e.target.checked});  // reunião Daniel 31/10, item 50
   if(r.error){e.target.checked=!e.target.checked;avisa('Não consegui salvar.',true);return}EX.recibo_paciente=e.target.checked;
   avisa(e.target.checked?'Autorizado: o recibo vai direto ao paciente. Cadastre o WhatsApp de cada um na ficha.':'Desligado: os recibos voltam a vir só para você.')};
