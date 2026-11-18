@@ -84,6 +84,12 @@ footer{border-top:1px solid var(--line);padding:18px 0 28px;font-size:13px;color
 </style>
 <style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
 @media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
+<style>/* Auditoria da capa e destinos (18/11/2026): alvos de toque de 44 px e menu "Nesta página" */
+button,summary,.ciclo button,nav.indice a,.aqui a{min-height:44px}
+summary{display:flex;align-items:center;cursor:pointer}
+nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
+.aqui{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.aqui a{display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--fg);text-decoration:none;font-size:14px}.aqui a:hover,.aqui a:focus-visible{border-color:var(--accent)}
+</style>
 </head>
 <body>
 <main>
@@ -119,9 +125,10 @@ Maria Silva · R$ 180,00 · Pix · hoje
   </section>
   <section class="areas7" aria-label="Áreas da saúde atendidas"><p class="t">Para profissionais de 7 áreas da saúde</p><div class="tr"><figure><img src="empresa/img/retrato-fisioterapia.webp" alt="Ilustração: profissional de fisioterapia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Fisioterapia</figcaption></figure><figure><img src="empresa/img/retrato-psicologia.webp" alt="Ilustração: profissional de psicologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Psicologia</figcaption></figure><figure><img src="empresa/img/retrato-nutricao.webp" alt="Ilustração: profissional de nutrição" width="448" height="576" loading="lazy" decoding="async"><figcaption>Nutrição</figcaption></figure><figure><img src="empresa/img/retrato-fonoaudiologia.webp" alt="Ilustração: profissional de fonoaudiologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Fonoaudiologia</figcaption></figure><figure><img src="empresa/img/retrato-terapia-ocupacional.webp" alt="Ilustração: profissional de terapia ocupacional" width="448" height="576" loading="lazy" decoding="async"><figcaption>Terapia ocupacional</figcaption></figure><figure><img src="empresa/img/retrato-medicina.webp" alt="Ilustração: profissional de medicina" width="448" height="576" loading="lazy" decoding="async"><figcaption>Medicina</figcaption></figure><figure><img src="empresa/img/retrato-odontologia.webp" alt="Ilustração: profissional de odontologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Odontologia</figcaption></figure></div></section>
   <section class="confia" aria-label="Por que confiar"><span><a href="termos.html">Teste sem cartão: 7 dias</a></span><span><a href="seguranca.html">Contador responsável confere</a></span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span></section>
+  <nav class="aqui" aria-label="Nesta página"><a href="#como">Como funciona</a><a href="#planos">Planos</a><a href="#servicos">Serviços à parte</a><a href="#cnpj">Abrir CNPJ</a><a href="#quem">Quem está por trás</a><a href="#perguntas">Perguntas</a><a href="#comecar">Começar</a></nav>
 
   <section>
-    <h2>Como funciona</h2>
+    <h2 id="como">Como funciona</h2>
     <p class="sub">Desde 2025, cada pagamento de paciente precisa de recibo no Receita Saúde. Sem recibo, a multa é de R$ 100 por mês.</p>
     <div class="grid3" style="margin-top:16px">
       <div class="card"><span class="n">1 · no dia a dia</span><h3>Você registra o atendimento</h3><p class="sub">No WhatsApp, o zap pergunta passo a passo e você só toca nas opções: paciente, valor, forma e dia. Ou lança no app. Quem ficou devendo vai para "a receber".</p></div>
@@ -240,7 +247,7 @@ Maria Silva · R$ 180,00 · Pix · hoje
   </section>
 
   <section>
-    <h2>Perguntas</h2>
+    <h2 id="perguntas">Perguntas</h2>
     <details><summary>Preciso dar minha senha do gov.br?</summary><p>Não. Você cadastra no e-CAC uma procuração eletrônica para a Lado a Lado Saúde só com o serviço "Carnê-Leão Web". Leva 5 minutos, mostramos o passo a passo e você revoga quando quiser.</p></details>
     <details><summary>Vocês são contabilidade?</summary><p>Nós fazemos a gestão do recibo, do livro-caixa e do Carnê-Leão, e todo plano, desde o Essencial, tem um contador responsável, que revisa o seu fechamento do ano. A declaração do IR e o planejamento ficam no plano Completo + Contador.</p></details>
     <details><summary>E os dados dos meus pacientes?</summary><p>Ficam num banco com servidor em São Paulo, separados por profissional, com backup criptografado. São usados só para emitir os recibos e calcular o seu imposto. Você é a controladora, e nós, operadores, com contrato de dados (LGPD).</p></details>

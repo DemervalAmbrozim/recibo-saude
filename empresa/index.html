@@ -108,6 +108,12 @@ main>*{min-width:0}.res{min-width:0;overflow-wrap:anywhere}table.cmp{table-layou
 </style>
 <style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
 @media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
+<style>/* Auditoria da capa e destinos (18/11/2026): alvos de toque de 44 px e menu "Nesta página" */
+button,summary,.ciclo button,nav.indice a,.aqui a{min-height:44px}
+summary{display:flex;align-items:center;cursor:pointer}
+nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
+.aqui{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.aqui a{display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--fg);text-decoration:none;font-size:14px}.aqui a:hover,.aqui a:focus-visible{border-color:var(--accent)}
+</style>
 </head>
 <body>
 <main>
@@ -135,6 +141,7 @@ Estimativa; o contador confere.</div>
   </section>
   <section class="areas7" aria-label="Áreas da saúde atendidas"><p class="t">Para profissionais de 7 áreas da saúde</p><div class="tr"><figure><img src="img/retrato-fisioterapia.webp" alt="Ilustração: profissional de fisioterapia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Fisioterapia</figcaption></figure><figure><img src="img/retrato-psicologia.webp" alt="Ilustração: profissional de psicologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Psicologia</figcaption></figure><figure><img src="img/retrato-nutricao.webp" alt="Ilustração: profissional de nutrição" width="448" height="576" loading="lazy" decoding="async"><figcaption>Nutrição</figcaption></figure><figure><img src="img/retrato-fonoaudiologia.webp" alt="Ilustração: profissional de fonoaudiologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Fonoaudiologia</figcaption></figure><figure><img src="img/retrato-terapia-ocupacional.webp" alt="Ilustração: profissional de terapia ocupacional" width="448" height="576" loading="lazy" decoding="async"><figcaption>Terapia ocupacional</figcaption></figure><figure><img src="img/retrato-medicina.webp" alt="Ilustração: profissional de medicina" width="448" height="576" loading="lazy" decoding="async"><figcaption>Medicina</figcaption></figure><figure><img src="img/retrato-odontologia.webp" alt="Ilustração: profissional de odontologia" width="448" height="576" loading="lazy" decoding="async"><figcaption>Odontologia</figcaption></figure></div></section>
   <section class="confia" aria-label="Por que confiar"><span><a href="../termos.html">Teste sem cartão: 7 dias</a></span><span><a href="../seguranca.html">Contador responsável confere</a></span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span></section>
+  <nav class="aqui" aria-label="Nesta página"><a href="#conta">Faça a conta</a><a href="#planos">Planos</a><a href="#quem">Quem está por trás</a><a href="#perguntas">Perguntas</a><a href="#comecar">Começar</a></nav>
   <section class="ferr" aria-label="Para quem já tem CNPJ ou vai mudar">
     <a class="ferr-c" href="diagnostico.html"><b>Já tem CNPJ? Veja a sua situação fiscal</b><span>A gente organiza o que está em dia, o que merece atenção e quanto custa regularizar.</span></a>
     <a class="ferr-c" href="virada.html"><b>Vai mudar de autônoma para empresa (ou voltar)?</b><span>Veja como cada atendimento sai e os passos da baixa, um de cada vez.</span></a>

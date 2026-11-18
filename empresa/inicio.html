@@ -358,6 +358,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 </style>
 <style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
 @media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
+<style>/* Cartões e pílulas clicáveis (18/11/2026) */
+.fig-link{display:block;color:inherit;text-decoration:none}.fig-link .vai{display:block;margin-top:4px;color:#7be0bd;font-weight:700;font-size:13px}
+.heroi .chips span{position:relative;padding:0!important}.heroi .chips span a{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:9px 12px;box-sizing:border-box;color:inherit;text-decoration:none}
+.heroi .chips span a:hover,.heroi .chips span a:focus-visible{background:rgba(255,255,255,.12);border-radius:12px}
+.heroi .chips span::before{content:none!important}.heroi .chips span a::before{content:"✓";flex:none;color:#7be0bd;font-weight:800}
+.heroi .chips span.breve a::before{content:"…"}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -384,11 +391,11 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
       <div class="hcta"><a class="cta" data-cta="hero-autonomo" href="../venda.html"><b>Sou profissional autônomo(a)</b><small>Atendo com o meu CPF: recibo e Carnê-Leão</small></a><a class="cta sec" data-cta="hero-empresa" href="index.html"><b>Tenho empresa de saúde (CNPJ)</b><small>Simples Nacional, até 3 funcionários</small></a></div>
       <div class="simples"><p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px">Super simples: pelo WhatsApp e pela plataforma web</p>
         <div class="duo">
-          <figure><img src="img/tela-whatsapp-recibo.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.</figcaption></figure>
-          <figure><img src="img/tela-web-seu-mes.webp" width="420" height="253" loading="lazy" decoding="async" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão"><figcaption><b>Na plataforma web</b>Veja o seu mês: recebido, despesas e imposto.</figcaption></figure>
+          <figure><a class="fig-link" data-cta="simples-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20ver%20como%20funciona%20o%20recibo%20pelo%20WhatsApp." target="_blank" rel="noopener"><img src="img/tela-whatsapp-recibo.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.<span class="vai"> Falar no WhatsApp →</span></figcaption></a></figure>
+          <figure><a class="fig-link" data-cta="simples-web" href="../entrar.html"><img src="img/tela-web-seu-mes.webp" width="420" height="253" loading="lazy" decoding="async" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão"><figcaption><b>Na plataforma web</b>Veja o seu mês: recebido, despesas e imposto.<span class="vai"> Testar 7 dias →</span></figcaption></a></figure>
         </div>
         <p class="nota">Telas reais do sistema com dados de teste (profissional fictícia).</p></div>
-      <div class="chips" aria-label="O que oferecemos"><span>Agenda e registros</span><span>Recibo no Receita Saúde</span><span>Nota fiscal do CNPJ</span><span>Contas e contabilidade com contador parceiro</span><span class="breve">Folha de pagamento · em breve</span><span>Redes e Perfil no Google</span><span>Abertura de CNPJ</span><span>Imposto de renda</span><span>Assessoria para a sua atuação</span></div>
+      <div class="chips" aria-label="O que oferecemos"><span><a data-cta="grade-agenda" href="../venda.html#como">Agenda e registros</a></span><span><a data-cta="grade-recibo" href="../venda.html#como">Recibo no Receita Saúde</a></span><span><a data-cta="grade-nota" href="index.html">Nota fiscal do CNPJ</a></span><span><a data-cta="grade-contas" href="index.html#planos">Contas e contabilidade com contador parceiro</a></span><span class="breve"><a data-cta="grade-folha" href="index.html">Folha de pagamento · em breve</a></span><span><a data-cta="grade-redes" href="../venda.html#servicos">Redes e Perfil no Google</a></span><span><a data-cta="grade-cnpj" href="../venda.html#cnpj">Abertura de CNPJ</a></span><span><a data-cta="grade-ir" href="../venda.html#servicos">Imposto de renda</a></span><span><a data-cta="grade-assessoria" href="../venda.html#servicos">Assessoria para a sua atuação</a></span></div>
     </div>
     <div class="colagem arte">
       <div class="halo" aria-hidden="true"></div><div class="anel a1" aria-hidden="true"></div><div class="anel a2" aria-hidden="true"></div>

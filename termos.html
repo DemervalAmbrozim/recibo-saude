@@ -36,6 +36,12 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
 <style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
 <style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
 @media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
+<style>/* Auditoria da capa e destinos (18/11/2026): alvos de toque de 44 px e menu "Nesta página" */
+button,summary,.ciclo button,nav.indice a,.aqui a{min-height:44px}
+summary{display:flex;align-items:center;cursor:pointer}
+nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
+.aqui{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.aqui a{display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--fg);text-decoration:none;font-size:14px}.aqui a:hover,.aqui a:focus-visible{border-color:var(--accent)}
+</style>
 </head>
 <body>
 <main>
