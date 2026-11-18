@@ -29,7 +29,10 @@ async function inicio(){
   $('b-sair').hidden=false;
   const r=await sb.rpc('minha_conta',{tok:''});
   if(r.error||!r.data){avisa('Não consegui abrir sua conta. Confira a internet e tente de novo.',true);return}
-  if(r.data.cadastrada){location.replace('lancar.html');return}
+  if(r.data.cadastrada){
+    // Titular da frente Empresa que não ativou a autônoma vai para a área da empresa (só quando a frente está ligada no config.js)
+    if(typeof CONFIG!=='undefined'&&CONFIG.empresa){try{const t=await sb.rpc('pj_sou_titular');if(t.data&&t.data.titular&&!t.data.autonoma_ativa){location.replace('empresa/cliente.html');return}}catch(e){}}
+    location.replace('lancar.html');return}
   const eq=await sb.rpc('e_equipe');
   if(eq.data){mostra('e-equipe');return}
   $('c-email').textContent=r.data.email||'';mostra('e-cad');

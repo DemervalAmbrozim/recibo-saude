@@ -32,7 +32,10 @@ async function inicio(){
   const r=await sb.rpc('minha_conta',{tok:''});
   if(r.error||!r.data){avisa('Não consegui abrir sua conta. Confira a internet e tente de novo.',true);return}
   const eq=await sb.rpc('e_equipe');if(eq.data){mostra('e-equipe');return}
-  if(r.data.cadastrada){mostra('e-emp');return}
+  if(r.data.cadastrada){
+    // quem já tem empresa vai para a área dela; "?nova=1" mantém o cadastro de outra empresa
+    if(!new URLSearchParams(location.search).get('nova')){try{const m=await sb.rpc('pj_minhas_empresas');if(Array.isArray(m.data)&&m.data.length){location.replace('cliente.html');return}}catch(e){}}
+    mostra('e-emp');return}
   $('p-email').textContent=r.data.email||'';mostra('e-prof');
 }
 const ORIGEM=(()=>{const q=(new URLSearchParams(location.search).get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20);try{if(q)localStorage.setItem('rs-o',q);return q||localStorage.getItem('rs-o')||''}catch(e){return q}})();

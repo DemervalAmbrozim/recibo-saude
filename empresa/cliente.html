@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Minha empresa · Lado a Lado Saúde</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#02214F">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Área da cliente (17/11/2026): a empresa dela em linguagem simples. Lê o que o contador e a equipe registram; ela conclui só os passos que são dela. Rascunho: a frente Empresa só liga com empresa:true. */
+:root{--bg:#f3f7f6;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#007a56;--accent-fg:#fff;--soft:#e2f3ec;--field:#76867e;--warn:#8a5a00;--warnbg:#fff3d6;--bad:#9b1c1c;--badbg:#fde4e4;--navy:#02214F;--sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#2fd4a0;--accent-fg:#03140e;--soft:#1d332b;--field:#7b9086;--warn:#f2c36b;--warnbg:#3a2f12;--bad:#ff9d9d;--badbg:#3d1a1a;color-scheme:dark}}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left,0px))}
+main{max-width:760px;margin:0 auto;display:grid;gap:16px;padding:16px 0 64px}main>*{min-width:0}
+h1{font-size:clamp(24px,5vw,32px);line-height:1.15;margin:0}h2{font-size:19px;margin:0 0 8px}p{margin:6px 0}.sub{color:var(--muted);font-size:14px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.topo img{height:34px;width:auto;display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.rasc{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px}
+.cta,button.p{font:inherit;display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:12px 18px;border:0;border-radius:10px;cursor:pointer;min-height:44px;box-sizing:border-box}
+button.p:disabled{opacity:.5;cursor:not-allowed}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input,select{font:inherit;font-size:max(16px,1em);padding:10px;min-height:44px;border:1px solid var(--field);border-radius:9px;background:var(--bg);color:var(--fg);width:100%;box-sizing:border-box;min-width:0}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent)}.tag.at{background:var(--warnbg);color:var(--warn)}
+.passo{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.passo:last-child{border-bottom:0}.passo.prox{background:var(--soft);border-radius:10px;padding:9px 10px}
+.bol{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--line);color:var(--fg)}.bol.f{background:var(--accent);color:var(--accent-fg)}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.bub{background:var(--soft);border-radius:12px;padding:10px 12px;white-space:pre-line;font-size:15px}
+.alerta{padding:9px 12px;border-radius:10px;background:var(--warnbg);color:var(--warn);font-size:14px;margin-top:8px}.alerta.crit{background:var(--badbg);color:var(--bad)}
+.grid{display:grid;gap:10px}@media (min-width:600px){.grid.d2{grid-template-columns:1fr 1fr}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <div class="rasc">Versão de teste, antes do lançamento. Os números mostrados são <b>estimativas</b> até o contador conferir e assinar.</div>
+  <div class="topo"><picture><source srcset="logo-saude-escuro.png" media="(prefers-color-scheme: dark)"><img src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><span><a class="cta" style="background:transparent;color:var(--accent);border:1px solid var(--accent)" href="entrar.html?nova=1">Cadastrar outra empresa</a></span></div>
+  <h1>Minha empresa</h1>
+  <div class="card" id="estado"><p id="st" role="status" aria-live="polite">Verificando a sua conta…</p><label id="sel-l" hidden style="margin-top:8px">Empresa<select id="sel"></select></label></div>
+
+  <div id="area" hidden style="display:grid;gap:16px">
+    <div class="card" id="resumo-emp"></div>
+    <div class="card" id="c-abertura"><h2>Abertura do CNPJ</h2><p class="sub">Cada passo tem um dono: o que é seu, você conclui aqui com a prova (protocolo, número ou data). O resto é do contador e da nossa equipe, e você acompanha.</p>
+      <div class="bar" aria-hidden="true"><i id="barra" style="width:0%"></i></div><p class="sub" id="prog"></p><div id="passos"></div>
+      <div class="grid d2" id="fazer" hidden style="margin-top:10px"><label>Passo<select id="p-sel"></select></label><label>Prova<input id="p-prova" placeholder="ex.: protocolo do alvará"></label></div>
+      <p style="margin-top:10px" id="fazer-b" hidden><button class="p" id="p-ok">Concluir este passo</button></p><div id="p-out" role="status" aria-live="polite" class="sub"></div></div>
+    <div class="card"><h2>Resumo do mês</h2><div id="rel"></div></div>
+    <div class="card"><h2>Avisos</h2><div id="avisos"></div></div>
+    <div class="card"><h2>Pedir uma mudança na empresa</h2><p class="sub">Entrada ou saída de sócio, alteração do contrato, endereço, atividade ou encerramento. O contador cuida do passo a passo e você acompanha aqui.</p>
+      <div class="grid d2"><label>O que mudou<select id="e-tipo"></select></label><label>Sócios hoje<input id="e-soc" value="2" inputmode="numeric"></label></div>
+      <p style="margin-top:10px"><button class="p" id="e-abrir">Abrir o pedido</button></p><div id="e-out" role="status" aria-live="polite" class="sub"></div><div id="e-lista"></div></div>
+  </div>
+  <p class="sub">Dúvida? Fale com a gente pelo WhatsApp no rodapé de <a href="../seguranca.html">Segurança e quem está por trás</a>.</p>
+</main>
+<script src="../regras.js"></script>
+<script src="contab.js"></script>
+<script src="eventos.js"></script>
+<script src="../config.js"></script>
+<script src="pj-dados.js"></script>
+<script>
+(function(){
+ var $=function(i){return document.getElementById(i)},DB=null,EMP=null,EMPS=[];
+ var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+ var D=function(s){return s?String(s).slice(0,10).split('-').reverse().join('/'):'-'};
+ var SIT={abertura:'Abrindo o CNPJ',teste:'Em teste',ativa:'Ativa',pausa:'Em pausa',leitura:'Só consulta',cancelada:'Cancelada'};
+ var QUEM={contador:'Contador',cliente:'Você',app:'Lado a Lado Saúde'};
+ function msg(id,t,er){var e=$(id);e.textContent=t;e.style.color=er?'var(--bad)':''}
+ function carrega(){return new Promise(function(res){if(window.__SB_MOCK||typeof supabase!=='undefined')return res();var s=document.createElement('script'),t=setTimeout(res,5000);s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';s.integrity='sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT';s.crossOrigin='anonymous';s.onload=s.onerror=function(){clearTimeout(t);res()};document.head.appendChild(s)})}
+ function cabecalho(e){var teste=(e.situacao==='teste'||e.situacao==='abertura')&&e.teste_ate?' · teste até '+D(e.teste_ate):'';
+  $('resumo-emp').innerHTML='<h2>'+esc(e.razao_social||'Empresa em abertura')+'</h2><p class="sub">'+(e.cnpj?'CNPJ '+esc(e.cnpj)+' · ':'')+'<span class="tag '+(e.situacao==='ativa'?'':'at')+'">'+esc(SIT[e.situacao]||e.situacao)+'</span>'+esc(teste)+'</p>'}
+ async function passos(){var L=[];try{L=await DB.passos(EMP)}catch(e){$('passos').innerHTML='<p class="sub">'+esc(traduzErroPj(e,'ler'))+'</p>';return}
+  var box=$('c-abertura'),e=EMPS.filter(function(x){return x.id===EMP})[0]||{};
+  if(!L.length&&e.entrada!=='ponte'){box.hidden=true;return}box.hidden=false;
+  var st={};L.forEach(function(x){st[x.passo]=x});var feitos=L.filter(function(x){return x.status==='feito'}).map(function(x){return x.passo});
+  var prox=proximosPassos(feitos).map(function(p){return p.id}),h='',op='';
+  PASSOS.forEach(function(p){var s=st[p.id],f=s&&s.status==='feito',pr=prox.indexOf(p.id)>=0;
+   h+='<div class="passo'+(pr?' prox':'')+'"><span class="bol'+(f?' f':'')+'" aria-hidden="true">'+(f?'✓':p.id+1)+'</span><span>'+esc(p.titulo)+'<br><span class="sub">'+(f?'Feito'+(s.prova?': '+esc(s.prova):''):pr?'Próximo passo · quem faz: '+esc(QUEM[p.dono]):'Aguarda os passos anteriores · quem faz: '+esc(QUEM[p.dono]))+'</span></span><span class="tag'+(f?'':' at')+'">'+(f?'feito':pr?'agora':'depois')+'</span></div>';
+   if(pr&&p.dono==='cliente'&&s)op+='<option value="'+p.id+'">'+esc((p.id+1)+'. '+p.titulo)+'</option>'});
+  $('passos').innerHTML=L.length?h:'<p class="sub">Os passos aparecem quando o contador abrir o seu processo.</p>';
+  var pct=L.length?Math.round(feitos.length/17*100):0;$('barra').style.width=pct+'%';$('prog').textContent=L.length?feitos.length+' de 17 passos concluídos':'';
+  $('p-sel').innerHTML=op;$('fazer').hidden=!op;$('fazer-b').hidden=!op}
+ async function relatorio(){var L=[];try{L=await DB.relatorios(EMP)}catch(e){$('rel').innerHTML='<p class="sub">'+esc(traduzErroPj(e,'ler'))+'</p>';return}
+  if(!L.length){$('rel').innerHTML='<p class="sub">O primeiro resumo mensal aparece depois do primeiro fechamento feito pelo contador.</p>';return}
+  var r=L[0],t=r.dados&&r.dados.texto;$('rel').innerHTML='<p class="sub">Competência '+esc(String(r.competencia).slice(5,7)+'/'+String(r.competencia).slice(0,4))+'</p>'+(t?'<div class="bub">'+esc(t)+'</div>':'<p class="sub">Resumo sem texto.</p>')+'<p class="sub" style="margin-top:8px">Estimativa; o contador confere antes de qualquer pagamento ou envio à Receita.</p>'}
+ async function avisos(){var L=[];try{L=(await DB.alertas(EMP)).filter(function(a){return !a.resolvido_em})}catch(e){$('avisos').innerHTML='<p class="sub">'+esc(traduzErroPj(e,'ler'))+'</p>';return}
+  $('avisos').innerHTML=L.length?L.map(function(a){return '<div class="alerta'+(a.nivel==='crítico'?' crit':'')+'"><b>'+esc(a.nivel)+':</b> '+esc(a.texto)+'</div>'}).join(''):'<p class="sub">Nenhum aviso agora.</p>'}
+ async function pedidos(){var L=[];try{L=await DB.eventos(EMP)}catch(e){$('e-lista').innerHTML='<p class="sub">'+esc(traduzErroPj(e,'ler'))+'</p>';return}
+  $('e-lista').innerHTML=L.length?'<div style="margin-top:10px">'+L.map(function(x){var f=(x.passos||[]).filter(function(p){return p.feito}).length;return '<div class="passo"><span class="bol'+(x.status==='concluido'?' f':'')+'" aria-hidden="true">'+(x.status==='concluido'?'✓':'•')+'</span><span>'+esc(NOMES_EVENTO[x.tipo]||x.tipo)+'<br><span class="sub">'+f+' de '+(x.passos||[]).length+' passos · '+esc(x.status)+'</span></span><span>'+(x.status==='aberto'||x.status==='andamento'?'<button class="p" data-cancela="'+esc(x.id)+'" style="background:transparent;color:var(--bad);border:1px solid var(--bad);padding:6px 12px;min-height:44px">Cancelar</button>':'')+'</span></div>'}).join('')+'</div>':''
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cancela]'),function(b){b.onclick=async function(){b.disabled=true;try{await DB.cancelarEvento(b.getAttribute('data-cancela'));msg('e-out','Pedido cancelado.');await pedidos()}catch(e){msg('e-out',traduzErroPj(e),true);b.disabled=false}}})}
+ async function escolhe(id){EMP=id;var e=EMPS.filter(function(x){return x.id===id})[0];if(e)cabecalho(e);await Promise.all([passos(),relatorio(),avisos(),pedidos()])}
+ $('p-ok').onclick=async function(){var b=this;b.disabled=true;try{await DB.concluirPasso(EMP,+$('p-sel').value,$('p-prova').value);msg('p-out','Passo concluído. Obrigado!');$('p-prova').value='';await passos()}catch(e){msg('p-out',traduzErroPj(e),true)}b.disabled=false};
+ $('e-abrir').onclick=async function(){var b=this,t=$('e-tipo').value;b.disabled=true;try{var p=planoEvento(t,{socios:Math.max(1,Math.floor(+$('e-soc').value||1))});await DB.abrirEvento(EMP,t,{socios:+$('e-soc').value||0},p.total);msg('e-out','Pedido aberto: '+p.nome+'. O contador cuida dos '+p.total+' passos e você acompanha aqui.');await pedidos()}catch(e){msg('e-out',traduzErroPj(e),true)}b.disabled=false};
+ TIPOS_EVENTO.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=NOMES_EVENTO[k];$('e-tipo').appendChild(o)});
+ (async function(){await carrega();var sb=window.__SB_MOCK||(typeof supabase!=='undefined'&&typeof CONFIG!=='undefined'?supabase.createClient(CONFIG.url,CONFIG.chave):null),st=$('st');
+  if(!sb){st.textContent='Não consegui conectar agora. Tente de novo em instantes.';return}
+  try{var s=await sb.auth.getSession();if(!s.data||!s.data.session){st.innerHTML='Para ver a sua empresa, <a href="entrar.html">entre com o seu e-mail</a>.';return}
+   DB=criaDados(sb);EMPS=await DB.empresas();
+   if(!EMPS.length){st.innerHTML='Você ainda não cadastrou uma empresa. <a href="entrar.html">Cadastrar agora</a>.';return}
+   var sel=$('sel');EMPS.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=e.razao_social||'Empresa em abertura';sel.appendChild(o)});$('sel-l').hidden=EMPS.length<2;sel.onchange=function(){escolhe(sel.value)};
+   st.textContent='Conta conectada.';$('area').hidden=false;await escolhe(EMPS[0].id)}
+  catch(e){st.textContent=traduzErroPj(e,'ler')}})();
+})();
+</script>
+</body>
+</html>
