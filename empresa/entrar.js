@@ -84,5 +84,5 @@ $('e-emp').onsubmit=async e=>{e.preventDefault();atualizaEmpresa();
   mostra('e-ok')};
 $('b-oi').onclick=()=>{location.href=`https://wa.me/${ZAP}?text=${encodeURIComponent('Olá! Acabei de cadastrar minha empresa na Lado a Lado Saúde.')}`};
 $('b-sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
-sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_IN')setTimeout(inicio)});
+sb.auth.onAuthStateChange((ev,ses)=>{if(ev==='SIGNED_IN'){if(ses&&ses.access_token&&typeof registraAcesso==='function')registraAcesso('login',null,ses.access_token);setTimeout(inicio)}});
 inicio();

@@ -87,5 +87,5 @@ $('b-oi').onclick=()=>{const ocup=$('c-ocup').selectedOptions[0].textContent, ci
 $('b-sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // Volta do link do e-mail: o Supabase avisa SIGNED_IN (fora do callback, para não travar o cliente)
-sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_IN')setTimeout(inicio)});
+sb.auth.onAuthStateChange((ev,ses)=>{if(ev==='SIGNED_IN'){if(ses&&ses.access_token&&typeof registraAcesso==='function')registraAcesso('login',null,ses.access_token);setTimeout(inicio)}});
 inicio();

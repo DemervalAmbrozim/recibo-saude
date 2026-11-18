@@ -623,8 +623,8 @@ $('pin').onsubmit=async e=>{e.preventDefault();const p=$('pin-1').value;
   TOK=r.data;guarda.set(TOK);$('pin').hidden=true;carrega();
   // obs. 32: aparelho novo avisa no zap dela (com "bloquear" se não foi ela); sem internet ou sem zap ligado, segue sem aviso
   if(PIN!=='criar')fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.chave},body:JSON.stringify({acao:'aparelho_novo',tok:TOK})}).catch(()=>{});};
-(async()=>{if(TOK.length>=20)return partida();
-  const {data}=await sb.auth.getSession();if(data.session){TOK='';return carrega()}
+(async()=>{if(TOK.length>=20){if(typeof registraAcesso==='function')registraAcesso('link',TOK);return partida()}
+  const {data}=await sb.auth.getSession();if(data.session){if(typeof registraAcesso==='function')registraAcesso('login',null,data.session.access_token);TOK='';return carrega()}
   $('ruim').hidden=false})();
 $('b-sair').onclick=async()=>{const n=fila.get().length;if(n&&!confirm(`Há ${n} lançamento(s) feito(s) sem internet que ainda não foram enviados. Sair apaga esses lançamentos. Sair mesmo assim?`))return;
   try{localStorage.removeItem(CACHE_D);localStorage.removeItem(FILA)}catch(e){} // LGPD: a cópia dos dados não fica no aparelho depois de sair
