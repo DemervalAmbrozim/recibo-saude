@@ -93,6 +93,12 @@ nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
 <style>/* Auditoria 18/11 (campos da capa): links soltos e botões secundários com 44 px */
 .seguro a{display:inline-flex;align-items:center;min-height:44px}
 </style>
+<style>/* Destino exato (18/11): o item para onde o link leva fica marcado */
+[id]{scroll-margin-top:88px}
+:target{outline:3px solid #1fa971;outline-offset:4px;border-radius:12px;animation:alvo 2.4s ease-out 1}
+@keyframes alvo{0%{background:rgba(31,169,113,.28)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){:target{animation:none}}
+</style>
 </head>
 <body>
 <main>
@@ -134,8 +140,8 @@ Maria Silva · R$ 180,00 · Pix · hoje
     <h2 id="como">Como funciona</h2>
     <p class="sub">Desde 2025, cada pagamento de paciente precisa de recibo no Receita Saúde. Sem recibo, a multa é de R$ 100 por mês.</p>
     <div class="grid3" style="margin-top:16px">
-      <div class="card"><span class="n">1 · no dia a dia</span><h3>Você registra o atendimento</h3><p class="sub">No WhatsApp, o zap pergunta passo a passo e você só toca nas opções: paciente, valor, forma e dia. Ou lança no app. Quem ficou devendo vai para "a receber".</p></div>
-      <div class="card"><span class="n">2 · em no máximo 24 horas</span><h3>Nós emitimos os recibos</h3><p class="sub">Com a sua procuração no e-CAC (só Carnê-Leão Web, que você pode revogar quando quiser), emitimos no Receita Saúde e devolvemos o PDF no seu WhatsApp em no máximo 24 horas, todos os dias. Se não conseguirmos, você recebe o motivo dentro do mesmo prazo.</p></div>
+      <div class="card" id="p-registro"><span class="n">1 · no dia a dia</span><h3>Você registra o atendimento</h3><p class="sub">No WhatsApp, o zap pergunta passo a passo e você só toca nas opções: paciente, valor, forma e dia. Ou lança no app. Quem ficou devendo vai para "a receber".</p></div>
+      <div class="card" id="p-recibo"><span class="n">2 · em no máximo 24 horas</span><h3>Nós emitimos os recibos</h3><p class="sub">Com a sua procuração no e-CAC (só Carnê-Leão Web, que você pode revogar quando quiser), emitimos no Receita Saúde e devolvemos o PDF no seu WhatsApp em no máximo 24 horas, todos os dias. Se não conseguirmos, você recebe o motivo dentro do mesmo prazo.</p></div>
       <div class="card"><span class="n">3 · antes do vencimento</span><h3>Você recebe o DARF</h3><p class="sub">Carnê-Leão calculado com as despesas que abatem, o DARF pronto e o resumo: entrou, saiu, imposto e sobra.</p></div>
     </div>
   </section>
@@ -193,10 +199,10 @@ Maria Silva · R$ 180,00 · Pix · hoje
     <h2>Serviços à parte, só se você quiser</h2>
     <p class="sub">Não estão incluídos em nenhum plano. Você contrata o que fizer sentido, quando quiser. Nenhum promete resultado: onde dependemos de informações suas, o andamento depende do seu retorno.</p>
     <ul class="ok">
-      <li><b>Imposto de Renda:</b> R$ 197 por declaração, uma vez por ano. Fazemos a declaração completa; casos com várias fontes de renda ou CNPJ têm valor combinado após a análise. Já incluído no plano Completo + Contador.</li>
-      <li><b>Abertura de CNPJ:</b> R$ 297 avulsa, mais as taxas públicas. Inclui o enquadramento no Simples Nacional, o registro na Junta Comercial e na Receita, a prefeitura, o conselho e a orientação do certificado digital, e termina com o CNPJ aberto e os documentos entregues. Sem custo de serviço para quem contrata o plano Empresa por 12 meses.</li>
-      <li><b>Presença nas redes:</b> <b>Base, R$ 197 por mês</b> (Instagram, 8 carrosséis por mês da sua especialidade, ajuste do perfil, calendário e revisão mensal) ou <b>Completa, R$ 347 por mês</b> (Instagram e LinkedIn ou Facebook, 12 carrosséis, 4 roteiros de stories e revisão trimestral do perfil). Dentro das regras do seu conselho, sem fidelidade e sem promessa de seguidores, pacientes ou faturamento.</li>
-      <li><b>Consultoria de apoio:</b> um plano de ação feito a partir do que você nos conta. <b>Diagnóstico R$ 297</b> (questionário, conversa e Raio-X), <b>Plano de ação R$ 397</b>, ou o <b>pacote dos dois por R$ 597</b>. Depois, <b>acompanhamento mensal por R$ 147</b>. Se depois do Raio-X você achar que não valeu, devolvemos o diagnóstico.</li>
+      <li id="sv-ir"><b>Imposto de Renda:</b> R$ 197 por declaração, uma vez por ano. Fazemos a declaração completa; casos com várias fontes de renda ou CNPJ têm valor combinado após a análise. Já incluído no plano Completo + Contador.</li>
+      <li id="sv-cnpj"><b>Abertura de CNPJ:</b> R$ 297 avulsa, mais as taxas públicas. Inclui o enquadramento no Simples Nacional, o registro na Junta Comercial e na Receita, a prefeitura, o conselho e a orientação do certificado digital, e termina com o CNPJ aberto e os documentos entregues. Sem custo de serviço para quem contrata o plano Empresa por 12 meses.</li>
+      <li id="sv-redes"><b>Presença nas redes:</b> <b>Base, R$ 197 por mês</b> (Instagram, 8 carrosséis por mês da sua especialidade, ajuste do perfil, calendário e revisão mensal) ou <b>Completa, R$ 347 por mês</b> (Instagram e LinkedIn ou Facebook, 12 carrosséis, 4 roteiros de stories e revisão trimestral do perfil). Dentro das regras do seu conselho, sem fidelidade e sem promessa de seguidores, pacientes ou faturamento.</li>
+      <li id="sv-assessoria"><b>Consultoria de apoio:</b> um plano de ação feito a partir do que você nos conta. <b>Diagnóstico R$ 297</b> (questionário, conversa e Raio-X), <b>Plano de ação R$ 397</b>, ou o <b>pacote dos dois por R$ 597</b>. Depois, <b>acompanhamento mensal por R$ 147</b>. Se depois do Raio-X você achar que não valeu, devolvemos o diagnóstico.</li>
     </ul>
     <p class="sub">Clientes dos planos Completo e Completo + Contador têm 20% de desconto em redes e consultoria de apoio. Só está incluído o que o plano lista. Qualquer serviço não listado no seu plano pode ser contratado à parte. Para contratar, chame no WhatsApp. <a href="como-funciona.html#servicos">Veja como cada serviço funciona, passo a passo</a>.</p>
   </section>

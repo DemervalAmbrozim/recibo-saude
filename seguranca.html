@@ -35,6 +35,12 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
 <style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
 <style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
 @media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
+<style>/* Destino exato (18/11): o item para onde o link leva fica marcado */
+[id]{scroll-margin-top:88px}
+:target{outline:3px solid #1fa971;outline-offset:4px;border-radius:12px;animation:alvo 2.4s ease-out 1}
+@keyframes alvo{0%{background:rgba(31,169,113,.28)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){:target{animation:none}}
+</style>
 </head>
 <body>
 <main>
@@ -48,7 +54,7 @@ th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;ver
   <section class="card">
     <h2>Quem responde pelo serviço</h2>
     <p><b>Assessoria Lado a Lado Ltda</b>, CNPJ 34.114.180/0001-54, empresa ativa na Receita Federal, com sede em Vila Velha (ES). O Lado a Lado Saúde é o nome do serviço para profissionais da saúde. Contato: WhatsApp 27 99971-2727 · contato@ladoaladosaude.com.br.</p>
-    <p>Quem apura e assina o que exige contador é o <b>contador responsável</b>. Nós não somos escritório de contabilidade e não damos parecer contábil ou jurídico.</p>
+    <p id="contador">Quem apura e assina o que exige contador é o <b>contador responsável</b>. Nós não somos escritório de contabilidade e não damos parecer contábil ou jurídico.</p>
   </section>
 
   <section class="card">

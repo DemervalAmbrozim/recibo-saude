@@ -117,6 +117,12 @@ nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
 <style>/* Auditoria 18/11 (campos da capa): links soltos e botões secundários com 44 px */
 .seguro a{display:inline-flex;align-items:center;min-height:44px}
 </style>
+<style>/* Destino exato (18/11): o item para onde o link leva fica marcado */
+[id]{scroll-margin-top:88px}
+:target{outline:3px solid #1fa971;outline-offset:4px;border-radius:12px;animation:alvo 2.4s ease-out 1}
+@keyframes alvo{0%{background:rgba(31,169,113,.28)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){:target{animation:none}}
+</style>
 </head>
 <body>
 <main>
@@ -154,12 +160,12 @@ Estimativa; o contador confere.</div>
     <h2>O que a gente cuida na sua empresa</h2>
     <p class="sub">As mesmas cinco frentes de quem atende como autônoma, agora no tamanho da empresa.</p>
     <div class="grid3" style="margin-top:16px">
-      <div class="card"><span class="n">1</span><h3>Contabilidade completa</h3><p class="sub">Imposto do Simples (DAS), notas fiscais, escrituração, conciliação do banco, balancete, balanço e DEFIS. Pró-labore e retirada de lucros do jeito certo.</p></div>
+      <div class="card" id="f-contab"><span class="n">1</span><h3>Contabilidade completa</h3><p class="sub">Imposto do Simples (DAS), notas fiscais, escrituração, conciliação do banco, balancete, balanço e DEFIS. Pró-labore e retirada de lucros do jeito certo.</p></div>
       <div class="card"><span class="n">2</span><h3>Financeiro</h3><p class="sub">Quanto entrou, quanto saiu, quanto sobrou e o que vence. Um resumo de uma página por mês, com os números da sua empresa.</p></div>
       <div class="card"><span class="n">3</span><h3>Presença nas redes</h3><p class="sub">Instagram, Facebook, LinkedIn e o Perfil da sua empresa no Google, com o responsável técnico, dentro das regras do seu conselho. Contratação à parte.</p></div>
       <div class="card"><span class="n">4</span><h3>Plano de evolução e assessoria</h3><p class="sub">Com os números da contabilidade na mão: margem, valor da hora, momento de contratar, o que priorizar. Contratação à parte.</p></div>
       <div class="card"><span class="n">5</span><h3>Imposto de renda</h3><p class="sub">A declaração anual da empresa (DEFIS) está no plano. O imposto de renda de cada sócio é uma declaração própria, contratada à parte.</p></div>
-      <div class="card"><span class="n">+</span><h3>Folha de pagamento</h3><p class="sub">Até 3 funcionários: holerite, férias, 13º, rescisão, FGTS e eSocial, conferidos pelo contador. No plano Empresa com folha.</p></div>
+      <div class="card" id="f-folha"><span class="n">+</span><h3>Folha de pagamento</h3><p class="sub">Até 3 funcionários: holerite, férias, 13º, rescisão, FGTS e eSocial, conferidos pelo contador. No plano Empresa com folha.</p></div>
     </div>
   </section>
 
@@ -207,7 +213,7 @@ Estimativa; o contador confere.</div>
     <p class="sub">Escolha pelo que a sua empresa tem hoje. Mensal ou anual (paga 10 meses e leva 12).</p>
     <div class="ciclo" role="group" aria-label="Ciclo do plano"><button type="button" id="c-m" aria-pressed="true">Mensal</button><button type="button" id="c-a" aria-pressed="false">Anual: paga 10, leva 12</button></div>
     <div class="grid2">
-      <div class="card plano"><h3>Empresa</h3><div class="preco"><span data-m="299" data-a="2.990">R$ 299</span><small data-s="/mês">/mês</small></div>
+      <div class="card plano" id="plano-empresa"><h3>Empresa</h3><div class="preco"><span data-m="299" data-a="2.990">R$ 299</span><small data-s="/mês">/mês</small></div>
         <ul class="ok"><li>Contabilidade completa, sem funcionário</li><li>DAS, notas, escrituração, conciliação do banco e balanço</li><li>Pró-labore, lucros e DEFIS</li><li>Resumo de uma página por mês</li><li>Contador responsável conferindo</li></ul></div>
       <div class="card plano destaque"><span class="tag">com funcionários</span><h3>Empresa com folha</h3><div class="preco"><span data-m="399" data-a="3.990">R$ 399</span><small data-s="/mês">/mês</small></div>
         <ul class="ok"><li>Tudo do plano Empresa</li><li>Folha de até 3 funcionários: holerite, férias, 13º e rescisão</li><li>FGTS Digital e eSocial</li><li>Conferência de cada folha pelo contador</li></ul></div>

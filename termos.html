@@ -42,6 +42,12 @@ summary{display:flex;align-items:center;cursor:pointer}
 nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
 .aqui{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.aqui a{display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--fg);text-decoration:none;font-size:14px}.aqui a:hover,.aqui a:focus-visible{border-color:var(--accent)}
 </style>
+<style>/* Destino exato (18/11): o item para onde o link leva fica marcado */
+[id]{scroll-margin-top:88px}
+:target{outline:3px solid #1fa971;outline-offset:4px;border-radius:12px;animation:alvo 2.4s ease-out 1}
+@keyframes alvo{0%{background:rgba(31,169,113,.28)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){:target{animation:none}}
+</style>
 </head>
 <body>
 <main>
@@ -79,7 +85,7 @@ nav.indice a{display:inline-flex;align-items:center;padding:0 6px}
       <li>Ter o consentimento ou a base legal para nos passar os dados dos seus pacientes (parte 5) e guardar os comprovantes por 5 anos.</li>
       <li>Não usar o serviço para outra pessoa sem a autorização dela. Uma conta por CPF.</li>
     </ul>
-    <h3>Teste, cancelamento e seus dados</h3>
+    <h3 id="teste">Teste, cancelamento e seus dados</h3>
     <ul>
       <li>Teste grátis, sem cartão: 7 dias no plano mensal e 30 dias no plano anual. Sem plano depois disso, a conta fica só para consulta: nada é apagado.</li>
       <li>Você cancela quando quiser, pelo app ou pelo WhatsApp. Também pode pausar o plano por até 60 dias, uma vez a cada 12 meses: durante a pausa não há cobrança, nada é apagado, a conta fica só para consulta e os lembretes e as emissões ficam suspensos; o plano volta sozinho ao fim do prazo, ou antes, se você pedir. No plano anual, o período da pausa não conta na vigência. No plano anual, que tem desconto (paga 10, leva 12), o cancelamento também é livre, mas perde-se o desconto proporcional: devolvemos o valor pago menos os meses usados ao preço mensal cheio. Nos 7 primeiros dias após contratar, a devolução é integral. Na contratação pela internet, você pode desistir em até 7 dias do primeiro pagamento e recebe tudo de volta (Código de Defesa do Consumidor, art. 49).</li>
