@@ -1,4 +1,4 @@
-// Entrada da profissional (projeto completo, parte 03): e-mail com link de acesso → cadastro com 30 dias de teste → oi no WhatsApp.
+// Entrada da profissional (projeto completo, parte 03): e-mail com link de acesso → cadastro com 7 dias de teste → oi no WhatsApp.
 // O cadastro passa pela função cadastrar_profissional (supabase/010): CPF válido e único, conselho conferido depois pela equipe.
 const sb = supabase.createClient(CONFIG.url, CONFIG.chave);
 const ZAP = '5527999712727'; // WhatsApp da Assessoria (o mesmo de lancar.js)
@@ -70,15 +70,15 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   const r=await sb.rpc('cadastrar_profissional',{p_nome:nome,p_cpf:cpf,p_ocupacao:$('c-ocup').value,p_registro:$('c-reg').value,
     p_telefone:tel,p_cidade:$('c-cid').value,p_aceite:TERMOS});
   if(r.error){avisa(traduz(r.error.message),true);return}
-  // 15/11 (supabase/040): ciclo do teste (mensal 7 dias, anual 30) e formas de atuação; sem a função no banco, segue com o padrão
+  // 15/11 (supabase/040): ciclo do teste (7 dias em qualquer plano) e formas de atuação; sem a função no banco, segue com o padrão
   try{const ciclo=(document.querySelector('input[name="c-ciclo"]:checked')||{}).value||'mensal';await sb.rpc('definir_ciclo_teste',{p_ciclo:ciclo});
     await sb.rpc('salvar_perfil_atuacao',{p_formas:[],p_vinculo:null,p_cnpj:null,p_origem:ORIGEM})}catch(e){}
   // Pacote Vire CNPJ (supabase/016): "sim" já vira pedido no Admin; sem a função no banco, segue sem
   if($('c-cnpj').value||$('c-novidades').checked)await sb.rpc('link_preferencias',{tok:'',p_cnpj:$('c-cnpj').value||null,p_novidades:$('c-novidades').checked});
   const ind=$('c-ind').value.trim().toUpperCase();
-  if(ind){const u=await sb.rpc('usar_indicacao',{p_codigo:ind});if(u.error)avisa('Código de indicação não encontrado. Sua conta foi criada com 30 dias.',true);try{localStorage.removeItem('rs-ind')}catch(e){}}
+  if(ind){const u=await sb.rpc('usar_indicacao',{p_codigo:ind});if(u.error)avisa('Código de indicação não encontrado. Sua conta foi criada com 7 dias de teste.',true);try{localStorage.removeItem('rs-ind')}catch(e){}}
   const c=await sb.rpc('minha_conta',{tok:''});
-  $('ok-ate').textContent=c.data&&c.data.teste_ate?c.data.teste_ate.split('-').reverse().join('/'):'daqui a 30 dias';
+  $('ok-ate').textContent=c.data&&c.data.teste_ate?c.data.teste_ate.split('-').reverse().join('/'):'daqui a 7 dias';
   mostra('e-ok');
 };
 

@@ -23,7 +23,7 @@
    "quando": "Respondeu 1",
    "de": "auto",
    "nivel": "normal",
-   "texto": "Ótimo! Aqui você vê como funciona e cria a sua conta: {link_autonoma}\nO teste é sem cartão: 7 dias no plano mensal ou 30 dias no anual. Dúvida? É só responder aqui.",
+   "texto": "Ótimo! Aqui você vê como funciona e cria a sua conta: {link_autonoma}\nO teste é sem cartão: 7 dias, em qualquer plano. Dúvida? É só responder aqui.",
    "respostas": [],
    "regra": "Link só do nosso domínio."
   },
@@ -33,7 +33,7 @@
    "quando": "Respondeu 2",
    "de": "auto",
    "nivel": "normal",
-   "texto": "Ótimo! Aqui você vê o plano para empresa e faz o cadastro: {link_empresa}\nÉ para empresa de saúde no Simples Nacional, com até 3 funcionários. O teste é sem cartão: 7 dias no plano mensal ou 30 dias no anual.",
+   "texto": "Ótimo! Aqui você vê o plano para empresa e faz o cadastro: {link_empresa}\nÉ para empresa de saúde no Simples Nacional, com até 3 funcionários. O teste é sem cartão: 7 dias, em qualquer plano.",
    "respostas": [],
    "regra": "Link só do nosso domínio."
   },
