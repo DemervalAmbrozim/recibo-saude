@@ -352,7 +352,11 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
   catch(e){console.error(e);st.textContent='';avisa('Não consegui juntar os dados agora. Tente de novo.',true)}
   b.disabled=false};
 
-function mostra(t){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
+// Botão Voltar do celular/navegador (vistoria 19/11): cada aba aberta vira um passo do histórico; Voltar leva à aba anterior (e, na primeira, sai do app), em vez de sair de uma vez
+let ABA_ATUAL='t-ini';
+addEventListener('popstate',e=>{mostra((e.state&&e.state.aba)||'t-ini',false)});
+function mostra(t,hist){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
+  if(hist!==false&&t!==ABA_ATUAL)history.pushState({aba:t},'');ABA_ATUAL=t;
   document.querySelectorAll('nav button').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));scrollTo(0,0)}
 $('nav').onclick=e=>{const t=e.target.dataset.t;if(t)mostra(t)};
 
@@ -646,7 +650,7 @@ document.addEventListener('click',async e=>{const t=e.target.dataset||{};
     if(r.error){avisa('Não consegui marcar.',true);return}e.target.disabled=true;e.target.textContent='Conferidos ✓';await carrega();avisa(`${r.data} recebimento${r.data===1?'':'s'} conferido${r.data===1?'':'s'} pelo extrato.`);return}
   if(t.del&&!confirm('Apagar este lançamento? Use só se foi lançado errado.'))return;
   const fx=String(t.del||t.ddesp||'').match(/^fila-(.+)$/);if(fx){fila.set(fila.get().filter(y=>y.id!==fx[1]));carrega();return} // ainda no celular: só tira da fila
-  if(t.del){const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:t.del});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
+  if(t.del){const r=await sb.rpc('link_excluir',{tok:TOK,p_atendimento:t.del});if(r.error){avisa(/incluido em nota/.test(r.error.message)?'Esse pagamento já entrou numa nota fiscal e não pode ser apagado. Fale com a Assessoria.':'Não consegui excluir.',true);return}carrega()}
   if(t.ddesp){const r=await sb.rpc('link_excluir_despesa',{tok:TOK,p_despesa:t.ddesp});if(r.error){avisa('Não consegui excluir.',true);return}carrega()}
   if(t.dfixa){if(!confirm('Remover esta conta fixa? As despesas já lançadas continuam.'))return;
     const r=await sb.rpc('link_fixa_desligar',{tok:TOK,p_fixa:t.dfixa});if(r.error){avisa('Não consegui remover.',true);return}carrega()}

@@ -86,7 +86,12 @@ async function abrir(id){
 }
 
 // ---------- Abas ----------
+// Botão Voltar do navegador (vistoria 19/11): cada aba aberta vira um passo do histórico
+let ABA_ATUAL=null;
+addEventListener('popstate',e=>{const t=(e.state&&e.state.aba)||document.querySelector('nav button').dataset.t,b=[...document.querySelectorAll('nav button')].find(x=>x.dataset.t===t);if(b){b.dataset.volta='1';b.click()}});
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  if(b.dataset.volta==='1')delete b.dataset.volta;else if(ABA_ATUAL&&b.dataset.t!==ABA_ATUAL)history.pushState({aba:b.dataset.t},'');
+  ABA_ATUAL=b.dataset.t;
   document.querySelectorAll('.tab').forEach(s=>s.hidden=s.id!==b.dataset.t);
   document.querySelectorAll('nav button').forEach(x=>x===b?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));
   if(b.dataset.t==='t-fech')S.prof?abrir(S.prof.id):fech();
@@ -103,7 +108,7 @@ function render(){
   const at=S.at.filter(a=>a.data.startsWith(mes)).sort((a,b)=>b.data.localeCompare(a.data));
   $('l-atend').innerHTML=at.length?at.map(a=>`<div class="item"><div><b>${esc(pacDe(a.paciente_id).nome)}</b><div class="meta">${dBR(a.data)} · ${esc(a.forma)}${a.local_id&&localDe(a.local_id)?' · '+esc(localDe(a.local_id).nome):''}</div></div>
     <div style="text-align:right"><div class="num">${brl(a.valor)}</div><span class="pill ${a.lote_id?'':'pend'}">${a.lote_id?(loteDe(a)?.confirmado_em?'recibo confirmado':'arquivo gerado'):a.pago===false?'a receber':'falta recibo'}</span></div>
-    <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
+    <div style="grid-column:1/-1" class="btns">${a.lote_id?`<button class="small" data-reab="${a.id}" type="button">Desmarcar emitido</button>`:a.nota_lote_id?`<span class="pill">incluído em nota fiscal</span>`:`<button class="small" data-del="${a.id}" type="button">Excluir</button>`}</div></div>`).join('')
     :'<div class="sub">Nenhum atendimento neste mês. Registre o primeiro acima.</div>';
   $('l-pac').innerHTML=pacs.length?pacs.map(p=>`<div class="item"><div><b>${esc(p.nome)}</b>
     <div class="meta mono">${fmtCpf(p.cpf)}${p.cpf_pagador?' · paga: '+(p.nome_pagador?esc(p.nome_pagador)+' ':'')+fmtCpf(p.cpf_pagador):''}</div>
@@ -113,7 +118,8 @@ function render(){
 }
 document.addEventListener('click',async e=>{
   const t=e.target.dataset; if(!t)return;
-  if(t.del){if(falhou(await sb.from('atendimentos').delete().eq('id',t.del),'excluir'))return;
+  if(t.del){const at=S.at.find(x=>x.id===t.del);if(at&&at.nota_lote_id){avisa('Esse pagamento já entrou numa nota fiscal. Desmarque o lote da nota antes de excluir.',true);return}
+    if(falhou(await sb.from('atendimentos').delete().eq('id',t.del),'excluir'))return;
     S.at=S.at.filter(a=>a.id!==t.del);render();}
   if(t.reab){const l=S.lotes.find(x=>x.id===S.at.find(a=>a.id===t.reab).lote_id), dias=l?Math.floor((Date.now()-new Date(l.criado_em))/864e5):0;
     // Auditoria F4: a Receita só cancela recibo em até 10 dias; reabrir e gerar o arquivo de novo emite em dobro
@@ -362,7 +368,12 @@ function notasTela(mes){const card=$('f-nf');if(!card)return;card.hidden=!S.prof
   const pend=notasPend(mes),tot=pend.reduce((s,a)=>s+ +a.valor,0),ls=S.lotes.filter(l=>l.tipo==='notas'&&l.mes===mes);
   $('f-nf-resumo').innerHTML=`<div class="sub">${pend.length?`<b>${pend.length}</b> pagamento(s) sem nota neste mês, ${brl(tot)}.`:'Nenhum pagamento sem nota neste mês.'} A nota é emitida no portal do Emissor Nacional (gov.br), uma por pagamento.</div>`;
   $('f-nf-lotes').innerHTML=ls.length?ls.map(l=>`<div class="item"><span>${new Date(l.criado_em).toLocaleDateString('pt-BR')} · ${l.linhas} nota(s)${l.confirmado_em&&l.notas?': '+esc(l.notas.slice(0,6).join(', '))+(l.notas.length>6?'…':''):''}</span>
-    <span class="pill ${l.confirmado_em?'':'pend'}">${l.confirmado_em?'confirmado em '+new Date(l.confirmado_em).toLocaleDateString('pt-BR'):'planilha gerada, falta confirmar os números'}</span></div>`).join(''):'<div class="sub">Nenhum lote de notas neste mês.</div>';}
+    <span class="pill ${l.confirmado_em?'':'pend'}">${l.confirmado_em?'confirmado em '+new Date(l.confirmado_em).toLocaleDateString('pt-BR'):'planilha gerada, falta confirmar os números'}</span>${l.confirmado_em?'':` <button class="small" data-nfdesf="${l.id}" type="button">Desfazer este lote</button>`}</div>`).join(''):'<div class="sub">Nenhum lote de notas neste mês.</div>';}
+$('f-nf-lotes').onclick=async e=>{const id=e.target.dataset&&e.target.dataset.nfdesf;if(!id)return;
+  const l=S.lotes.find(x=>x.id===id);if(!l||l.confirmado_em){avisa('Lote já confirmado: as notas existem no portal e não se desfaz aqui.',true);return}
+  if(!confirm('Desfazer este lote? Os pagamentos voltam para a fila de notas do mês.'))return;
+  if(falhou(await sb.from('lotes').delete().eq('id',id),'desfazer o lote'))return;
+  S.lotes=S.lotes.filter(x=>x.id!==id);S.at.forEach(a=>{if(a.nota_lote_id===id)a.nota_lote_id=null});render();notasTela(l.mes);avisa('Lote desfeito: os pagamentos voltaram para a fila de notas.')};
 $('b-nf-baixar').onclick=()=>{const mes=$('f-mes').value,l=notasLinhas(mes);if(!l.length){avisa('Nada novo para nota neste mês.');return}
   const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
   baixa('notas-'+mes+'.csv',['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Descrição'].map(q).join(';')+'\r\n'
