@@ -828,6 +828,7 @@ const cnpjFmt=c=>c?c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$
 function empTela(){const tem=!!(EX&&EX.cnpj);$('i-emp').hidden=!tem;
   if(EX){$('emp-c').value=cnpjFmt(EX.cnpj||'');$('emp-d').value=EX.cnpj_desde||''}
   if(!tem)return;$('emp-cnpj').textContent='CNPJ '+cnpjFmt(EX.cnpj);
+  nfStatus();
   if(!$('emp-mes').value)$('emp-mes').value=new Date().toLocaleDateString('sv').slice(0,7);
   const e=empresaMes(D.atendimentos||[],$('emp-mes').value,EX.cnpj_desde,EX.empresa_hist||[]),it=([a,b])=>`<div class="item"><div>${a}</div><div class="num">${b}</div></div>`;
   // Reunião Daniel 31/10 (item 49): "ninguém entende nada disso": em cima só o que ela paga e recebe; o resto em "Ver mais"
@@ -855,6 +856,17 @@ $('b-emp').onclick=async()=>{const r=await sb.rpc('link_empresa',{tok:TOK,p_cnpj
   if(r.error){avisa(/cnpj/.test(r.error.message)?'CNPJ inválido. Confira os números.':'Confira a data de abertura.',true);return}
   EX.cnpj=r.data.cnpj;EX.cnpj_desde=r.data.cnpj_desde||null;empTela();avisa(EX.cnpj?'CNPJ salvo. O Início mostra o modo Empresa.':'CNPJ retirado.')};
 function baixaCsv(nome,dados){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([dados],{type:'text/csv'}));a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+// Pedido de nota fiscal (supabase/060, mesmo molde do recibo): prazo de 24 h; o andamento aparece aqui, com os números das notas quando confirmadas
+$('b-emp-pedir-nota').onclick=async()=>{const b=$('b-emp-pedir-nota');b.disabled=true;
+  const r=await sb.rpc('link_pedir_nota',{tok:TOK,p_obs:'Pedido pelo app: pedir a nota fiscal do mês '+($('emp-mes').value||''),p_origem:'app'});b.disabled=false;
+  if(r.error){avisa(/cnpj/.test(r.error.message)?'Informe o CNPJ da empresa antes de pedir a nota.':'Não consegui registrar o pedido. Tente de novo.',true);return}
+  avisa('Pedido registrado. Você recebe a nota, ou o motivo de não termos conseguido, em no máximo 24 horas.');nfStatus()};
+async function nfStatus(){const el=$('nf-st');if(!el)return;try{const r=await sb.rpc('link_status_nota',{tok:TOK}),x=r.error?null:r.data;if(!x){el.hidden=true;return}
+  const f=d=>new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const T={novo:'Pedido de nota recebido',conversando:'Pedido de nota em andamento',emitindo:'Emitindo a sua nota',feito:'Nota entregue',nao_consegui:'Ainda não conseguimos emitir',desistiu:'Pedido de nota cancelado'};
+  const L=x.ultimo_lote,ult=L?` Última confirmação: ${L.linhas} nota(s) de ${L.mes.split('-').reverse().join('/')} (números: ${(L.notas||[]).slice(0,5).join(', ')}${(L.notas||[]).length>5?'…':''}).`:'';
+  el.textContent=(x.situacao?(T[x.situacao]||'Pedido de nota')+': '+(x.situacao==='nao_consegui'?'motivo: '+(x.motivo||'—'):x.situacao==='feito'?'entregue em '+f(x.entregue_em||x.criado_em):x.situacao==='desistiu'?'':'entrega em no máximo 24 horas (até '+f(x.prazo_ate)+')')+'.':'')+ult;
+  el.hidden=false}catch(e){el.hidden=true}}
 $('b-emp-notas').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error){avisa('Não consegui juntar os dados. Tente de novo.',true);return}
   const m=$('emp-mes').value,l=notasMes(r.data,m,EX.ocupacao);
   baixaCsv(`notas-${m}.csv`,csv(['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Descrição'],l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,+x.valor,x.servico,x.descricao])))};

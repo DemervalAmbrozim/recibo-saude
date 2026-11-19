@@ -208,10 +208,10 @@ async function fechaLote(tipo,mes,ids){
   if(!ids.length){avisa('Nada novo para marcar.');return}
   const l=await sb.from('lotes').insert({profissional_id:S.prof.id,tipo,mes,linhas:ids.length}).select().single();
   if(falhou(l,'registrar a importação'))return;
-  const tab=tipo==='recibos'?'atendimentos':'despesas';
-  if(falhou(await sb.from(tab).update({lote_id:l.data.id}).in('id',ids),'marcar os itens'))return;
-  S.lotes.unshift(l.data);(tipo==='recibos'?S.at:S.desp).forEach(x=>{if(ids.includes(x.id))x.lote_id=l.data.id});
-  render();despTela();if(!$('t-fech').hidden)fech();avisa(`${ids.length} ${tipo==='recibos'?'atendimento(s)':'despesa(s)'} marcados como importados.`);
+  const tab=tipo==='despesas'?'despesas':'atendimentos',col=tipo==='notas'?'nota_lote_id':'lote_id';
+  if(falhou(await sb.from(tab).update({[col]:l.data.id}).in('id',ids),'marcar os itens'))return;
+  S.lotes.unshift(l.data);(tipo==='despesas'?S.desp:S.at).forEach(x=>{if(ids.includes(x.id))x[col]=l.data.id});
+  render();despTela();if(!$('t-fech').hidden)fech();avisa(tipo==='notas'?`${ids.length} pagamento(s) marcados como incluídos nas notas do mês.`:`${ids.length} ${tipo==='recibos'?'atendimento(s)':'despesa(s)'} marcados como importados.`);
 }
 
 // ---------- Fechamento: o cálculo do Carnê-Leão está em regras.js ----------
@@ -285,7 +285,7 @@ function fech(){
   $('f-confere').innerHTML=cf.length?`<div class="sub"><b>Conferência antes de importar</b> (o cancelamento só vale em 10 dias): ${cf.filter(x=>x.c.ok).length} de ${cf.length} sem erro.</div>`
     +cf.filter(x=>x.c.erros.length||x.c.avisos.length).map(x=>`<div class="msg ${x.c.erros.length?'err':''}"><b>${esc(x.p.nome||'(sem nome)')}</b>: ${esc([...x.c.erros,...x.c.avisos].join('; '))}.</div>`).join(''):'';
   $('f-csv').value=falta||cf.some(x=>!x.c.ok)?'':linhas.join('\r\n');
-  envioTela(mes);loteTela(mes);
+  envioTela(mes);loteTela(mes);notasTela(mes);
 }
 // Envio do recibo ao paciente (ponto 3 do Daniel): por enquanto abre o WhatsApp ou o e-mail com o texto pronto
 function msgPaciente(p,mes,valor){const [aa,mm]=mes.split('-').map(Number);
@@ -352,6 +352,31 @@ $('b-confirmar').onclick=async()=>{const mes=$('f-mes').value, ns=numerosRecibo(
   if(falhou(r,'confirmar os recibos'))return;
   Object.assign(l,r.data);$('f-receita').value='';render();loteTela(mes);avisa(`${ns.length} recibo(s) confirmado(s) pela Receita.`);};
 $('b-emitidos').onclick=()=>fechaLote('recibos',$('f-mes').value,recibos($('f-mes').value).flatMap(r=>r.ids));
+
+// ---------- Nota fiscal (supabase/060): mesmo molde do recibo. A nota (NFS-e) sai no portal do Emissor Nacional; aqui ficam a planilha do mês,
+// a trava contra nota em duplicidade (pagamento já incluído) e a confirmação com os NÚMEROS que o portal devolveu. Só para quem tem CNPJ.
+const notasPend=mes=>pagos().filter(a=>a.data.startsWith(mes)&&!a.nota_lote_id);
+const notasLinhas=mes=>notasMes({atendimentos:notasPend(mes).map(a=>{const p=pacDe(a.paciente_id);return {data:a.data,paciente:p.nome,cpf:p.cpf,cpf_pagador:p.cpf_pagador,valor:a.valor,pago:a.pago}})},mes,S.prof.ocupacao);
+const numerosNota=t=>[...new Set(String(t).split(/[\s;]+/).filter(x=>/^\d{1,15}$/.test(x)||/^\d{50}$/.test(x)))];
+function notasTela(mes){const card=$('f-nf');if(!card)return;card.hidden=!S.prof.cnpj;if(!S.prof.cnpj)return;
+  const pend=notasPend(mes),tot=pend.reduce((s,a)=>s+ +a.valor,0),ls=S.lotes.filter(l=>l.tipo==='notas'&&l.mes===mes);
+  $('f-nf-resumo').innerHTML=`<div class="sub">${pend.length?`<b>${pend.length}</b> pagamento(s) sem nota neste mês, ${brl(tot)}.`:'Nenhum pagamento sem nota neste mês.'} A nota é emitida no portal do Emissor Nacional (gov.br), uma por pagamento.</div>`;
+  $('f-nf-lotes').innerHTML=ls.length?ls.map(l=>`<div class="item"><span>${new Date(l.criado_em).toLocaleDateString('pt-BR')} · ${l.linhas} nota(s)${l.confirmado_em&&l.notas?': '+esc(l.notas.slice(0,6).join(', '))+(l.notas.length>6?'…':''):''}</span>
+    <span class="pill ${l.confirmado_em?'':'pend'}">${l.confirmado_em?'confirmado em '+new Date(l.confirmado_em).toLocaleDateString('pt-BR'):'planilha gerada, falta confirmar os números'}</span></div>`).join(''):'<div class="sub">Nenhum lote de notas neste mês.</div>';}
+$('b-nf-baixar').onclick=()=>{const mes=$('f-mes').value,l=notasLinhas(mes);if(!l.length){avisa('Nada novo para nota neste mês.');return}
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  baixa('notas-'+mes+'.csv',['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Descrição'].map(q).join(';')+'\r\n'
+    +l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,vcsv(+x.valor),x.servico,x.descricao].map(q).join(';')).join('\r\n'))};
+$('b-nf-emitidas').onclick=()=>{const mes=$('f-mes').value;fechaLote('notas',mes,notasPend(mes).map(a=>a.id))};
+$('b-nf-confirmar').onclick=async()=>{const mes=$('f-mes').value,ns=numerosNota($('f-nf-num').value);
+  const l=S.lotes.filter(x=>x.tipo==='notas'&&x.mes===mes&&!x.confirmado_em).sort((a,b)=>a.criado_em.localeCompare(b.criado_em))[0];
+  if(!l){avisa('Não há lote de notas deste mês esperando confirmação. Gere a planilha e marque como incluídos antes.',true);return}
+  if(!ns.length){avisa('Não achei números de nota no texto colado (só os números das notas, um por linha).',true);return}
+  if(ns.length!==l.linhas&&!confirm(`Você colou ${ns.length} número(s), mas o lote tinha ${l.linhas} nota(s). Confira no portal antes. Confirmar mesmo assim?`))return;
+  const r=await sb.from('lotes').update({confirmado_em:new Date().toISOString(),notas:ns,linhas:ns.length}).eq('id',l.id).select().single();
+  if(falhou(r,'confirmar as notas'))return;Object.assign(l,r.data);
+  await sb.from('pedidos').update({situacao:'feito',entregue_em:new Date().toISOString()}).eq('profissional_id',S.prof.id).eq('tipo','nota').in('situacao',['novo','conversando','emitindo']);
+  $('f-nf-num').value='';render();notasTela(mes);avisa(`${ns.length} nota(s) confirmada(s) com os números do portal.`)};
 
 // ---------- Ajustes ----------
 function cfgTela(){const c=S.prof;$('c-nome').value=c.nome;$('c-cpf').value=fmtCpf(c.cpf);$('c-ocup').value=c.ocupacao;$('c-reg').value=c.registro;$('c-desc').value=c.descricao;}
@@ -448,13 +473,13 @@ $('adm-filtro').onchange=admTela;
 // Pedidos (supabase/016): quero conversar sobre CNPJ e aviso de procuração feita
 const PROC={pendente:'procuração pendente',enviada:'procuração a conferir',conferida:'procuração conferida'};
 const SERVNOME={ir:'Imposto de Renda',cnpj_avulso:'Abertura de CNPJ (avulsa)',cnpj_plano12:'Abertura de CNPJ com o plano Empresa de 12 meses',redes:'Presença nas redes',redes_base:'Presença nas redes: Base',redes_completa:'Presença nas redes: Completa',apoio:'Consultoria de apoio',apoio_diag:'Consultoria: Diagnóstico',apoio_plano:'Consultoria: Plano de ação',apoio_pacote:'Consultoria: Pacote Diagnóstico + Plano',apoio_acomp:'Consultoria: Acompanhamento mensal'};
-const PSIT={novo:'novo',conversando:'conversando',emitindo:'emitindo',feito:'feito (entregue)',nao_consegui:'não consegui (motivo)',desistiu:'desistiu'},PTIPO={servico:'SERVIÇO À PARTE',recibo:'PEDIDO DE RECIBO (prazo 24 h)',cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração',suporte:'Suporte (responder em 1 dia útil)'};
+const PSIT={novo:'novo',conversando:'conversando',emitindo:'emitindo',feito:'feito (entregue)',nao_consegui:'não consegui (motivo)',desistiu:'desistiu'},PTIPO={servico:'SERVIÇO À PARTE',recibo:'PEDIDO DE RECIBO (prazo 24 h)',nota:'PEDIDO DE NOTA FISCAL (prazo 24 h)',cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração',suporte:'Suporte (responder em 1 dia útil)'};
 async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedidos').select('*').order('criado_em',{ascending:false}).limit(100);
   if(f==='aberto')q=q.in('situacao',['novo','conversando','emitindo']);const ft=($('adm-ped-tipo')||{}).value;if(ft)q=q.eq('tipo',ft);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
-      ${x.tipo==='recibo'&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<input data-motivo="${x.id}" placeholder="Se não conseguir: motivo e nova previsão (vai ao zap dela)" aria-label="Motivo" style="width:100%;margin-top:6px">`:''}${x.motivo?`<div class="meta">Motivo: ${esc(x.motivo)}</div>`:''}
-      ${x.tipo==='recibo'&&x.prazo_ate&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<div class="meta"><b>${(()=>{const h=(new Date(x.prazo_ate)-Date.now())/36e5;return h<0?'PRAZO ESTOURADO há '+Math.ceil(-h)+' h':'Faltam '+Math.floor(h)+' h para o prazo'})()}</b> (até ${new Date(x.prazo_ate).toLocaleString('pt-BR')})</div>`:''}
+      ${['recibo','nota'].includes(x.tipo)&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<input data-motivo="${x.id}" placeholder="Se não conseguir: motivo e nova previsão (vai ao zap dela)" aria-label="Motivo" style="width:100%;margin-top:6px">`:''}${x.motivo?`<div class="meta">Motivo: ${esc(x.motivo)}</div>`:''}
+      ${['recibo','nota'].includes(x.tipo)&&x.prazo_ate&&!['feito','nao_consegui','desistiu'].includes(x.situacao)?`<div class="meta"><b>${(()=>{const h=(new Date(x.prazo_ate)-Date.now())/36e5;return h<0?'PRAZO ESTOURADO há '+Math.ceil(-h)+' h':'Faltam '+Math.floor(h)+' h para o prazo'})()}</b> (até ${new Date(x.prazo_ate).toLocaleString('pt-BR')})</div>`:''}
       ${x.tipo==='servico'?`<div class="meta"><b>${esc(SERVNOME[x.servico]||x.servico||'')}</b>${x.valor!=null?' · '+brl(+x.valor):' · valor sob consulta'}${x.aceite_em?' · aceitou a condição em '+new Date(x.aceite_em).toLocaleDateString('pt-BR'):''}</div>${/^(apoio|redes)/.test(x.servico||'')?`<details class="meta" data-qprof="${x.profissional_id}"><summary>Ver o questionário dela</summary><div data-qbox="${x.profissional_id}" class="sub" style="white-space:pre-wrap">Carregando…</div></details>`:''}`:''}
       ${x.obs&&x.tipo==='suporte'?`<div class="meta" style="white-space:pre-wrap">${esc(x.obs)}</div>`+bibForm(x):''}
       ${x.media?`<div class="meta">média ${brl(+x.media)}/mês · economia estimada ${brl(+x.economia||0)}/mês</div>`:''}</div>

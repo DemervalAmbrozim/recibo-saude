@@ -213,6 +213,18 @@ section button,nav button,summary{min-height:44px}
       <button id="b-emitidos" type="button">Marcar estes como emitidos</button>
       <button id="b-devol" type="button">Copiar mensagem de devolução (vai com os PDFs)</button>
     </div>
+    <div class="card" id="f-nf" hidden>
+      <h2>Notas fiscais do mês (empresa com CNPJ)</h2>
+      <div id="f-nf-resumo"></div>
+      <div class="btns">
+        <button class="pri" id="b-nf-baixar" type="button">Baixar planilha das notas</button>
+        <button id="b-nf-emitidas" type="button">Marcar como incluídos nas notas</button>
+      </div>
+      <div class="sub">Emita cada nota no portal do Emissor Nacional (gov.br) com a planilha ao lado. Depois de emitir, cole aqui só os números das notas, um por linha: o painel confere a quantidade e guarda só os números.</div>
+      <div id="f-nf-lotes"></div>
+      <textarea id="f-nf-num" placeholder="Números das notas emitidas (uma por linha)"></textarea>
+      <button id="b-nf-confirmar" type="button">Confirmar notas</button>
+    </div>
     <div class="card">
       <h2>Confirmar com a lista da Receita</h2>
       <div class="sub">"Marcar como emitidos" quer dizer arquivo gerado. Depois de Importar, o Carnê-Leão mostra a lista dos recibos gerados: selecione a lista toda, copie e cole aqui. O painel confere se a quantidade bate e guarda só os números.</div>

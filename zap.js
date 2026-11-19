@@ -478,6 +478,21 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
     const dias=nums.map(iso).sort();
     try{await api.definirDias(u.id,dias)}catch(e){return zErro(String(e.message||e))}
     return `✅ Dias das sessões guardados: ${dias.map(zDBR).join(', ')}. O recibo sai com esses dias na descrição. Algum dia é de outro mês? Mande de novo com o mês, por exemplo: *dias 20 22 27 29 de outubro*.`}}
+  // Pedido de NOTA FISCAL pelo zap (supabase/060, mesmo molde do recibo; só empresa com CNPJ): abre o pedido com relógio de 24 h
+  if(/^(pedir|quero|preciso( d[oe])?|solicito|solicitar|emitir|emite|gerar|manda|mandar)( o| um| meu| os| uma| a)? ?(nota fiscal|notas fiscais|nota|notas|nfse|nfs-e)\b/.test(t)){
+    if(!api.pedirNota)return 'Para pedir a nota fiscal, abra o app e toque em *Pedir a nota fiscal* na área da sua empresa. Se preferir, mande *suporte*.';
+    let r;try{r=await api.pedirNota('Pedido pelo zap: '+String(linha||'').slice(0,200))}catch(e){return /sem cnpj/.test(String(e.message||e))?'A nota fiscal é para empresa com CNPJ. Informe o CNPJ no app (Ajustes > Sua empresa) e peça de novo.':zErro(String(e.message||e))}
+    const quando=r&&r.prazo_ate?new Date(r.prazo_ate).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    return `Pedido de nota fiscal recebido ✅ Você recebe a nota, ou o motivo de não termos conseguido, em no máximo 24 horas${quando?' (até '+quando+')':''}. Para acompanhar, mande *status nota*.`}
+  if(/^(status nota( fiscal)?|cade( a)? (minha )?nota( fiscal)?|como esta( a)?( minha)? nota( fiscal)?)$/.test(t)){
+    if(!api.statusNota)return 'Veja o andamento no app, na área da sua empresa.';
+    let r;try{r=await api.statusNota()}catch(e){return zErro(String(e.message||e))}
+    if(!r)return 'Você ainda não tem pedido de nota fiscal. Mande *pedir nota* quando quiser.';
+    const f=d=>new Date(d).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    if(r.situacao==='nao_consegui')return 'Ainda não conseguimos emitir a nota. Motivo: '+(r.motivo||'em análise')+'.';
+    if(r.situacao==='desistiu')return 'O último pedido de nota foi cancelado. Mande *pedir nota* para abrir outro.';
+    if(r.situacao&&r.situacao!=='feito')return 'Seu pedido de nota está em andamento. Entrega em no máximo 24 horas'+(r.prazo_ate?' (até '+f(r.prazo_ate)+')':'')+'.';
+    const L=r.ultimo_lote;return 'Sua última nota foi entregue'+(r.entregue_em?' em '+f(r.entregue_em):'')+'. ✅'+(L?` Confirmadas ${L.linhas} nota(s) de ${L.mes.split('-').reverse().join('/')}.`:'')}
   // Pedido de recibo pelo zap (SLA de no máximo 24 h, supabase/039): abre o pedido com relógio e responde com o prazo
   if(/^(pedir|quero|preciso( d[oe])?|solicito|solicitar|emitir|emite|gerar|manda|mandar)( o| um| meu| os| uma)? ?recibos?\b/.test(t)||/^recibo (agora|pra hoje|urgente)$/.test(t)){
     if(!api.pedirRecibo)return 'Para pedir o recibo, abra o app e toque em *Pedir o recibo agora*. Se preferir, mande *suporte*.';
