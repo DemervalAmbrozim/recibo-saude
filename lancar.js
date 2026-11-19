@@ -97,7 +97,7 @@ async function contaTela(){
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
   $('conta').textContent=pausada?'Seu plano está pausado: nada foi apagado e você pode consultar tudo. Para voltar antes dos 60 dias, vá em Ajuda > Pausar meu plano.':leitura?'Sua conta está só para consulta: nada foi apagado e você pode ver tudo, mas não lançar. Para continuar, escolha seu plano em Ajuda > Seu plano.'
     :teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'} (até ${dBR(c.teste_ate)}).${c.conselho_ok?'':' Seu registro no conselho está em conferência pela Lado a Lado Saúde.'}`:'';
-  $('b-sair').hidden=!c.logada&&!TOK;$('aj-seg').hidden=!c.logada||!!TOK;
+  $('b-sair').hidden=!c.logada&&!TOK;$('aj-seg').hidden=!c.logada||!!TOK;$('aj-pessoas').hidden=!c.logada||!!TOK;if(c.logada&&!TOK)pessoasTela();
 }
 // 8i: clínica do grupo. A secretária (ou a Lado a Lado Saúde) emite por procuração para o CPF de quem emite; sem o 025, o cartão fica escondido.
 async function cliTela(){const r=await sb.rpc('minha_clinica',{tok:TOK}),l=r.error?[]:r.data||[];$('aj-cli').hidden=!l.length;
@@ -109,9 +109,32 @@ $('aj-cli').onclick=async e=>{const id=e.target.dataset.sairCli;if(!id)return;
   if(!confirm('Sair desta clínica? A secretária deixa de ver e lançar seus atendimentos. O que já foi lançado continua seu.'))return;
   const r=await sb.rpc('sair_clinica',{tok:TOK,p_clinica:id});if(r.error){avisa('Não foi possível sair: '+r.error.message,true);return}
   avisa('Você saiu da clínica.');cliTela()};
+
+// Quem tem acesso à conta (supabase/058): secretária ou assistente do consultório. Só o dono, com a conta de e-mail.
+const PAPEL_NOME={assistente:'Secretária ou assistente',assessor:'Contador ou assessor',secretaria:'Secretária da clínica',socio:'Sócio (só leitura)'};
+const ERROS_PE={'essa pessoa ainda nao tem conta':'Essa pessoa ainda não entrou no app. Peça que ela entre em entrar.html com este e-mail e tente de novo.','voce ja tem acesso':'Esse é o seu próprio e-mail.','outro acesso':'Essa pessoa já tem outro tipo de acesso à sua conta.','segundo fator':'Confirme o código do 2º fator e tente de novo.','so o dono':'Só o dono da conta dá acesso.'};
+const traduzPe=m=>Object.entries(ERROS_PE).find(([k])=>String(m).includes(k))?.[1]||'Não consegui. Confira a internet e tente de novo.';
+let PROF_ID=null;
+async function pessoasTela(){
+  const m=await sb.rpc('minha_profissional');if(m.error||!m.data){$('aj-pessoas').hidden=true;return}PROF_ID=m.data;
+  const r=await sb.rpc('pessoas_com_acesso',{prof:PROF_ID});if(r.error){$('pe-lista').innerHTML='<div class="sub">Não consegui carregar a lista agora.</div>';return}
+  const l=(r.data||[]);
+  $('pe-lista').innerHTML=l.length?l.map(x=>`<div class="item" style="grid-template-columns:1fr auto;gap:8px"><div><b>${esc(x.email)}</b><div class="sub">${esc(PAPEL_NOME[x.papel]||x.papel)}${x.empresa?' · '+esc(x.empresa):''} · desde ${esc(String(x.desde).slice(0,10).split('-').reverse().join('/'))}</div></div>
+    ${x.papel==='secretaria'?'':`<button type="button" class="small" data-tira="${esc(x.user_id)}" data-emp="${esc(x.empresa_id||'')}">Tirar acesso</button>`}</div>`).join(''):'<div class="sub">Ninguém além de você.</div>';
+  $('pe-lista').querySelectorAll('[data-tira]').forEach(b=>b.onclick=async()=>{b.disabled=true;
+    const a={prof:PROF_ID,p_user:b.dataset.tira};if(b.dataset.emp)a.emp=b.dataset.emp;
+    const q=await sb.rpc('tirar_acesso',a);if(q.error){b.disabled=false;avisa(traduzPe(q.error.message),true);return}avisa('Acesso retirado.');pessoasTela()})}
+$('b-pe-dar').onclick=async()=>{const e=$('pe-email').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){avisa('Escreva o e-mail completo.',true);return}
+  if(!PROF_ID){avisa('Entre com o seu e-mail para dar acesso.',true);return}
+  const b=$('b-pe-dar');b.disabled=true;const r=await sb.rpc('dar_acesso_assistente',{prof:PROF_ID,p_email:e});b.disabled=false;
+  if(r.error){avisa(traduzPe(r.error.message),true);return}$('pe-email').value='';avisa('Acesso dado. Ela entra pelo painel com o e-mail dela.');pessoasTela()};
+// Histórico de cobranças (supabase/058)
+async function historicoCobrancas(){const r=await sb.rpc('minhas_cobrancas',{tok:TOK});if(r.error)return;const l=r.data||[];
+  const ST={paga:'Paga',pendente:'Em aberto',vencida:'Vencida'};
+  $('pl-hist-lista').innerHTML=l.length?l.map(c=>`<div class="item" style="grid-template-columns:1fr auto;gap:8px"><div><b>${esc(dBR(c.vencimento))}</b> · ${esc(c.plano)}<div class="sub">${esc(ST[c.status]||c.status)}${c.pago_em?' em '+esc(dBR(String(c.pago_em).slice(0,10))):''}${c.link?` · <a href="${esc(c.link)}" target="_blank" rel="noopener">Pagar</a>`:''}</div></div><b class="num">${brl(c.valor)}</b></div>`).join(''):'<div class="sub">Nenhuma cobrança ainda.</div>'}
 // Plano e cobrança (supabase/013 + função cobranca). Sem a função no banco, o cartão fica escondido.
 let PL=null;
-async function planoTela(){const r=await sb.rpc('minha_cobranca',{tok:TOK});if(r.error||!r.data)return;PL=r.data;$('aj-plano').hidden=false;
+async function planoTela(){const r=await sb.rpc('minha_cobranca',{tok:TOK});if(r.error||!r.data)return;PL=r.data;$('aj-plano').hidden=false;historicoCobrancas();
   const c=PL.cobranca,nome=k=>(PL.planos.find(x=>x.codigo===k)||{}).nome||k;
   $('pl-sit').innerHTML=c&&c.status!=='paga'?`Cobrança ${c.status==='vencida'?'<b>vencida</b>':'em aberto'}: ${brl(c.valor)}, vencimento ${dBR(c.vencimento)}. <a href="${esc(c.link||'#')}" target="_blank" rel="noopener">Pagar agora</a>`
     :PL.plano&&PL.situacao==='ativa'?`Plano ${esc(nome(PL.plano))}${PL.ciclo?` (${PL.ciclo})`:''}, em dia.`

@@ -55,11 +55,11 @@ async function entrar(again){
   PROFS=ac.data.map(x=>({...x.profissionais,papel:x.papel}));
   const clis=Array.isArray(cl.data)?cl.data:[]; // 8i: secretária da clínica também entra no painel
   // O painel é da equipe, dos contadores e das secretárias de clínica. A profissional usa o app dela; cadastro novo só por entrar.html (auditoria S2)
-  if(!EQUIPE&&!clis.length&&!PROFS.some(p=>p.papel==='assessor'||p.papel==='secretaria')){location.replace(PROFS.length?'lancar.html':'entrar.html');return}
-  SEC=!EQUIPE&&!PROFS.some(p=>p.papel!=='secretaria');
+  if(!EQUIPE&&!clis.length&&!PROFS.some(p=>p.papel==='assessor'||p.papel==='secretaria'||p.papel==='assistente')){location.replace(PROFS.length?'lancar.html':'entrar.html');return}
+  SEC=!EQUIPE&&!PROFS.some(p=>p.papel!=='secretaria'&&p.papel!=='assistente');
   $('nav-adm').hidden=!EQUIPE;document.querySelectorAll('.adm-so').forEach(c=>c.hidden=!ADMIN);mfaTela();
   PROFS.sort((a,b)=>(a.papel==='dono'?0:1)-(b.papel==='dono'?0:1)||a.nome.localeCompare(b.nome));
-  $('prof-sel').innerHTML=PROFS.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}${p.papel==='assessor'?' (cliente)':p.papel==='secretaria'?' (clínica)':''}</option>`).join('');
+  $('prof-sel').innerHTML=PROFS.map(p=>`<option value="${p.id}">${esc(p.nome||'(sem nome)')}${p.papel==='assessor'?' (cliente)':p.papel==='secretaria'?' (clínica)':p.papel==='assistente'?' (consultório)':''}</option>`).join('');
   $('prof-sel').hidden=PROFS.length<2;
   $('t-login').hidden=true;document.querySelector('nav').hidden=false;
   cliEntrar(clis);

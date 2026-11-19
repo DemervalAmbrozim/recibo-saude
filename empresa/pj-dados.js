@@ -1,7 +1,7 @@
 // Camada de dados da frente Empresa (17/11/2026): fala com as funções e tabelas pj_* do supabase/048 pelo cliente do Supabase (ou por um simulado nos testes).
 // Regra: nada de dado clínico de paciente. Erros do banco viram frases em português. RLS e permissões moram no banco; aqui só chamamos.
 // Rascunho: o SQL 048 só existe no PC até o "pode publicar" da frente Empresa; sem ele, o banco real responde "função não existe" e a tela mostra o aviso certo.
-const ERROS_PJ={'precisa estar logado':'Entre com o seu e-mail primeiro.','sem permissao':'Você não tem permissão para esta ação.','so o contador lanca':'Só o contador lança na escrituração.','so o contador aprova a folha':'Só o contador aprova a folha.',
+const ERROS_PJ={'essa pessoa ainda nao tem conta':'Essa pessoa ainda não entrou no app. Peça que ela entre com este e-mail e tente de novo.','voce ja tem acesso':'Esse é o seu próprio e-mail.','essa pessoa ja e dona':'Essa pessoa já é dona desta conta.','segundo fator necessario':'Confirme o código do 2º fator e tente de novo.','mensagem vazia':'Escreva a mensagem.','precisa estar logado':'Entre com o seu e-mail primeiro.','sem permissao':'Você não tem permissão para esta ação.','so o contador lanca':'Só o contador lança na escrituração.','so o contador aprova a folha':'Só o contador aprova a folha.',
   'passos anteriores ainda nao concluidos':'Conclua os passos anteriores antes deste.','informe a prova da conclusao':'Escreva a prova da conclusão (protocolo, número ou data).','passo anterior pendente':'Conclua o passo anterior antes deste.','so o contador conclui este passo':'Este passo é do contador.','passo invalido':'Passo inválido.','dados grandes demais':'Dados grandes demais para guardar.','segundo fator necessario':'Confirme o segundo fator (código do aplicativo autenticador) e tente de novo.','folha aprovada nao se altera':'Folha aprovada não pode ser alterada.','folha aprovada nao se apaga':'Folha aprovada não pode ser apagada.','passo concluido nao volta atras':'Passo concluído não volta atrás.','so a operacao altera':'Só a equipe altera situação, plano e dados de cobrança.','so o admin designa o contador':'Só o administrador designa o contador da empresa.','so o admin remove o contador':'Só o administrador remove o contador da empresa.','limite de 3 empresas por profissional':'Você já tem 3 empresas cadastradas (limite por profissional).','empresa inexistente':'Empresa não encontrada.','evento ja encerrado':'Este pedido já foi encerrado.','evento inexistente':'Pedido não encontrado.','total de passos invalido':'Pedido sem passos válidos.','evento ja enviado nao volta nem muda':'Evento já enviado não volta nem muda.','evento do esocial nao muda':'O evento do eSocial não muda de empresa, tipo ou empregado.','cpf invalido':'CPF inválido. Confira os números.','mais de 3 empregados':'Mais de 3 empregados: fora do escopo por enquanto.','passo inexistente':'Esse passo ainda não foi criado para a empresa.'};
 function traduzErroPj(e,ctx){const s=String((e&&e.message)||e||'');
   if(/Could not find the function|PGRST202|PGRST205|does not exist|schema cache/i.test(s))return 'A frente Empresa ainda não está ligada no servidor.';
@@ -15,6 +15,23 @@ function criaDados(sb){
     async empresas(){return ck(await sb.rpc('pj_minhas_empresas'))||[]},
     async passos(emp){return ck(await sb.from('pj_passo').select('passo,status,dono,prova,prazo').eq('empresa_id',emp).order('passo'))||[]},
     async empregados(emp){return ck(await sb.from('pj_empregado').select('id,nome').eq('empresa_id',emp).order('nome'))||[]},
+    // Mensagens e documentos com o contador, e acesso de sócio (supabase/058)
+    async mensagens(emp){return ck(await sb.from('pj_mensagem').select('id,lado,texto,criado_em,lida_em').eq('empresa_id',emp).order('id'))||[]},
+    async enviarMensagem(emp,texto){return ck(await sb.rpc('pj_enviar_mensagem',{emp,p_texto:String(texto||'')}))},
+    async marcarLidas(emp){return ck(await sb.rpc('pj_marcar_lidas',{emp}))},
+    async documentos(emp){return ck(await sb.from('pj_documento').select('id,tipo,nome_arquivo,caminho,enviado_em').eq('empresa_id',emp).order('enviado_em',{ascending:false}))||[]},
+    async enviarDocumento(emp,tipo,arquivo){
+      if(!arquivo)throw new Error('Escolha o arquivo.');
+      if(arquivo.size>10*1024*1024)throw new Error('Arquivo acima de 10 MB.');
+      if(!/\.(pdf|png|jpe?g|xlsx?|csv|ofx|docx?)$/i.test(arquivo.name||''))throw new Error('Tipo de arquivo não aceito. Use PDF, imagem, planilha ou documento.');
+      const nome=String(arquivo.name).replace(/[^\w.\-]+/g,'_').slice(-80),caminho=emp+'/'+Date.now()+'-'+nome;
+      const up=await sb.storage.from('empresa-docs').upload(caminho,arquivo,{upsert:false});if(up.error)throw new Error(up.error.message||'envio');
+      return ck(await sb.from('pj_documento').insert({empresa_id:emp,tipo,nome_arquivo:String(arquivo.name).slice(0,120),caminho}))},
+    async linkDocumento(caminho){const r=await sb.storage.from('empresa-docs').createSignedUrl(caminho,60);if(r.error)throw new Error(r.error.message||'link');return r.data&&r.data.signedUrl},
+    async souDono(){const r=await sb.rpc('minha_profissional');return !!ck(r)},
+    async darAcessoSocio(emp,email){return ck(await sb.rpc('dar_acesso_socio',{emp,p_email:String(email||'')}))},
+    async pessoasDaEmpresa(emp){const m=await sb.rpc('minha_profissional');const prof=ck(m);if(!prof)return[];const l=ck(await sb.rpc('pessoas_com_acesso',{prof}))||[];return l.filter(x=>x.papel==='socio'&&x.empresa_id===emp).map(x=>({...x,prof}))},
+    async tirarAcessoSocio(prof,user,emp){return ck(await sb.rpc('tirar_acesso',{prof,p_user:user,emp}))},
     async souTitular(){return ck(await sb.rpc('pj_sou_titular'))},
     async eventos(emp){return ck(await sb.from('pj_evento').select('id,tipo,status,passos,dados,criado_em,concluido_em').eq('empresa_id',emp).order('criado_em',{ascending:false}))||[]},
     async abrirEvento(emp,tipo,dados,total){return ck(await sb.rpc('pj_abrir_evento',{emp,p_tipo:tipo,p_dados:dados||{},p_total:total}))},
