@@ -376,8 +376,8 @@ $('f-nf-lotes').onclick=async e=>{const id=e.target.dataset&&e.target.dataset.nf
   S.lotes=S.lotes.filter(x=>x.id!==id);S.at.forEach(a=>{if(a.nota_lote_id===id)a.nota_lote_id=null});render();notasTela(l.mes);avisa('Lote desfeito: os pagamentos voltaram para a fila de notas.')};
 $('b-nf-baixar').onclick=()=>{const mes=$('f-mes').value,l=notasLinhas(mes);if(!l.length){avisa('Nada novo para nota neste mês.');return}
   const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-  baixa('notas-'+mes+'.csv',['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Descrição'].map(q).join(';')+'\r\n'
-    +l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,vcsv(+x.valor),x.servico,x.descricao].map(q).join(';')).join('\r\n'))};
+  baixa('notas-'+mes+'.csv',['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Código de tributação nacional (cTribNac)','NBS','Descrição'].map(q).join(';')+'\r\n'
+    +l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,vcsv(+x.valor),x.servico,x.trib,x.nbs,x.descricao].map(q).join(';')).join('\r\n'))};
 $('b-nf-emitidas').onclick=()=>{const mes=$('f-mes').value;fechaLote('notas',mes,notasPend(mes).map(a=>a.id))};
 $('b-nf-confirmar').onclick=async()=>{const mes=$('f-mes').value,ns=numerosNota($('f-nf-num').value);
   const l=S.lotes.filter(x=>x.tipo==='notas'&&x.mes===mes&&!x.confirmado_em).sort((a,b)=>a.criado_em.localeCompare(b.criado_em))[0];

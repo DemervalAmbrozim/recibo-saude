@@ -873,7 +873,7 @@ async function nfStatus(){const el=$('nf-st');if(!el)return;try{const r=await sb
   el.hidden=false}catch(e){el.hidden=true}}
 $('b-emp-notas').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error){avisa('Não consegui juntar os dados. Tente de novo.',true);return}
   const m=$('emp-mes').value,l=notasMes(r.data,m,EX.ocupacao);
-  baixaCsv(`notas-${m}.csv`,csv(['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Descrição'],l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,+x.valor,x.servico,x.descricao])))};
+  baixaCsv(`notas-${m}.csv`,csv(['Data do pagamento','Tomador (quem pagou)','CPF do tomador','CPF do paciente','Valor','Item da LC 116','Código de tributação nacional (cTribNac)','NBS','Descrição'],l.map(x=>[dBR(x.data),x.tomador,x.cpf,x.paciente_cpf,+x.valor,x.servico,x.trib,x.nbs,x.descricao])))};
 $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK});if(r.error){avisa('Não consegui juntar os dados. Tente de novo.',true);return}
   const a=+$('emp-mes').value.slice(0,4),l=dmedAno(r.data,a,EX.cnpj_desde);
   baixaCsv(`dmed-${a}.csv`,csv(['CPF do responsável (quem pagou)','Paciente','CPF do paciente','Total pago no ano'],l.map(x=>[x.responsavel_cpf,x.paciente,x.paciente_cpf,x.valor])))};

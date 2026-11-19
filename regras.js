@@ -129,8 +129,8 @@ function cnpjAviso(ats,ds,mes,p20){
 // depois, a soma dos 12 meses anteriores. DAS = receita do mês × alíquota efetiva do Anexo III (com Fator R de 28%, A3 acima).
 // Pró-labore do Fator R: 28% da receita do mês (mínimo de 1 salário mínimo), com INSS de 11% retido e IR pela tabela mensal.
 // DAS e INSS do pró-labore vencem no dia 20 do mês seguinte (LC 123, art. 21, III); dia sem expediente: confirmar com o contador.
-const SERVICO={'231':['4.08','Fisioterapia'],'230':['4.08','Fonoaudiologia'],'232':['4.08','Terapia ocupacional'],'255':['4.16','Psicologia'],
-  '225':['4.01','Medicina'],'226':['4.12','Odontologia']}; // item da lista da LC 116/2003 para a nota fiscal
+const SERVICO={'231':['4.08','Fisioterapia','040802','123019200'],'230':['4.08','Fonoaudiologia','040803','123019900'],'232':['4.08','Terapia ocupacional','040801','123019900'],'255':['4.16','Psicologia','041601','123019800'],
+  '225':['4.01','Medicina','040101','123012200'],'226':['4.12','Odontologia','041201','123012300']}; // [item da LC 116/2003, nome, cTribNac e NBS 2.0 do Emissor Nacional (mesmos de ferramentas/nfse.py, Anexos I e B); o contador confere] // item da lista da LC 116/2003 para a nota fiscal
 // hist (reunião Daniel 31/10, item 47): receita e folha mês a mês vindas do sistema da contabilidade; vale mais que o lançado no app.
 // Com a folha, calcula o Fator R de verdade (folha 12 meses ÷ RBT12) e o pró-labore deste mês que mantém 28% (Anexo III).
 function empresaMes(ats,mes,desde,hist){const pagos=ats.filter(x=>x.pago!==false&&x.data>=desde),H={};(hist||[]).forEach(x=>{H[x.mes]=x});
@@ -152,9 +152,9 @@ function empHist(txt){const out={};for(const l of String(txt||'').split(/\r?\n/)
     if(vs.length>=2)out[mes]={mes,receita:vs[0],folha:vs[1]}}
   return Object.values(out).sort((a,b)=>a.mes<b.mes?-1:1).slice(-36)}
 // Linhas da nota fiscal do mês (uma por pagamento) e da DMED do ano (total por paciente e responsável), a partir do link_exportar
-function notasMes(X,mes,ocup){const [cod,nome]=SERVICO[ocup]||['4.08','Serviço de saúde'];
+function notasMes(X,mes,ocup){const [cod,nome,trib,nbs]=SERVICO[ocup]||['4.08','Serviço de saúde','',''];
   return (X.atendimentos||[]).filter(x=>x.pago!==false&&x.data.startsWith(mes)).map(x=>({data:x.data,tomador:x.paciente,cpf:x.cpf_pagador||x.cpf,
-    paciente_cpf:x.cpf,valor:x.valor,servico:cod,descricao:`${nome}: atendimento de ${x.paciente} em ${x.data.split('-').reverse().join('/')}`}))}
+    paciente_cpf:x.cpf,valor:x.valor,servico:cod,trib,nbs,descricao:`${nome}: atendimento de ${x.paciente} em ${x.data.split('-').reverse().join('/')}`}))}
 function dmedAno(X,ano,desde){const t={};
   for(const x of (X.atendimentos||[]).filter(x=>x.pago!==false&&x.data.startsWith(String(ano))&&x.data>=desde)){
     const k=(x.cpf_pagador||x.cpf)+'|'+x.cpf;t[k]=t[k]||{responsavel_cpf:x.cpf_pagador||x.cpf,paciente:x.paciente,paciente_cpf:x.cpf,valor:0};t[k].valor+=+x.valor}
