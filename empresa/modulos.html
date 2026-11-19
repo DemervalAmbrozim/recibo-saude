@@ -41,6 +41,9 @@ button.p{font:inherit;padding:10px 16px;border-radius:10px;border:0;background:v
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
 <style>@font-face{font-family:"Instrument Sans";src:url(../fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>/* Auditoria 18/11 (lado interno): alvos de toque de 44 px no painel */
+section button,nav button,summary{min-height:44px}
+</style>
 </head>
 <body>
 <main>
@@ -310,7 +313,7 @@ function eventos(){var t=$('e-tipo').value,p=planoEvento(t,{registro:$('e-reg').
  on('bd-ev-cancela',async function(){var id=$('bd-ev-sel').value;if(!id){msg('bd-ev-out','Escolha um pedido aberto.',true);return}await DB.cancelarEvento(id);msg('bd-ev-out','Pedido cancelado.');await eventos()},'bd-ev-out');
  on('bd-soc-salva',async function(){await DB.salvarSocio(EMP,{nome:$('bd-soc-nome').value,cpf:$('bd-soc-cpf').value,participacao:num('bd-soc-part'),administrador:$('bd-soc-adm').checked,prolabore:$('bd-soc-pl').value?num('bd-soc-pl'):null});msg('bd-soc-out','Sócio guardado.');await socios()},'bd-soc-out');
  on('bd-e-salva',async function(){await DB.salvarEmpregado(EMP,{nome:$('bd-e-nome').value,cpf:$('bd-e-cpf').value,cargo:$('bd-e-cargo').value,salario:num('bd-e-sal'),admissao:$('bd-e-adm').value,dependentes:num('bd-e-dep')});msg('bd-e-out','Empregado guardado.');var s=$('bd-emp');if(window.__bdEmpregados)await window.__bdEmpregados()},'bd-e-out');
- on('bd-cart',async function(){var L=await DB.empresas();$('bd-cart-out').innerHTML=L.length?tab(['Empresa','Situação','Plano','Passos'],L.map(function(x){return [esc(x.razao_social||'(sem nome)'),'<span class="tag at">'+esc(x.situacao)+'</span>',esc(x.plano||'-'),esc(String(x.passos_feitos||0))+' de '+esc(String(x.passos_total||0))]})):'<p class="sub">Nenhuma empresa visível.</p>'},'bd-cart-out');
+ on('bd-cart',async function(){var L=await DB.empresas();$('bd-cart-out').innerHTML=L.length?tab(['Empresa','Situação','Plano','Passos'],L.map(function(x){return [esc(x.razao_social||'(sem nome)'),'<span class="tag at">'+esc(x.situacao||'-')+'</span>',esc(x.plano||'-'),esc(String(x.passos_feitos||0))+' de '+esc(String(x.passos_total||0))]})):'<p class="sub">Nenhuma empresa visível.</p>'},'bd-cart-out');
  on('bd-es-add',async function(){var pl;try{pl=JSON.parse($('bd-es-payload').value||'{}')}catch(e){msg('bd-es-out','O conteúdo precisa ser um JSON válido.',true);return}
    if(!$('bd-es-comp').value){msg('bd-es-out','Escolha a competência.',true);return}await DB.enfileirarEsocial(EMP,$('bd-es-tipo').value,$('bd-es-comp').value,pl,null,'rascunho');msg('bd-es-out','Evento colocado na fila como rascunho. Não foi transmitido.');await fila()},'bd-es-out');
  on('bd-es-ensaio',async function(){var L=await DB.filaEsocial(EMP),r=await transmitir({fila:L,ensaio:true});var x='<p><b>'+r.sairiam.length+'</b> evento(s) sairiam, nesta ordem: '+(r.sairiam.length?esc(r.sairiam.join(', ')):'nenhum')+'.</p>';if(r.bloqueados.length)x+='<h3>Bloqueados</h3>'+r.bloqueados.map(function(b){return '<div class="alerta"><b>'+esc(b.tipo)+':</b> '+esc(b.motivos.join('; '))+'</div>'}).join('');x+='<p class="sub">Ensaio: nada foi transmitido. Prazo de fechamento da competência escolhida: '+esc(prazoFechamento($('bd-es-comp').value)||'-').split('-').reverse().join('/')+' (feriados nacionais de data fixa já contam; confira feriados móveis e locais com o contador).</p>';$('bd-es-ensaio-out').innerHTML=x},'bd-es-out');

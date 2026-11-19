@@ -9,7 +9,7 @@ function cliEntrar(lista){CLIS=lista||[];$('nav-cli').hidden=!CLIS.length;
   if(!PROFS.length)document.querySelectorAll('nav button').forEach(b=>{if(b.id!=='nav-cli'&&b.id!=='nav-adm')b.hidden=true});
   if(CLIS.length)cliAbrir()}
 async function cliAbrir(){if(!cliId())return;
-  const r=await sb.rpc('clinica_painel',{p_clinica:cliId(),p_mes:$('cli-mes').value});if(falhou(r,'abrir a clínica'))return;
+  const r=await sb.rpc('clinica_painel',{p_clinica:cliId(),p_mes:$('cli-mes').value});if(falhou(r,'abrir a clínica')||!r.data)return;
   CLIP=r.data;CLIM=CLIP.molde&&CLIP.molde.colunas?JSON.parse(JSON.stringify(CLIP.molde)):null;cliTela();cliLer()}
 $('cli-sel').onchange=cliAbrir;$('cli-mes').onchange=cliAbrir;
 
