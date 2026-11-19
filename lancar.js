@@ -194,7 +194,7 @@ $('b-meus-rec').onclick=async()=>{const box=$('meus-rec'),b=$('b-meus-rec');b.di
 // Índice da Ajuda (18/11/2026): rola até o bloco, sem mexer na URL (o # guarda o código do link)
 document.querySelectorAll('#aj-indice [data-vai]').forEach(b=>b.onclick=()=>{const e=$(b.dataset.vai);if(e){e.scrollIntoView({behavior:'smooth',block:'start'});const d=e.querySelector&&e.querySelector('details');if(d)d.open=true}});
 // Início: blocos de apoio recolhíveis (abertos só se tiver algo a fazer); "Seu mês" e "Aguardando recibo" ficam sempre abertos
-(function(){const alvo=['i-conccard','i-recibos'];alvo.forEach(id=>{const c=$(id);if(!c)return;const h=c.querySelector('h2');if(!h)return;
+(function(){const alvo=['i-recibos'];alvo.forEach(id=>{const c=$(id);if(!c)return;const h=c.querySelector('h2');if(!h)return;
   const corpo=[...c.children].filter(x=>x!==h);const b=document.createElement('button');b.type='button';b.className='small recolhe-b';b.setAttribute('aria-expanded','false');b.textContent='Abrir';
   const fecha=v=>{corpo.forEach(x=>x.style.display=v?'none':'');b.textContent=v?'Abrir':'Fechar';b.setAttribute('aria-expanded',String(!v))};
   h.dataset.recolhe='1';h.appendChild(b);fecha(true);b.onclick=()=>fecha(b.getAttribute('aria-expanded')==='true')})})();
