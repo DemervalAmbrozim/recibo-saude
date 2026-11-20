@@ -83,6 +83,7 @@ details p{margin:8px 0 0;color:var(--muted)}
 .marca{display:flex;align-items:center;gap:8px}.marca i{width:24px;height:24px;border-radius:7px;background:var(--accent);flex:none}
 a{color:var(--accent)}
 .marca i{display:none}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ok-passos{list-style:none;margin:8px 0;padding:0;display:grid;gap:8px}.ok-passos li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px}.ok-passos .bola{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg);border:2px solid var(--accent);color:var(--accent)}.ok-passos b{display:block;font-size:15px}.ok-passos small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
 </style>
 <style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
 <style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
@@ -145,10 +146,15 @@ a{color:var(--accent)}
   <!-- 3. PRONTO: o WhatsApp é o canal principal -->
   <section id="e-ok" class="card" hidden>
     <h2>Conta criada. Teste grátis até <span id="ok-ate"></span>.</h2>
-    <div class="sub">O principal acontece no WhatsApp: a Lado a Lado Saúde acompanha seu mês, manda os recibos para você encaminhar e avisa antes de cada vencimento. Mande um oi para salvar nosso número.</div>
-    <button class="pri" id="b-oi" type="button">Mandar oi no WhatsApp da Lado a Lado Saúde</button>
-    <a href="lancar.html" class="sub" style="text-align:center">Abrir o app para lançar atendimentos</a>
-    <div class="sub">Seu registro no conselho será conferido pela Lado a Lado Saúde nos próximos dias.</div>
+    <div class="sub">Três passos rápidos e o app já trabalha para você. O primeiro leva 1 minuto.</div>
+    <ol class="ok-passos">
+      <li><span class="bola" aria-hidden="true">1</span><div><b>Lance o seu primeiro atendimento</b><small>Paciente, valor e forma de pagamento. Você já vê o seu mês.</small></div></li>
+      <li><span class="bola" aria-hidden="true">2</span><div><b>Salve o nosso número no WhatsApp</b><small>É por ele que você lança, pede o recibo e recebe os avisos.</small></div></li>
+      <li><span class="bola" aria-hidden="true">3</span><div><b>Dê a procuração para a gente emitir os seus recibos</b><small>5 minutos, sem passar senha do gov.br. O app guia você.</small></div></li>
+    </ol>
+    <a href="lancar.html" class="pri" id="b-app" style="text-align:center;padding:14px;border-radius:12px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;display:block">Abrir o app e começar (1 minuto)</a>
+    <button id="b-oi" type="button">Mandar oi no WhatsApp da Lado a Lado Saúde</button>
+    <div class="sub">Sem cartão e sem compromisso: você pausa ou cancela quando quiser. Seu registro no conselho será conferido pela Lado a Lado Saúde nos próximos dias.</div>
   </section>
 
   <!-- Equipe ou contador que entrou por aqui -->

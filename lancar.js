@@ -92,7 +92,7 @@ document.addEventListener('click',async e=>{const id=e.target.dataset&&e.target.
 async function contaTela(){
   cliTela();
   const r=await sb.rpc('minha_conta',{tok:TOK});if(r.error||!r.data)return;planoTela();extrasTela(r.data.plano);
-  const c=r.data, leitura=['leitura','cancelada','pausada'].includes(c.situacao),pausada=c.situacao==='pausada', teste=c.situacao==='teste'&&c.teste_ate;
+  CONTA=r.data;const c=r.data, leitura=['leitura','cancelada','pausada'].includes(c.situacao),pausada=c.situacao==='pausada', teste=c.situacao==='teste'&&c.teste_ate;
   const dias=teste?Math.round((new Date(c.teste_ate)-new Date(hojeISO()))/864e5):0;
   document.body.classList.toggle('leitura',leitura);
   $('conta').hidden=!(leitura||teste);$('conta').className='msg'+(leitura?' err':'');
@@ -161,8 +161,8 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
   e.target.disabled=false});
 
 // ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
-let EX=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();try{proximaAcao()}catch(e){}
+let EX=null,CONTA=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();try{proximaAcao();trilhaTela()}catch(e){}
   // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
   $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
   const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
@@ -404,6 +404,40 @@ $('pl-sug').onclick=()=>{const d=new Date(),ano=String(d.getFullYear()),P=planoA
   if(!P.suficiente){avisa('Preciso de 3 meses fechados com recebimentos para sugerir.',true);return}
   const a=orcLer(ano);a.pad={rec:Math.round(P.base.rec),desp:Math.round(P.base.desp)};orcGrava(ano,a);$('pl-pad-rec').value=a.pad.rec;$('pl-pad-desp').value=a.pad.desp;planoResumo()};
 $('pl-limpa').onclick=()=>{const ano=String(new Date().getFullYear());orcGrava(ano,{pad:{rec:'',desp:''},rec:{},desp:{}});telaPlano()};
+
+// ---------- Primeiros passos (20/11/2026, pedido do Demerval: "bem rápido, intuitivo, para a pessoa não cancelar em 7 dias") ----------
+// Cada passo se marca SOZINHO com o que o app já sabe (atendimento lançado, procuração, recibo, orçado, plano); só o "mandar oi" é manual.
+// Aparece no Início para conta nova (até 30 dias) e some quando tudo está feito ou quando ela esconde.
+function trilhaPassos(){
+  const pg=pagos(),ano=String(new Date().getFullYear()),emite=!(CONTA&&CONTA.plano==='essencial');
+  const temRecibo=D.atendimentos.some(x=>x.emitido),procOk=EX&&(EX.procuracao==='enviada'||EX.procuracao==='conferida');
+  const teste=CONTA&&CONTA.situacao==='teste';
+  const L=[
+   {id:'lancar',t:'Lance o seu primeiro atendimento',d:'Paciente, valor e forma de pagamento. Leva 1 minuto e você já vê o seu mês.',ok:pg.length>0,rot:'Lançar agora',fn:()=>document.querySelector('nav button[data-t=t-lan]').click()},
+   {id:'zap',t:'Salve o nosso número no WhatsApp',d:'Leva 10 segundos. É por ele que você lança, pede o recibo e recebe os avisos.',ok:guardaLocal.get('rs_trilha_zap')==='1',rot:'Mandar oi',fn:()=>{guardaLocal.set('rs_trilha_zap','1');window.open('https://wa.me/5527999712727?text='+encodeURIComponent('Oi! Acabei de criar a minha conta.'),'_blank','noopener');setTimeout(trilhaTela,300)}}];
+  if(emite)L.push({id:'proc',t:'Dê a procuração para a gente emitir os seus recibos',d:'Leva 5 minutos, sem passar senha do gov.br, e você cancela quando quiser.',ok:!!procOk,rot:'Ver o passo a passo',fn:()=>{const e=$('i-proc');if(e){e.hidden=false;e.scrollIntoView({behavior:'smooth',block:'start'});const d=$('proc-passos');if(d)d.open=true}}});
+  L.push({id:'recibo',t:emite?'Peça o seu primeiro recibo':'Veja o arquivo dos seus recibos para importar',d:emite?'Você recebe o recibo, ou o motivo de não termos conseguido, em até 24 horas.':'O seu plano inclui o arquivo pronto para importar no Receita Saúde.',ok:temRecibo,rot:emite?'Pedir o recibo':'Ver',fn:()=>{const e=$('i-pendcard');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})}});
+  L.push({id:'ano',t:'Defina o seu plano do ano',d:'Quanto você pretende receber por mês. Você acompanha o orçado e o realizado.',ok:orcTem(orcLer(ano)),rot:'Definir',fn:()=>{const e=$('i-plano');if(e){e.scrollIntoView({behavior:'smooth',block:'start'});const d=$('pl-ajuste');if(d)d.open=true}}});
+  if(teste)L.push({id:'plano',t:'Escolha o seu plano',d:'A primeira cobrança só vence no fim do teste. Você pausa ou cancela quando quiser.',ok:!!(PL&&PL.plano&&PL.situacao!=='teste'),rot:'Escolher',fn:()=>{const b=document.querySelector('nav button[data-t=t-aj]');if(b)b.click();setTimeout(()=>{const e=$('aj-plano')||document.querySelector('[id*=plano-escolha]');if(e)e.scrollIntoView({behavior:'smooth'})},200)}});
+  return L}
+function trilhaTela(){
+  const c=$('i-trilha');if(!c||!D||!CONTA)return;
+  const L=trilhaPassos(),feitos=L.filter(x=>x.ok).length,fim=guardaLocal.get('rs_trilha_fim')==='1';
+  if(!guardaLocal.get('rs_trilha_ini'))guardaLocal.set('rs_trilha_ini',hojeISO());   // dia em que este aparelho viu a conta pela primeira vez (conta nova = até 30 dias)
+  const criada=Math.floor((new Date(hojeISO())-new Date(guardaLocal.get('rs_trilha_ini')))/864e5);
+  const mostra=!fim&&feitos<L.length&&['teste','ativa','ativo'].includes(CONTA.situacao||'teste')&&criada<=30;
+  c.hidden=!mostra;if(!mostra)return;
+  const teste=CONTA.situacao==='teste'&&CONTA.teste_ate,dias=teste?Math.max(0,Math.round((new Date(CONTA.teste_ate)-new Date(hojeISO()))/864e5)):null;
+  $('tr-t').textContent=feitos===0?'Comece por aqui':feitos===L.length-1?'Falta só um passo':'Seus primeiros passos';
+  $('tr-s').textContent=(teste?`Teste grátis: ${dias>1?`faltam ${dias} dias`:dias===1?'termina amanhã':'termina hoje'}. `:'')+`${feitos} de ${L.length} passos feitos. Em poucos minutos o app já trabalha para você.`;
+  const m=$('tr-m');m.className='meter';m.firstElementChild.style.width=(feitos/L.length*100)+'%';
+  const prox=L.findIndex(x=>!x.ok);
+  $('tr-l').innerHTML=L.map((x,i)=>x.ok?`<li class="feito"><span class="bola" aria-hidden="true">✓</span><div><b>${esc(x.t)}</b></div><span class="sub">Feito</span></li>`
+    :i===prox?`<li class="agora"><span class="bola" aria-hidden="true">${i+1}</span><div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div><button type="button" class="pri" data-tr="${x.id}">${esc(x.rot)}</button></li>`
+    :`<li class="curta"><span class="bola" aria-hidden="true">${i+1}</span><button type="button" class="linha" data-tr="${x.id}">${esc(x.t)}</button></li>`).join('');
+  $('tr-l').querySelectorAll('button[data-tr]').forEach(b=>b.onclick=()=>L.find(x=>x.id===b.dataset.tr).fn());
+}
+$('tr-fecha')&&($('tr-fecha').onclick=()=>{guardaLocal.set('rs_trilha_fim','1');$('i-trilha').hidden=true});
 let ABA_ATUAL='t-ini';
 addEventListener('popstate',e=>{mostra((e.state&&e.state.aba)||'t-ini',false)});
 function mostra(t,hist){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
@@ -438,7 +472,7 @@ function telaIni(){telaDarf();
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
   const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0),ano);
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';const rr=reformaRitmo(pagos(),ano,+m.slice(5,7)-1);$('i-reforma').textContent=rf.txt+(rr&&rf.p<1?' '+rr.txt.replace(/ Mande \*reforma\*.*$/,''):'');
-  cnpjTela(m);telaPlano();
+  cnpjTela(m);telaPlano();try{trilhaTela()}catch(e){}
   const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';

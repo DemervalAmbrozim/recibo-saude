@@ -105,6 +105,19 @@ details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}<
 .plano-aj{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 8px;margin-top:10px;align-items:center;font-size:13px}
 .plano-aj input{padding:8px;min-width:0}
 </style>
+<style>
+.trilha{list-style:none;margin:10px 0 4px;padding:0;display:grid;gap:8px}
+.trilha li{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.trilha li.feito{background:var(--soft);border-color:transparent}
+.trilha .bola{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--bg);border:2px solid var(--accent);color:var(--accent)}
+.trilha li.feito .bola{background:var(--accent);color:var(--accent-fg)}
+.trilha li.agora{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.trilha b{display:block;font-size:15px}.trilha small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
+.trilha li.feito b{text-decoration:none;font-weight:600}.trilha li.feito small{display:none}
+.trilha li.curta{grid-template-columns:34px 1fr;padding:4px 10px}.trilha button.linha{background:transparent;border:0;text-align:left;font:inherit;font-weight:600;font-size:15px;color:var(--fg);min-height:44px;padding:8px 0;white-space:normal;width:100%}.trilha li.curta .bola{opacity:.75}
+.trilha button{min-height:44px;padding:8px 14px;white-space:nowrap}
+@media (max-width:420px){.trilha li.agora{grid-template-columns:30px 1fr}.trilha li.agora button{grid-column:1/-1;width:100%}}
+</style>
 </head>
 <body>
 <main>
@@ -130,6 +143,13 @@ details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}<
 
   <!-- INÍCIO: o mês em números, o que vence e o que falta fazer -->
   <section id="t-ini" hidden style="display:grid;gap:16px">
+    <div class="card" id="i-trilha" hidden aria-live="polite">
+      <div class="head"><h2 id="tr-t">Seus primeiros passos</h2><button type="button" class="small" id="tr-fecha" aria-label="Esconder os primeiros passos">Esconder</button></div>
+      <div class="sub" id="tr-s"></div>
+      <div class="meter" id="tr-m"><i style="width:0"></i></div>
+      <ol class="trilha" id="tr-l"></ol>
+      <div class="sub" id="tr-aj">Travou em algum passo? <a href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20nos%20primeiros%20passos." target="_blank" rel="noopener" style="display:inline-block;padding:10px 2px">Chame a gente no WhatsApp</a>.</div>
+    </div>
     <div class="card" id="i-proxima" aria-live="polite">
       <div class="sub">Sua próxima ação</div>
       <h2 id="px-t">Carregando...</h2>

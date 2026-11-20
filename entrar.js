@@ -79,6 +79,7 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   if(ind){const u=await sb.rpc('usar_indicacao',{p_codigo:ind});if(u.error)avisa('Código de indicação não encontrado. Sua conta foi criada com 7 dias de teste.',true);try{localStorage.removeItem('rs-ind')}catch(e){}}
   const c=await sb.rpc('minha_conta',{tok:''});
   $('ok-ate').textContent=c.data&&c.data.teste_ate?c.data.teste_ate.split('-').reverse().join('/'):'daqui a 7 dias';
+  try{localStorage.setItem('rs_trilha_ini',new Date().toLocaleDateString('sv'))}catch(e){}   // começa a contar a trilha de primeiros passos
   mostra('e-ok');
 };
 
