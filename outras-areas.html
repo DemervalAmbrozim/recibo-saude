@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Para todo profissional da saúde: CNPJ, imposto de renda e contabilidade | Lado a Lado Saúde</title>
+<meta name="description" content="Para profissionais da saúde que não emitem recibo pelo Receita Saúde: abertura de CNPJ, imposto de renda, contabilidade e assessoria, com contador responsável.">
+<meta name="robots" content="noindex"><!-- abre para o Google só no lançamento (07/12) -->
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f6b55">
+<style>
+/* Termos de uso, privacidade, contrato de dados (operador) e contrato de serviço. Minutas de 27/10/2026 para revisão. */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--soft:#e2efe9;--warn:#a86400;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--soft:#1d332b;--warn:#f0b04a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--soft:#1d332b;--warn:#f0b04a;color-scheme:dark}
+html,body{background:var(--bg);margin:0}
+body{color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.6;padding:16px max(16px,env(safe-area-inset-left,0px)) 48px}
+main{max-width:720px;margin:0 auto;display:grid;gap:16px}
+h1{font-size:24px;margin:8px 0 0;text-wrap:balance}
+h2{font-size:18px;margin:0 0 4px}
+h3{font-size:15px;margin:14px 0 2px}
+p,li{margin:4px 0}
+ul,ol{padding-left:20px;margin:4px 0}
+a{color:var(--accent)}
+.sub{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0;overflow-wrap:anywhere}
+.minuta{border:1px solid var(--warn);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:13px}
+nav.indice{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-top:1px solid var(--line);padding:6px 8px 6px 0;text-align:left;vertical-align:top}
+</style>
+<link rel="apple-touch-icon" href="icone-192.png">
+<style>@font-face{font-family:"Instrument Sans";src:url(fonts/InstrumentSans-latin-variable.woff2) format("woff2");font-weight:400 700;font-display:swap}</style>
+<style>nav a,footer a,.sub a,.confia a{display:inline-block;padding:8px 2px}</style>
+<style>/* Padrão da logomarca (18/11/2026): SEMPRE a versão colorida original; em fundo escuro ela vai sobre uma placa branca (nunca a versão toda branca) */
+@media (prefers-color-scheme: dark){img.logo-marca:not(.topo img){background:#fff;padding:6px 12px;border-radius:10px}}</style>
+<style>/* Destino exato (18/11): o item para onde o link leva fica marcado */
+[id]{scroll-margin-top:88px}
+:target{outline:3px solid #1fa971;outline-offset:4px;border-radius:12px;animation:alvo 2.4s ease-out 1}
+@keyframes alvo{0%{background:rgba(31,169,113,.28)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){:target{animation:none}}
+</style>
+<style>
+.cta{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px;min-height:44px;box-sizing:border-box;text-align:center}
+.cta.sec{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.acoes{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.grade{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grade .card h3{margin-top:0}
+.preco{font-weight:700}
+label{display:block;font-weight:600;margin:10px 0 4px}
+select{font:inherit;padding:11px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);width:100%;min-height:44px;box-sizing:border-box}
+.chk label{display:flex;gap:10px;align-items:center;font-weight:400;margin:4px 0;min-height:44px}
+.chk input{width:20px;height:20px}
+.passos{counter-reset:p;list-style:none;padding:0}
+.passos li{counter-increment:p;display:flex;gap:12px;align-items:flex-start;margin:10px 0}
+.passos li::before{content:counter(p);flex:none;width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--accent);font-weight:700;display:grid;place-items:center}
+details{border-top:1px solid var(--line);padding:8px 0}
+summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <picture><img class="logo-marca" src="logo-saude-claro.png" alt="Lado a Lado Saúde" width="206" height="56" style="height:44px;width:auto;display:block;margin-bottom:6px"></picture>
+    <div class="sub">Lado a Lado Saúde · Assessoria Lado a Lado Ltda</div>
+    <h1>Para todo profissional da saúde: a gente cuida do seu CNPJ, do imposto de renda e da contabilidade</h1>
+    <p>Você atende com carinho e cuidado, e nós ficamos lado a lado na parte burocrática: abrir a empresa, declarar o imposto e manter as contas em dia, com contador responsável.</p>
+    <div class="acoes"><a class="cta" href="#falar">Falar sobre o meu caso</a><a class="cta sec" href="empresa/index.html#conta">Fazer a conta: CPF ou CNPJ?</a></div>
+    <div class="sub" style="margin-top:8px">Atualizado em 19/11/2026.</div>
+  </header>
+
+  <section class="card" id="para-quem">
+    <h2>Para quem é</h2>
+    <p>Profissionais da saúde que atendem por conta própria, ou querem abrir a sua empresa, e que <b>não emitem recibo pelo Receita Saúde</b>: enfermagem, farmácia, biomedicina, nutrição, educação física e outras áreas.</p>
+    <p class="sub">Atende como médico(a), dentista, psicólogo(a), fisioterapeuta, fonoaudiólogo(a) ou terapeuta ocupacional? Para você o caminho principal é o <a href="venda.html">plano de autônomo</a>, que inclui o recibo do Receita Saúde. Os serviços abaixo também valem para você.</p>
+  </section>
+
+  <section id="servicos">
+    <h2 style="margin:4px 0 8px">O que a gente faz por você</h2>
+    <div class="grade">
+      <article class="card"><h3>Abertura de CNPJ</h3><p class="preco">R$ 297 avulsa, mais as taxas públicas</p><p>Enquadramento no Simples Nacional, Junta Comercial, Receita, prefeitura, conselho e orientação do certificado digital. Termina com o CNPJ aberto e os documentos entregues. Sem custo de serviço para quem contrata o plano Empresa por 12 meses.</p></article>
+      <article class="card"><h3>Contabilidade com contador parceiro</h3><p class="preco">Plano Empresa: R$ 299 por mês</p><p>Simples Nacional, pró-labore, DAS e balanço. Nota fiscal pelo Emissor Nacional e rotina pelo WhatsApp. Folha de pagamento está em breve.</p></article>
+      <article class="card"><h3>Imposto de renda</h3><p class="preco">R$ 197 por declaração, uma vez por ano</p><p>Declaração completa, conferida pelo contador. Casos com várias fontes de renda ou CNPJ têm valor combinado depois da análise.</p></article>
+      <article class="card"><h3>Assessoria e presença nas redes</h3><p class="preco">A partir de R$ 197</p><p>Você conta o seu momento, a gente devolve um retrato de 1 página e um plano de 90 dias. Redes sociais dentro das regras do seu conselho, sem promessa de seguidores, clientes ou faturamento.</p></article>
+    </div>
+    <p class="sub">Valores e detalhes de cada serviço: <a href="venda.html#servicos">serviços à parte</a> e <a href="venda.html#cnpj">virar CNPJ</a>. Taxas públicas (Junta, prefeitura, conselho e certificado) são pagas por você, com o valor mostrado antes.</p>
+  </section>
+
+  <section class="card" id="como">
+    <h2>Como começa</h2>
+    <ol class="passos">
+      <li><span>Você fala com a gente pelo WhatsApp e agenda uma conversa de 20 minutos com o contador, com a conta na tela.</span></li>
+      <li><span>Você manda os documentos pelo WhatsApp.</span></li>
+      <li><span>O contador abre a empresa e faz a opção pelo Simples. A gente acompanha cada etapa: prefeitura, conselho e certificado digital.</span></li>
+      <li><span>No mês seguinte, nota fiscal, pró-labore e DAS ficam lembrados no WhatsApp.</span></li>
+    </ol>
+  </section>
+
+  <section class="card" id="depende">
+    <h2>O que depende da sua profissão (a gente confere com você)</h2>
+    <ul>
+      <li><b>O seu conselho</b> (Coren, CRF, CRBio, CRN, CREF e outros): registro da empresa e responsável técnico, quando o conselho exige, e regras de propaganda.</li>
+      <li><b>O enquadramento do Simples Nacional</b> (anexo e Fator R) e o <b>CNAE</b> da atividade: definidos pelo contador responsável, caso a caso.</li>
+      <li><b>O imposto do município</b> (ISS): varia conforme a cidade.</li>
+      <li><b>Farmácia com balcão, clínica de grande porte ou laboratório</b> exigem alvará sanitário e outras licenças. Hoje abrimos o CNPJ de quem atende como profissional; para os outros casos, a gente conversa e diz com franqueza o que dá para fazer.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="perguntas">
+    <h2>Perguntas frequentes</h2>
+    <details><summary>Preciso usar o Receita Saúde?</summary><p>Depende da profissão. A regra em vigor (Instrução Normativa RFB 2.240/2024) cita médicos, dentistas, psicólogos, fisioterapeutas, fonoaudiólogos e terapeutas ocupacionais. Se o seu caso for outro, a gente segue com CNPJ, imposto de renda e contabilidade. Na dúvida, o contador confere com você.</p></details>
+    <details><summary>Abrir CNPJ sempre compensa?</summary><p>Não. Para muita gente a empresa no Simples sai mais barata, mas depende de quanto você recebe e das suas despesas. Use a <a href="empresa/index.html#conta">calculadora</a> e converse com o contador antes de decidir. É uma estimativa, não uma promessa de economia.</p></details>
+    <details><summary>Vocês dão parecer contábil ou jurídico?</summary><p>Não. Quem apura e assina o que exige contador é o <a href="seguranca.html#contador">contador responsável</a>. A Lado a Lado Saúde cuida da organização, dos prazos e do acompanhamento.</p></details>
+    <details><summary>Já tenho CNPJ. Dá para trazer a contabilidade para vocês?</summary><p>Dá para conversar. Fale com a gente pelo WhatsApp e o contador analisa a sua situação atual.</p></details>
+    <details><summary>E os dados dos meus pacientes?</summary><p>Para CNPJ, imposto de renda e contabilidade você não precisa mandar dado clínico. Veja <a href="seguranca.html">como protegemos os dados</a>.</p></details>
+  </section>
+
+  <section class="card" id="falar">
+    <h2>Fale sobre o seu caso</h2>
+    <p class="sub">Escolha a sua área e o que você precisa. Isso só monta a mensagem para o nosso WhatsApp; nada é enviado nem guardado aqui.</p>
+    <label for="prof">Sua profissão</label>
+    <select id="prof"><option>Enfermagem</option><option>Farmácia</option><option>Biomedicina</option><option>Nutrição</option><option>Educação física</option><option>Outra área da saúde</option></select>
+    <fieldset class="chk" style="border:0;padding:0;margin:10px 0 0"><legend style="font-weight:600;padding:0">O que você precisa</legend>
+      <label><input type="checkbox" value="abrir o meu CNPJ" checked> Abrir o meu CNPJ</label>
+      <label><input type="checkbox" value="fazer o meu imposto de renda"> Fazer o meu imposto de renda</label>
+      <label><input type="checkbox" value="cuidar da contabilidade"> Contabilidade</label>
+      <label><input type="checkbox" value="assessoria e redes sociais"> Assessoria e redes sociais</label>
+    </fieldset>
+    <div class="acoes"><a class="cta" id="zap" href="https://wa.me/5527999712727">Chamar no WhatsApp</a></div>
+    <p class="sub">27 99971-2727 · atendimento de segunda a sexta, em horário comercial.</p>
+  </section>
+
+  <p style="text-align:center"><a href="empresa/inicio.html">Voltar para a página inicial</a> · <a href="termos.html">Termos e privacidade</a> · <a href="seguranca.html">Segurança e quem está por trás</a></p>
+</main>
+<script>
+(function(){var p=document.getElementById('prof'),z=document.getElementById('zap'),cs=document.querySelectorAll('.chk input');
+function atualiza(){var q=[].filter.call(cs,function(c){return c.checked}).map(function(c){return c.value});
+var t='Olá! Sou da área de '+p.value.toLowerCase()+' e quero '+(q.length?q.join(', ').replace(/, ([^,]*)$/,' e $1'):'saber como vocês podem me ajudar')+'. Podem me explicar como funciona?';
+z.href='https://wa.me/5527999712727?text='+encodeURIComponent(t)}
+p.addEventListener('change',atualiza);[].forEach.call(cs,function(c){c.addEventListener('change',atualiza)});atualiza()})();
+</script>
+</body>
+</html>
