@@ -16,7 +16,7 @@
   var qs=location.search.replace(/^\?/,''),comOrigem=/(^|&)(o|ind)=/.test(qs);
   function rel(path){var u=new URL(path,B);return u.pathname+(comOrigem?'?'+qs:'')}
   var css=document.createElement('style');
-  css.textContent='.entrar-perfil{display:flex;flex-direction:column;align-items:stretch;gap:2px;flex:0 0 auto}.entrar-perfil .ep-t{font-size:12px;line-height:1.1;text-align:center;color:#4a5a53;font-weight:600}.entrar-perfil .ep-b{display:flex;gap:8px}.entrar-perfil a{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;min-height:32px;padding:2px 9px;border:1.5px solid #0f6b55;border-radius:8px;background:#fff;color:#0f6b55;font:inherit;font-weight:700;font-size:12.5px;line-height:1.1;text-decoration:none;white-space:nowrap}.entrar-perfil a::after{content:"";position:absolute;inset:-6px -3px}.entrar-perfil a[aria-current="true"]{background:#0f6b55;color:#fff}@media (max-width:420px){.entrar-perfil a{padding:2px 7px}}.perfil-aviso{max-width:980px;margin:10px auto;padding:12px 14px;border-radius:10px;background:var(--soft,#e2efe9);color:var(--fg,#17231e);font-size:14px}.perfil-aviso a{font-weight:700;display:inline-block;padding:10px 2px}';
+  css.textContent='.entrar-perfil{display:flex;flex-direction:column;align-items:stretch;gap:2px;flex:0 0 auto}.entrar-perfil .ep-t{font-size:12px;line-height:1.1;text-align:center;color:#4a5a53;font-weight:600}.entrar-perfil .ep-b{display:flex;gap:8px}.entrar-perfil a{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;min-height:32px;padding:2px 9px;border:1.5px solid #0f6b55;border-radius:8px;background:#fff;color:#0f6b55;font:inherit;font-weight:700;font-size:12.5px;line-height:1.1;text-decoration:none;white-space:nowrap}.entrar-perfil a::after{content:"";position:absolute;inset:-6px -3px}.entrar-perfil a[aria-current="true"]{background:#0f6b55;color:#fff}@media (max-width:420px){.entrar-perfil a{padding:2px 7px}}.entrar-como{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 4px;font-size:14px;color:var(--muted,#5d6e66)}.entrar-como>span{flex:0 0 100%}.entrar-como a{position:relative;display:inline-flex;flex:1 1 0;justify-content:center;align-items:center;min-height:32px;padding:2px 12px;border:1.5px solid var(--accent,#0f6b55);border-radius:8px;color:var(--accent,#0f6b55);font-weight:700;font-size:13px;text-decoration:none}.entrar-como a::after{content:"";position:absolute;inset:-6px -3px}.entrar-como a[aria-current="true"]{background:var(--accent,#0f6b55);color:var(--accent-fg,#fff)}.perfil-aviso{max-width:980px;margin:10px auto;padding:12px 14px;border-radius:10px;background:var(--soft,#e2efe9);color:var(--fg,#17231e);font-size:14px}.perfil-aviso a{font-weight:700;display:inline-block;padding:10px 2px}';
   document.head.appendChild(css);
   function monta(){
     var antigo=document.querySelector('.topo .entrar-conta'); if(!antigo)return;
@@ -40,6 +40,16 @@
     if(/\/empresa\/entrar\.html$/.test(p)&&v==='pf'){d.innerHTML='Você escolheu <b>PF (autônomo)</b>. O cadastro de autônomo é por aqui: <a href="../entrar.html">entrar como PF</a>.';main.insertBefore(d,main.firstChild)}
     else if(/(^|\/)entrar\.html$/.test(p)&&!/\/empresa\//.test(p)&&v==='pj'){d.innerHTML='Você escolheu <b>CNPJ (empresa)</b>. O cadastro da empresa é por aqui: <a href="empresa/entrar.html">entrar como empresa</a>.';main.insertBefore(d,main.firstChild)}
   }
-  function pronto(){monta();aviso()}
+  function comoEntrar(){
+    var ePF=/(^|\/)entrar\.html$/.test(p)&&!/\/empresa\//.test(p),ePJ=/\/empresa\/entrar\.html$/.test(p); if(!ePF&&!ePJ)return;
+    var head=document.querySelector('header.head'); if(!head)return;
+    var d=document.createElement('div'); d.className='entrar-como'; d.setAttribute('role','group'); d.setAttribute('aria-label','Entrando como');
+    d.innerHTML='<span>Você está entrando como:</span>';
+    [['pf','PF · Autônomo','entrar.html',ePF],['pj','CNPJ · Empresa','empresa/entrar.html',ePJ]].forEach(function(o){
+      var a=document.createElement('a'); a.href=rel(o[2]); a.textContent=o[1]; a.setAttribute('data-perfil',o[0]); a.setAttribute('data-cta','entrando-'+o[0]);
+      if(o[3])a.setAttribute('aria-current','true'); a.addEventListener('click',function(){gravar(o[0])}); d.appendChild(a)});
+    head.insertAdjacentElement('afterend',d);
+  }
+  function pronto(){monta();comoEntrar();aviso()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',pronto);else pronto();
 })();
