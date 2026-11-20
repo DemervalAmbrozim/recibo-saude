@@ -97,5 +97,6 @@ $('d-go').onclick=function(){
 function aoConectar(){$('d-guardar').hidden=!ULT}
 $('d-salvar').onclick=async function(){var b=this;if(!ULT||!DB)return;b.disabled=true;try{await DB.guardarDiagnostico(EMP,ENT,ULT);$('d-salvo').textContent='Diagnóstico guardado.'}catch(e){$('d-salvo').textContent=traduzErroPj(e)}b.disabled=false};
 </script>
+<script src="../navega.js" defer></script>
 </body>
 </html>

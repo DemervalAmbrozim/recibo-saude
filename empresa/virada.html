@@ -100,5 +100,6 @@ function pinta(){var prox=proximosPassosBaixa(feitos).map(function(p){return p.i
 pinta();
 function aoConectar(){DB.baixaFeitos(EMP).then(function(l){feitos=l;pinta()}).catch(function(e){$('b-prox').textContent=traduzErroPj(e,'ler')})}
 </script>
+<script src="../navega.js" defer></script>
 </body>
 </html>
