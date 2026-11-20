@@ -369,6 +369,48 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 <style>/* Auditoria 18/11 (campos da capa): links soltos e botões secundários com 44 px */
 .seguro a{display:inline-flex;align-items:center;min-height:44px}
 </style>
+<style>
+.teste7{display:grid;justify-items:center;gap:10px;margin-top:-24px}
+.teste7-bt{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;width:min(100%,560px);min-height:72px;box-sizing:border-box;padding:12px 22px;border-radius:18px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#09845d 0%,#066a4e 55%,#055640 100%);box-shadow:0 10px 26px rgba(6,106,78,.5),inset 0 1px 0 rgba(255,255,255,.35)}
+.teste7-bt::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);transform:translateX(-120%);animation:t7brilho 3.4s ease-in-out infinite}
+@keyframes t7brilho{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.teste7-bt:hover,.teste7-bt:focus-visible{transform:translateY(-2px);box-shadow:0 14px 30px rgba(6,106,78,.6),inset 0 1px 0 rgba(255,255,255,.4)}
+.teste7-bt:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px #066a4e}
+.t7-ic{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22)}
+.t7-tx{display:grid;gap:2px;text-align:left;flex:1;min-width:0;line-height:1.2}
+.t7-tx b{font-size:clamp(19px,5vw,24px);font-weight:800;letter-spacing:-.2px}
+.t7-tx small{font-size:13.5px;opacity:.95}
+.t7-seta{flex:none;font-size:30px;font-weight:700;transition:transform .2s}
+.teste7-bt:hover .t7-seta{transform:translateX(5px)}
+.t7-nota{margin:0;font-size:13px;color:var(--muted);text-align:center;max-width:62ch}
+.t7-nota a{color:inherit;text-decoration:underline;text-underline-offset:3px;display:inline-block;padding:8px 2px}
+@media (prefers-reduced-motion:reduce){.teste7-bt::before{animation:none}.teste7-bt:hover{transform:none}}
+</style>
+<style>
+.outras-in{position:relative;overflow:hidden;border-radius:26px;padding:clamp(22px,5vw,40px);color:#fff;background:radial-gradient(120% 90% at 100% 0%,#0b8a6a 0%,rgba(11,138,106,0) 60%),linear-gradient(145deg,#02214f 0%,#063a63 60%,#075e66 100%);box-shadow:0 18px 44px rgba(2,33,79,.28);border:1px solid rgba(123,224,189,.35)}
+.outras-selo{display:inline-block;background:#7be0bd;color:#02214f;font-weight:800;font-size:13px;letter-spacing:.4px;text-transform:uppercase;padding:6px 14px;border-radius:99px;margin-bottom:14px}
+.outras-in h2{color:#fff;font-size:clamp(26px,6vw,38px);line-height:1.15;margin:0 0 10px;font-weight:800;text-wrap:balance}
+.outras-sub{margin:0 0 20px;font-size:clamp(16px,3.6vw,18px);line-height:1.5;color:#e6f2f0;max-width:60ch}
+.outras-grade{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.outras-grade li{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px 14px}
+.outras-grade .ic2{grid-row:1/3;width:48px;height:48px}
+.outras-grade b{color:#fff;font-size:16px;line-height:1.2}
+.outras-grade small{color:#cfe6e3;font-size:13px;line-height:1.3}
+.outras-acoes{display:flex;gap:12px;flex-wrap:wrap}
+.outras-bt{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:12px 24px;border-radius:14px;font-weight:800;font-size:17px;text-decoration:none;background:#7be0bd;color:#02214f;box-shadow:0 8px 20px rgba(0,0,0,.25);flex:1 1 240px}
+.outras-bt:hover{background:#97ebcd}.outras-bt.sec{background:transparent;color:#fff;border:2px solid #fff;box-shadow:none}.outras-bt.sec:hover{background:rgba(255,255,255,.12)}
+.outras-bt:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.outras-nota{margin:16px 0 0;font-size:13px;line-height:1.4;color:#cfe6e3;max-width:62ch}
+</style>
+<style>/* Opção C (azul-céu + botão laranja-escuro), aprovada por ele em 20/11/2026: seção para outro público da área da saúde */
+.outras-in{background:linear-gradient(145deg,#e6f6ff,#bfe6fb);color:#0c2a4d;border:2px solid #7cc4ee;box-shadow:0 18px 40px rgba(3,105,161,.22)}
+.outras-selo{background:#0369a1;color:#fff}.outras-in h2{color:#0c2a4d}.outras-sub{color:#1e3a5f}
+.outras-grade li{background:#fff;border:1px solid #9bd3f2}.outras-grade b{color:#0c2a4d}.outras-grade small{color:#41627f}
+.outras-grade .ic2{background:linear-gradient(135deg,#0ea5e9,#075985)}
+.outras-bt{background:#c2410c;color:#fff;box-shadow:0 8px 20px rgba(154,52,18,.35)}.outras-bt:hover{background:#9a3412}
+.outras-bt.sec{background:transparent;color:#075985;border:2px solid #0369a1}.outras-bt.sec:hover{background:rgba(3,105,161,.08)}
+.outras-nota{color:#41627f}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -398,8 +440,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
           <figure><a class="fig-link" data-cta="simples-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20ver%20como%20funciona%20o%20recibo%20pelo%20WhatsApp." target="_blank" rel="noopener"><img src="img/tela-whatsapp-recibo.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.<span class="vai"> Falar no WhatsApp →</span></figcaption></a></figure>
           <figure><a class="fig-link" data-cta="simples-web" href="../entrar.html"><img src="img/tela-web-seu-mes.webp" width="420" height="253" loading="lazy" decoding="async" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão"><figcaption><b>Na plataforma web</b>Veja o seu mês: recebido, despesas e imposto.<span class="vai"> Testar 7 dias →</span></figcaption></a></figure>
         </div>
-        <p class="nota">Telas reais do sistema com dados de teste (profissional fictícia).</p></div>
-      <div class="chips" aria-label="O que oferecemos"><span><a data-cta="grade-agenda" href="../venda.html#p-registro">Agenda e registros</a></span><span><a data-cta="grade-recibo" href="../venda.html#p-recibo">Recibo no Receita Saúde</a></span><span><a data-cta="grade-nota" href="index.html#f-contab">Nota fiscal do CNPJ</a></span><span><a data-cta="grade-contas" href="index.html#plano-empresa">Contas e contabilidade com contador parceiro</a></span><span class="breve"><a data-cta="grade-folha" href="index.html#f-folha">Folha de pagamento · em breve</a></span><span><a data-cta="grade-redes" href="../venda.html#sv-redes">Redes e Perfil no Google</a></span><span><a data-cta="grade-cnpj" href="../venda.html#sv-cnpj">Abertura de CNPJ</a></span><span><a data-cta="grade-ir" href="../venda.html#sv-ir">Imposto de renda</a></span><span><a data-cta="grade-assessoria" href="../venda.html#sv-assessoria">Assessoria para a sua atuação</a></span></div>
+        <p class="nota">Telas simples e intuitivas. Exemplo com dados fictícios.</p></div>
+      <div class="chips" aria-label="O que oferecemos"><span><a data-cta="grade-agenda" href="../venda.html#p-registro">Agenda e Atendimento</a></span><span><a data-cta="grade-recibo" href="../venda.html#p-recibo">Emissão do Recibo no Receita Saúde (autônomo)</a></span><span><a data-cta="grade-nota" href="index.html#f-contab">Emissão de Nota Fiscal (empresa)</a></span><span><a data-cta="grade-contas" href="index.html#plano-empresa">Contador, contabilidade e financeiro</a></span><span class="breve"><a data-cta="grade-folha" href="index.html#f-folha">Folha de pagamento · em breve</a></span><span><a data-cta="grade-redes" href="../venda.html#sv-redes">Redes sociais (Instagram, Facebook e LinkedIn) e Perfil no Google</a></span><span><a data-cta="grade-cnpj" href="../venda.html#sv-cnpj">Abertura de CNPJ</a></span><span><a data-cta="grade-ir" href="../venda.html#sv-ir">Imposto de renda</a></span><span><a data-cta="grade-assessoria" href="../venda.html#sv-assessoria">Assessoria/Consultoria de apoio para sua atuação</a></span></div>
     </div>
     <div class="colagem arte">
       <div class="halo" aria-hidden="true"></div><div class="anel a1" aria-hidden="true"></div><div class="anel a2" aria-hidden="true"></div>
@@ -414,8 +456,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
     </div>
   </section>
 
-  <section class="confia" aria-label="Por que confiar">
-    <span><a href="../termos.html#teste">Teste sem cartão: 7 dias</a></span><span><a href="../seguranca.html#contador">Contador responsável confere</a></span><span>Nenhum dado clínico: só o necessário para recibo, nota e impostos</span>
+  <section class="teste7" aria-label="Teste grátis">
+    <a class="teste7-bt" data-cta="teste7" data-teste href="../entrar.html">
+      <span class="t7-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2.5 0-4-1-4-2.5S9 3 10.5 3C12 3 12 5.5 12 8zm0 0c2.5 0 4-1 4-2.5S15 3 13.5 3C12 3 12 5.5 12 8z"/></svg></span>
+      <span class="t7-tx"><b>Teste grátis por 7 dias</b><small>Sem cartão de crédito · cancele quando quiser</small></span>
+      <span class="t7-seta" aria-hidden="true">→</span>
+    </a>
+    <p class="t7-nota"><a href="../termos.html#teste">Como funciona o teste</a> · Nenhum dado clínico: só o necessário para recibo, nota e impostos</p>
   </section>
 
   <section class="duas" id="caminhos" aria-label="Escolha o seu caminho">
@@ -437,21 +484,22 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
     </a>
   </section>
 
-  <section id="outras" aria-labelledby="h-outras">
-    <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px">
-      <h2 id="h-outras" style="margin-top:0">Para todo profissional da saúde</h2>
-      <p style="max-width:62ch;margin:8px 0 12px;font-size:16px">Mesmo que o recibo do Receita Saúde não seja o seu caso, a gente cuida do que você precisa, conferido pelo contador e dentro das regras do seu conselho:</p>
-      <ul style="list-style:none;padding:0;margin:0 0 14px;display:flex;gap:8px;flex-wrap:wrap">
-        <li style="background:var(--soft);color:var(--fg);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px">Abertura de CNPJ</li>
-        <li style="background:var(--soft);color:var(--fg);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px">Contabilidade</li>
-        <li style="background:var(--soft);color:var(--fg);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px">Imposto de renda</li>
-        <li style="background:var(--soft);color:var(--fg);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px">Assessoria e redes</li>
+  <section id="outras" class="outras" aria-labelledby="h-outras">
+    <div class="outras-in">
+      <span class="outras-selo">Outras áreas da saúde</span>
+      <h2 id="h-outras">Para todo profissional da saúde</h2>
+      <p class="outras-sub">Mesmo que o recibo do Receita Saúde não seja o seu caso, a gente cuida do que você precisa, conferido pelo contador e dentro das regras do seu conselho.</p>
+      <ul class="outras-grade">
+        <li><span class="ic2" aria-hidden="true"><svg><use href="#i-chave"/></svg></span><b>Abertura de CNPJ</b><small>Do contrato social ao CNPJ ativo</small></li>
+        <li><span class="ic2" aria-hidden="true"><svg><use href="#i-predio"/></svg></span><b>Contabilidade</b><small>Contador, financeiro e nota fiscal</small></li>
+        <li><span class="ic2" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><b>Imposto de renda</b><small>Declaração conferida pelo contador</small></li>
+        <li><span class="ic2" aria-hidden="true"><svg><use href="#i-mapa"/></svg></span><b>Assessoria e redes</b><small>Plano de 90 dias e presença online</small></li>
       </ul>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <a class="cta" data-cta="outras-pagina" href="../outras-areas.html">Ver o que fazemos por você</a>
-        <a class="cta sec" data-cta="outras-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1%21%20Sou%20profissional%20da%20sa%C3%BAde%20e%20quero%20saber%20como%20voc%C3%AAs%20podem%20abrir%20o%20meu%20CNPJ%2C%20cuidar%20da%20contabilidade%20e%20fazer%20o%20meu%20imposto%20de%20renda.">Falar no WhatsApp</a>
+      <div class="outras-acoes">
+        <a class="outras-bt" data-cta="outras-pagina" href="../outras-areas.html">Ver o que fazemos por você <span aria-hidden="true">→</span></a>
+        <a class="outras-bt sec" data-cta="outras-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1%21%20Sou%20profissional%20da%20sa%C3%BAde%20e%20quero%20saber%20como%20voc%C3%AAs%20podem%20abrir%20o%20meu%20CNPJ%2C%20cuidar%20da%20contabilidade%20e%20fazer%20o%20meu%20imposto%20de%20renda.">Falar no WhatsApp</a>
       </div>
-      <p style="font-size:13px;color:var(--muted);margin:12px 0 0;max-width:62ch">Abrimos o CNPJ de quem atende como profissional. Farmácia com balcão ou clínica de grande porte exigem outras licenças: a gente conversa caso a caso.</p>
+      <p class="outras-nota">Abrimos o CNPJ de quem atende como profissional. Farmácia com balcão ou clínica de grande porte exigem outras licenças: a gente conversa caso a caso.</p>
     </div>
   </section>
 
@@ -493,7 +541,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
     <div class="avs-f" aria-hidden="true"><img src="img/avatar-nutricao.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-medicina.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/avatar-odontologia.webp" alt="" width="160" height="160" loading="lazy" decoding="async"><img src="img/card-fisio.webp" alt="" width="320" height="320" loading="lazy" decoding="async"><span>Para profissionais da saúde que querem tempo de volta</span></div>
     <div class="acoes-f"><a class="cta grande-cta" data-cta="fecha-autonomo" href="../venda.html">Começar como autônomo(a)</a><a class="cta sec" data-cta="fecha-empresa" href="index.html">Começar com a minha empresa</a></div>
     <p class="sub peq-f">Prefere conversar antes? <a data-cta="zap-fecha" href="https://wa.me/5527999712727">Chame no WhatsApp 27 99971-2727</a></p>
-    <p class="conf-f"><span>✓ Contador responsável confere</span><span>✓ Nenhum dado clínico</span><span>✓ <a href="../termos.html">Você cancela quando quiser (veja os termos)</a></span></p>
+    <p class="conf-f"><span>✓ Nenhum dado clínico</span><span>✓ <a href="../termos.html">Você cancela quando quiser (veja os termos)</a></span></p>
   </section>
 
 </main>

@@ -51,6 +51,8 @@
       if(o[3])a.setAttribute('aria-current','true'); a.addEventListener('click',function(){gravar(o[0])}); d.appendChild(a)});
     head.insertAdjacentElement('afterend',d);
   }
-  function pronto(){monta()}
+  function destinoTeste(){ // botão 'Teste grátis': cadastro de autônomo ou de empresa, conforme a escolha PF/CNPJ
+    var b=document.querySelector('a[data-teste]'); if(b&&ler()==='pj')b.href=rel('empresa/entrar.html');else if(b)b.href=rel('entrar.html')}
+  function pronto(){monta();destinoTeste()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',pronto);else pronto();
 })();
