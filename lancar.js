@@ -76,6 +76,7 @@ async function carrega(){
   $('nome').textContent=D.nome||'Lado a Lado Saúde';$('nav').hidden=false;
   if(!document.querySelector('section:not([hidden])'))mostra('t-ini');
   telaIni();telaLan();telaDesp();telaAg();pacotesTela();indTela();irAnos();
+  if(!off&&!window.__planoNuvem){window.__planoNuvem=1;planoNuvem()}
   if(!off){envia();cvCarrega()}
 }
 // Pacotes (supabase/018): saldo por paciente e "+1 sessão hoje"; sem a função no banco, o cartão fica escondido
@@ -356,7 +357,20 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
 
 // ---------- Plano do ano (20/11/2026): orçado × realizado + projeção (app/plano.js). O orçado fica neste aparelho (localStorage). ----------
 const orcLer=ano=>{try{const o=JSON.parse(guardaLocal.get('rs_orc_'+ano)||'null');return o&&typeof o==='object'?{pad:o.pad||{rec:'',desp:''},rec:o.rec||{},desp:o.desp||{}}:{pad:{rec:'',desp:''},rec:{},desp:{}}}catch(e){return {pad:{rec:'',desp:''},rec:{},desp:{}}}};
-const orcGrava=(ano,o)=>guardaLocal.set('rs_orc_'+ano,JSON.stringify(o));
+// O orçado fica no aparelho (rápido e funciona sem internet) E na conta (SQL 062): trocou de celular, ele vem junto.
+let PL_T=null;
+const orcSujo=ano=>guardaLocal.get('rs_orc_sujo_'+ano)==='1';
+const orcTem=o=>[o.pad.rec,o.pad.desp].some(v=>v!==''&&v!==undefined)||['rec','desp'].some(c=>Object.values(o[c]).some(v=>v!==''&&v!==undefined));
+function planoSync(est){const e=$('pl-sync');if(!e)return;if(!orcTem(orcLer(String(new Date().getFullYear())))){e.textContent='';return}e.textContent=est==='conta'?'Guardado na sua conta: aparece em qualquer aparelho.':est==='gravando'?'Guardando…':'Guardado neste aparelho. Sobe para a sua conta quando tiver internet.'}
+async function planoPush(ano){try{const r=await sb.rpc('link_plano_gravar',{tok:TOK,p_ano:+ano,p_dados:orcLer(ano)});if(r.error)throw r.error;guardaLocal.set('rs_orc_sujo_'+ano,'0');planoSync('conta')}catch(e){guardaLocal.set('rs_orc_sujo_'+ano,'1');planoSync('aparelho')}}
+function orcGrava(ano,o){guardaLocal.set('rs_orc_'+ano,JSON.stringify(o));guardaLocal.set('rs_orc_sujo_'+ano,'1');clearTimeout(PL_T);PL_T=setTimeout(()=>planoPush(ano),500);planoSync('gravando')}
+async function planoNuvem(){const ano=String(new Date().getFullYear());
+  try{ if(orcSujo(ano)){await planoPush(ano);return}                       // mudou aqui e ainda não subiu: sobe
+    const r=await sb.rpc('link_plano_ler',{tok:TOK,p_ano:+ano});if(r.error)throw r.error;
+    if(r.data){const o=r.data;guardaLocal.set('rs_orc_'+ano,JSON.stringify({pad:o.pad||{rec:'',desp:''},rec:o.rec||{},desp:o.desp||{}}));guardaLocal.set('rs_orc_sujo_'+ano,'0');telaPlano();planoSync('conta')}   // a conta manda (outro aparelho pode ter mudado)
+    else if(orcTem(orcLer(ano)))await planoPush(ano);                       // só existia neste aparelho: leva para a conta
+    else planoSync('conta')
+  }catch(e){planoSync('aparelho')}}
 const numOuVazio=v=>{const x=String(v==null?'':v).replace(/\./g,'').replace(',','.').trim();return x===''||isNaN(+x)||+x<0?'':+x};
 function orcEfetivo(o){const e={rec:{},desp:{}};for(let n=1;n<=12;n++)for(const c of['rec','desp']){const i=o[c][n];e[c][n]=i!==undefined&&i!==''?+i:(o.pad[c]!==''&&o.pad[c]!==undefined?+o.pad[c]:null)}return e}
 function planoResumo(){
@@ -389,7 +403,7 @@ $('pl-pad-rec').onchange=$('pl-pad-desp').onchange=()=>{const ano=String(new Dat
 $('pl-sug').onclick=()=>{const d=new Date(),ano=String(d.getFullYear()),P=planoAno(pagos(),D.despesas,ano,dISO(d),{rec:{},desp:{}});
   if(!P.suficiente){avisa('Preciso de 3 meses fechados com recebimentos para sugerir.',true);return}
   const a=orcLer(ano);a.pad={rec:Math.round(P.base.rec),desp:Math.round(P.base.desp)};orcGrava(ano,a);$('pl-pad-rec').value=a.pad.rec;$('pl-pad-desp').value=a.pad.desp;planoResumo()};
-$('pl-limpa').onclick=()=>{const ano=String(new Date().getFullYear());guardaLocal.set('rs_orc_'+ano,'');telaPlano()};
+$('pl-limpa').onclick=()=>{const ano=String(new Date().getFullYear());orcGrava(ano,{pad:{rec:'',desp:''},rec:{},desp:{}});telaPlano()};
 let ABA_ATUAL='t-ini';
 addEventListener('popstate',e=>{mostra((e.state&&e.state.aba)||'t-ini',false)});
 function mostra(t,hist){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
