@@ -19,7 +19,7 @@
   css.textContent='.entrar-perfil{display:flex;flex-direction:column;align-items:stretch;gap:2px;flex:0 0 auto}.entrar-perfil .ep-t{font-size:12px;line-height:1.1;text-align:center;color:#4a5a53;font-weight:600}.entrar-perfil .ep-b{display:flex;gap:8px}.entrar-perfil a{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;min-height:32px;padding:2px 9px;border:1.5px solid #0f6b55;border-radius:8px;background:#fff;color:#0f6b55;font:inherit;font-weight:700;font-size:12.5px;line-height:1.1;text-decoration:none;white-space:nowrap}.entrar-perfil a::after{content:"";position:absolute;inset:-6px -3px}.entrar-perfil a[aria-current="true"]{background:#0f6b55;color:#fff}@media (max-width:420px){.entrar-perfil a{padding:2px 7px}}.entrar-como{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 4px;font-size:14px;color:var(--muted,#5d6e66)}.entrar-como>span{flex:0 0 100%}.entrar-como a{position:relative;display:inline-flex;flex:1 1 0;justify-content:center;align-items:center;min-height:32px;padding:2px 12px;border:1.5px solid var(--accent,#0f6b55);border-radius:8px;color:var(--accent,#0f6b55);font-weight:700;font-size:13px;text-decoration:none}.entrar-como a::after{content:"";position:absolute;inset:-6px -3px}.entrar-como a[aria-current="true"]{background:var(--accent,#0f6b55);color:var(--accent-fg,#fff)}.perfil-aviso{max-width:980px;margin:10px auto;padding:12px 14px;border-radius:10px;background:var(--soft,#e2efe9);color:var(--fg,#17231e);font-size:14px}.perfil-aviso a{font-weight:700;display:inline-block;padding:10px 2px}';
   document.head.appendChild(css);
   function monta(){
-    if(!/\/empresa\/inicio\.html$/.test(p))return;   // 20/11 (ordem dele: "deixa só na capa"): o seletor PF/CNPJ vive só na capa
+    if(!/\/empresa\/(inicio|previa)\.html$/.test(p))return;   // 20/11 (ordem dele: "deixa só na capa"): o seletor PF/CNPJ vive só na capa
     var antigo=document.querySelector('.topo .entrar-conta'); if(!antigo)return;
     var box=document.createElement('div'); box.className='entrar-perfil'; box.setAttribute('role','group'); box.setAttribute('aria-label','Entrar na minha conta: escolha o seu perfil');
     var t=document.createElement('span'); t.className='ep-t'; t.textContent='Já sou cliente · Entrar:'; box.appendChild(t);
@@ -52,7 +52,7 @@
     head.insertAdjacentElement('afterend',d);
   }
   function destinoTeste(){ // botão 'Teste grátis': cadastro de autônomo ou de empresa, conforme a escolha PF/CNPJ
-    var b=document.querySelector('a[data-teste]'); if(b&&ler()==='pj')b.href=rel('empresa/entrar.html');else if(b)b.href=rel('entrar.html')}
+    [].forEach.call(document.querySelectorAll('a[data-teste]'),function(b){b.href=rel(ler()==='pj'?'empresa/entrar.html':'entrar.html')})}
   function pronto(){monta();destinoTeste()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',pronto);else pronto();
 })();
