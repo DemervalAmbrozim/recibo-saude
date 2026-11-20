@@ -90,17 +90,17 @@ fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-w
 </head>
 <body>
 <main>
-  <div class="rasc">Cadastro da empresa em fase de testes: liberado para quem recebeu o convite.</div>
+  <div class="rasc">Versão de teste, antes do lançamento. O banco da frente Empresa já está ligado, e o cadastro vale só para quem recebeu este link.</div>
   <header class="head">
-    <h1 class="marca"><picture><img class="logo-marca" src="logo-saude-claro.png" alt="" style="height:34px;width:auto;display:block"></picture><span class="vh">Lado a Lado Saúde</span></h1>
-    <span class="sub">Recibo • Contabilidade • Gestão • Tecnologia</span>
+    <h1 class="marca" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><picture><img class="logo-marca" src="logo-saude-claro.png" alt="" style="height:34px;width:auto;display:block"></picture><span class="vh">Lado a Lado Saúde · </span><span style="font-size:15px;font-weight:600">Minha empresa</span></h1>
+    <a class="sub" href="../entrar.html">Sou autônoma</a>
   </header>
   <div id="aviso" class="msg" role="status" aria-live="polite" hidden></div>
 
   <!-- 1. E-MAIL -->
   <form id="e-email" class="card" hidden>
     <h2>Entrar ou criar sua conta</h2>
-    <div class="sub">Já é cliente? Entre com o e-mail do seu cadastro. Primeira vez? Também começa aqui: depois do e-mail você cadastra a sua empresa. Chega um link de acesso, sem senha. Pelo celular, toque no link. Pelo computador, digite o código de 6 números que chega no mesmo e-mail. Se você já tem conta como autônomo(a), é a mesma conta.</div>
+    <div class="sub">Digite seu e-mail. Chega um link de acesso, sem senha. Pelo celular, toque no link. Pelo computador, digite o código de 6 números que chega no mesmo e-mail. Se você já tem conta como autônoma, é a mesma conta.</div>
     <label>E-mail <input id="email" type="email" autocomplete="email" required></label>
     <button class="pri" type="submit">Receber link de acesso</button>
     <div class="msg" id="email-ok" hidden></div>
