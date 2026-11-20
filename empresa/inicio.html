@@ -413,26 +413,92 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 .outras-nota{color:#41627f}
 </style>
 <style>
-.dif3 h2{color:var(--fg);margin:0 0 6px;font-size:clamp(24px,5.4vw,34px);line-height:1.15;text-wrap:balance}
-.dif3-sub{margin:0 0 18px;color:var(--muted);font-size:16px}
-.dif3-grade{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.dif3-col{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0 0 14px;overflow:hidden;box-shadow:0 10px 26px rgba(2,33,79,.08)}
-.dif3-col header{display:flex;align-items:center;gap:12px;padding:14px 18px;color:#fff}
-.dif3-col h3{margin:0;font-size:20px;color:#fff}
-.dif3-col .ic2{background:rgba(255,255,255,.2);width:44px;height:44px}
-.dif3-a header{background:linear-gradient(135deg,#02214f,#0b4a8a)}
-.dif3-b header{background:linear-gradient(135deg,#006b4a,#00a676)}
-.dif3-c header{background:linear-gradient(135deg,#0a4f5c,#128a9e)}
-.dif3-prom{margin:0;padding:14px 18px 0;font-size:19px;line-height:1.25;font-weight:800;color:var(--fg)}
-.dif3-faixa{margin:14px 0 0;padding:14px 18px;border-radius:16px;background:var(--soft);color:var(--fg);font-size:15px;line-height:1.4;text-align:center}
-.dif3-col ul{list-style:none;margin:0;padding:12px 18px 0;display:grid;gap:11px;font-size:15px;line-height:1.4}
-.dif3-col li{position:relative;padding-left:26px}
-.dif3-col li::before{content:"✓";position:absolute;left:0;top:0;font-weight:800;color:var(--accent)}
-.dif3 sup{font-size:12px;line-height:0;vertical-align:baseline;position:relative;top:-.45em}
-.dif3-fonte{margin:8px 0 0;font-size:12.5px;color:var(--muted);text-align:center}.dif3-col sup a{display:inline-block;padding:0 3px;color:var(--accent);font-weight:700;text-decoration:none}
-.dif3-col li.breve{color:var(--muted);font-style:italic}.dif3-col li.breve::before{content:"…";color:var(--muted)}
-.dif3-col li b{color:var(--fg)}
+.simples .duo{grid-template-columns:1fr!important}
+.simples .duo>figure:first-child{max-width:440px;justify-self:center;width:100%}
+.simples .tres{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:14px}
+.simples .tres ul{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.simples .tres li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.simples .tres .ic2{width:44px;height:44px}
+.simples .tres .t-a{background:linear-gradient(135deg,#0b4a8a,#02214f)}.simples .tres .t-b{background:linear-gradient(135deg,#00a676,#006b4a)}.simples .tres .t-c{background:linear-gradient(135deg,#128a9e,#0a4f5c)}
+.simples .tres b{display:block;color:#7be0bd;font-size:17px}
+.simples .tres span:not(.ic2){display:block;color:#fff;font-size:14.5px;line-height:1.35}
+.simples .tres .mini-mes{display:block;width:min(100%,260px);height:auto;margin-top:8px;border-radius:10px;background:#fff}
+.simples .vai-tres{display:inline-block;margin-top:12px;color:#7be0bd;font-weight:700;text-decoration:none;padding:8px 2px}
+@media (min-width:761px){.simples .duo{grid-template-columns:.8fr 1.2fr!important;align-items:start}}
 </style>
+<style>
+/* Botão fixo "Quero contratar" (20/11, ideia dele): igual ao do WhatsApp, acima dele; some no topo e quando já há um botão grande de começar na tela */
+.contratafix{position:fixed;right:16px;bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 76px);z-index:21;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;padding:8px 22px;border-radius:99px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#09845d,#055640);box-shadow:0 8px 22px rgba(5,86,64,.5),inset 0 1px 0 rgba(255,255,255,.3);line-height:1.1;transition:opacity .25s ease,transform .25s ease}
+.contratafix b{font-size:16px;font-weight:800}.contratafix small{font-size:12px;opacity:.95}
+.contratafix:hover{transform:translateY(-2px)}.contratafix:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px #055640}
+.contratafix.esc{opacity:0;pointer-events:none;transform:translateY(14px);visibility:hidden}
+@media (max-width:760px){.contratafix{right:12px;bottom:calc(max(16px,env(safe-area-inset-bottom,0px)) + 76px)}}
+@media (prefers-reduced-motion:reduce){.contratafix{transition:none}.contratafix:hover{transform:none}}
+footer{padding-bottom:150px!important}
+</style>
+<style>
+/* Três telas de WhatsApp (uma por pilar), lado a lado, que ampliam e rolam para cima e para baixo (20/11, ideia dele) */
+.zaps-h{margin:6px 0 4px;color:#fff;font-size:clamp(22px,5.4vw,28px);line-height:1.15;text-wrap:balance}.zaps-sub{margin:0 0 12px;color:#e6f2f0;font-size:15px}
+.zaps-fila{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 12px;-webkit-overflow-scrolling:touch}
+.zap-tela{flex:0 0 min(214px,64%);scroll-snap-align:start;display:grid;gap:8px;align-content:start}
+.zap-pilar{margin:0;font-size:15px;font-weight:800;color:#fff;padding:6px 12px;border-radius:99px;justify-self:start}
+.z-a{background:#0b4a8a}.z-b{background:#00875f}.z-c{background:#0f7a8c}
+.zap-cx{background:#efeae2;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.25);height:300px;display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.zap-topo{display:flex;gap:8px;align-items:center;background:#0b6b57;color:#fff;padding:8px 10px;flex:none}
+.zap-topo small{display:block;font-size:12px;opacity:.9}.zap-topo b{font-size:13px}
+.zap-av{width:30px;height:30px;border-radius:50%;background:#fff;color:#0b6b57;display:grid;place-items:center;font-weight:800;font-size:10px;flex:none}
+.zap-sim{background:#fff3c4;color:#5b4300;font-size:12px;text-align:center;padding:4px 8px;flex:none}
+.zap-corpo{padding:10px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;background:#efeae2;scrollbar-width:thin}
+.zap-corpo:focus-visible{outline:3px solid #0b6b57;outline-offset:-3px}
+.zb{max-width:92%;padding:6px 9px 4px;border-radius:9px;font-size:12.5px;line-height:1.35;color:#111b21;box-shadow:0 1px 1px rgba(0,0,0,.12);overflow-wrap:anywhere}
+.zb span{display:block}.zb i{display:block;text-align:right;font-style:normal;font-size:12px;color:#667781;margin-top:2px}
+.zb.u{align-self:flex-end;background:#d9fdd3}.zb.b{align-self:flex-start;background:#fff}.zb.prom{background:#d9fdd3;font-size:14px;font-weight:800;align-self:flex-start}.zb.breve{background:#f0f0f0;font-style:italic;color:#5b6770}.zb em{display:block;font-size:12px;color:#667781;margin-top:3px}
+.zap-amplia{justify-self:start;background:transparent;color:#7be0bd;border:1.5px solid #7be0bd;border-radius:99px;font:inherit;font-weight:700;font-size:14px;padding:8px 16px;min-height:44px;cursor:pointer}
+.zap-amplia:hover{background:rgba(123,224,189,.15)}.zap-amplia:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.zaps-dica{margin:2px 0 8px;color:#e6f2f0;font-size:13px}
+.zaps-links{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.zap-web{background:transparent;color:#7be0bd;border:0;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:10px 2px;min-height:44px}
+#zap-modal{border:0;border-radius:18px;padding:0;width:min(520px,94vw);max-height:92vh;background:#efeae2;color:#111b21;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#zap-modal::backdrop{background:rgba(2,33,79,.72)}
+.zm-barra{display:flex;align-items:center;gap:8px;background:#0b6b57;color:#fff;padding:8px 10px;position:sticky;top:0;z-index:2}
+.zm-barra b{flex:1;text-align:center;font-size:16px}
+.zm-barra button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;min-width:44px;min-height:44px;font-size:22px;cursor:pointer}
+.zm-barra button:focus-visible{outline:3px solid #fff}
+#zm-corpo .zap-cx{height:auto;max-height:calc(92vh - 120px);border:0;border-radius:0;box-shadow:none}
+#zm-corpo .zap-corpo{max-height:calc(92vh - 190px)}
+#zm-corpo .zb{font-size:15px;max-width:94%}#zm-corpo .zb i{font-size:12px}
+#zm-corpo img{display:block;width:100%;height:auto;background:#fff}
+.zm-nota{margin:0;padding:8px 12px;font-size:12.5px;color:#5b4300;background:#fff3c4;text-align:center}
+@media (min-width:761px){.zap-tela{flex-basis:214px}}
+@media (prefers-reduced-motion:reduce){.zaps-fila{scroll-behavior:auto}}
+</style>
+<style>
+.zaps-nav{display:flex;justify-content:flex-end;gap:8px;margin:0 0 6px}
+.zf-seta{width:44px;height:44px;border-radius:50%;border:1.5px solid #7be0bd;background:rgba(123,224,189,.12);color:#7be0bd;font-size:26px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0 0 3px}
+.zf-seta:hover:not(:disabled){background:rgba(123,224,189,.3)}.zf-seta:disabled{opacity:.35;cursor:default}.zf-seta:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.zap-corpo{font-size:12px}.zb{font-size:12px}
+</style>
+<style>
+/* 20/11 16h20 (ele: "estão enormes e não ficou legal um em cima do outro"): WhatsApp vira botão redondo só com o ícone; "Quero contratar" compacto ao lado, na mesma linha */
+#zapfix.zapfix{width:48px;height:48px;min-height:0;padding:0;border-radius:50%;justify-content:center;right:12px;bottom:max(14px,env(safe-area-inset-bottom,0px));font-size:0}
+#zapfix .vh-z{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#zapfix svg{display:block}
+#contratafix.contratafix{right:68px;bottom:max(14px,env(safe-area-inset-bottom,0px));min-height:48px;max-width:calc(100vw - 84px);padding:5px 16px;box-sizing:border-box;text-align:center}
+#contratafix b{font-size:14px;line-height:1.15}#contratafix small{font-size:12px;line-height:1.1}
+@media (max-width:760px){#contratafix.contratafix{right:68px;bottom:max(14px,env(safe-area-inset-bottom,0px))}}
+footer{padding-bottom:96px!important}
+</style>
+<style>
+/* 20/11 16h40 (ele: "Zap e 7dias"): dois botões pequenos, mesma linha, texto curto */
+.fixos{position:fixed;right:12px;bottom:max(14px,env(safe-area-inset-bottom,0px));z-index:21;display:flex;align-items:center;gap:8px;pointer-events:none;max-width:calc(100vw - 24px)}
+.fixos>a{pointer-events:auto}
+#zapfix.zapfix{position:static;width:auto;height:44px;min-height:44px;padding:0 16px 0 12px;border-radius:99px;gap:6px;font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;animation:none}
+#zapfix svg{width:22px;height:22px}
+#zapfix .zap-txt{position:static;width:auto;height:auto;overflow:visible;clip:auto;font-size:15px}
+#contratafix.contratafix{position:static;min-height:44px;height:44px;padding:0 18px;max-width:none;display:inline-flex;flex-direction:row;align-items:center;justify-content:center}
+#contratafix b{font-size:15px;font-weight:800;white-space:nowrap}
+</style>
+<style>.zap-av img{display:block;width:22px;height:auto}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -459,8 +525,38 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
       <div class="hcta"><a class="cta" data-cta="hero-autonomo" href="../venda.html"><b>Sou profissional autônomo(a)</b><small>Atendo com o meu CPF: recibo e Carnê-Leão</small></a><a class="cta sec" data-cta="hero-empresa" href="index.html"><b>Tenho empresa de saúde (CNPJ)</b><small>Simples Nacional, até 3 funcionários</small></a></div>
       <div class="simples"><p class="sub" style="margin:0 0 8px;font-weight:700;letter-spacing:.3px">Super simples: pelo WhatsApp e pela plataforma web</p>
         <div class="duo">
-          <figure><a class="fig-link" data-cta="simples-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20ver%20como%20funciona%20o%20recibo%20pelo%20WhatsApp." target="_blank" rel="noopener"><img src="img/tela-whatsapp-recibo.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.<span class="vai"> Falar no WhatsApp →</span></figcaption></a></figure>
-          <figure><a class="fig-link" data-cta="simples-web" href="../entrar.html"><img src="img/tela-web-seu-mes.webp" width="420" height="253" loading="lazy" decoding="async" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão"><figcaption><b>Na plataforma web</b>Veja o seu mês: recebido, despesas e imposto.<span class="vai"> Testar 7 dias →</span></figcaption></a></figure>
+          <figure><a class="fig-link" data-cta="simples-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20ver%20como%20funciona%20o%20recibo%20pelo%20WhatsApp." target="_blank" rel="noopener"><img src="img/tela-whatsapp-recibo-v2.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.<span class="vai"> Falar no WhatsApp →</span></figcaption></a></figure>
+          <div class="zaps" id="s-tres">
+          <h2 class="zaps-h" id="h-zaps">Contabilidade - Gestão - Tecnologia</h2>
+          <p class="zaps-sub">Mais Diferenciais <span aria-hidden="true" style="font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">👇</span></p>
+          <div class="zaps-nav"><button type="button" class="zf-seta" id="zf-e" aria-label="Ver a tela anterior" disabled>‹</button><button type="button" class="zf-seta" id="zf-d" aria-label="Ver a próxima tela">›</button></div>
+          <div class="zaps-fila" role="list" aria-label="Três telas de WhatsApp com os diferenciais: contabilidade, gestão e tecnologia">
+            <article class="zap-tela" role="listitem" data-pilar="Contabilidade">
+              <h3 class="zap-pilar z-a">Contabilidade</h3>
+              <div class="zap-cx"><div class="zap-topo"><span class="zap-av" aria-hidden="true"><img src="simbolo-saude-claro.png" alt="" width="22" height="21"></span><span><b>Lado a Lado Saúde</b><small>conta comercial</small></span></div>
+                <div class="zap-sim">ILUSTRAÇÃO · o que está incluído, em formato de conversa</div>
+                <div class="zap-corpo" tabindex="0" role="log" aria-label="Mensagens: Contabilidade"><div class="zb b prom"><span>Você não precisa entender de imposto.</span><i>10:02</i></div><div class="zb b"><span><b>✓ A gente emite o seu recibo no Receita Saúde.</b> Sem recibo, a multa é de R$ 100 por mês; aqui a gente emite todo mês. <em>Fonte: IN RFB 2.240/2024, art. 4º.</em></span><i>10:03</i></div><div class="zb b"><span><b>✓ O Carnê-Leão chega calculado,</b> com o DARF pronto antes do vencimento.</span><i>10:04</i></div><div class="zb b"><span><b>✓ No imposto de renda, as suas informações já estão prontinhas:</b> rendimentos, despesas e DARFs do ano. É só entregar e ficar tranquilo(a).</span><i>10:05</i></div><div class="zb b"><span><b>✓ Hora de virar CNPJ?</b> Mostramos a conta na tela e abrimos a sua empresa. Se não compensar, a gente diz.</span><i>10:06</i></div><div class="zb b"><span><b>✓ Feito para profissionais da saúde.</b> A gente fala a língua do Receita Saúde, do Carnê-Leão e do seu conselho, sem presumir consultório nem CNPJ.</span><i>10:07</i></div><div class="zb b breve"><span>Em breve: contabilidade e folha da sua empresa, no mesmo lugar.</span><i>10:08</i></div></div></div>
+              <button class="zap-amplia" type="button" data-zap="a" aria-label="Ampliar a conversa de Contabilidade">Ampliar <span aria-hidden="true">⤢</span></button>
+            </article>
+            <article class="zap-tela" role="listitem" data-pilar="Gestão">
+              <h3 class="zap-pilar z-b">Gestão</h3>
+              <div class="zap-cx"><div class="zap-topo"><span class="zap-av" aria-hidden="true"><img src="simbolo-saude-claro.png" alt="" width="22" height="21"></span><span><b>Lado a Lado Saúde</b><small>conta comercial</small></span></div>
+                <div class="zap-sim">ILUSTRAÇÃO · o que está incluído, em formato de conversa</div>
+                <div class="zap-corpo" tabindex="0" role="log" aria-label="Mensagens: Gestão"><div class="zb b prom"><span>Seu mês resolvido, sem planilha.</span><i>10:08</i></div><div class="zb b"><span><b>✓ Registre pelo WhatsApp em poucos toques:</b> paciente, valor, forma de pagamento e dia.</span><i>10:09</i></div><div class="zb b"><span><b>✓ Todo mês você vê</b> quanto entrou, quanto saiu, quanto é de imposto e quanto sobra.</span><i>10:10</i></div><div class="zb b"><span><b>✓ Planeje o ano:</b> acompanhe o orçado e o realizado e veja como o ano deve fechar, com a projeção dos próximos meses.</span><i>10:11</i></div><div class="zb b"><span><b>✓ Recibo em até 24 horas,</b> ou o motivo de não termos conseguido.</span><i>10:12</i></div><div class="zb b"><span><b>✓ Seus vencimentos dos próximos 90 dias</b> numa agenda que entra no seu celular.</span><i>10:13</i></div></div></div>
+              <button class="zap-amplia" type="button" data-zap="b" aria-label="Ampliar a conversa de Gestão">Ampliar <span aria-hidden="true">⤢</span></button>
+            </article>
+            <article class="zap-tela" role="listitem" data-pilar="Tecnologia">
+              <h3 class="zap-pilar z-c">Tecnologia</h3>
+              <div class="zap-cx"><div class="zap-topo"><span class="zap-av" aria-hidden="true"><img src="simbolo-saude-claro.png" alt="" width="22" height="21"></span><span><b>Lado a Lado Saúde</b><small>conta comercial</small></span></div>
+                <div class="zap-sim">ILUSTRAÇÃO · o que está incluído, em formato de conversa</div>
+                <div class="zap-corpo" tabindex="0" role="log" aria-label="Mensagens: Tecnologia"><div class="zb b prom"><span>Automático para você ganhar tempo. Nossa equipe, quando precisar.</span><i>10:15</i></div><div class="zb b"><span><b>✓ WhatsApp ou app,</b> no celular ou no computador. Nada para instalar e nenhuma senha para decorar.</span><i>10:16</i></div><div class="zb b"><span><b>✓ Pensado para a LGPD:</b> só o necessário para recibo, nota e imposto, e nenhum dado clínico. Seus dados são seus: baixe ou exclua quando quiser.</span><i>10:17</i></div><div class="zb b"><span><b>✓ Sem sinal no consultório?</b> Lance do mesmo jeito: sobe sozinho quando a conexão voltar.</span><i>10:18</i></div><div class="zb b"><span><b>✓ Sem fidelidade:</b> pause ou cancele quando quiser, sem prender ninguém.</span><i>10:19</i></div></div></div>
+              <button class="zap-amplia" type="button" data-zap="c" aria-label="Ampliar a conversa de Tecnologia">Ampliar <span aria-hidden="true">⤢</span></button>
+            </article>
+          </div>
+          <p class="zaps-dica">Toque em <b>Ampliar</b> para ler a conversa inteira; dentro dela, role para cima e para baixo.</p>
+          <div class="zaps-links"><button class="zap-web" type="button" id="zap-web">Ver também a plataforma web: Seu mês</button></div>
+        </div>
+        <dialog id="zap-modal" aria-label="Conversa ampliada"><div class="zm-barra"><button type="button" class="zm-nav" id="zm-ant" aria-label="Conversa anterior">‹</button><b id="zm-tit"></b><button type="button" class="zm-nav" id="zm-prox" aria-label="Próxima conversa">›</button><button type="button" class="zm-x" id="zm-fecha" aria-label="Fechar">✕</button></div><div id="zm-corpo"></div><p class="zm-nota">Ilustração do que está incluído, em formato de conversa.</p></dialog>
         </div>
         <p class="nota">Telas simples e intuitivas. Exemplo com dados fictícios.</p></div>
       <div class="chips" aria-label="O que oferecemos"><span><a data-cta="grade-agenda" href="../venda.html#p-registro">Agenda e Atendimento</a></span><span><a data-cta="grade-recibo" href="../venda.html#p-recibo">Emissão do Recibo no Receita Saúde (autônomo)</a></span><span><a data-cta="grade-nota" href="index.html#f-contab">Emissão de Nota Fiscal (empresa)</a></span><span><a data-cta="grade-contas" href="index.html#plano-empresa">Contador, contabilidade e financeiro</a></span><span class="breve"><a data-cta="grade-folha" href="index.html#f-folha">Folha de pagamento · em breve</a></span><span><a data-cta="grade-redes" href="../venda.html#sv-redes">Redes sociais (Instagram, Facebook e LinkedIn) e Perfil no Google</a></span><span><a data-cta="grade-cnpj" href="../venda.html#sv-cnpj">Abertura de CNPJ</a></span><span><a data-cta="grade-ir" href="../venda.html#sv-ir">Imposto de renda</a></span><span><a data-cta="grade-assessoria" href="../venda.html#sv-assessoria">Assessoria/Consultoria de apoio para sua atuação</a></span></div>
@@ -478,34 +574,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
     </div>
   </section>
 
-  <section id="diferenciais" class="dif3" aria-labelledby="h-dif3">
-    <h2 id="h-dif3">Contabilidade, gestão e tecnologia para quem cuida de gente</h2>
-    <p class="dif3-sub">A gente cuida da burocracia. Você volta a cuidar de quem importa.</p>
-    <div class="dif3-grade">
-      <article class="dif3-col dif3-a"><header><span class="ic2" aria-hidden="true"><svg><use href="#i-predio"/></svg></span><h3>Contabilidade</h3></header>
-        <p class="dif3-prom">Você não precisa entender de imposto.</p>
-        <ul><li><b>A gente emite o seu recibo no Receita Saúde.</b> Sem recibo, a multa é de R$ 100 por mês; aqui a gente emite todo mês.<sup><a href="#nota-multa" aria-label="Fonte da multa">1</a></sup></li>
-        <li><b>O Carnê-Leão chega calculado</b>, com o DARF pronto antes do vencimento.</li>
-        <li><b>No imposto de renda, as suas informações já estão prontinhas:</b> rendimentos, despesas e DARFs do ano. É só entregar e ficar tranquilo(a).</li>
-        <li><b>Hora de virar CNPJ?</b> Mostramos a conta na tela e abrimos a sua empresa. Se não compensar, a gente diz.</li>
-        <li class="breve">Contabilidade e folha da sua empresa: em breve, no mesmo lugar</li></ul></article>
-      <article class="dif3-col dif3-b"><header><span class="ic2" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><h3>Gestão</h3></header>
-        <p class="dif3-prom">Seu mês resolvido, sem planilha.</p>
-        <ul><li><b>Registre pelo WhatsApp em poucos toques:</b> paciente, valor, forma de pagamento e dia.</li>
-        <li><b>Todo mês você vê</b> quanto entrou, quanto saiu, quanto é de imposto e quanto sobra.</li>
-        <li><b>Planeje o ano:</b> acompanhe o orçado e o realizado e veja como o ano deve fechar, com a projeção dos próximos meses.</li>
-        <li><b>Recibo em até 24 horas</b>, ou o motivo de não termos conseguido.</li>
-        <li><b>Seus vencimentos dos próximos 90 dias</b> numa agenda que entra no seu celular.</li></ul></article>
-      <article class="dif3-col dif3-c"><header><span class="ic2" aria-hidden="true"><svg><use href="#i-escudo"/></svg></span><h3>Tecnologia</h3></header>
-        <p class="dif3-prom">Automático para você ganhar tempo. Nossa equipe, quando precisar.</p>
-        <ul><li><b>WhatsApp ou app</b>, no celular ou no computador. Nada para instalar e nenhuma senha para decorar.</li>
-        <li><b>Pensado para a LGPD:</b> só o necessário para recibo, nota e imposto, e nenhum dado clínico. Seus dados são seus: baixe ou exclua quando quiser.</li>
-        <li><b>Sem sinal no consultório?</b> Lance do mesmo jeito: sobe sozinho quando a conexão voltar.</li>
-        <li><b>Sem fidelidade:</b> pause ou cancele quando quiser, sem prender ninguém.</li></ul></article>
-    </div>
-    <p class="dif3-faixa"><b>Feito para profissionais da saúde.</b> A gente fala a língua do Receita Saúde, do Carnê-Leão e do seu conselho, sem presumir consultório nem CNPJ.</p>
-    <p class="dif3-fonte" id="nota-multa"><sup>1</sup> Multa de R$ 100 por mês-calendário, IN RFB 2.240/2024, art. 4º.</p>
-  </section>
+  
 
   <section class="teste7" aria-label="Teste grátis">
     <a class="teste7-bt" data-cta="teste7" data-teste href="../entrar.html">
@@ -597,7 +666,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
   </section>
 
 </main>
-<a class="zapfix" data-cta="zap-flutuante" href="https://wa.me/5527999712727" id="zapfix">Falar no WhatsApp</a>
+<div class="fixos"><a class="contratafix esc" data-cta="contratar-fixo" data-teste href="../entrar.html" id="contratafix"><b>7 dias grátis</b></a>
+<a class="zapfix" data-cta="zap-flutuante" href="https://wa.me/5527999712727" id="zapfix" aria-label="Falar no WhatsApp"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span class="zap-txt">Zap</span></a></div>
 <footer><picture><img class="logo logo-marca" style="height:34px;margin-bottom:10px" src="logo-saude-claro.png" alt="Lado a Lado Saúde"></picture><br>Lado a Lado Saúde é um serviço da Assessoria Lado a Lado Ltda · CNPJ 34.114.180/0001-54 · WhatsApp 27 99971-2727 · <a href="../termos.html">Termos e privacidade</a> · <a href="../seguranca.html">Segurança e quem está por trás</a> · <a href="../painel.html" rel="nofollow" style="color:var(--muted);font-size:12px;opacity:.75">Acesso da equipe</a></footer>
 <script>
 // Movimento e gatilhos visuais: barra de progresso, aparecer ao rolar, brilho que segue o dedo/mouse, "digitando..." no WhatsApp
@@ -626,6 +696,29 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 </script>
 <script src="../config.js"></script>
 <script src="../metrica.js"></script>
+<script>(function(){var c=document.getElementById('contratafix');if(!c)return;var vis={};function t(){var topo=(window.scrollY||document.documentElement.scrollTop)<480;c.classList.toggle('esc',topo||!!vis.a||!!vis.b)}
+addEventListener('scroll',t,{passive:true});
+if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){vis[e.target.getAttribute('data-obs')]=e.isIntersecting});t()});[['.teste7-bt','a'],['.fecha','b']].forEach(function(x){var el=document.querySelector(x[0]);if(el){el.setAttribute('data-obs',x[1]);io.observe(el)}})}t()})();</script>
+<script>
+(function(){var fila=document.querySelector('.zaps-fila'),dlg=document.getElementById('zap-modal');if(!fila||!dlg)return;
+var telas=[].slice.call(fila.querySelectorAll('.zap-tela')),atual=0,opener=null,corpo=document.getElementById('zm-corpo'),tit=document.getElementById('zm-tit');
+function mostra(i){atual=(i+telas.length)%telas.length;var t=telas[atual];tit.textContent=t.getAttribute('data-pilar');corpo.innerHTML='';var cx=t.querySelector('.zap-cx').cloneNode(true);var cp=cx.querySelector('.zap-corpo');cp.setAttribute('aria-label','Conversa ampliada: '+t.getAttribute('data-pilar'));corpo.appendChild(cx);cp.scrollTop=0;document.getElementById('zm-ant').hidden=document.getElementById('zm-prox').hidden=false}
+function abre(i,btn){opener=btn||null;mostra(i);if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','');setTimeout(function(){var f=corpo.querySelector('.zap-corpo');if(f)f.focus()},30)}
+function fecha(){if(dlg.close)dlg.close();else dlg.removeAttribute('open');if(opener)opener.focus()}
+telas.forEach(function(t,i){var b=t.querySelector('.zap-amplia');b.addEventListener('click',function(){abre(i,b)});t.querySelector('.zap-cx').addEventListener('click',function(e){if(e.target.closest('.zap-corpo')&&getSelection().toString())return;abre(i,b)})});
+document.getElementById('zm-fecha').addEventListener('click',fecha);
+document.getElementById('zm-ant').addEventListener('click',function(){mostra(atual-1)});document.getElementById('zm-prox').addEventListener('click',function(){mostra(atual+1)});
+dlg.addEventListener('click',function(e){if(e.target===dlg)fecha()});
+dlg.addEventListener('keydown',function(e){if(e.key==='ArrowLeft'&&!e.target.closest('.zap-corpo')){mostra(atual-1)}else if(e.key==='ArrowRight'&&!e.target.closest('.zap-corpo')){mostra(atual+1)}});
+dlg.addEventListener('close',function(){corpo.innerHTML=''});
+var web=document.getElementById('zap-web');if(web)web.addEventListener('click',function(){opener=web;tit.textContent='Plataforma web: Seu mês';corpo.innerHTML='<img src="img/tela-web-seu-mes.webp" width="420" height="253" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão">';document.getElementById('zm-ant').hidden=document.getElementById('zm-prox').hidden=true;if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','')});
+})();
+</script>
+<script>(function(){var f=document.querySelector('.zaps-fila'),e=document.getElementById('zf-e'),d=document.getElementById('zf-d');if(!f||!e||!d)return;
+function passo(){var t=f.querySelector('.zap-tela');return t?t.getBoundingClientRect().width+12:220}
+function atual(){e.disabled=f.scrollLeft<=4;d.disabled=f.scrollLeft+f.clientWidth>=f.scrollWidth-4}
+e.addEventListener('click',function(){f.scrollBy({left:-passo(),behavior:'smooth'})});d.addEventListener('click',function(){f.scrollBy({left:passo(),behavior:'smooth'})});
+f.addEventListener('scroll',atual,{passive:true});addEventListener('resize',atual);atual()})();</script>
 <script src="../perfil.js" defer></script>
 </body>
 </html>
