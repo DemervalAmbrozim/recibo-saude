@@ -92,6 +92,19 @@ a{color:var(--accent)}
 <style>/* Alvos de toque de 44 px (auditoria 18/11/2026): botões pequenos e títulos de seções que abrem */
 button.small,a.small{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}</style>
+<style>
+/* 20/11: no celular o cartão de conciliação estourava 3 px (campo de 9em dentro da linha); achado pelo teste do plano */
+#conc-lista .item{min-width:0}#conc-lista .row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#conc-lista .row>*{min-width:0}#conc-lista input,#conc-lista select{width:100%!important;max-width:100%}
+.plano-l{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:2px 8px;font-size:13px;margin-top:10px;align-items:center}
+.plano-l>.r{display:contents}
+.plano-l .r>span{padding:5px 0;border-top:1px solid var(--line);white-space:nowrap}
+.plano-l .r>.h{border-top:0;color:var(--muted);font-size:12px;font-weight:600}
+.plano-l .r>.m{font-weight:600}
+.plano-l .proj{color:var(--muted);font-style:italic}
+.plano-l .atual{color:var(--accent);font-weight:700}
+.plano-aj{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 8px;margin-top:10px;align-items:center;font-size:13px}
+.plano-aj input{padding:8px;min-width:0}
+</style>
 </head>
 <body>
 <main>
@@ -197,6 +210,26 @@ details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}<
       <div class="msg" id="i-cnpj" hidden><div id="cj-txt"></div>
         <div class="btns" id="cj-btns" style="margin-top:8px"><button class="small pri" id="b-cj-quero" type="button">Quero conversar</button><button class="small" id="b-cj-conta" type="button">Ver a conta</button><button class="small" id="b-cj-nao" type="button">Agora não</button></div>
         <div class="sub" id="cj-conta" hidden style="margin-top:8px"></div></div>
+    </div>
+    <div class="card" id="i-plano">
+      <div class="head"><h2>Plano do ano</h2><span class="sub" id="pl-ano"></span></div>
+      <div class="sub">Compare o que você planejou com o que já recebeu e veja como o ano deve fechar.</div>
+      <div class="grid3" style="margin-top:8px">
+        <div class="kpi"><span class="sub">Recebido no ano</span><b id="pl-rec">–</b></div>
+        <div class="kpi"><span class="sub">Orçado no ano</span><b id="pl-orc">–</b></div>
+        <div class="kpi"><span class="sub">Projeção do ano</span><b id="pl-proj">–</b></div>
+      </div>
+      <div class="meter" id="pl-meter" hidden><i style="width:0"></i></div>
+      <div class="sub" id="pl-meter-txt" hidden></div>
+      <div id="pl-txt" style="display:grid;gap:8px;margin-top:8px"></div>
+      <div class="plano-l" id="pl-lista" role="table" aria-label="Plano do ano, mês a mês"></div>
+      <details id="pl-ajuste" style="margin-top:10px"><summary>Definir o meu orçado</summary>
+        <div class="sub" style="margin:6px 0">Quanto você pretende receber e gastar por mês. O valor padrão vale para todos os meses; ajuste um mês específico se precisar. Fica guardado neste aparelho.</div>
+        <div class="row"><label>Receita por mês (R$)<input id="pl-pad-rec" inputmode="decimal" placeholder="ex.: 6000"></label><label>Despesas por mês (R$)<input id="pl-pad-desp" inputmode="decimal" placeholder="ex.: 1500"></label></div>
+        <div class="btns" style="margin-top:8px"><button type="button" class="small" id="pl-sug">Usar a média dos meus últimos 3 meses</button><button type="button" class="small" id="pl-limpa">Limpar orçado</button></div>
+        <div class="plano-aj" id="pl-aj"></div>
+      </details>
+      <div class="btns" style="margin-top:8px"><a class="small" href="empresa/index.html#conta" target="_blank" rel="noopener" style="display:inline-block;padding:10px 4px">Ver a conta PF × CNPJ</a></div>
     </div>
     <div class="card">
       <h2>Próximos compromissos</h2>
@@ -568,6 +601,7 @@ details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}<
 <script src="config.js?v=52"></script>
 <script src="acesso.js?v=55"></script>
 <script src="regras.js?v=52"></script>
+<script src="plano.js?v=1"></script>
 <script src="importar.js?v=52"></script>
 <script src="convenio.js?v=52"></script>
 <script src="lancar.js?v=52"></script>

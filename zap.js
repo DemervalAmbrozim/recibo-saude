@@ -56,6 +56,7 @@ const AJUDA=`Tudo é passo a passo, tocando nas opções:
 • *resumo* (o mês até agora)
 • *cnpj* (pessoa física ou CNPJ: o que sai mais barato)
 • *reforma* (os novos impostos de 2027 e o que muda para você)
+• *plano* (como o ano deve fechar, pelo seu ritmo)
 • *procuração* (passo a passo para a Lado a Lado Saúde emitir por você)
 • *posts* (seus posts do mês, do bônus)
 • *darf* (Carnê-Leão a pagar)
@@ -240,7 +241,7 @@ function zDicaDesp(cod){if(cod===INSS)return 'Dica: o INSS pago entra no Carnê-
 // est.lista = opções da última pergunta: a função zap manda como lista de toque do WhatsApp (o número segue valendo no texto).
 const G_NOVA='novo',zLista=(est,itens)=>{est.lista=itens.map(x=>String(x).slice(0,100))};
 const G_FORMAS=[['Pix',true],['Dinheiro',true],['Cartão',true],['Transferência',true],['a receber',false]];
-const G_SAIR=/^(sair|cancela|cancelar|parar|desisto)$/,G_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer)$/;
+const G_SAIR=/^(sair|cancela|cancelar|parar|desisto)$/,G_FORA=/^(oi|ola|ajuda|menu|resumo|plano|darf|a receber|desfazer)$/;
 // Reunião Daniel 31/10 (item 16): o lançamento é preso ao CPF; na lista vai nome + CPF mascarado (LGPD), que separa as homônimas
 const zCpfM=c=>(c=String(c||'').replace(/\D/g,'')).length===11?`***.${c.slice(3,6)}.${c.slice(6,9)}-**`:'';
 const gNome=(D,id)=>{if(id===G_NOVA)return '+ Incluir nova paciente';const p=D.pacientes.find(x=>x.id===id),m=zCpfM(p.cpf);return p.nome+(m?` · CPF ${m}`:'')};
@@ -324,7 +325,7 @@ async function gResponde(t,linha,D,api,est,hoje){const g=est.guia,n=/^\d{1,2}$/.
 // A frase escrita só preenche; cada um termina em "Confere? 1. Sim, gravar". est.fluxo guarda só ids e números (LGPD).
 const F_PASSOS={rec:['pac','item','valor','resto','data','conf'],desp:['cod','valor','data','conf'],pac:['pac','n','valor','forma','data','conf'],ses:['pac','data','conf']};
 const F_CAT=[['Aluguel','aluguel'],['Condomínio','condominio'],['Água','agua'],['Luz','luz'],['Telefone','telefone'],['Internet','internet'],['Anuidade do conselho','anuidade'],['Limpeza','limpeza'],['Funcionário','funcionario'],['INSS','inss']];
-const F_FORA=/^(oi|ola|ajuda|menu|resumo|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|status|quero( conversar)?)$|^dias\b/;
+const F_FORA=/^(oi|ola|ajuda|menu|resumo|plano|darf|a receber|desfazer|lancar|recebi|despesa|pacote|sessao|pacotes|posts?|cnpj|reforma|procuracao|comprovantes|recibos|conferir|indicar|status|quero( conversar)?)$|^dias\b/;
 const F_TIT={rec:'Recebimento',desp:'Despesa',pac:'Pacote',ses:'Sessão do pacote'};
 const fAbertos=(D,pac)=>D.atendimentos.filter(x=>x.pago===false&&!x.emitido&&(!pac||zDaPac(x,pac))).sort((a,b)=>a.data<b.data?-1:1);
 const fItens=(D,f)=>(f.itens||[]).map(id=>D.atendimentos.find(x=>x.id===id)).filter(Boolean);
@@ -434,6 +435,9 @@ async function zLinha(linha,D,api,est,hoje){const t=zNorm(linha);
   {const q=zPergunta(t);if(q)return q}
   if(zEhPergunta(t,linha)&&!zAcha(D.pacientes,t.split(/\s+/).slice(0,2)).length){const b=zBib(t,D);if(b)return b+'\nNão era isso? Mande *suporte* e a sua dúvida.'}
   if(/^(resumo|mes|extrato|quanto)$/.test(t))return zResumo(D,hoje);
+  if(/^(plano|plano do ano|meu ano|projecao do ano)$/.test(t)){   // 20/11: interligado ao cartão "Plano do ano" do app (app/plano.js)
+    const P=planoAno(D.atendimentos.filter(x=>x.pago!==false),D.despesas,hoje.slice(0,4),hoje);
+    return `*Plano do ano ${P.ano}*\n`+planoTexto(P).map(x=>'• '+x).join('\n')+`\n\nPara definir o seu orçado e ver mês a mês, abra o app: Início > Plano do ano.`}
   if(/^(reforma|reforma tributaria|cbs|ibs|2027)$/.test(t)){const ano=hoje.slice(0,4),rec=soma(D.atendimentos.filter(x=>x.pago!==false&&x.data.startsWith(ano))),r=reforma(rec,ano);
     return `*Reforma tributária*: PIS, Cofins e ISS viram CBS (federal) e IBS. O Carnê-Leão não muda.
 • *2026*: só teste, você não paga nada.

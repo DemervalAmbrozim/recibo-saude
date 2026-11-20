@@ -353,6 +353,43 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
   b.disabled=false};
 
 // Botão Voltar do celular/navegador (vistoria 19/11): cada aba aberta vira um passo do histórico; Voltar leva à aba anterior (e, na primeira, sai do app), em vez de sair de uma vez
+
+// ---------- Plano do ano (20/11/2026): orçado × realizado + projeção (app/plano.js). O orçado fica neste aparelho (localStorage). ----------
+const orcLer=ano=>{try{const o=JSON.parse(guardaLocal.get('rs_orc_'+ano)||'null');return o&&typeof o==='object'?{pad:o.pad||{rec:'',desp:''},rec:o.rec||{},desp:o.desp||{}}:{pad:{rec:'',desp:''},rec:{},desp:{}}}catch(e){return {pad:{rec:'',desp:''},rec:{},desp:{}}}};
+const orcGrava=(ano,o)=>guardaLocal.set('rs_orc_'+ano,JSON.stringify(o));
+const numOuVazio=v=>{const x=String(v==null?'':v).replace(/\./g,'').replace(',','.').trim();return x===''||isNaN(+x)||+x<0?'':+x};
+function orcEfetivo(o){const e={rec:{},desp:{}};for(let n=1;n<=12;n++)for(const c of['rec','desp']){const i=o[c][n];e[c][n]=i!==undefined&&i!==''?+i:(o.pad[c]!==''&&o.pad[c]!==undefined?+o.pad[c]:null)}return e}
+function planoResumo(){
+  const d=new Date(),ano=String(d.getFullYear()),o=orcLer(ano),P=planoAno(pagos(),D.despesas,ano,dISO(d),orcEfetivo(o));
+  $('pl-ano').textContent=ano;
+  $('pl-rec').textContent=brl(P.recAte);$('pl-orc').textContent=P.temOrc?brl(P.orcAno):'defina';$('pl-proj').textContent=P.projAno?brl(P.projAno.rec):'em 3 meses';
+  const mt=$('pl-meter'),tx=$('pl-meter-txt'),alvo=P.temOrc&&P.orcAno>0?P.orcAno:(P.projAno?P.projAno.rec:0);
+  mt.hidden=tx.hidden=!(alvo>0);
+  if(alvo>0){const pc=P.recAte/alvo*100;mt.className='meter';mt.firstElementChild.style.width=Math.min(100,pc)+'%';
+    tx.textContent=P.temOrc?`Você já recebeu ${Math.round(pc)}% do orçado do ano.`:`Você já recebeu ${Math.round(pc)}% do que a projeção indica para o ano.`;
+    if(P.temOrc&&P.orcFech>0){const dif=P.recFech-P.orcFech;tx.textContent+=` Nos meses fechados: ${brl(P.recFech)} recebidos para ${brl(P.orcFech)} orçados (${dif>=0?'+':''}${brl(dif)}).`}}
+  $('pl-txt').innerHTML=planoTexto(P).map((x,i)=>`<div class="${i===0?'msg':'sub'}">${esc(x)}</div>`).join('');
+  const L=['<div class="r" role="row"><span class="h m" role="columnheader">Mês</span><span class="h" role="columnheader">Orçado</span><span class="h" role="columnheader">Realizado</span><span class="h" role="columnheader">Projeção</span></div>'];
+  const b0=n=>(+n).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});   // na tabela, sem centavos e sem quebra de linha
+  P.meses.forEach(m=>{const ap=m.atual,prj=m.proj?b0(m.proj.rec):'–',re=m.real?b0(m.real.rec):'–',orc=m.orc.rec!==null?b0(m.orc.rec):'–';
+    L.push(`<div class="r" role="row"><span class="m${ap?' atual':''}" role="rowheader">${m.nome}${ap?' · agora':''}</span><span role="cell">${orc}</span><span role="cell">${re}</span><span class="proj" role="cell">${m.fechado?'':prj}</span></div>`)});
+  $('pl-lista').innerHTML=L.join('');
+}
+function telaPlano(){
+  const ano=String(new Date().getFullYear()),o=orcLer(ano);
+  const ae=document.activeElement;if(ae&&$('i-plano').contains(ae)&&ae.tagName==='INPUT'){planoResumo();return}   // não refaz os campos enquanto ela digita
+  $('pl-pad-rec').value=o.pad.rec;$('pl-pad-desp').value=o.pad.desp;
+  const A=['<span class="m">Mês</span><span class="h">Receita</span><span class="h">Despesas</span>'];
+  for(let n=1;n<=12;n++)A.push(`<span class="m">${MES3[n-1]}</span><input data-c="rec" data-n="${n}" inputmode="decimal" aria-label="Receita orçada de ${MESN[n-1]}" value="${o.rec[n]??''}" placeholder="padrão"><input data-c="desp" data-n="${n}" inputmode="decimal" aria-label="Despesas orçadas de ${MESN[n-1]}" value="${o.desp[n]??''}" placeholder="padrão">`);
+  $('pl-aj').innerHTML=A.join('');
+  $('pl-aj').querySelectorAll('input').forEach(i=>i.onchange=()=>{const v=numOuVazio(i.value),a=orcLer(ano);a[i.dataset.c][i.dataset.n]=v;orcGrava(ano,a);planoResumo()});
+  planoResumo();
+}
+$('pl-pad-rec').onchange=$('pl-pad-desp').onchange=()=>{const ano=String(new Date().getFullYear()),a=orcLer(ano);a.pad={rec:numOuVazio($('pl-pad-rec').value),desp:numOuVazio($('pl-pad-desp').value)};orcGrava(ano,a);planoResumo()};
+$('pl-sug').onclick=()=>{const d=new Date(),ano=String(d.getFullYear()),P=planoAno(pagos(),D.despesas,ano,dISO(d),{rec:{},desp:{}});
+  if(!P.suficiente){avisa('Preciso de 3 meses fechados com recebimentos para sugerir.',true);return}
+  const a=orcLer(ano);a.pad={rec:Math.round(P.base.rec),desp:Math.round(P.base.desp)};orcGrava(ano,a);$('pl-pad-rec').value=a.pad.rec;$('pl-pad-desp').value=a.pad.desp;planoResumo()};
+$('pl-limpa').onclick=()=>{const ano=String(new Date().getFullYear());guardaLocal.set('rs_orc_'+ano,'');telaPlano()};
 let ABA_ATUAL='t-ini';
 addEventListener('popstate',e=>{mostra((e.state&&e.state.aba)||'t-ini',false)});
 function mostra(t,hist){document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);
@@ -387,7 +424,7 @@ function telaIni(){telaDarf();
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
   const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0),ano);
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';const rr=reformaRitmo(pagos(),ano,+m.slice(5,7)-1);$('i-reforma').textContent=rf.txt+(rr&&rf.p<1?' '+rr.txt.replace(/ Mande \*reforma\*.*$/,''):'');
-  cnpjTela(m);
+  cnpjTela(m);telaPlano();
   const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';

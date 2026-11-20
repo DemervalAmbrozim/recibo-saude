@@ -411,6 +411,27 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 .outras-bt.sec{background:transparent;color:#075985;border:2px solid #0369a1}.outras-bt.sec:hover{background:rgba(3,105,161,.08)}
 .outras-nota{color:#41627f}
 </style>
+<style>
+.dif3 h2{color:var(--fg);margin:0 0 6px;font-size:clamp(24px,5.4vw,34px);line-height:1.15;text-wrap:balance}
+.dif3-sub{margin:0 0 18px;color:var(--muted);font-size:16px}
+.dif3-grade{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.dif3-col{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0 0 14px;overflow:hidden;box-shadow:0 10px 26px rgba(2,33,79,.08)}
+.dif3-col header{display:flex;align-items:center;gap:12px;padding:14px 18px;color:#fff}
+.dif3-col h3{margin:0;font-size:20px;color:#fff}
+.dif3-col .ic2{background:rgba(255,255,255,.2);width:44px;height:44px}
+.dif3-a header{background:linear-gradient(135deg,#02214f,#0b4a8a)}
+.dif3-b header{background:linear-gradient(135deg,#006b4a,#00a676)}
+.dif3-c header{background:linear-gradient(135deg,#0a4f5c,#128a9e)}
+.dif3-prom{margin:0;padding:14px 18px 0;font-size:19px;line-height:1.25;font-weight:800;color:var(--fg)}
+.dif3-faixa{margin:14px 0 0;padding:14px 18px;border-radius:16px;background:var(--soft);color:var(--fg);font-size:15px;line-height:1.4;text-align:center}
+.dif3-col ul{list-style:none;margin:0;padding:12px 18px 0;display:grid;gap:11px;font-size:15px;line-height:1.4}
+.dif3-col li{position:relative;padding-left:26px}
+.dif3-col li::before{content:"✓";position:absolute;left:0;top:0;font-weight:800;color:var(--accent)}
+.dif3 sup{font-size:12px;line-height:0;vertical-align:baseline;position:relative;top:-.45em}
+.dif3-fonte{margin:8px 0 0;font-size:12.5px;color:var(--muted);text-align:center}.dif3-col sup a{display:inline-block;padding:0 3px;color:var(--accent);font-weight:700;text-decoration:none}
+.dif3-col li.breve{color:var(--muted);font-style:italic}.dif3-col li.breve::before{content:"…";color:var(--muted)}
+.dif3-col li b{color:var(--fg)}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -454,6 +475,35 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
       <div class="fc fc3" aria-hidden="true"><span class="ic2"><svg><use href="#i-predio"/></svg></span><span><b>Nota fiscal do CNPJ</b><small>emitida e guardada</small></span></div>
       </div>
     </div>
+  </section>
+
+  <section id="diferenciais" class="dif3" aria-labelledby="h-dif3">
+    <h2 id="h-dif3">Contabilidade, gestão e tecnologia para quem cuida de gente</h2>
+    <p class="dif3-sub">A gente cuida da burocracia. Você volta a cuidar de quem importa.</p>
+    <div class="dif3-grade">
+      <article class="dif3-col dif3-a"><header><span class="ic2" aria-hidden="true"><svg><use href="#i-predio"/></svg></span><h3>Contabilidade</h3></header>
+        <p class="dif3-prom">Você não precisa entender de imposto.</p>
+        <ul><li><b>A gente emite o seu recibo no Receita Saúde.</b> Sem recibo, a multa é de R$ 100 por mês; aqui a gente emite todo mês.<sup><a href="#nota-multa" aria-label="Fonte da multa">1</a></sup></li>
+        <li><b>O Carnê-Leão chega calculado</b>, com o DARF pronto antes do vencimento.</li>
+        <li><b>No imposto de renda, as suas informações já estão prontinhas:</b> rendimentos, despesas e DARFs do ano. É só entregar e ficar tranquilo(a).</li>
+        <li><b>Hora de virar CNPJ?</b> Mostramos a conta na tela e abrimos a sua empresa. Se não compensar, a gente diz.</li>
+        <li class="breve">Contabilidade e folha da sua empresa: em breve, no mesmo lugar</li></ul></article>
+      <article class="dif3-col dif3-b"><header><span class="ic2" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><h3>Gestão</h3></header>
+        <p class="dif3-prom">Seu mês resolvido, sem planilha.</p>
+        <ul><li><b>Registre pelo WhatsApp em poucos toques:</b> paciente, valor, forma de pagamento e dia.</li>
+        <li><b>Todo mês você vê</b> quanto entrou, quanto saiu, quanto é de imposto e quanto sobra.</li>
+        <li><b>Planeje o ano:</b> acompanhe o orçado e o realizado e veja como o ano deve fechar, com a projeção dos próximos meses.</li>
+        <li><b>Recibo em até 24 horas</b>, ou o motivo de não termos conseguido.</li>
+        <li><b>Seus vencimentos dos próximos 90 dias</b> numa agenda que entra no seu celular.</li></ul></article>
+      <article class="dif3-col dif3-c"><header><span class="ic2" aria-hidden="true"><svg><use href="#i-escudo"/></svg></span><h3>Tecnologia</h3></header>
+        <p class="dif3-prom">Automático para você ganhar tempo. Nossa equipe, quando precisar.</p>
+        <ul><li><b>WhatsApp ou app</b>, no celular ou no computador. Nada para instalar e nenhuma senha para decorar.</li>
+        <li><b>Pensado para a LGPD:</b> só o necessário para recibo, nota e imposto, e nenhum dado clínico. Seus dados são seus: baixe ou exclua quando quiser.</li>
+        <li><b>Sem sinal no consultório?</b> Lance do mesmo jeito: sobe sozinho quando a conexão voltar.</li>
+        <li><b>Sem fidelidade:</b> pause ou cancele quando quiser, sem prender ninguém.</li></ul></article>
+    </div>
+    <p class="dif3-faixa"><b>Feito para profissionais da saúde.</b> A gente fala a língua do Receita Saúde, do Carnê-Leão e do seu conselho, sem presumir consultório nem CNPJ.</p>
+    <p class="dif3-fonte" id="nota-multa"><sup>1</sup> Multa de R$ 100 por mês-calendário, IN RFB 2.240/2024, art. 4º.</p>
   </section>
 
   <section class="teste7" aria-label="Teste grátis">
