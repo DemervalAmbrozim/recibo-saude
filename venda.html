@@ -315,5 +315,6 @@ function conta(){const R=numBR(document.getElementById('cj-rec').value),dp=numBR
 <script>// Indicação: leva o ?ind= da venda para o cadastro
 (()=>{const q=new URLSearchParams(location.search),i=q.get('ind'),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),p=[];if(i)p.push('ind='+encodeURIComponent(i));if(o)p.push('o='+o);if(p.length)document.querySelectorAll('a[href="entrar.html"]').forEach(a=>a.href='entrar.html?'+p.join('&'))})();</script>
 <script>if(typeof CONFIG!=='undefined'&&CONFIG.empresa){var pe=document.getElementById('ponte-empresa');if(pe)pe.hidden=false}</script>
+<script src="perfil.js" defer></script>
 </body>
 </html>
