@@ -440,10 +440,10 @@ footer{padding-bottom:150px!important}
 /* Três telas de WhatsApp (uma por pilar), lado a lado, que ampliam e rolam para cima e para baixo (20/11, ideia dele) */
 .zaps-h{margin:6px 0 4px;color:#fff;font-size:clamp(22px,5.4vw,28px);line-height:1.15;text-wrap:balance}.zaps-sub{margin:0 0 12px;color:#e6f2f0;font-size:15px}
 .zaps-fila{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 12px;-webkit-overflow-scrolling:touch}
-.zap-tela{flex:0 0 min(260px,74%);scroll-snap-align:start;display:grid;gap:8px;align-content:start}
+.zap-tela{flex:0 0 min(214px,64%);scroll-snap-align:start;display:grid;gap:8px;align-content:start}
 .zap-pilar{margin:0;font-size:15px;font-weight:800;color:#fff;padding:6px 12px;border-radius:99px;justify-self:start}
 .z-a{background:#0b4a8a}.z-b{background:#00875f}.z-c{background:#0f7a8c}
-.zap-cx{background:#efeae2;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.25);height:380px;display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.zap-cx{background:#efeae2;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.25);height:300px;display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(0,0,0,.28)}
 .zap-topo{display:flex;gap:8px;align-items:center;background:#0b6b57;color:#fff;padding:8px 10px;flex:none}
 .zap-topo small{display:block;font-size:11px;opacity:.9}.zap-topo b{font-size:13px}
 .zap-av{width:30px;height:30px;border-radius:50%;background:#fff;color:#0b6b57;display:grid;place-items:center;font-weight:800;font-size:10px;flex:none}
@@ -469,8 +469,14 @@ footer{padding-bottom:150px!important}
 #zm-corpo .zb{font-size:15px;max-width:94%}#zm-corpo .zb i{font-size:12px}
 #zm-corpo img{display:block;width:100%;height:auto;background:#fff}
 .zm-nota{margin:0;padding:8px 12px;font-size:12.5px;color:#5b4300;background:#fff3c4;text-align:center}
-@media (min-width:761px){.zap-tela{flex-basis:230px}}
+@media (min-width:761px){.zap-tela{flex-basis:214px}}
 @media (prefers-reduced-motion:reduce){.zaps-fila{scroll-behavior:auto}}
+</style>
+<style>
+.zaps-nav{display:flex;justify-content:flex-end;gap:8px;margin:0 0 6px}
+.zf-seta{width:44px;height:44px;border-radius:50%;border:1.5px solid #7be0bd;background:rgba(123,224,189,.12);color:#7be0bd;font-size:26px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0 0 3px}
+.zf-seta:hover:not(:disabled){background:rgba(123,224,189,.3)}.zf-seta:disabled{opacity:.35;cursor:default}.zf-seta:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.zap-corpo{font-size:12px}.zb{font-size:12px}
 </style>
 </head>
 <body>
@@ -501,8 +507,9 @@ footer{padding-bottom:150px!important}
         <div class="duo">
           <figure><a class="fig-link" data-cta="simples-zap" href="https://wa.me/5527999712727?text=Ol%C3%A1!%20Quero%20ver%20como%20funciona%20o%20recibo%20pelo%20WhatsApp." target="_blank" rel="noopener"><img src="img/tela-whatsapp-recibo.webp" width="360" height="505" loading="lazy" decoding="async" alt="Conversa no WhatsApp: a profissional pede os recibos e o sistema devolve os PDFs do mês para entregar às pacientes"><figcaption><b>No WhatsApp</b>Peça o recibo ou a nota fiscal: a gente emite e devolve o PDF.<span class="vai"> Falar no WhatsApp →</span></figcaption></a></figure>
           <div class="zaps" id="s-tres">
-          <h2 class="zaps-h" id="h-zaps">Contabilidade, gestão e tecnologia para quem cuida de gente</h2>
-          <p class="zaps-sub">A gente cuida da burocracia. Você volta a cuidar de quem importa.</p>
+          <h2 class="zaps-h" id="h-zaps">Contabilidade - Gestão - Tecnologia</h2>
+          <p class="zaps-sub">Mais Diferenciais <span aria-hidden="true">👇</span></p>
+          <div class="zaps-nav"><button type="button" class="zf-seta" id="zf-e" aria-label="Ver a tela anterior" disabled>‹</button><button type="button" class="zf-seta" id="zf-d" aria-label="Ver a próxima tela">›</button></div>
           <div class="zaps-fila" role="list" aria-label="Três telas de WhatsApp com os diferenciais: contabilidade, gestão e tecnologia">
             <article class="zap-tela" role="listitem" data-pilar="Contabilidade">
               <h3 class="zap-pilar z-a">Contabilidade</h3>
@@ -686,6 +693,11 @@ dlg.addEventListener('close',function(){corpo.innerHTML=''});
 var web=document.getElementById('zap-web');if(web)web.addEventListener('click',function(){opener=web;tit.textContent='Plataforma web: Seu mês';corpo.innerHTML='<img src="img/tela-web-seu-mes.webp" width="420" height="253" alt="Plataforma web: painel Seu mês com recebido, despesas que abatem e Carnê-Leão">';document.getElementById('zm-ant').hidden=document.getElementById('zm-prox').hidden=true;if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','')});
 })();
 </script>
+<script>(function(){var f=document.querySelector('.zaps-fila'),e=document.getElementById('zf-e'),d=document.getElementById('zf-d');if(!f||!e||!d)return;
+function passo(){var t=f.querySelector('.zap-tela');return t?t.getBoundingClientRect().width+12:220}
+function atual(){e.disabled=f.scrollLeft<=4;d.disabled=f.scrollLeft+f.clientWidth>=f.scrollWidth-4}
+e.addEventListener('click',function(){f.scrollBy({left:-passo(),behavior:'smooth'})});d.addEventListener('click',function(){f.scrollBy({left:passo(),behavior:'smooth'})});
+f.addEventListener('scroll',atual,{passive:true});addEventListener('resize',atual);atual()})();</script>
 <script src="../perfil.js" defer></script>
 </body>
 </html>
