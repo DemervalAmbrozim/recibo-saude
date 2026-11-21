@@ -66,6 +66,15 @@ function planoEmpresa({hist,ano,hoje,orcRec={},salarioMinimo=1621,sazonal=true})
     limites:{maxRbt,maxRbtMes:maxRbtMes&&maxRbtMes.mes,rbtFim,porte:rbtFim>LIM_PORTE?'EPP':'ME',passaPorte:passaPorte&&passaPorte.mes,passaSimples:passaSimples&&passaSimples.mes,pctSimples:rbtFim/LIM_SIMPLES},
     proLabore:pl?{...pl,mes:peK(ano,nProx)}:null,lucro,orc:{temOrc,orcAno},anexoAgora:{mes:anexoAgora.mes,anexo:anexoAgora.anexo,fatorR:anexoAgora.fatorR},mesesAnexoV:mesesV,economiaAnexo:pe2(economiaAnexo)}}
 
+// Histórico mês a mês lido do LIVRO CONTÁBIL (21/11/2026): receita bruta e despesas de pessoal (pró-labore, salários, FGTS e demais encargos de folha) pela DRE de cada mês.
+// livro = criaLivro() (contabil.js). deMes/ateMes = 'AAAA-MM'. Meses sem nenhum lançamento ficam de fora (o plano os completa pela média e avisa).
+// Atenção: as provisões de férias e 13º entram em despesas de pessoal (regime de competência); o Fator R oficial do PGDAS-D usa a folha paga: o contador confere [conferir].
+function historicoPlanoDoLivro(livro,deMes,ateMes){
+  const out=[];let [a,m]=deMes.split('-').map(Number);const [af,mf]=ateMes.split('-').map(Number);
+  while(a<af||(a===af&&m<=mf)){const k=peK(a,m),ult=new Date(Date.UTC(a,m,0)).getUTCDate(),d=livro.dre(`${k}-01`,`${k}-${String(ult).padStart(2,'0')}`);
+    if(d.receitaBruta>0||d.despesasPessoal>0)out.push({mes:k,receita:pe2(d.receitaBruta),folha:pe2(d.despesasPessoal)});
+    m++;if(m>12){m=1;a++}}
+  return out}
 // As 3 perguntas e as frases curtas (linguagem simples, sem promessa)
 function planoEmpresaTexto(P){
   if(!P.ok)return {perguntas:[],notas:[P.motivo]};
@@ -93,4 +102,4 @@ function planoEmpresaTexto(P){
   if(P.temEstimado)notas.push('Faltam dados de meses antigos: usei a média para completar os 12 meses do cálculo.');
   notas.push('É uma estimativa pelo seu ritmo recente, não uma promessa. O valor oficial do DAS é o do PGDAS-D; o contador confere.');
   return {perguntas:q,notas}}
-if(typeof module!=='undefined')module.exports={...(typeof module.exports==='object'?module.exports:{}),planoEmpresa,planoEmpresaTexto};
+if(typeof module!=='undefined')module.exports={...(typeof module.exports==='object'?module.exports:{}),planoEmpresa,planoEmpresaTexto,historicoPlanoDoLivro};

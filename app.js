@@ -306,6 +306,24 @@ function envioTela(mes){const g={};
     return `<div class="item"><div><b>${esc(p.nome)}</b><div class="meta">${brl(g[id])}${zap||mail?'':' · sem contato: cadastre em Pacientes'}</div></div><div class="btns">${zap}${mail}</div></div>`}).join('')
     :'<div class="sub">Nenhum recibo emitido neste mês ainda.</div>';
 }
+
+// DARF do Carnê-Leão de TODAS as profissionais no mês escolhido (21/11/2026). Mesmas regras do app (apura); lê o que a equipe já pode ler; nada é enviado.
+$('dt-calc').onclick=async()=>{const mes=$('f-mes').value;if(!mes){$('dt-msg').textContent='Escolha o mês.';return}
+  $('dt-msg').textContent='Calculando…';$('dt-lista').innerHTML='';
+  const [aa,mm]=mes.split('-').map(Number),ini=`${aa-1}-12-01`,fim=mm===12?`${aa+1}-01-01`:`${aa}-${String(mm+1).padStart(2,'0')}-01`;
+  const [P,A,D,G]=await Promise.all([sb.from('profissionais').select('id,nome,situacao').order('nome'),sb.from('atendimentos').select('profissional_id,data,valor,pago').gte('data',ini).lt('data',fim),
+    sb.from('despesas').select('profissional_id,data,valor,codigo').gte('data',ini).lt('data',fim),sb.from('darf_pagos').select('profissional_id,mes,valor,pago_em').eq('mes',mes)]);
+  if(P.error||A.error||D.error){$('dt-msg').textContent='Não consegui ler agora. Confira a internet e tente de novo.';return}
+  const venc=ultimoDiaUtil(aa,mm),vtxt=dBR(dISO(venc)),pago=new Set((G.data||[]).map(x=>x.profissional_id));let n=0,soma=0;
+  const linhas=(P.data||[]).filter(p=>!['cancelada','excluida'].includes(p.situacao||'')).map(p=>{
+    const at=(A.data||[]).filter(a=>a.profissional_id===p.id&&a.pago!==false).map(a=>({data:String(a.data).slice(0,10),valor:+a.valor})),
+          ds=(D.data||[]).filter(d=>d.profissional_id===p.id).map(d=>({data:String(d.data).slice(0,10),valor:+d.valor,codigo:d.codigo}));
+    if(!at.length)return null;const dv=apura(at,ds,mes).darf;return {p,dv,pago:pago.has(p.id)}}).filter(Boolean);
+  $('dt-lista').innerHTML=linhas.length?linhas.map(x=>{const t=x.dv.pagar>0?`DARF ${brl(x.dv.pagar)} · vence ${vtxt}${x.pago?' · PAGO':''}`:x.dv.adia?'abaixo de R$ 10: soma ao mês seguinte':'nada a pagar';if(x.dv.pagar>0&&!x.pago){n++;soma+=x.dv.pagar}
+    const msg=`Oi, ${x.p.nome.split(' ')[0]}! O seu DARF do Carnê-Leão de ${String(mm).padStart(2,'0')}/${aa} é de ${brl(x.dv.pagar)} e vence em ${vtxt}.`;
+    return `<div class="item"><div><b>${esc(x.p.nome)}</b><div class="sub">${t}</div></div>${x.dv.pagar>0&&!x.pago?`<button type="button" class="small" data-dtmsg="${esc(msg)}">Copiar texto</button>`:''}</div>`}).join(''):'<div class="sub">Nenhuma profissional com recebimento neste período.</div>';
+  $('dt-msg').textContent=`${n} DARF(s) a pagar, total ${brl(soma)}, vencimento ${vtxt}.`};
+$('dt-lista').onclick=e=>{const m=e.target.dataset&&e.target.dataset.dtmsg;if(m)copia(m)};
 $('f-mes').onchange=fech;$('f-agrupa').onchange=fech;
 $('b-copiar').onclick=()=>copia($('f-csv').value,$('f-csv'));
 $('b-baixar').onclick=()=>$('f-csv').value&&baixa('recibos-'+$('f-mes').value+'.csv',$('f-csv').value);

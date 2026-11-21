@@ -11,7 +11,12 @@ const r2f=x=>Math.round((x+Number.EPSILON)*100)/100;
 
 function tabelaFolha(ano){const t=TABELAS_FOLHA[ano];if(!t)throw new Error('Tabela da folha de '+ano+' não cadastrada: cadastre em TABELAS_FOLHA antes de calcular');return t}
 
-function inssFolha(base,ano){const t=tabelaFolha(ano);let tot=0,ant=0;for(const [teto,al] of t.inss){if(base>ant)tot+=(Math.min(base,teto)-ant)*al;ant=teto}return r2f(tot)}
+// Modo do arredondamento do INSS (21/11/2026): 'total' = soma as faixas e arredonda no fim; 'truncado' = trunca cada faixa em centavos (como o eSocial S-5001, leitura de 17/11).
+// O Daniel decide na 1ª folha-sombra; trocar aqui (ou na tela da folha em lote) vale para folha, férias, 13º e rescisão. Padrão: 'total' (não muda nenhum número já conferido).
+let MODO_INSS='total';
+function definirModoINSS(m){if(m!=='total'&&m!=='truncado')throw new Error("modo do INSS deve ser 'total' ou 'truncado'");MODO_INSS=m;return MODO_INSS}
+function modoINSS(){return MODO_INSS}
+function inssFolha(base,ano){if(MODO_INSS==='truncado')return inssFolhaTruncado(base,ano);const t=tabelaFolha(ano);let tot=0,ant=0;for(const [teto,al] of t.inss){if(base>ant)tot+=(Math.min(base,teto)-ant)*al;ant=teto}return r2f(tot)}
 
 // emp: {salario, divisor (220 = 44 h/semana; 200 = 40 h; 180 = 36 h), dependentes (IR), filhosSF (até 14 anos ou inválidos; conferir a idade-limite na Portaria do ano), vtCusto (custo mensal do transporte, 0 = não optou)}
 // mov: movimentos do mês. Retorna rubricas com incidência, bases, líquido e custo estimado. Lança erro em dado impossível (nunca "chuta").
@@ -221,4 +226,4 @@ function calculaRescisao(emp,o={},ano){
 
 // Multa do art. 477 §8º da CLT: se as verbas rescisórias passarem do prazo (vencimento da rescisão), a multa é de um salário do empregado. Fonte: resumo de acórdãos (TRT-3/TST); o texto do artigo no Planalto NÃO foi aberto: o contador/advogado confere. Datas em aaaa-mm-dd.
 function multaAtraso477(salario,vencimento,pagamento){const atrasou=!!(vencimento&&pagamento&&pagamento>vencimento);return {atrasou,multa:atrasou?r2f(+salario||0):0,fonte:'CLT art. 477 §8º (a conferir no texto oficial)'}}
-if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,inssFolhaTruncado,calculaProLabore,calculaRescisao,multaAtraso477,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};
+if(typeof module!=='undefined')module.exports={TABELAS_FOLHA,tabelaFolha,inssFolha,calculaFolha,holeriteHTML,direitoFerias,fracionamentoOk,prazosFerias,calculaFerias,calculaDecimoTerceiro,irrf13,inssFolhaTruncado,definirModoINSS,modoINSS,calculaProLabore,calculaRescisao,multaAtraso477,anosCompletos,avos13Rescisao,avosFeriasRescisao,TIPOS_RESCISAO};

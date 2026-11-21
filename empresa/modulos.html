@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EXWzZi7oPLm8nHu62ZkHhWnTh41vSJwdF4hk/MTUSuw=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-9urYI+as17s/DvxBK6FzWVAnptas5BVwB8vStyo4oqM=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Módulos do contador, Minha empresa</title>
@@ -107,7 +107,7 @@ section button,nav button,summary{min-height:44px}
 <div class="card" id="r2010"><h2>EFD-Reinf: serviços tomados com retenção de INSS (R-2010)</h2><p class="sub">Para quando a empresa contrata cessão de mão de obra ou empreitada e retém 11% de INSS. Gera o R-2010 e o R-2099 como RASCUNHO, validados no leiaute oficial v2.1.2, sem assinar nem transmitir. O <b>tipo de serviço</b> (tabela 06 do manual, 9 dígitos) e a obrigação de reter são do contador.</p>
   <label>CNPJ da empresa (tomadora) <input id="r2-t" value="12.345.678/0001-95"></label> <label>CNPJ do prestador <input id="r2-p" value="11.222.333/0001-81"></label> <label>Competência <input id="r2-c" value="2026-11" style="width:90px"></label><br>
   <label>Série <input id="r2-s" value="1" style="width:50px"></label> <label>Nº da nota <input id="r2-n" value="123" style="width:90px"></label> <label>Emissão <input id="r2-d" type="date" value="2026-11-10"></label> <label>Valor bruto <input id="r2-v" type="number" value="5000"></label> <label>Base da retenção <input id="r2-b" type="number" value="5000"></label> <label>Tipo de serviço (9 dígitos) <input id="r2-ts" value="100000001" style="width:110px"></label>
-  <div id="r2-out" class="tbl"></div><pre id="r2-xml" class="mini" style="white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all"></pre></div>
+  <details style="margin:8px 0"><summary><b>Várias notas de uma vez</b> (cole da planilha)</summary><p class="mini">Uma nota por linha: série;número;data;valor bruto;base;tipo de serviço. Se esta caixa tiver notas, ela vale no lugar dos campos acima.</p><textarea id="r2-csv" rows="5" style="width:100%" placeholder="1;123;10/11/2026;5.000,00;5.000,00;100000001" aria-label="Notas do prestador, uma por linha"></textarea></details><div id="r2-out" class="tbl"></div><pre id="r2-xml" class="mini" style="white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all"></pre></div>
 <div class="card" id="reinf"><h2>EFD-Reinf (rascunho) e ECD/ECF</h2><p class="sub">Informe um pagamento a pessoa jurídica. O sistema apura IR, CSRF e INSS retidos e monta os eventos como RASCUNHO, sem assinar nem transmitir.</p>
   <label>CNPJ do prestador <input id="rf-cnpj" value="11.222.333/0001-81"></label> <label>Valor bruto <input id="rf-v" type="number" value="2000"></label> <label>Natureza <select id="rf-n"><option value="servico">Serviço (IR/CSRF)</option><option value="cessao">Cessão de mão de obra (INSS)</option></select></label> <label class="chk"><input type="checkbox" id="rf-s"> Optante do Simples com declaração</label>
   <div id="rf-out" class="tbl"></div><pre id="rf-xml" class="mini" style="white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all"></pre>
@@ -120,12 +120,14 @@ section button,nav button,summary{min-height:44px}
   <section id="t-pai"><div class="card"><h2>Painel do contador: fila de prioridades</h2><p class="sub">Carteira de exemplo com 4 clientes e a data de hoje fixa em 18/03/2027. A fila mostra o que olhar primeiro.</p><div id="p-fila" class="tbl"></div>
     <h3>Vencimentos dos próximos 7 dias</h3><div id="p-sem" class="tbl"></div><h3>Tempo e margem do mês</h3><div id="p-ind"></div></div>
     <div class="card" id="lote"><h2>Folha em lote: todos os clientes numa fila</h2><p class="sub">Exemplo com 4 clientes de teste. Só vem para você o que exige decisão: erros, folhas prontas e quem ainda não respondeu. A folha nunca nasce aprovada; o sistema não paga nada.</p>
-  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label> <label>Mês <input id="lt-comp" value="2026-12" style="width:90px"></label> <button id="lt-real" type="button">Carregar clientes reais</button> <button id="lt-grava" type="button" hidden>Gravar folhas como sombra</button> <span id="lt-modo" class="mini">Modo exemplo.</span>
-  <div id="lt-res" class="mini"></div><div id="lt-out" class="tbl"></div><div id="lt-msg" class="mini" role="status"></div><div id="lt-cob"></div></div>
+  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label> <label>Mês <input id="lt-comp" value="2026-12" style="width:90px"></label> <label>Arredondamento do INSS <select id="lt-inss"><option value="total">Somar as faixas e arredondar no fim</option><option value="truncado">Truncar cada faixa (como o eSocial)</option></select></label> <button id="lt-real" type="button">Carregar clientes reais</button> <button id="lt-grava" type="button" hidden>Gravar folhas como sombra</button> <span id="lt-modo" class="mini">Modo exemplo.</span>
+  <div id="lt-tempo" class="mini" role="status"></div><div id="lt-res" class="mini"></div><div id="lt-out" class="tbl"></div><div id="lt-msg" class="mini" role="status"></div><div id="lt-cob"></div></div>
 <div class="card" id="afast" hidden><h2>Lançar afastamento</h2><p class="sub">Só no modo real. Guarda tipo e datas (sem CID). O aviso aparece na fila da folha em lote.</p>
   <label>Empregado <select id="af-e"></select></label> <label>Tipo <select id="af-t"><option value="atestado">Atestado</option><option value="doenca">Doença (benefício)</option><option value="acidente">Acidente</option><option value="maternidade">Maternidade</option><option value="paternidade">Paternidade</option><option value="demissao">Demissão</option><option value="mudanca_funcao">Mudança de função</option></select></label>
   <label>Início <input id="af-i" type="date"></label> <label>Fim <input id="af-f" type="date"></label> <label><input id="af-a" type="checkbox"> Acidente de trabalho</label> <button id="af-ok" type="button">Lançar</button>
   <div id="af-msg" class="mini" role="status"></div><div id="af-lista" class="tbl"></div></div>
+<div class="card" id="audit" hidden><h2>Trilha de auditoria da empresa</h2><p class="sub">Quem aprovou cada folha e quando. Só no modo real. Se aparecer vazio, ainda não houve ação ou a sua conta não tem permissão de leitura.</p>
+  <div id="au-lista" class="tbl"></div></div>
 <div class="card" id="escala"><h2>Escala do escritório: quanto a automação muda a sua capacidade</h2><p class="sub"><b>Horas e percentuais são premissas de partida (nossas): troque pelos números do seu escritório.</b> A conferência do contador continua em todas as clientes (0,25 h por cliente). Estimativa, não promessa.</p><div class="grid"><label>Clientes<input id="esc-n" inputmode="numeric" value="30"></label><label>% com folha<input id="esc-pf" inputmode="numeric" value="30"></label><label>Horas úteis do contador no mês<input id="esc-u" inputmode="numeric" value="140"></label><label>Honorário médio (R$)<input id="esc-h" inputmode="numeric" value="299"></label><label>Hora do contador (R$)<input id="esc-c" inputmode="numeric" value="60"></label></div><div id="esc-t" class="tbl"></div><div id="esc-o" class="tbl"></div></div><div class="card"><h2>Carteira no banco</h2><p class="sub">As empresas que você pode ver como equipe ou contador designado.</p><p><button class="p" id="bd-cart" disabled title="Entre na sua conta e escolha a empresa">Carregar carteira</button></p><div id="bd-cart-out" role="status" aria-live="polite"></div></div></section>
 
   <section id="t-soc"><div class="card"><h2>Informe anual do sócio</h2>
@@ -337,11 +339,14 @@ function reinfUI(){const P=[{data:'2026-11-10',cnpjBeneficiario:$('rf-cnpj').val
 
 // R-2010 (serviços tomados): rascunho validado no leiaute oficial
 function r2010UI(){var ctx={cnpj:$('r2-t').value,agora:'20261121100000'};
- var L=lotesReinfOficial({competencia:$('r2-c').value,linhas:[]},ctx,{servicosTomados:[{cnpjPrestador:$('r2-p').value,indObra:0,indCPRB:0,notas:[{serie:$('r2-s').value,numDocto:$('r2-n').value,dtEmissaoNF:$('r2-d').value,vlrBruto:+$('r2-v').value,servicos:[{tpServico:$('r2-ts').value,vlrBaseRet:+$('r2-b').value}]}]}]});
- var base=+$('r2-b').value||0,ret=Math.round(base*0.11*100)/100;
- $('r2-out').innerHTML=L.erros.length?'<p class="mini" role="alert">'+L.erros.map(esc).join('<br>')+'</p>':'<table><tr><th>Evento</th><th>O que é</th></tr><tr><td>R-2010</td><td>Nota '+esc($('r2-n').value)+' do prestador '+esc($('r2-p').value)+': INSS retido de 11% sobre '+base.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' = '+ret.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+'</td></tr><tr><td>R-2099</td><td>Fechamento da competência com serviços tomados</td></tr></table><p class="mini">Rascunho sem assinatura. Conferir tipo de serviço e obrigação de reter antes de qualquer envio.</p>';
+ var lote=$('r2-csv').value.trim()?lerNotasTomadas($('r2-csv').value):null;
+ if(lote&&lote.erros.length){$('r2-out').innerHTML='<p class="mini" role="alert">'+lote.erros.map(function(e){return (e.linha?'Linha '+e.linha+': ':'')+esc(e.motivo)}).join('<br>')+'</p>';$('r2-xml').textContent='';return}
+ var notas=lote?lote.notas:[{serie:$('r2-s').value,numDocto:$('r2-n').value,dtEmissaoNF:$('r2-d').value,vlrBruto:+$('r2-v').value,servicos:[{tpServico:$('r2-ts').value,vlrBaseRet:+$('r2-b').value}]}];
+ var L=lotesReinfOficial({competencia:$('r2-c').value,linhas:[]},ctx,{servicosTomados:[{cnpjPrestador:$('r2-p').value,indObra:0,indCPRB:0,notas:notas}]});
+ var base=notas.reduce(function(s,n){return s+n.servicos.reduce(function(t,x){return t+x.vlrBaseRet},0)},0),ret=Math.round(base*0.11*100)/100;
+ $('r2-out').innerHTML=L.erros.length?'<p class="mini" role="alert">'+L.erros.map(esc).join('<br>')+'</p>':'<table><tr><th>Evento</th><th>O que é</th></tr><tr><td>R-2010</td><td>'+(notas.length>1?notas.length+' notas':'Nota '+esc(notas[0].numDocto))+' do prestador '+esc($('r2-p').value)+': INSS retido de 11% sobre '+base.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+' = '+ret.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})+'</td></tr><tr><td>R-2099</td><td>Fechamento da competência com serviços tomados</td></tr></table><p class="mini">Rascunho sem assinatura. Conferir tipo de serviço e obrigação de reter antes de qualquer envio.</p>';
  $('r2-xml').textContent=L.eventos.map(function(e){return e.xml}).join('\n\n')}
-['r2-t','r2-p','r2-c','r2-s','r2-n','r2-d','r2-v','r2-b','r2-ts'].forEach(function(i){$(i).addEventListener('input',r2010UI)});r2010UI();
+['r2-t','r2-p','r2-c','r2-s','r2-n','r2-d','r2-v','r2-b','r2-ts','r2-csv'].forEach(function(i){$(i).addEventListener('input',r2010UI)});r2010UI();
 
 // Folha em lote (folha-lote.js e folha-lote-db.js): modo exemplo e modo real (banco)
 var LT={ap:{},vars:{a:{a1:null,a2:{faltasDias:1}},b:{},c:{c1:null},d:{}},real:false,folhas:{},cart:null};
@@ -373,9 +378,26 @@ $('lt-out').addEventListener('click',async function(e){var t=e.target,a=t.getAtt
  if(sa){var cart=(LT.real?LT.cart:LT_EX),c=cart.filter(function(k){return k.id===sa})[0],v=Object.assign({},LT.vars[sa]||{});c.anterior.forEach(function(f){if(!(f.id in v))v[f.id]=null});LT.vars[sa]=v;$('lt-msg').textContent='Registrado: sem alteração.';loteUI()}
  if(rg){var p=rg.split('|'),f=document.querySelector('[data-f="'+rg+'"]'),h=document.querySelector('[data-h="'+rg+'"]');LT.vars[p[0]]=Object.assign({},LT.vars[p[0]]||{});LT.vars[p[0]][p[1]]={faltasDias:+f.value||0,heNormais:+h.value||0};$('lt-msg').textContent='Variáveis registradas.';loteUI()}});
 loteUI();
+
+
+// Trilha de auditoria (pj_auditoria): lista as últimas ações da empresa escolhida no cartão de afastamento
+async function auLista(){var c=$('audit');if(!LT.real||!LT.cart){c.hidden=true;return}c.hidden=false;var v=($('af-e').value||'').split('|');if(!v[0]){$('au-lista').innerHTML='';return}
+ try{var L=await window.__bdDB.auditoria(v[0],30);var NOME={folha_aprovada:'Folha aprovada'};
+  $('au-lista').innerHTML=L.length?'<table><tr><th>Quando</th><th>Ação</th><th>Detalhe</th></tr>'+L.map(function(x){var d=x.detalhe||{};return '<tr><td>'+esc(new Date(x.em).toLocaleString('pt-BR'))+'</td><td>'+esc(NOME[x.acao]||x.acao)+'</td><td class="mini">'+esc(Object.keys(d).map(function(k){return k+': '+d[k]}).join('; '))+'</td></tr>'}).join('')+'</table>':'<p class="mini">Nenhum registro para esta empresa.</p>'}catch(x){$('au-lista').textContent=traduzErroPj(x,'ler')}}
+$('af-e').addEventListener('change',auLista);
+
+// Arredondamento do INSS (decisão do contador) e medidor de tempo por folha (21/11/2026)
+(function(){var sel=$('lt-inss'),K='rs_modo_inss',KT='rs_tempo_folha',mark=Date.now();
+ try{var v=localStorage.getItem(K);if(v==='truncado'||v==='total'){definirModoINSS(v);sel.value=v}}catch(e){}
+ sel.addEventListener('change',function(){definirModoINSS(sel.value);try{localStorage.setItem(K,sel.value)}catch(e){}$('lt-msg').textContent='Arredondamento do INSS: '+(sel.value==='truncado'?'truncando cada faixa':'somando e arredondando no fim')+'. As folhas foram recalculadas; as já aprovadas com número diferente voltam para conferência.';loteUI()});
+ function lista(){try{return JSON.parse(localStorage.getItem(KT)||'[]')}catch(e){return []}}
+ function mostra(){var L=lista();$('lt-tempo').textContent=L.length?'Tempo médio por folha aprovada: '+Math.round(L.reduce(function(s,x){return s+x},0)/L.length)+' s (últimas '+L.length+'; guardado só neste aparelho).':''}
+ $('lt-out').addEventListener('click',function(e){if(!e.target.getAttribute('data-ap'))return;var s=Math.min(900,Math.max(1,Math.round((Date.now()-mark)/1000)));mark=Date.now();var L=lista();L.push(s);try{localStorage.setItem(KT,JSON.stringify(L.slice(-50)))}catch(x){}mostra()});
+ $('lt-out').addEventListener('click',function(){mark=mark||Date.now()},true);mostra()})();
+
 // Afastamento (SQL 063): formulário do contador, só no modo real
 function afUI(){var c=$('afast');if(!LT.real||!LT.cart){c.hidden=true;return}c.hidden=false;var cur=$('af-e').value;
- $('af-e').innerHTML=LT.cart.map(function(k){return k.anterior.map(function(e){return '<option value="'+k.id+'|'+e.id+'">'+esc(k.nome)+' · '+esc(e.nome)+'</option>'}).join('')}).join('');if(cur)$('af-e').value=cur;afLista()}
+ $('af-e').innerHTML=LT.cart.map(function(k){return k.anterior.map(function(e){return '<option value="'+k.id+'|'+e.id+'">'+esc(k.nome)+' · '+esc(e.nome)+'</option>'}).join('')}).join('');if(cur)$('af-e').value=cur;afLista();auLista()}
 async function afLista(){var v=($('af-e').value||'').split('|');if(v.length<2){$('af-lista').innerHTML='';return}
  try{var L=(await window.__bdDB.afastamentos(v[0])).filter(function(x){return x.empregado_id===v[1]});
   $('af-lista').innerHTML=L.length?'<table><tr><th>Tipo</th><th>Início</th><th>Fim</th><th></th></tr>'+L.map(function(x){return '<tr><td>'+esc(x.tipo)+(x.acidente_trabalho?' (acidente de trabalho)':'')+'</td><td>'+esc(x.inicio)+'</td><td>'+esc(x.fim||'em aberto')+'</td><td><button type="button" data-afx="'+esc(x.id)+'">Excluir</button></td></tr>'}).join('')+'</table>':'<p class="mini">Nenhum afastamento lançado para este empregado.</p>'}catch(x){$('af-lista').textContent=traduzErroPj(x,'ler')}}

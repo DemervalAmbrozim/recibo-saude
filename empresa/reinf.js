@@ -122,6 +122,23 @@ function xmlReinfOficial(tipo,dados,ctx){
   else er.push('Evento '+tipo+' não suportado.');
   if(er.length)return {ok:false,erros:er};
   return {ok:true,erros:[],id,xml:`<Reinf xmlns="${ns}"><${raiz} id="${id}">${corpo}</${raiz}></Reinf>`}}
+// Várias notas do mesmo prestador coladas de uma planilha (21/11/2026). Colunas: série;número;data;valor bruto;base da retenção;tipo de serviço [;observação]. Separador ; ou tab. Data DD/MM/AAAA ou AAAA-MM-DD.
+function lerNotasTomadas(txt){
+  const erros=[],notas=[],L=String(txt||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+  const num=v=>{v=String(v==null?'':v).replace(/[R$\s]/g,'');if(!v)return NaN;if(/,/.test(v))v=v.replace(/\./g,'').replace(',','.');return +v};
+  const data=v=>{v=String(v||'').trim();let m=v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/),y,mo,d;if(m){[d,mo,y]=[m[1],m[2],m[3]]}else if((m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/))){[y,mo,d]=[m[1],m[2],m[3]]}else return null;
+    const iso=`${y}-${mo}-${d}`,t=new Date(iso+'T12:00:00Z');return !isNaN(t)&&t.toISOString().slice(0,10)===iso?iso:null};
+  L.forEach((l,i)=>{if(i===0&&/s[eé]rie/i.test(l))return;const c=l.split(/;|\t/).map(x=>x.trim()),lin=i+1;
+    if(c.length<6){erros.push({linha:lin,motivo:'faltam colunas (série;número;data;valor bruto;base;tipo de serviço)'});return}
+    const dt=data(c[2]),vb=num(c[3]),vbase=num(c[4]);
+    if(!c[1]){erros.push({linha:lin,motivo:'número da nota vazio'});return}
+    if(!dt){erros.push({linha:lin,motivo:'data inválida (use DD/MM/AAAA)'});return}
+    if(!(vb>0)||!(vbase>0)){erros.push({linha:lin,motivo:'valor bruto e base devem ser maiores que zero'});return}
+    if(vbase>vb+0.005){erros.push({linha:lin,motivo:'base da retenção maior que o valor bruto'});return}
+    if(!/^\d{9}$/.test(c[5])){erros.push({linha:lin,motivo:'tipo de serviço deve ter 9 dígitos (tabela 06 do manual)'});return}
+    notas.push({serie:c[0]||'1',numDocto:c[1],dtEmissaoNF:dt,vlrBruto:vb,obs:c[6]||undefined,servicos:[{tpServico:c[5],vlrBaseRet:vbase}]})});
+  const dup=new Set();notas.forEach(n=>{const k=n.serie+'|'+n.numDocto;if(dup.has(k))erros.push({linha:0,motivo:'nota repetida: série '+n.serie+' número '+n.numDocto});dup.add(k)});
+  return {notas,erros}}
 // Todos os eventos do mês no leiaute oficial: R-1000 (se pedir), R-4020 por beneficiário, R-4099; (R-2099 se houver R-2010, ainda não gerado)
 function lotesReinfOficial(ap,ctx,opc){
   const o=opc||{},out=[],erros=[];let seq=0;const c0=()=>({...ctx,perApur:ap.competencia,seq:++seq});
@@ -135,4 +152,4 @@ function lotesReinfOficial(ap,ctx,opc){
   if(t2010.length)add('R-2099',{temR2010:true,respInf:o.respInf});   // fechamento da série R-2xxx: evtServTm = S
   if(!t2010.length&&ap.linhas.some(l=>l.inss>0))erros.push('R-2010: há retenção de INSS (cessão de mão de obra), mas o evento exige as notas: informe em servicosTomados (série, número, data, tipo de serviço).');
   return {eventos:out,erros}}
-if(typeof module!=='undefined')module.exports={xmlReinfOficial,lotesReinfOficial,pagamentosParaReinf,apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};
+if(typeof module!=='undefined')module.exports={lerNotasTomadas,xmlReinfOficial,lotesReinfOficial,pagamentosParaReinf,apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};
