@@ -499,6 +499,8 @@ footer{padding-bottom:96px!important}
 #contratafix b{font-size:15px;font-weight:800;white-space:nowrap}
 </style>
 <style>.zap-av img{display:block;width:22px;height:auto}</style>
+<style>/* 20/11 noite: tela cheia (>=761 px). O bloco da esquerda não pode ficar travado em 700 px (as 3 telas de WhatsApp espremiam o exemplo do recibo a 35 px e as fotos viravam uma tira de 176 px lá embaixo): colunas flexíveis, fotos presas no alto à direita, exemplo do recibo em cima e as 3 telas embaixo. */
+@media (min-width:761px){.heroi{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}.heroi>div:first-child{min-width:0}.heroi .colagem{align-self:start;position:sticky;top:96px}.simples .duo{grid-template-columns:minmax(0,1fr)!important}.simples .duo>*{min-width:0}.simples .duo>figure:first-child{max-width:300px;justify-self:start}}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
