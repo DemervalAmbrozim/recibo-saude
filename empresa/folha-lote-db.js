@@ -10,7 +10,9 @@ async function carregarCarteiraReal(DB,comp){
   for(const e of emps){
     const lista=(await DB.empregadosFolha(e.id)).filter(r=>ativoNaComp(r,comp));
     if(!lista.length&&!(+e.num_empregados>0))continue;   // empresa sem empregados não entra na fila
-    carteira.push({id:e.id,nome:e.razao_social||'Empresa sem nome',anterior:lista.map(empParaFolha)});empresaDe[e.id]=e.id;
+    // afastamentos: se a tabela ainda não existe ou falha, a folha segue sem avisos (não derruba o lote)
+    let afast;try{const ev=DB.afastamentos?await DB.afastamentos(e.id):[];if(ev.length){afast={};for(const x of ev)(afast[x.empregado_id]=afast[x.empregado_id]||[]).push({tipo:x.tipo,inicio:x.inicio,fim:x.fim||x.inicio,acidenteTrabalho:!!x.acidente_trabalho,nascimento:x.nascimento||undefined})}}catch(_){afast=undefined}
+    carteira.push({id:e.id,nome:e.razao_social||'Empresa sem nome',anterior:lista.map(empParaFolha),afastamentos:afast});empresaDe[e.id]=e.id;
     for(const f of await DB.folhasDoMes(e.id,comp))folhas[f.empregado_id]={id:f.id,status:f.status,resultado:f.resultado}}
   return {carteira,folhas,empresaDe}}
 // Aprovações vindas do banco: um cliente conta como aprovado se TODAS as folhas dos empregados estão 'aprovada' ou 'paga' e os números gravados batem com os calculados agora
@@ -31,10 +33,15 @@ async function gravarSombras(DB,lote,folhas,versao){
       try{await DB.guardarFolha(c.id,i.id,lote.comp,i.folha,versao||'folha.js','sombra');r.gravadas++}catch(e){r.falhas.push({cliente:c.nome,empregado:i.nome,motivo:String(e.message||e)})}}}
   return r}
 // Aprova no banco todas as folhas do cliente (recarregue os ids antes: a gravação cria as linhas). Qualquer erro do servidor (sem 2º fator, sem permissão) volta para a tela.
+// 21/11: o servidor diz "so o contador aprova a folha" tanto para quem não é contador quanto para quem não confirmou o 2º fator; a tela explica as duas coisas
+function motivoAprovacao(e){const m=String((e&&e.message)||e||'');
+  if(/so o contador aprova/i.test(m))return 'não foi aceito: confirme o 2º fator (código do app autenticador) e tente de novo; se já confirmou, esta conta não é de contador desta empresa';
+  if(/segundo fator/i.test(m))return 'confirme o código do 2º fator e tente de novo';
+  return m}
 async function aprovarClienteNoBanco(DB,cliente,folhas){
   const r={aprovadas:0,falhas:[]};
   for(const i of cliente.folha.itens){const f=folhas[i.id];if(!f){r.falhas.push({empregado:i.nome,motivo:'folha ainda não gravada'});continue}
     if(f.status==='aprovada'||f.status==='paga'){r.aprovadas++;continue}
-    try{await DB.aprovarFolha(f.id);r.aprovadas++}catch(e){r.falhas.push({empregado:i.nome,motivo:String(e.message||e)})}}
+    try{await DB.aprovarFolha(f.id);r.aprovadas++}catch(e){r.falhas.push({empregado:i.nome,motivo:motivoAprovacao(e)})}}
   return r}
-if(typeof module!=='undefined')module.exports={carregarCarteiraReal,aprovacoesDoBanco,gravarSombras,aprovarClienteNoBanco,empParaFolha,ativoNaComp};
+if(typeof module!=='undefined')module.exports={motivoAprovacao,carregarCarteiraReal,aprovacoesDoBanco,gravarSombras,aprovarClienteNoBanco,empParaFolha,ativoNaComp};

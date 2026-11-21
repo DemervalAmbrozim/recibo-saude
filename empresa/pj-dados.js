@@ -45,6 +45,11 @@ function criaDados(sb){
     async socios(emp){return ck(await sb.from('pj_socio').select('id,nome,cpf,participacao,administrador,prolabore').eq('empresa_id',emp).order('nome'))||[]},
     async salvarSocio(emp,s){const cpf=String(s.cpf||'').replace(/\D/g,'');return ck(await sb.from('pj_socio').upsert({empresa_id:emp,nome:String(s.nome||'').trim(),cpf,participacao:+s.participacao,administrador:!!s.administrador,prolabore:s.prolabore==null||s.prolabore===''?null:+s.prolabore},{onConflict:'empresa_id,cpf'}))},
     async empregadosFolha(emp){return ck(await sb.from('pj_empregado').select('id,nome,salario,admissao,desligamento,dependentes,filhos_sf,vt_custo').eq('empresa_id',emp).order('nome'))||[]},
+    // Afastamentos (SQL 063): eventos de atestado, doença, acidente, maternidade, paternidade, demissão. Sem CID.
+    async afastamentos(emp){return ck(await sb.from('pj_afastamento').select('id,empregado_id,tipo,inicio,fim,acidente_trabalho,nascimento,obs').eq('empresa_id',emp).order('inicio',{ascending:false}))||[]},
+    async salvarAfastamento(emp,empregadoId,a){const tipos=['atestado','doenca','acidente','maternidade','paternidade','demissao','mudanca_funcao'];
+      if(!tipos.includes(a.tipo))throw new Error('tipo de afastamento invalido');if(!/^\d{4}-\d{2}-\d{2}$/.test(a.inicio||''))throw new Error('data de inicio invalida');
+      return ck(await sb.from('pj_afastamento').insert({empresa_id:emp,empregado_id:empregadoId,tipo:a.tipo,inicio:a.inicio,fim:a.fim||null,acidente_trabalho:!!a.acidenteTrabalho,nascimento:a.nascimento||null,obs:String(a.obs||'').slice(0,300)}))},
     async folhasDoMes(emp,comp){return ck(await sb.from('pj_folha_mes').select('id,empregado_id,status,resultado,aprovado_em').eq('empresa_id',emp).eq('competencia',primeiroDia(comp)))||[]},
     async empregadosFicha(emp){return ck(await sb.from('pj_empregado').select('id,nome,cargo,salario,admissao,desligamento').eq('empresa_id',emp).order('nome'))||[]},
     async salvarEmpregado(emp,e){const cpf=String(e.cpf||'').replace(/\D/g,'');return ck(await sb.from('pj_empregado').upsert({empresa_id:emp,nome:String(e.nome||'').trim(),cpf,cargo:String(e.cargo||''),salario:+e.salario,admissao:e.admissao,dependentes:+e.dependentes||0,vt_custo:+e.vt_custo||0},{onConflict:'id'}))},

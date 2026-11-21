@@ -85,7 +85,7 @@ function xmlReinfOficial(tipo,dados,ctx){
   if(cnpj.length!==14)er.push('CNPJ da empresa inválido.');
   const ns=`http://www.reinf.esocial.gov.br/schemas/${NS_REINF[tipo]}/v2_01_02`;
   const seq=String(c.seq||1).padStart(5,'0'),agora=(c.agora||'20260101000000').replace(/\D/g,'').padEnd(14,'0').slice(0,14),id='ID1'+cnpj+agora+seq;
-  const ideEvento=(ret)=>'<ideEvento>'+(ret?tg('indRetif','1'):'')+(tipo==='R-1000'?'':tg('perApur',c.perApur||''))+tg('tpAmb',c.tpAmb||'2')+tg('procEmi','1')+tg('verProc',c.verProc||'LadoALadoSaude-1')+'</ideEvento>';
+  const ideEvento=(ret)=>'<ideEvento>'+(ret||tipo==='R-2010'?tg('indRetif','1'):'')+(tipo==='R-1000'?'':tg('perApur',c.perApur||''))+tg('tpAmb',c.tpAmb||'2')+tg('procEmi','1')+tg('verProc',c.verProc||'LadoALadoSaude-1')+'</ideEvento>';
   const ideContri='<ideContri>'+tg('tpInsc','1')+tg('nrInsc',base)+'</ideContri>';
   if(tipo!=='R-1000'&&!/^\d{4}-\d{2}$/.test(String(c.perApur||'')))er.push('Competência (perApur) AAAA-MM obrigatória.');
   let corpo='',raiz='';
@@ -102,7 +102,23 @@ function xmlReinfOficial(tipo,dados,ctx){
     const b=dados;if(soDig(b.cnpjBeneficiario).length!==14)er.push('R-4020: CNPJ do beneficiário inválido.');
     const pg=(b.pagamentos||[]).map(x=>'<infoPgto>'+tg('dtFG',x.data)+tg('vlrBruto',dec(x.valorBruto))+'<retencoes>'+(x.ir>0?tg('vlrBaseIR',dec(x.valorBruto))+tg('vlrIR',dec(x.ir)):'')+(x.csll>0?tg('vlrBaseCSLL',dec(x.valorBruto))+tg('vlrCSLL',dec(x.csll))+tg('vlrBaseCofins',dec(x.valorBruto))+tg('vlrCofins',dec(x.cofins))+tg('vlrBasePP',dec(x.valorBruto))+tg('vlrPP',dec(x.pp)):'')+'</retencoes></infoPgto>').join('');
     corpo=ideEvento(true)+ideContri+'<ideEstab>'+tg('tpInscEstab','1')+tg('nrInscEstab',cnpj)+'<ideBenef>'+tg('cnpjBenef',soDig(b.cnpjBeneficiario))+'<idePgto>'+tg('natRend',c.natRend||'')+pg+'</idePgto></ideBenef></ideEstab>'}
-  else if(tipo==='R-2010'){er.push('R-2010 exige as notas (série, número, data, tipo de serviço da tabela 06): ainda não geramos; o contador informa no portal.');}
+  else if(tipo==='R-2010'){raiz='evtServTom';
+    // Serviços TOMADOS com retenção de INSS (cessão de mão de obra/empreitada): dados = {cnpjPrestador, indObra, indCPRB, notas:[{serie,numDocto,dtEmissaoNF,vlrBruto,obs,servicos:[{tpServico,vlrBaseRet,vlrRetencao}]}]}.
+    // tpServico (9 dígitos, tabela 06 do manual) e a obrigação de reter são do contador; sem vlrRetencao, calculo 11% da base (conferir).
+    const b=dados||{};if(soDig(b.cnpjPrestador).length!==14)er.push('R-2010: CNPJ do prestador inválido.');
+    if(!(b.notas||[]).length)er.push('R-2010 exige ao menos uma nota (série, número, data, valor bruto).');
+    let tb=0,tbase=0,tret=0;
+    const nfs=(b.notas||[]).map((n,i)=>{const rot='R-2010 nota '+(i+1)+': ';
+      if(!n.numDocto)er.push(rot+'número do documento obrigatório.');if(!/^\d{4}-\d{2}-\d{2}$/.test(String(n.dtEmissaoNF||'')))er.push(rot+'data de emissão AAAA-MM-DD.');
+      if(!(+n.vlrBruto>0))er.push(rot+'valor bruto deve ser maior que zero.');
+      if(!(n.servicos||[]).length)er.push(rot+'informe ao menos um tipo de serviço (tpServico, tabela 06).');
+      const sv=(n.servicos||[]).map(x=>{if(!/^\d{9}$/.test(String(x.tpServico||'')))er.push(rot+'tpServico deve ter 9 dígitos (tabela 06 do manual: o contador define).');
+        const base=+x.vlrBaseRet||0,ret=x.vlrRetencao===undefined||x.vlrRetencao===null?Math.round(base*0.11*100)/100:+x.vlrRetencao;
+        if(!(base>0))er.push(rot+'base de retenção deve ser maior que zero.');if(base>n.vlrBruto+0.005)er.push(rot+'base de retenção maior que o valor bruto.');
+        tbase+=base;tret+=ret;return '<infoTpServ>'+tg('tpServico',x.tpServico)+tg('vlrBaseRet',dec(base))+tg('vlrRetencao',dec(ret))+'</infoTpServ>'}).join('');
+      tb+=+n.vlrBruto||0;
+      return '<nfs>'+tg('serie',n.serie||'1')+tg('numDocto',n.numDocto)+tg('dtEmissaoNF',n.dtEmissaoNF)+tg('vlrBruto',dec(n.vlrBruto))+(n.obs?tg('obs',String(n.obs).slice(0,250)):'')+sv+'</nfs>'}).join('');
+    corpo=ideEvento(false)+ideContri+'<infoServTom><ideEstabObra>'+tg('tpInscEstab','1')+tg('nrInscEstab',cnpj)+tg('indObra',String(b.indObra||0))+'<idePrestServ>'+tg('cnpjPrestador',soDig(b.cnpjPrestador))+tg('vlrTotalBruto',dec(tb))+tg('vlrTotalBaseRet',dec(tbase))+tg('vlrTotalRetPrinc',dec(tret))+tg('indCPRB',String(b.indCPRB||0))+nfs+'</idePrestServ></ideEstabObra></infoServTom>'}
   else er.push('Evento '+tipo+' não suportado.');
   if(er.length)return {ok:false,erros:er};
   return {ok:true,erros:[],id,xml:`<Reinf xmlns="${ns}"><${raiz} id="${id}">${corpo}</${raiz}></Reinf>`}}
@@ -115,6 +131,8 @@ function lotesReinfOficial(ap,ctx,opc){
   Object.values(por).forEach(b=>add('R-4020',b));
   const tem4020=Object.keys(por).length>0;
   if(tem4020||o.fecharSempre)add('R-4099',{semMovimento:!tem4020});
-  if(ap.linhas.some(l=>l.inss>0))erros.push('R-2010: há retenção de INSS (cessão de mão de obra), mas o evento exige as notas: o contador informa no portal.');
+  const t2010=o.servicosTomados||[];t2010.forEach(b=>add('R-2010',b));
+  if(t2010.length)add('R-2099',{temR2010:true,respInf:o.respInf});   // fechamento da série R-2xxx: evtServTm = S
+  if(!t2010.length&&ap.linhas.some(l=>l.inss>0))erros.push('R-2010: há retenção de INSS (cessão de mão de obra), mas o evento exige as notas: informe em servicosTomados (série, número, data, tipo de serviço).');
   return {eventos:out,erros}}
 if(typeof module!=='undefined')module.exports={xmlReinfOficial,lotesReinfOficial,pagamentosParaReinf,apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};

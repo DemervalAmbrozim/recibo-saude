@@ -76,6 +76,9 @@ function filaDoDia({hoje,tarefas,pendencias={}}){
   const L=[`Fila do dia ${dBRFech(hoje)}`],ok=tarefas.filter(t=>t.precisaOK),auto=tarefas.filter(t=>!t.precisaOK);
   if(pendencias.recibos)L.push(`- ${pendencias.recibos} pedido(s) de recibo aguardando emissão`);
   if(pendencias.notas)L.push(`- ${pendencias.notas} pedido(s) de nota fiscal aguardando emissão`);
+  const fo=pendencias.folha;   // {clientes, comEmpregados, aprovadas, sombra, semFolha, afastamentosAbertos}: lido do banco real pelo orquestrador
+  if(fo&&fo.comEmpregados>0){const f=[];f.push(`${fo.aprovadas} de ${fo.comEmpregados} folha(s) do mês aprovada(s)`);if(fo.sombra)f.push(`${fo.sombra} em sombra para o contador aprovar`);if(fo.semFolha)f.push(`${fo.semFolha} cliente(s) ainda sem folha calculada`);L.push('- Folha em lote: '+f.join(', '))}
+  if(fo&&fo.afastamentosAbertos)L.push(`- ${fo.afastamentosAbertos} afastamento(s) em andamento (confira os avisos na folha em lote)`);
   if(pendencias.guiasVencendo)L.push(`- ${pendencias.guiasVencendo} guia(s) vencendo em até 5 dias sem pagamento no extrato`);
   if(ok.length){L.push('Precisam do seu OK:');ok.forEach(t=>L.push('  • '+t.titulo))}
   if(auto.length){L.push('Rodam sozinhas:');auto.forEach(t=>L.push('  • '+t.titulo+(t.dono==='Contador'?' (contador)':'')))}
