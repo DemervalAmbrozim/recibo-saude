@@ -70,7 +70,7 @@ function planoTexto(P){
   if(P.cruza)L.push(P.cruza.jaPassou?`Você já passou da linha de ${BRLp(P.lim)} por ano da reforma tributária. Em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (a saúde tem desconto de 60% em algumas profissões).`
     :`Pelo ritmo, você passa de ${BRLp(P.lim)} no ano em ${P.cruza.nome}. Acima dessa linha, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS. Vale ver a conta PF × CNPJ.`);
   else L.push(`Pelo ritmo, você fica abaixo da linha de ${BRLp(P.lim)} por ano da reforma tributária (${Math.round(P.pctLimite*100)}% dela).`);
-  L.push('É uma estimativa pelo seu ritmo recente, não uma promessa. Limite novo (LC 238/2026), a confirmar com o contador.');
+  L.push('É uma estimativa pelo seu ritmo recente, não uma promessa. Limite novo (LC 238/2026, que depende de o orçamento prever a renúncia, art. 3º), a confirmar com o contador.');
   return L;
 }
 if(typeof module!=='undefined')module.exports={...(typeof module.exports==='object'?module.exports:{}),planoAno,planoTexto};

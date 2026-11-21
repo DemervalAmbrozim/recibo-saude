@@ -80,7 +80,7 @@ function reforma(recAno,ano){const lim=nano(ano),p=recAno/lim,a1=Math.max(+ano+1
   return {p,lim,txt:(p<0.8?`Recebido no ano: abaixo do limite de ${L} da reforma tributária para ${a1}. Por esse ritmo, segue sem nota fiscal.`
     :p<1?`Atenção: perto do limite de ${L} por ano. Acima dele, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia).`
     :`Acima de ${L} no ano: pela reforma tributária, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (com 60% de desconto para fisioterapia). A Assessoria vai orientar.`)
-    +' Limite novo (LC 238/2026), a confirmar com o contador.'};
+    +' Limite novo (LC 238/2026, que depende de o orçamento prever a renúncia, art. 3º), a confirmar com o contador.'};
 }
 // Relatório do ano para a declaração do IR (revisão item 8, 28/10): mês a mês o que o Carnê-Leão Web mostra, os totais e as despesas por conta.
 // "DARF a pagar" é o calculado; "DARF pago" é o que ela marcou como pago (zap "paguei" ou app), 8f ressalva 2. O comprovante segue no e-CAC.
