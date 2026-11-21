@@ -263,8 +263,13 @@ function zip(arqs){const enc=new TextEncoder(),partes=[],dir=[];let pos=0;
 const csv=(cab,linhas)=>new TextEncoder().encode('﻿'+[cab,...linhas].map(l=>l.map(v=>{v=v==null?'':typeof v==='number'?String(v.toFixed(2)).replace('.',','):String(v);
   return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\r\n'));
 // ---------- Relatório do ano para o IR (revisão item 8): planilha e PDF (página de impressão do aparelho) ----------
+// Andamento da declaração do IR (SQL 066, jornada J6): a equipe registra; aqui a cliente vê o estado e o recibo. Sem registro da equipe, não mostra nada.
+async function irStatusTela(){const e=$('ir-status'),s=$('ir-ano');if(!e||!s||!TOK)return;e.hidden=true;
+  try{const r=await sb.rpc('link_ir_status',{tok:TOK,p_ano:+s.value});if(r.error||!r.data)return;
+    const T={nao_iniciada:'ainda não foi iniciada pelo contador.',em_andamento:'está em andamento com o contador.',transmitida:'foi transmitida à Receita.'};
+    e.textContent=`Sua declaração de ${r.data.ano}: ${T[r.data.estado]||''}${r.data.estado==='transmitida'&&r.data.recibo?' Número do recibo: '+r.data.recibo+'.':''}`;e.hidden=false}catch(x){console.warn('[rs] status do IR',x)}}
 function irAnos(){const as=[...new Set(D.atendimentos.map(a=>a.data.slice(0,4)))].sort().reverse(),s=$('ir-ano');if(!s)return;
-  const v=s.value;s.innerHTML=(as.length?as:[hojeISO().slice(0,4)]).map(a=>`<option>${a}</option>`).join('');if(as.includes(v))s.value=v}
+  const v=s.value;s.innerHTML=(as.length?as:[hojeISO().slice(0,4)]).map(a=>`<option>${a}</option>`).join('');if(as.includes(v))s.value=v;if(!s.dataset.irs){s.dataset.irs='1';s.addEventListener('change',irStatusTela)}irStatusTela()}
 const irDados=()=>relatorioIR(D.atendimentos.map(a=>({...a,valor:+a.valor})),D.despesas.map(d=>({...d,valor:+d.valor})),$('ir-ano').value,D.darfs||[]);
 const mesBR=m=>m.split('-').reverse().join('/');
 // Convênios no relatório do IR (item 28): rendimento de PJ, fora do Carnê-Leão

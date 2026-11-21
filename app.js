@@ -491,6 +491,8 @@ function admTela(){
         <select data-sit="${p.id}" style="width:auto;padding:6px 8px" aria-label="Situação">${op(SIT,p.situacao||'ativa')}</select>
         <select data-plano="${p.id}" style="width:auto;padding:6px 8px" aria-label="Plano">${op(PLANO,p.plano||'')}</select>
         <button class="small" data-proc="${p.id}" type="button">${p.procuracao==='conferida'?'Desfazer procuração':'Procuração conferida'}</button>
+        <label class="sub" style="display:inline-flex;gap:4px;align-items:center">Validade da procuração <input type="date" data-procate="${p.id}" value="${esc(p.procuracao_ate||'')}" style="width:auto;padding:6px 8px" aria-label="Validade da procuração"></label>
+        <button class="small" data-procsal="${p.id}" type="button">Salvar validade</button>
         <button class="small" data-pin="${p.id}" type="button">Zerar PIN</button>
         ${p.cnpj?`<button class="small" data-simples="${p.id}" type="button">${p.simples_codigo_em?'Desfazer código do Simples':'Código do Simples recebido'}</button>`:''}
         <button class="small" data-fundadora="${p.id}" type="button">${p.fundadora?'Tirar fundadora':'Fundadora −30%'}</button>
@@ -503,7 +505,19 @@ $('adm-filtro').onchange=admTela;
 const PROC={pendente:'procuração pendente',enviada:'procuração a conferir',conferida:'procuração conferida'};
 const SERVNOME={ir:'Imposto de Renda',cnpj_avulso:'Abertura de CNPJ (avulsa)',cnpj_plano12:'Abertura de CNPJ com o plano Empresa de 12 meses',redes:'Presença nas redes',redes_base:'Presença nas redes: Base',redes_completa:'Presença nas redes: Completa',apoio:'Consultoria de apoio',apoio_diag:'Consultoria: Diagnóstico',apoio_plano:'Consultoria: Plano de ação',apoio_pacote:'Consultoria: Pacote Diagnóstico + Plano',apoio_acomp:'Consultoria: Acompanhamento mensal'};
 const PSIT={novo:'novo',conversando:'conversando',emitindo:'emitindo',feito:'feito (entregue)',nao_consegui:'não consegui (motivo)',desistiu:'desistiu'},PTIPO={servico:'SERVIÇO À PARTE',recibo:'PEDIDO DE RECIBO (prazo 24 h)',nota:'PEDIDO DE NOTA FISCAL (prazo 24 h)',cnpj:'Quero conversar: CNPJ',procuracao:'Fiz a procuração',suporte:'Suporte (responder em 1 dia útil)'};
-async function pedTela(){const f=$('adm-ped-filtro').value;let q=sb.from('pedidos').select('*').order('criado_em',{ascending:false}).limit(100);
+// Andamento da declaração do IR (SQL 066): a equipe escolhe o estado e guarda o número do recibo. Só a equipe escreve (RLS).
+async function irEqTela(){const c=$('ir-card');if(!c||!EQUIPE)return;const sel=$('ir-ano-eq');if(!sel.options.length){const a=new Date().getFullYear();sel.innerHTML=[a,a-1,a-2].map(x=>`<option${x===a-1?' selected':''}>${x}</option>`).join('')}
+  const ano=+sel.value,r=await sb.from('ir_declaracao').select('*').eq('ano',ano);if(r.error){c.hidden=true;return}c.hidden=false;
+  const por=Object.fromEntries((r.data||[]).map(x=>[x.profissional_id,x])),E={nao_iniciada:'Não iniciada',em_andamento:'Em andamento',transmitida:'Transmitida'};
+  $('ir-lista').innerHTML=PROFS.filter(p=>!['cancelada','excluida'].includes(p.situacao||'')).map(p=>{const x=por[p.id]||{estado:'',recibo:''};
+    return `<div class="item"><div><b>${esc(p.nome)}</b></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><select data-irest="${p.id}" style="width:auto;padding:6px 8px" aria-label="Estado da declaração de ${esc(p.nome)}"><option value="">(sem registro)</option>${Object.entries(E).map(([k,n])=>`<option value="${k}"${k===x.estado?' selected':''}>${n}</option>`).join('')}</select>
+      <input data-irrec="${p.id}" value="${esc(x.recibo||'')}" placeholder="Nº do recibo" maxlength="40" style="width:11em" aria-label="Número do recibo"><button type="button" class="small" data-irsal="${p.id}">Salvar</button></div></div>`}).join('')}
+// Pedidos do titular (LGPD, 21/11/2026): antes a tabela existia e nenhuma tela a mostrava. Só a equipe lê (RLS).
+async function lgpdTela(){const c=$('lg-card');if(!c)return;const r=await sb.from('pedidos_titular').select('*').in('situacao',['aberto','em_analise']).order('prazo_ate',{ascending:true}).limit(50);
+  if(r.error){c.hidden=true;return}c.hidden=false;const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',T={excluir:'Exclusão dos dados',exportar:'Cópia dos dados'};
+  $('lg-lista').innerHTML=r.data.length?r.data.map(x=>{const dias=x.prazo_ate?Math.ceil((new Date(x.prazo_ate)-new Date())/86400000):null,atraso=dias!==null&&dias<0;
+    return `<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="sub">${T[x.tipo]||esc(x.tipo)} · pedido em ${new Date(x.criado_em).toLocaleDateString('pt-BR')} · ${dias===null?'sem prazo':atraso?'<b>PRAZO ESTOURADO há '+(-dias)+' dia(s)</b>':'faltam '+dias+' dia(s)'}</div></div><button type="button" class="small" data-lgpd="${x.id}">Marcar atendido</button></div>`}).join(''):'<div class="sub">Nenhum pedido aberto.</div>'}
+async function pedTela(){lgpdTela();irEqTela();const f=$('adm-ped-filtro').value;let q=sb.from('pedidos').select('*').order('criado_em',{ascending:false}).limit(100);
   if(f==='aberto')q=q.in('situacao',['novo','conversando','emitindo']);const ft=($('adm-ped-tipo')||{}).value;if(ft)q=q.eq('tipo',ft);const r=await q;if(r.error){$('adm-ped-card').hidden=true;return}
   const nome=id=>(PROFS.find(p=>p.id===id)||{}).nome||'(profissional)',op=v=>Object.entries(PSIT).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
   $('adm-ped').innerHTML=r.data.length?r.data.map(x=>`<div class="item"><div><b>${esc(nome(x.profissional_id))}</b><div class="meta">${PTIPO[x.tipo]} · pelo ${x.origem} · ${new Date(x.criado_em).toLocaleDateString('pt-BR')}</div>
@@ -539,11 +553,19 @@ document.addEventListener('click',async e=>{const id=(e.target.dataset||{}).bib;
 async function admMuda(id,novo,msg){
   if(falhou(await sb.from('profissionais').update(novo).eq('id',id),'mudar a conta'))return;
   PROFS.filter(p=>p.id===id).forEach(p=>Object.assign(p,novo));admTela();avisa(msg);}
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='ir-ano-eq')irEqTela()});
 document.addEventListener('click',e=>{const t=e.target.dataset||{};
   if(t.fundadora){const p=PROFS.find(x=>x.id===t.fundadora);admMuda(p.id,{fundadora:!p.fundadora},p.fundadora?'Desconto de fundadora retirado.':'Fundadora: 30% de desconto na próxima assinatura.')}
   if(t.proc){const p=PROFS.find(x=>x.id===t.proc),conf=p.procuracao!=='conferida';
     admMuda(p.id,{procuracao:conf?'conferida':'pendente'},conf?'Procuração conferida: já dá para emitir por ela.':'Procuração voltou para pendente.');
     if(conf)sb.from('pedidos').update({situacao:'feito',atualizado:new Date().toISOString()}).eq('profissional_id',p.id).eq('tipo','procuracao').in('situacao',['novo','conversando']).then(pedTela)}
+  if(t.procsal){const p=PROFS.find(x=>x.id===t.procsal),i=document.querySelector(`[data-procate="${t.procsal}"]`),v=i&&i.value?i.value:null;
+    if(v&&v<hojeISO()){avisa('A validade já passou. Confira a data da procuração no e-CAC.',true);return}
+    admMuda(p.id,{procuracao_ate:v},v?'Validade da procuração guardada: o sistema avisa 30, 7 e 1 dia antes.':'Validade da procuração removida.')}
+  if(t.irsal){const id=t.irsal,est=document.querySelector(`[data-irest="${id}"]`).value,rec=document.querySelector(`[data-irrec="${id}"]`).value.trim(),ano=+$('ir-ano-eq').value;
+    if(!est){avisa('Escolha o estado da declaração.',true);return}if(est==='transmitida'&&!rec){avisa('Informe o número do recibo da declaração transmitida.',true);return}
+    sb.from('ir_declaracao').upsert({profissional_id:id,ano,estado:est,recibo:rec||null},{onConflict:'profissional_id,ano'}).then(r=>{if(r.error)avisa('Não consegui salvar agora. Tente de novo.',true);else{avisa('Andamento da declaração guardado.');irEqTela()}})}
+  if(t.lgpd){sb.from('pedidos_titular').update({situacao:'atendido',atendido_em:new Date().toISOString()}).eq('id',t.lgpd).then(r=>{if(r.error)avisa('Não consegui marcar agora. Tente de novo.',true);else{avisa('Pedido marcado como atendido.');lgpdTela()}})}
   if(t.simples){const p=PROFS.find(x=>x.id===t.simples);admMuda(p.id,{simples_codigo_em:p.simples_codigo_em?null:hojeISO()},p.simples_codigo_em?'Código do Simples desmarcado.':'Código do Simples marcado como recebido (guarde no cofre da Assessoria, nunca no Git).')}
   if(t.conselho){const p=PROFS.find(x=>x.id===t.conselho);admMuda(p.id,{conselho_ok:!p.conselho_ok},p.conselho_ok?'Conferência desfeita.':'Conselho marcado como conferido.')}
   if(t.fone){const f=so(document.querySelector(`[data-fone-in="${t.fone}"]`).value).replace(/^55(?=\d{10,11}$)/,'');

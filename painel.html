@@ -192,6 +192,17 @@ section button,nav button,summary{min-height:44px}
       <div class="sub" id="f-ano"></div>
       <div class="sub" id="f-cnpj" hidden></div>
     </div>
+    <div class="card nao-sec" id="ir-card" hidden>
+      <h2>Declaração do Imposto de Renda: andamento</h2>
+      <div class="sub">Registre o estado de cada declaração e o número do recibo. A cliente vê no app (Relatórios).</div>
+      <label>Ano <select id="ir-ano-eq" style="width:auto"></select></label>
+      <div class="list" id="ir-lista" aria-live="polite"></div>
+    </div>
+    <div class="card nao-sec" id="lg-card" hidden>
+      <h2>Pedidos dos titulares (LGPD)</h2>
+      <div class="sub">Pedido de exclusão ou de cópia dos dados: prazo de 15 dias. O sistema avisa pela Central; aqui você vê e marca como atendido.</div>
+      <div class="list" id="lg-lista" aria-live="polite"></div>
+    </div>
     <div class="card nao-sec" id="dt-card">
       <h2>DARF do Carnê-Leão: todas as profissionais</h2>
       <div class="sub">Calcula pelo mês escolhido acima, com as mesmas regras do app, e mostra o vencimento e quem já pagou. O texto é só para copiar: nada é enviado sozinho.</div>
