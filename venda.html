@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-1b99spuQ4hV8Qu5ZB/PeCWuvsrnSoHaEzewfyJc1dvM=' 'sha256-SENDvZAqNSMDk7TGQrAW5g3vA4zsWK5SQsFAZLUq4R4=' 'sha256-BPrw50gvdxzfQfDwIGu/ro4TKcgnWKknxmHztXejf5A=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Lado a Lado Saúde: recibo do Receita Saúde e Carnê-Leão pelo WhatsApp</title>
 <meta name="description" content="Recibo do Receita Saúde, Carnê-Leão e lembretes pelo WhatsApp para fisioterapeutas, psicólogos e profissionais da saúde. teste grátis, sem cartão.">
@@ -218,7 +218,7 @@ Maria Silva · R$ 180,00 · Pix · hoje
           <ul class="ok"><li>Abertura do CNPJ sem custo de serviço, com 12 meses de plano</li><li>Contador: Simples, pró-labore, DAS e balanço</li><li>Imposto de Renda da sócia: não incluído; contratação opcional como acréscimo</li><li>Rotina pelo WhatsApp, como hoje</li><li>Instagram e LinkedIn continuam no bônus</li></ul>
           <p class="sub" style="font-size:13px">Taxas públicas (Junta Comercial, prefeitura, conselho e certificado digital) são pagas por você, com o valor mostrado antes: em 2026, cerca de R$ 1.000 a R$ 1.500 na Grande Vitória.</p></div>
       </div>
-      <form class="card conta" id="f-conta" onsubmit="return false">
+      <form class="card conta" id="f-conta">
         <h3>Faça a conta</h3>
         <label>Quanto você recebe por mês, em média? <input id="cj-rec" inputmode="decimal" placeholder="ex.: 6.000" autocomplete="off"></label>
         <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="cj-20" style="width:auto"> Contribuo ao INSS pelo plano de 20% (sem marcar: plano simplificado de 11%)</label>
@@ -315,6 +315,7 @@ function conta(){const R=numBR(document.getElementById('cj-rec').value),dp=numBR
 <script>// Indicação: leva o ?ind= da venda para o cadastro
 (()=>{const q=new URLSearchParams(location.search),i=q.get('ind'),o=(q.get('o')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20),p=[];if(i)p.push('ind='+encodeURIComponent(i));if(o)p.push('o='+o);if(p.length)document.querySelectorAll('a[href="entrar.html"]').forEach(a=>a.href='entrar.html?'+p.join('&'))})();</script>
 <script>if(typeof CONFIG!=='undefined'&&CONFIG.empresa){var pe=document.getElementById('ponte-empresa');if(pe)pe.hidden=false}</script>
+<script src="nosubmit.js" defer></script>
 <script src="perfil.js" defer></script>
 <script src="navega.js" defer></script>
 </body>

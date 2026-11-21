@@ -26,12 +26,17 @@ function planoAno(ats,ds,ano,hoje,orc){
   }
   const suficiente=base.meses.length===3&&mAtual>=1&&mAtual<=12;
   if(suficiente){base.rec=r2p(base.meses.reduce((s,x)=>s+x.rec,0)/3);base.desp=r2p(base.meses.reduce((s,x)=>s+x.desp,0)/3)}
+  // Sazonalidade (21/11/2026): se o ano anterior tem recebimento nos MESMOS 3 meses da base, cada mês futuro usa a razão (mês do ano anterior ÷ média desses 3 meses), limitada a 0,5-2.
+  // Sem dado do ano anterior, o fator é 1 e nada muda.
+  const fatorSaz=n=>{if(!suficiente)return 1;let soma=0;for(const b of base.meses){const k=`${+b.mes.slice(0,4)-1}-${b.mes.slice(5,7)}`,r=recMes(k);if(!(r>0))return 1;soma+=r}
+    const ref=recMes(kMes(+ano-1,n));if(!(ref>0))return 1;return Math.min(2,Math.max(0.5,ref/(soma/3)))};
+  let usouSaz=false;
   const o=orc||{rec:{},desp:{}},orcDe=(t,n)=>{const v=(o[t]||{})[n];return v===undefined||v===null||v===''||isNaN(+v)?null:+v};
   const meses=[];
   for(let n=1;n<=12;n++){
     const k=kMes(ano,n),temReal=n<=mAtual||mAtual===13, real=temReal?{rec:recMes(k),desp:despMes(k)}:null;
     let proj=null;
-    if(suficiente&&n>=mAtual) proj=n===mAtual?{rec:Math.max(real.rec,base.rec),desp:Math.max(real.desp,base.desp)}:{rec:base.rec,desp:base.desp};
+    if(suficiente&&n>=mAtual){const fz=fatorSaz(n);if(fz!==1)usouSaz=true;const br=r2p(base.rec*fz);proj=n===mAtual?{rec:Math.max(real.rec,br),desp:Math.max(real.desp,base.desp)}:{rec:br,desp:base.desp}}
     meses.push({n,mes:k,nome:MES3[n-1],real,fechado:n<mAtual||mAtual===13,atual:n===mAtual,proj,orc:{rec:orcDe('rec',n),desp:orcDe('desp',n)}});
   }
   // imposto (Carnê-Leão) mês a mês: o real onde já fechou, o projetado onde falta (mesma apura() do "Seu mês")
@@ -50,7 +55,7 @@ function planoAno(ats,ds,ano,hoje,orc){
     if(m.fechado)recFech+=m.real.rec;
     if(m.orc.rec!==null){temOrc=true;orcAno+=m.orc.rec;if(m.fechado)orcFech+=m.orc.rec}});   // comparação justa: só meses FECHADOS (mês parcial × orçado inteiro engana)
   const projCompleta=suficiente||mAtual===13;
-  return {ano,mAtual,suficiente,base,lim,meses,recAte:r2p(recAte),recFech:r2p(recFech),orcFech:r2p(orcFech),orcAno:r2p(orcAno),temOrc,
+  return {ano,mAtual,suficiente,usouSaz,base,lim,meses,recAte:r2p(recAte),recFech:r2p(recFech),orcFech:r2p(orcFech),orcAno:r2p(orcAno),temOrc,
     projAno:projCompleta?{rec:r2p(recAno),desp:r2p(despAno)}:null,imposto:{real:r2p(impReal),proj:r2p(impProj),ano:r2p(impReal+impProj)},cruza:projCompleta?cruza:null,pctLimite:projCompleta?recAno/lim:null};
 }
 
@@ -70,6 +75,7 @@ function planoTexto(P){
   if(P.cruza)L.push(P.cruza.jaPassou?`Você já passou da linha de ${BRLp(P.lim)} por ano da reforma tributária. Em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS (a saúde tem desconto de 60% em algumas profissões).`
     :`Pelo ritmo, você passa de ${BRLp(P.lim)} no ano em ${P.cruza.nome}. Acima dessa linha, em ${a1} será preciso emitir nota fiscal e pagar CBS/IBS. Vale ver a conta PF × CNPJ.`);
   else L.push(`Pelo ritmo, você fica abaixo da linha de ${BRLp(P.lim)} por ano da reforma tributária (${Math.round(P.pctLimite*100)}% dela).`);
+  if(P.usouSaz)L.push('A projeção considerou como os seus meses do ano passado se comportaram (por exemplo, meses mais fortes ou mais fracos).');
   L.push('É uma estimativa pelo seu ritmo recente, não uma promessa. Limite novo (LC 238/2026, que depende de o orçamento prever a renúncia, art. 3º), a confirmar com o contador.');
   return L;
 }

@@ -388,7 +388,18 @@ function planoResumo(){
   P.meses.forEach(m=>{const ap=m.atual,prj=m.proj?b0(m.proj.rec):'–',re=m.real?b0(m.real.rec):'–',orc=m.orc.rec!==null?b0(m.orc.rec):'–';
     L.push(`<div class="r" role="row"><span class="m${ap?' atual':''}" role="rowheader">${m.nome}${ap?' · agora':''}</span><span role="cell">${orc}</span><span role="cell">${re}</span><span class="proj" role="cell">${m.fechado?'':prj}</span></div>`)});
   $('pl-lista').innerHTML=L.join('');
+  planoGrafico(P);
 }
+// Gráfico do plano (21/11/2026): barras de receita (azul = recebido, cinza = projeção) e traço do orçado; texto alternativo resume o ano.
+function planoGrafico(P){const el=$('pl-graf');if(!el)return;
+  const v=P.meses.map(m=>m.real&&(m.fechado||m.atual)?m.real.rec:(m.proj?m.proj.rec:0)),o=P.meses.map(m=>m.orc.rec||0),max=Math.max(1,...v,...o)*1.12;
+  if(!v.some(x=>x>0)){el.innerHTML='';return}
+  const W=320,H=120,pad=6,bw=(W-pad*2)/12;let s=`<svg viewBox="0 0 ${W} ${H+18}" width="100%" role="img" aria-label="Receita mês a mês: ${P.meses.map((m,i)=>m.nome+' '+Math.round(v[i])).join(', ')} reais" style="max-width:520px">`;
+  P.meses.forEach((m,i)=>{const x=pad+i*bw+2,real=m.real&&(m.fechado||m.atual),hh=Math.max(v[i]>0?2:0,v[i]/max*H),y=H-hh;
+    s+=`<rect x="${x}" y="${y}" width="${bw-4}" height="${hh}" rx="2" fill="${real?'#1d6fd8':'#9aa7b8'}"${real?'':' opacity=".65"'}/>`;
+    if(o[i]>0){const yo=H-o[i]/max*H;s+=`<line x1="${x-1}" x2="${x+bw-3}" y1="${yo}" y2="${yo}" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/>`}
+    s+=`<text x="${x+(bw-4)/2}" y="${H+14}" font-size="12" text-anchor="middle" fill="currentColor" opacity=".8">${m.nome}</text>`});
+  el.innerHTML=s+'</svg><div class="sub">Azul: recebido. Cinza: projeção. Traço: orçado.</div>'}
 function telaPlano(){
   const ano=String(new Date().getFullYear()),o=orcLer(ano);
   const ae=document.activeElement;if(ae&&$('i-plano').contains(ae)&&ae.tagName==='INPUT'){planoResumo();return}   // não refaz os campos enquanto ela digita

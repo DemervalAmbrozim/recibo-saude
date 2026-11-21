@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EXWzZi7oPLm8nHu62ZkHhWnTh41vSJwdF4hk/MTUSuw=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Módulos do contador, Minha empresa</title>
@@ -28,7 +28,7 @@ input,select,textarea{font:inherit;font-size:max(16px,1em);padding:9px;min-heigh
 textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;min-height:150px}
 label.chk{display:flex;gap:8px;align-items:center;color:var(--fg)}label.chk input{width:auto}
 button.p{font:inherit;padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer;min-height:44px}
-.mini{font-size:12px;opacity:.8}.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pe-q{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.pe-q .pq{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card,transparent)}.pe-q .pq h4{margin:0 0 6px;font-size:14px;opacity:.85}.pe-q .pq .r{font-size:16px;font-weight:600;line-height:1.35}.pe-q .pq .d{font-size:13px;opacity:.8;margin-top:6px}.mini{font-size:12px;opacity:.8}.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .big{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
 .tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent)}
 .tag.at{background:var(--warnbg);color:var(--warn)}.tag.ruim{background:var(--badbg);color:var(--bad)}.tag.az{background:var(--bluebg);color:var(--blue)}
@@ -55,6 +55,7 @@ section button,nav button,summary{min-height:44px}
     <button role="tab" data-t="conc" aria-selected="false">4 Conciliação</button><button role="tab" data-t="res" aria-selected="false">5 Resumo do mês</button><button role="tab" data-t="luc" aria-selected="false">6 Lucros</button>
     <button role="tab" data-t="vir" aria-selected="false">7 Virada e baixa</button><button role="tab" data-t="cal" aria-selected="false">8 Calendário</button><button role="tab" data-t="zap" aria-selected="false">9 Mensagens do zap</button><button role="tab" data-t="pai" aria-selected="false">10 Painel do contador</button><button role="tab" data-t="soc" aria-selected="false">11 Sócio e sem movimento</button><button role="tab" data-t="dia" aria-selected="false">12 Entrada com CNPJ</button><button role="tab" data-t="cna" aria-selected="false">13 CNAE e Anexo</button>
       <button role="tab" data-t="eve" aria-selected="false">14 Eventos da empresa</button>
+      <button role="tab" data-t="pla" aria-selected="false">15 Plano do ano</button>
       <button role="tab" data-t="esc" aria-selected="false">15 eSocial (fila)</button>
       <button role="tab" data-t="msg" aria-selected="false">16 Mensagens e documentos</button>
   </nav>
@@ -148,7 +149,19 @@ section button,nav button,summary{min-height:44px}
     <p style="margin-top:10px"><button class="p" id="bd-m-env" disabled title="Conecte uma empresa">Enviar</button> <button id="bd-m-atual" disabled>Atualizar</button></p><div id="bd-m-out" role="status" aria-live="polite" class="sub"></div>
     <h3>Documentos</h3><div class="grid"><label>Tipo<select id="bd-d-tipo"><option value="carta_responsabilidade">Carta de responsabilidade</option><option value="contrato_servicos">Contrato de serviços</option><option value="extrato">Extrato</option><option value="nota">Nota</option><option value="outro">Outro</option></select></label><label>Arquivo<input type="file" id="bd-d-arq"></label></div>
     <p style="margin-top:10px"><button class="p" id="bd-d-env" disabled title="Conecte uma empresa">Enviar documento</button></p><div id="bd-d-out" role="status" aria-live="polite" class="sub"></div><div id="bd-d-lista"></div></div></section>
-<section id="t-esc"><div class="card"><h2>Fila de eventos do eSocial</h2><p class="sub">Aqui entram os eventos como <b>rascunho</b> ou <b>pronto</b>. A transmissão real só roda com o e-CNPJ A1, o contrato do SERPRO e a procuração; o banco só aceita "enviado" com protocolo e "aceito" com recibo.</p>
+<section id="t-pla"><div class="card" id="plaemp"><h2>Plano do ano da empresa</h2>
+  <p class="sub">Três respostas simples sobre o seu ano no Simples Nacional. É uma estimativa pelo seu ritmo recente, não uma promessa. Exemplo com dados fictícios: troque pelos seus números.</p>
+  <div id="pe-q" class="pe-q"></div>
+  <figure style="margin:14px 0"><div id="pe-g"></div><figcaption class="mini" id="pe-leg"></figcaption></figure>
+  <div id="pe-notas" class="mini"></div>
+  <h3>Mês a mês</h3><div id="pe-t" class="tbl"></div>
+  <details style="margin-top:12px"><summary><b>Seus números</b> (troque pelos reais)</summary>
+    <p class="mini">Receita e folha (salários + pró-labore) dos meses já fechados. Meses do ano passado: informe o total do ano.</p>
+    <label>Hoje é <input id="pe-hoje" type="date" value="2026-11-21"></label> <label>Receita do ano passado (total) <input id="pe-ar" type="number" value="228000"></label> <label>Folha do ano passado (total) <input id="pe-af" type="number" value="62000"></label>
+    <div id="pe-in" class="tbl"></div>
+    <label><input id="pe-saz" type="checkbox" checked> Considerar como foram os meses do ano passado (sazonalidade)</label></details>
+  </div></section>
+  <section id="t-esc"><div class="card"><h2>Fila de eventos do eSocial</h2><p class="sub">Aqui entram os eventos como <b>rascunho</b> ou <b>pronto</b>. A transmissão real só roda com o e-CNPJ A1, o contrato do SERPRO e a procuração; o banco só aceita "enviado" com protocolo e "aceito" com recibo.</p>
     <div class="grid"><label>Evento<select id="bd-es-tipo"><option>S-1200</option><option>S-1299</option><option>S-2200</option><option>S-2299</option><option>S-2230</option><option>S-1000</option></select></label><label>Competência<input type="month" id="bd-es-comp"></label></div>
     <label style="margin-top:8px">Conteúdo (JSON; por padrão, a folha calculada na aba 3)<textarea id="bd-es-payload">{}</textarea></label>
     <p style="margin-top:10px"><button class="p" id="bd-es-add" disabled title="Entre na sua conta e escolha a empresa">Colocar na fila como rascunho</button></p><p><button class="p" id="bd-es-ensaio" disabled title="Entre na sua conta e escolha a empresa" style="background:var(--blue)">Ensaiar a transmissão (não envia nada)</button></p><div id="bd-es-out" role="status" aria-live="polite" class="sub"></div><div id="bd-es-ensaio-out" role="status" aria-live="polite"></div><div id="bd-es-lista"></div></div></section>
@@ -169,6 +182,7 @@ section button,nav button,summary{min-height:44px}
 <script src="concilia.js"></script>
 <script src="relatorio.js"></script>
 <script src="lucros.js"></script>
+<script src="plano-empresa.js"></script>
 <script src="virada.js"></script>
 <script src="painel.js"></script>
 <script src="socios.js"></script>
@@ -372,6 +386,26 @@ $('af-ok').addEventListener('click',async function(){var v=($('af-e').value||'')
  if(v.length<2){$('af-msg').textContent='Escolha o empregado.';return}if(!i){$('af-msg').textContent='Informe a data de início.';return}if(f&&f<i){$('af-msg').textContent='O fim não pode ser antes do início.';return}
  try{await window.__bdDB.salvarAfastamento(v[0],v[1],{tipo:t,inicio:i,fim:f||null,acidenteTrabalho:$('af-a').checked,nascimento:t==='paternidade'||t==='maternidade'?i:null});
   $('af-msg').textContent='Afastamento lançado.';await ltRecarrega();loteUI();afUI();afLista()}catch(x){$('af-msg').textContent=traduzErroPj(x)}});
+
+
+// Plano do ano da empresa (plano-empresa.js): 3 respostas, gráfico e tabela
+(function(){var MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],RCV=[17500,19000,21000,18500,20500,22000,19500,21500,23000,20500],ini=false;
+ function linhas(){var rows='<table><tr><th>Mês</th><th>Receita</th><th>Folha</th></tr>';for(var n=1;n<=12;n++)rows+='<tr><td>'+MES[n-1]+'</td><td><input type="number" min="0" data-pr="'+n+'" value="'+(RCV[n-1]!=null?RCV[n-1]:'')+'" style="width:96px" aria-label="Receita de '+MES[n-1]+'"></td><td><input type="number" min="0" data-pf="'+n+'" value="'+(RCV[n-1]!=null?Math.round(RCV[n-1]*0.28):'')+'" style="width:96px" aria-label="Folha de '+MES[n-1]+'"></td></tr>';$('pe-in').innerHTML=rows+'</table>'}
+ function hist(ano){var h=[],ar=+$('pe-ar').value||0,af=+$('pe-af').value||0;if(ar>0)for(var n=1;n<=12;n++)h.push({mes:(ano-1)+'-'+String(n).padStart(2,'0'),receita:ar/12,folha:af/12});
+  document.querySelectorAll('[data-pr]').forEach(function(i){var n=+i.getAttribute('data-pr'),f=document.querySelector('[data-pf="'+n+'"]');if(i.value!=='')h.push({mes:ano+'-'+String(n).padStart(2,'0'),receita:+i.value,folha:+(f&&f.value)||0})});return h}
+ function grafico(P){var W=320,Ht=140,pad=8,max=Math.max.apply(null,P.mensal.map(function(m){return m.receita}))*1.15||1,bw=(W-pad*2)/12,s='<svg viewBox="0 0 '+W+' '+(Ht+40)+'" width="100%" role="img" aria-label="Receita mês a mês: meses fechados em azul e meses projetados em cinza listrado" style="max-width:720px">';
+  P.mensal.forEach(function(m,i){var x=pad+i*bw+4,hh=Math.max(2,m.receita/max*Ht),y=Ht-hh+4,real=m.tipo==='real';s+='<rect x="'+x+'" y="'+y+'" width="'+(bw-8)+'" height="'+hh+'" rx="3" fill="'+(real?'#1d6fd8':'#9aa7b8')+'"'+(real?'':' opacity=".65"')+'/>';
+   s+='<text x="'+(x+(bw-8)/2)+'" y="'+(Ht+20)+'" font-size="12" text-anchor="middle" fill="currentColor">'+m.nome+'</text>';s+='<text x="'+(x+(bw-8)/2)+'" y="'+(Ht+34)+'" font-size="12" text-anchor="middle" fill="currentColor" opacity=".7">'+m.anexo+'</text>'});
+  return s+'</svg>'}
+ function tela(){if(!ini){linhas();ini=true}var ano=+$('pe-hoje').value.slice(0,4)||2026,P=planoEmpresa({hist:hist(ano),ano:ano,hoje:$('pe-hoje').value,sazonal:$('pe-saz').checked}),T=planoEmpresaTexto(P);
+  if(!P.ok){$('pe-q').innerHTML='<div class="pq"><div class="r">'+esc(P.motivo)+'</div></div>';$('pe-g').innerHTML='';$('pe-leg').textContent='';$('pe-t').innerHTML='';$('pe-notas').textContent='';return}
+  $('pe-q').innerHTML=T.perguntas.map(function(q){return '<div class="pq"><h4>'+esc(q.p)+'</h4><div class="r">'+esc(q.r)+'</div>'+(q.detalhe?'<div class="d">'+esc(q.detalhe)+'</div>':'')+'</div>'}).join('');
+  $('pe-g').innerHTML=grafico(P);$('pe-leg').textContent='Azul: meses fechados. Cinza: projeção. Embaixo de cada mês, o Anexo (III ou V).';
+  var B=function(v){return peBRL(v)};
+  $('pe-t').innerHTML='<table><tr><th>Mês</th><th>Receita</th><th>DAS</th><th>Anexo</th><th>Situação</th></tr>'+P.mensal.map(function(m){return '<tr><td>'+m.nome+'</td><td>'+B(m.receita)+'</td><td>'+B(m.das)+'</td><td>'+m.anexo+'</td><td>'+(m.tipo==='real'?'fechado':m.tipo==='parcial'?'em andamento':'projeção')+'</td></tr>'}).join('')+'</table>';
+  $('pe-notas').innerHTML=T.notas.map(function(x){return '<p class="mini">'+esc(x)+'</p>'}).join('')}
+ ['pe-hoje','pe-ar','pe-af','pe-saz'].forEach(function(i){$(i).addEventListener('input',tela)});$('pe-in').addEventListener('input',tela);
+ document.querySelector('[data-t=pla]').addEventListener('click',tela);tela()})();
 
 // Monitor fiscal (monitor-fiscal.js) com a resposta real de demonstração do SERPRO
 (function(){var EX=null;function mfUI(){if(!EX)return;var A=monitorFiscalDoCliente({caixa:EX.caixaPostal,procuracoes:EX.procuracoes,dte:EX.dte,hoje:$('mf-hoje').value||'2022-10-20'});

@@ -6,7 +6,7 @@
 const TABELAS_FOLHA={
   2026:{sm:1621,teto:8475.55,inss:[[1621,.075],[2902.84,.09],[4354.27,.12],[8475.55,.14]],depIR:189.59,sfLimite:1980.38,sfCota:67.54,vtPct:.06,fgts:.08,
     fonte:'Portaria Interministerial MPS/MF 13/2026 (INSS, teto, salário-família); IR mensal e redução: Lei 15.270/2025 e regras.js',
-    conferido:'INSS: faixas 1, 2 e teto lidos em fonte secundária; a faixa 3 fecha com a contribuição máxima de R$ 988,09 (conferida por soma). Salário-família lido em fonte secundária. Confirmar no texto da Portaria.'}};
+    conferido:'21/11/2026: faixas do INSS (7,5% até 1.621,00; 9% até 2.902,84; 12% até 4.354,27; 14% até 8.475,55), teto de 8.475,55, salário-família de R$ 67,54 para remuneração até R$ 1.980,38 (filho até 14 anos ou inválido) LIDOS no texto da Portaria Interministerial MPS/MF 13, de 09/01/2026 (DOU 12/01/2026), em site de legislação; a contribuição máxima de 988,09 é conta nossa (confere). Conferir no DOU/gov.br ao assinar a 1ª folha.'}};
 const r2f=x=>Math.round((x+Number.EPSILON)*100)/100;
 
 function tabelaFolha(ano){const t=TABELAS_FOLHA[ano];if(!t)throw new Error('Tabela da folha de '+ano+' não cadastrada: cadastre em TABELAS_FOLHA antes de calcular');return t}

@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-mazftsh/CUqijmcRvg39aLSXgWU0y4KXP+np1d2EapA=' 'sha256-T6z9afdyN25FzTY1bZmsWR2NJQK0lQKLqWcoJlQnoJk=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Lado a Lado Saúde para a sua empresa: contabilidade, folha e gestão</title>
 <meta name="description" content="Contabilidade completa para empresas de saúde no Simples Nacional, com até 3 funcionários: imposto, folha, notas, balanço e um resumo de uma página por mês.">
@@ -197,7 +197,7 @@ Estimativa; o contador confere.</div>
         <p class="sub">Informe os números do mês. A conta mostra o imposto do Simples, o pró-labore que mantém a empresa na tabela mais barata e a comparação com atender como autônoma. É uma estimativa com os números que você informar; o contador confirma.</p>
         <p class="sub">Ficam de fora desta conta o ISS fixo da pessoa física, taxas de cartão e outras diferenças do seu caso.</p>
       </div>
-      <form class="card conta" id="f-conta" onsubmit="return false">
+      <form class="card conta" id="f-conta">
         <h3>Números do mês</h3>
         <label>Receita por mês (R$)<input id="s-rec" inputmode="decimal" value="10.000" autocomplete="off"></label>
         <label>Despesas por mês (R$)<input id="s-desp" inputmode="decimal" value="1.500" autocomplete="off"></label>
@@ -301,6 +301,7 @@ $('c-m').onclick=()=>ciclo(false);$('c-a').onclick=()=>ciclo(true);
 </script>
 <script src="../config.js"></script>
 <script src="../metrica.js"></script>
+<script src="../nosubmit.js" defer></script>
 <script src="../perfil.js" defer></script>
 <script src="../navega.js" defer></script>
 </body>
