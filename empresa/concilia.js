@@ -12,9 +12,12 @@ function numeroBR(txt){let t=String(txt==null?'':txt).trim();if(!t)return NaN;le
   if(/\bD$/i.test(t)){neg=true;t=t.replace(/\s*D$/i,'')}else if(/\bC$/i.test(t))t=t.replace(/\s*C$/i,'');
   t=t.replace(/R\$\s*/i,'').replace(/\s/g,'');
   if(t.startsWith('-')){neg=!neg;t=t.slice(1)}else if(t.startsWith('+'))t=t.slice(1);
+  if(t.endsWith('-')&&!t.startsWith('-')){neg=!neg;t=t.slice(0,-1)}   // auditoria 21/11: alguns bancos exportam o sinal no fim (100,00-)
   let v;
   if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(t))v=+t.replace(/\./g,'').replace(',','.');
-  else if(/^\d+,\d+$/.test(t))v=+t.replace(',','.');
+  else if(/^\d+,\d{1,2}$/.test(t))v=+t.replace(',','.');
+  else if(/^\d+,\d{3,}$/.test(t)&&!/^\d{1,3}(,\d{3})+$/.test(t))return NaN;   // 3+ casas decimais não é dinheiro: recusa em vez de arredondar calado
+  else if(/^\d{1,3},\d{3}$/.test(t))return NaN;   // '12,345' é ambíguo (12,345 ou 12 345): a linha vai para conferência
   else if(/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(t))v=+t.replace(/,/g,'');
   else if(/^\d+(\.\d+)?$/.test(t))v=+t;
   else return NaN;

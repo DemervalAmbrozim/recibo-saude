@@ -23,10 +23,13 @@ function anexoSaude(rbt12,folha12,ano){const fr=rbt12>0?folha12/rbt12:0,anexo=fr
   const ef=efetivaAnexo(tabelaAnexo(anexo,ano),rbt12);
   return {fatorR:r2c(fr*10000)/10000,anexo,efetiva:ef,porte:rbt12>LIM_EPP?'acima do Simples':rbt12>LIM_ME?'EPP':'ME',perto:rbt12>.8*LIM_ME&&rbt12<=LIM_ME?'perto do limite de ME (80%)':null}}
 
-function inssEmpregado(sal){let t=0,ant=0;for(const [teto,al] of INSS_EMP){if(sal>ant)t+=(Math.min(sal,teto)-ant)*al;ant=teto}return r2c(t)}
+// Auditoria 21/11/2026: a tabela do INSS morava em dois arquivos. Agora vale a de folha.js (TABELAS_FOLHA) quando ela está carregada; INSS_EMP fica só como reserva.
+function inssEmpregado(sal){if(typeof inssFolha==='function'&&typeof TABELAS_FOLHA!=='undefined'&&TABELAS_FOLHA[2026])return inssFolha(sal,2026);
+  let t=0,ant=0;for(const [teto,al] of INSS_EMP){if(sal>ant)t+=(Math.min(sal,teto)-ant)*al;ant=teto}return r2c(t)}
+const depIR=()=>typeof TABELAS_FOLHA!=='undefined'&&TABELAS_FOLHA[2026]?TABELAS_FOLHA[2026].depIR:DEP_IR;
 
 // Holerite estimado. Simples Anexos I a III: sem INSS patronal (CPP no DAS) [LC 123 art. 13 VI; fora só o Anexo IV]; FGTS 8%.
-function holerite(sal,{dependentes=0,vt=0}={}){const inss=inssEmpregado(sal),ir=carneLeao(sal,inss+dependentes*DEP_IR).devido;
+function holerite(sal,{dependentes=0,vt=0}={}){const inss=inssEmpregado(sal),ir=carneLeao(sal,inss+dependentes*depIR()).devido;
   const vtd=Math.min(r2c(.06*sal),+vt||0),fgts=r2c(.08*sal),liquido=r2c(sal-inss-ir-vtd);
   // custo mensal médio com 13º e férias (+1/3) provisionados e FGTS sobre eles; vale-transporte pago pela empresa só na parte acima dos 6%
   const prov=sal/12+sal/12*4/3,custo=r2c(sal+fgts+prov+.08*prov+Math.max(0,(+vt||0)-vtd));

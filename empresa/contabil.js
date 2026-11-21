@@ -30,9 +30,11 @@ const DE_PARA_P10={'P10.01.00002':'3.2.2.01.001','P10.01.00003':'3.2.2.01.002','
   'P10.01.00013':'3.2.2.01.012','P10.01.00009':'3.2.2.03.001','P10.01.00010':'3.2.2.03.002'};
 const contaDeP10=cod=>DE_PARA_P10[cod]||null;
 
-const cent=v=>Math.round((+v+Number.EPSILON)*100);
+// Auditoria 21/11/2026: o EPSILON não corrigia o erro de ponto flutuante (10,075 virava 10,07). Meia-unidade sobe; valor não finito ou absurdo (> 1 trilhão) é recusado em lanca().
+const cent=v=>{const x=+v;return Math.round(x*100+(x<0?-1e-7:1e-7))};
 const reais=c=>c/100;
-const dataOk=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(new Date(s+'T12:00:00'));
+// Auditoria 21/11/2026: 31/02, 29/02 de ano comum e 31/04 passavam. Agora confere ida e volta (a data não pode "rolar" para outro dia).
+const dataOk=s=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T12:00:00Z');return !isNaN(d)&&d.toISOString().slice(0,10)===s};
 
 function criaLivro(){
   const L=[];let seq=0;
@@ -43,6 +45,7 @@ function criaLivro(){
     if(!Array.isArray(partidas)||partidas.length<2)throw new Error('lançamento precisa de ao menos duas partidas');
     let d=0,c=0;const ps=partidas.map(p=>{
       if(!CONTA[p.conta])throw new Error('conta fora do plano: '+p.conta);
+      if([p.d,p.c].some(x=>x!=null&&(!Number.isFinite(+x)||Math.abs(+x)>1e12)))throw new Error('valor inválido na conta '+p.conta);
       const vd=p.d!=null?cent(p.d):0,vc=p.c!=null?cent(p.c):0;
       if((vd>0)===(vc>0)||vd<0||vc<0)throw new Error('cada partida é débito OU crédito, com valor positivo: '+p.conta);
       d+=vd;c+=vc;return {conta:p.conta,d:vd,c:vc}});
