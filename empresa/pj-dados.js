@@ -44,6 +44,8 @@ function criaDados(sb){
       return ck(await sb.from('pj_esocial_evento').insert({empresa_id:emp,empregado_id:empregadoId,tipo,competencia:competencia?primeiroDia(competencia):null,payload,status}))},
     async socios(emp){return ck(await sb.from('pj_socio').select('id,nome,cpf,participacao,administrador,prolabore').eq('empresa_id',emp).order('nome'))||[]},
     async salvarSocio(emp,s){const cpf=String(s.cpf||'').replace(/\D/g,'');return ck(await sb.from('pj_socio').upsert({empresa_id:emp,nome:String(s.nome||'').trim(),cpf,participacao:+s.participacao,administrador:!!s.administrador,prolabore:s.prolabore==null||s.prolabore===''?null:+s.prolabore},{onConflict:'empresa_id,cpf'}))},
+    async empregadosFolha(emp){return ck(await sb.from('pj_empregado').select('id,nome,salario,admissao,desligamento,dependentes,filhos_sf,vt_custo').eq('empresa_id',emp).order('nome'))||[]},
+    async folhasDoMes(emp,comp){return ck(await sb.from('pj_folha_mes').select('id,empregado_id,status,resultado,aprovado_em').eq('empresa_id',emp).eq('competencia',primeiroDia(comp)))||[]},
     async empregadosFicha(emp){return ck(await sb.from('pj_empregado').select('id,nome,cargo,salario,admissao,desligamento').eq('empresa_id',emp).order('nome'))||[]},
     async salvarEmpregado(emp,e){const cpf=String(e.cpf||'').replace(/\D/g,'');return ck(await sb.from('pj_empregado').upsert({empresa_id:emp,nome:String(e.nome||'').trim(),cpf,cargo:String(e.cargo||''),salario:+e.salario,admissao:e.admissao,dependentes:+e.dependentes||0,vt_custo:+e.vt_custo||0},{onConflict:'id'}))},
     async alertas(emp){return ck(await sb.from('pj_alerta').select('id,nivel,texto,criado_em,resolvido_em').eq('empresa_id',emp).order('criado_em',{ascending:false}))||[]},

@@ -94,7 +94,16 @@ section button,nav button,summary{min-height:44px}
   <section id="t-cal"><div class="card"><h2>Calendário fiscal de 12 meses</h2><label class="chk" style="margin-bottom:8px"><input type="checkbox" id="k-folha" checked> Empresa com funcionários</label><div id="k-out" class="tbl"></div></div>
   <div class="card"><h2>Guias do mês (assistidas)</h2><p class="sub">Documento de apoio: valor, código, vencimento e passo a passo. <b>Não é a guia oficial</b> e não tem código de barras; a guia sai no portal indicado. A emissão automática pelo SERPRO depende do contrato.</p><label>Competência <select id="g-comp"><option value="2026-12">dezembro de 2026</option><option value="2027-01" selected>janeiro de 2027</option><option value="2027-02">fevereiro de 2027</option><option value="2027-03">março de 2027</option></select></label> <label class="chk"><input type="checkbox" id="g-folha" checked> Empresa com funcionários</label><div id="g-out" class="tbl"></div><p class="mini" id="g-ext"></p><div id="g-prev"></div></div>
   <div class="card"><h2>Fila do dia (exemplo)</h2><p class="sub">O que acontece sozinho em cada dia útil do mês e o que precisa do OK do Demerval. Nada é enviado: é a prévia da rotina.</p><label>Dia <input type="date" id="f-dia" value="2027-03-05"></label><pre id="f-out" style="white-space:pre-wrap;font:14px/1.5 inherit;margin:8px 0 0"></pre></div>
-  <div class="card"><h2>Obrigações acessórias: quem precisa de quê</h2><label class="chk"><input type="checkbox" id="o-emp"> Tem empregado</label> <label class="chk"><input type="checkbox" id="o-pl" checked> Sócio com pró-labore</label> <label class="chk"><input type="checkbox" id="o-ret"> Tem retenção na fonte (INSS, IR, CSLL, PIS, COFINS)</label><div id="ob-out" class="tbl"></div><p class="sub">EFD-Reinf e DCTFWeb: o sistema orienta e avisa; não transmite. Onde aparece [conferir], o contador decide.</p></div>  <div class="card" id="reinf"><h2>EFD-Reinf (rascunho) e ECD/ECF</h2><p class="sub">Informe um pagamento a pessoa jurídica. O sistema apura IR, CSRF e INSS retidos e monta os eventos como RASCUNHO, sem assinar nem transmitir.</p>
+  <div class="card"><h2>Obrigações acessórias: quem precisa de quê</h2><label class="chk"><input type="checkbox" id="o-emp"> Tem empregado</label> <label class="chk"><input type="checkbox" id="o-pl" checked> Sócio com pró-labore</label> <label class="chk"><input type="checkbox" id="o-ret"> Tem retenção na fonte (INSS, IR, CSLL, PIS, COFINS)</label><div id="ob-out" class="tbl"></div><p class="sub">EFD-Reinf e DCTFWeb: o sistema orienta e avisa; não transmite. Onde aparece [conferir], o contador decide.</p></div>    <div class="card" id="monitor"><h2>Monitor fiscal: Caixa Postal, procurações e comprovantes da Receita</h2><p class="sub">Lê as respostas do Integra Contador (SERPRO) e mostra só o que pede ação. Abaixo, uma resposta REAL do ambiente de demonstração, com dados fictícios de 2022. Em produção exige contrato, e-CNPJ A1 e procuração.</p>
+  <label>Considerar hoje como <input id="mf-hoje" type="date" value="2022-10-20"></label>
+  <div id="mf-out" class="tbl"></div></div>
+  <div class="card" id="imp"><h2>Importar a carteira do escritório (planilha)</h2><p class="sub">Uma linha por cliente, ou por empregado repetindo o CNPJ. Colunas: cnpj, razão, regime, cnae, abertura, cpf, nome, cargo, salário, admissão, dependentes. Confere CNPJ, CPF, salário e datas antes de gravar. Empresa nova não é criada aqui: ela entra pelo cadastro, com o aceite da titular.</p>
+  <input type="file" id="im-arq" accept=".csv,.txt"> <button type="button" id="im-ex">Usar planilha de exemplo</button> <button type="button" id="im-grava" hidden>Gravar empregados no banco</button>
+  <div id="im-out" class="tbl"></div><div id="im-msg" class="mini" role="status"></div></div>
+  <div class="card" id="exp"><h2>Exportar para o sistema contábil do escritório</h2><p class="sub">CSV neutro (ponto e vírgula, vírgula decimal, data DD/MM/AAAA). Ainda não sabemos qual sistema o escritório usa: com o leiaute de importação dele, entra um formato a mais. O de-para de contas é editável.</p>
+  <label>Formato <select id="ex-f"><option value="partida">Uma linha por partida</option><option value="duplo">Uma linha por lançamento (débito e crédito)</option></select></label> <button type="button" id="ex-l">Baixar lançamentos de exemplo</button> <button type="button" id="ex-p">Baixar plano de contas com de-para</button>
+  <div id="ex-out" class="mini" role="status"></div></div>
+<div class="card" id="reinf"><h2>EFD-Reinf (rascunho) e ECD/ECF</h2><p class="sub">Informe um pagamento a pessoa jurídica. O sistema apura IR, CSRF e INSS retidos e monta os eventos como RASCUNHO, sem assinar nem transmitir.</p>
   <label>CNPJ do prestador <input id="rf-cnpj" value="11.222.333/0001-81"></label> <label>Valor bruto <input id="rf-v" type="number" value="2000"></label> <label>Natureza <select id="rf-n"><option value="servico">Serviço (IR/CSRF)</option><option value="cessao">Cessão de mão de obra (INSS)</option></select></label> <label class="chk"><input type="checkbox" id="rf-s"> Optante do Simples com declaração</label>
   <div id="rf-out" class="tbl"></div><pre id="rf-xml" class="mini" style="white-space:pre-wrap"></pre>
   <label>Regime <select id="rf-r"><option value="simples">Simples</option><option value="presumido">Lucro presumido</option><option value="real">Lucro real</option></select></label><div id="rf-ecd" class="tbl"></div><p class="sub">Alíquotas e hipóteses de partida [conferir]: o contador decide. Transmissão exige e-CNPJ A1 e procuração.</p></div>
@@ -106,7 +115,7 @@ section button,nav button,summary{min-height:44px}
   <section id="t-pai"><div class="card"><h2>Painel do contador: fila de prioridades</h2><p class="sub">Carteira de exemplo com 4 clientes e a data de hoje fixa em 18/03/2027. A fila mostra o que olhar primeiro.</p><div id="p-fila" class="tbl"></div>
     <h3>Vencimentos dos próximos 7 dias</h3><div id="p-sem" class="tbl"></div><h3>Tempo e margem do mês</h3><div id="p-ind"></div></div>
     <div class="card" id="lote"><h2>Folha em lote: todos os clientes numa fila</h2><p class="sub">Exemplo com 4 clientes de teste. Só vem para você o que exige decisão: erros, folhas prontas e quem ainda não respondeu. A folha nunca nasce aprovada; o sistema não paga nada.</p>
-  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label>
+  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label> <label>Mês <input id="lt-comp" value="2026-12" style="width:90px"></label> <button id="lt-real" type="button">Carregar clientes reais</button> <button id="lt-grava" type="button" hidden>Gravar folhas como sombra</button> <span id="lt-modo" class="mini">Modo exemplo.</span>
   <div id="lt-res" class="mini"></div><div id="lt-out" class="tbl"></div><div id="lt-msg" class="mini" role="status"></div><div id="lt-cob"></div></div>
 <div class="card" id="escala"><h2>Escala do escritório: quanto a automação muda a sua capacidade</h2><p class="sub"><b>Horas e percentuais são premissas de partida (nossas): troque pelos números do seu escritório.</b> A conferência do contador continua em todas as clientes (0,25 h por cliente). Estimativa, não promessa.</p><div class="grid"><label>Clientes<input id="esc-n" inputmode="numeric" value="30"></label><label>% com folha<input id="esc-pf" inputmode="numeric" value="30"></label><label>Horas úteis do contador no mês<input id="esc-u" inputmode="numeric" value="140"></label><label>Honorário médio (R$)<input id="esc-h" inputmode="numeric" value="299"></label><label>Hora do contador (R$)<input id="esc-c" inputmode="numeric" value="60"></label></div><div id="esc-t" class="tbl"></div><div id="esc-o" class="tbl"></div></div><div class="card"><h2>Carteira no banco</h2><p class="sub">As empresas que você pode ver como equipe ou contador designado.</p><p><button class="p" id="bd-cart" disabled title="Entre na sua conta e escolha a empresa">Carregar carteira</button></p><div id="bd-cart-out" role="status" aria-live="polite"></div></div></section>
 
@@ -142,7 +151,11 @@ section button,nav button,summary{min-height:44px}
 <script src="fechamento.js"></script>
 <script src="escala.js"></script>
 <script src="reinf.js"></script>
+<script src="importar.js"></script>
+<script src="exportar.js"></script>
+<script src="monitor-fiscal.js"></script>
 <script src="folha-lote.js"></script>
+<script src="folha-lote-db.js"></script>
 <script src="folha.js"></script>
 <script src="contabil.js"></script>
 <script src="concilia.js"></script>
@@ -299,21 +312,55 @@ function reinfUI(){const P=[{data:'2026-11-10',cnpjBeneficiario:$('rf-cnpj').val
  $('rf-ecd').innerHTML='<table>'+verificarECDECF({regime:$('rf-r').value}).map(o=>'<tr><td>'+o.nome+'</td><td>'+(o.obrigada===true?'sim':o.obrigada===false?'não':'conferir')+'</td><td class="mini">'+o.porque+(o.aviso?' '+o.aviso:'')+'</td></tr>').join('')+'</table>'}
 ['rf-cnpj','rf-v','rf-n','rf-s','rf-r'].forEach(i=>$(i).addEventListener('input',reinfUI));reinfUI();
 
-// Folha em lote (folha-lote.js)
-var LT={ap:{},vars:{a:{a1:null,a2:{faltasDias:1}},b:{},c:{c1:null},d:{}}};
-var LT_CART=[{id:'a',nome:'Clínica A',anterior:[{id:'a1',nome:'Ana',salario:2500,divisor:220,dependentes:0},{id:'a2',nome:'Bruno',salario:3000,divisor:220,dependentes:1}]},
+// Folha em lote (folha-lote.js e folha-lote-db.js): modo exemplo e modo real (banco)
+var LT={ap:{},vars:{a:{a1:null,a2:{faltasDias:1}},b:{},c:{c1:null},d:{}},real:false,folhas:{},cart:null};
+var LT_EX=[{id:'a',nome:'Clínica A',anterior:[{id:'a1',nome:'Ana',salario:2500,divisor:220,dependentes:0},{id:'a2',nome:'Bruno',salario:3000,divisor:220,dependentes:1}]},
  {id:'b',nome:'Clínica B',anterior:[{id:'b1',nome:'Carla',salario:2500,divisor:220,dependentes:0}]},
  {id:'c',nome:'Clínica C',anterior:[{id:'c1',nome:'Dado inválido',salario:-5,divisor:220}]},
  {id:'d',nome:'Clínica D (sem funcionários)',anterior:[]}];
-function loteUI(){var lo=loteFolha({carteira:LT_CART.map(function(c){return Object.assign({},c,{variaveis:LT.vars[c.id]})}),aprovacoes:LT.ap,comp:'2026-12',ano:2026});LT.lo=lo;var r=lo.resumo,B=function(v){return (+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
+function ltComp(){return LT.real?($('lt-comp').value||'2026-12'):'2026-12'}
+function loteUI(){var cart=LT.real?LT.cart:LT_EX,comp=ltComp();
+ var lo=loteFolha({carteira:cart.map(function(c){return Object.assign({},c,{variaveis:LT.vars[c.id]||{}})}),aprovacoes:LT.ap,comp:comp,ano:+comp.slice(0,4)});LT.lo=lo;var r=lo.resumo,B=function(v){return (+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
  $('lt-res').textContent='Para aprovar: '+r.paraAprovar+' · Aguardando a cliente: '+r.aguardando+' · Com erro: '+r.erros+' · Aprovadas: '+r.aprovadas+' (líquido '+B(r.liquido)+', FGTS '+B(r.fgts)+')';
- $('lt-out').innerHTML='<table><tr><th>Cliente</th><th>Situação</th><th>Líquido</th><th>FGTS</th><th>Ação</th></tr>'+lo.clientes.map(function(c){var acao=c.status==='pronta para aprovar'||c.status==='mudou depois de aprovada'?'<button data-ap="'+c.id+'">Aprovar</button>':c.status==='aguardando a cliente'?'<button data-sa="'+c.id+'">Registrar "sem alteração"</button>':c.status==='com erro'?'<span class="mini">'+c.folha.itens.filter(function(i){return !i.pronto}).map(function(i){return i.motivo}).join('; ')+'</span>':'';
-  return '<tr><td>'+c.nome+'</td><td>'+c.status+'</td><td>'+(c.folha.completa?B(c.liquido):'-')+'</td><td>'+(c.folha.completa?B(c.fgts):'-')+'</td><td>'+acao+'</td></tr>'}).join('')+'</table>';
- var cb=cobrancaPendentes(lo);$('lt-cob').innerHTML=cb.length?'<p class="mini"><b>Texto para cobrar quem falta</b> (o envio pelo zap depende do modelo aprovado):</p>'+cb.map(function(x){return '<pre class="mini" style="white-space:pre-wrap">'+x.texto+'</pre>'}).join(''):''}
-$('lt-out').addEventListener('click',function(e){var a=e.target.getAttribute('data-ap'),sa=e.target.getAttribute('data-sa');
- if(a){try{LT.ap=aprovarFolha(LT.lo,a,$('lt-por').value,new Date().toISOString(),LT.ap);$('lt-msg').textContent='Aprovada.'}catch(x){$('lt-msg').textContent=x.message}loteUI()}
- if(sa){var c=LT_CART.filter(function(k){return k.id===sa})[0],v={};c.anterior.forEach(function(f){v[f.id]=null});LT.vars[sa]=v;$('lt-msg').textContent='Registrado: sem alteração.';loteUI()}});
-$('lt-por').addEventListener('input',function(){});loteUI();
+ $('lt-out').innerHTML='<table><tr><th>Cliente</th><th>Situação</th><th>Líquido</th><th>FGTS</th><th>Ação</th></tr>'+lo.clientes.map(function(c){var acao='';
+  if(c.status==='pronta para aprovar'||c.status==='mudou depois de aprovada')acao='<button data-ap="'+c.id+'">Aprovar</button>';
+  else if(c.status==='aguardando a cliente'){acao='<button data-sa="'+c.id+'">Todos sem alteração</button>'+c.folha.itens.filter(function(i){return !i.pronto}).map(function(i){return '<div class="mini">'+esc(i.nome)+': faltas <input type="number" min="0" max="31" value="0" data-f="'+c.id+'|'+i.id+'" style="width:46px"> horas extras <input type="number" min="0" max="100" value="0" data-h="'+c.id+'|'+i.id+'" style="width:46px"> <button data-reg="'+c.id+'|'+i.id+'">Registrar</button></div>'}).join('')}
+  else if(c.status==='com erro')acao='<span class="mini">'+c.folha.itens.filter(function(i){return !i.pronto}).map(function(i){return esc(i.motivo)}).join('; ')+'</span>';
+  return '<tr><td>'+esc(c.nome)+'</td><td>'+c.status+'</td><td>'+(c.folha.completa?B(c.liquido):'-')+'</td><td>'+(c.folha.completa?B(c.fgts):'-')+'</td><td>'+acao+'</td></tr>'}).join('')+'</table>';
+ var cb=cobrancaPendentes(lo);$('lt-cob').innerHTML=cb.length?'<p class="mini"><b>Texto para cobrar quem falta</b> (o envio pelo zap depende do modelo aprovado):</p>'+cb.map(function(x){return '<pre class="mini" style="white-space:pre-wrap">'+esc(x.texto)+'</pre>'}).join(''):''}
+async function ltRecarrega(){var R=await carregarCarteiraReal(window.__bdDB,$('lt-comp').value);LT.cart=R.carteira;LT.folhas=R.folhas;
+ var tmp=loteFolha({carteira:R.carteira.map(function(c){return Object.assign({},c,{variaveis:LT.vars[c.id]||{}})}),comp:$('lt-comp').value,ano:+$('lt-comp').value.slice(0,4)});LT.ap=aprovacoesDoBanco(tmp,R.folhas);}
+$('lt-real').addEventListener('click',async function(){if(!window.__bdDB){$('lt-msg').textContent='Entre com o e-mail do contador para carregar os clientes reais.';return}
+ try{LT.real=true;LT.vars={};await ltRecarrega();$('lt-modo').textContent='Modo real: '+LT.cart.length+' cliente(s) com empregados.';$('lt-grava').hidden=false;$('lt-msg').textContent='';loteUI()}catch(x){LT.real=false;$('lt-msg').textContent='Não consegui carregar: '+x.message}});
+$('lt-comp').addEventListener('change',async function(){if(LT.real){try{LT.vars={};await ltRecarrega();loteUI()}catch(x){$('lt-msg').textContent=x.message}}});
+$('lt-grava').addEventListener('click',async function(){try{var g=await gravarSombras(window.__bdDB,LT.lo,LT.folhas,'folha.js');await ltRecarrega();loteUI();$('lt-msg').textContent='Gravadas '+g.gravadas+' (iguais ignoradas: '+g.ignoradas+')'+(g.falhas.length?'; falhas: '+g.falhas.map(function(f){return f.empregado+': '+f.motivo}).join('; '):'')}catch(x){$('lt-msg').textContent=x.message}});
+$('lt-out').addEventListener('click',async function(e){var t=e.target,a=t.getAttribute('data-ap'),sa=t.getAttribute('data-sa'),rg=t.getAttribute('data-reg');
+ if(a){if(!$('lt-por').value.trim()){$('lt-msg').textContent='Informe quem aprova (contador).';return}
+  if(LT.real){try{var cl=LT.lo.clientes.filter(function(c){return c.id===a})[0];if(!cl.folha.completa||cl.status==='com erro'){$('lt-msg').textContent='Esta folha não está pronta para aprovar.';return}
+    await gravarSombras(window.__bdDB,LT.lo,LT.folhas,'folha.js');await ltRecarrega();var r=await aprovarClienteNoBanco(window.__bdDB,cl,LT.folhas);await ltRecarrega();loteUI();$('lt-msg').textContent=r.falhas.length?'Aprovadas '+r.aprovadas+'; o servidor recusou: '+r.falhas.map(function(f){return f.empregado+': '+f.motivo}).join('; '):'Aprovada no banco ('+r.aprovadas+' folha(s)).'}catch(x){$('lt-msg').textContent=x.message}return}
+  try{LT.ap=aprovarFolha(LT.lo,a,$('lt-por').value,new Date().toISOString(),LT.ap);$('lt-msg').textContent='Aprovada.'}catch(x){$('lt-msg').textContent=x.message}loteUI()}
+ if(sa){var cart=(LT.real?LT.cart:LT_EX),c=cart.filter(function(k){return k.id===sa})[0],v=Object.assign({},LT.vars[sa]||{});c.anterior.forEach(function(f){if(!(f.id in v))v[f.id]=null});LT.vars[sa]=v;$('lt-msg').textContent='Registrado: sem alteração.';loteUI()}
+ if(rg){var p=rg.split('|'),f=document.querySelector('[data-f="'+rg+'"]'),h=document.querySelector('[data-h="'+rg+'"]');LT.vars[p[0]]=Object.assign({},LT.vars[p[0]]||{});LT.vars[p[0]][p[1]]={faltasDias:+f.value||0,heNormais:+h.value||0};$('lt-msg').textContent='Variáveis registradas.';loteUI()}});
+loteUI();
+
+// Monitor fiscal (monitor-fiscal.js) com a resposta real de demonstração do SERPRO
+(function(){var EX=null;function mfUI(){if(!EX)return;var A=monitorFiscalDoCliente({caixa:EX.caixaPostal,procuracoes:EX.procuracoes,dte:EX.dte,hoje:$('mf-hoje').value||'2022-10-20'});
+ $('mf-out').innerHTML=A.length?'<table><tr><th>Prioridade</th><th>Alerta</th></tr>'+A.map(function(a){return '<tr><td>'+a.prioridade+'</td><td>'+esc(a.texto)+'</td></tr>'}).join('')+'</table>':'<p class="mini">Nada pede ação.</p>'}
+ fetch('exemplos-serpro.json').then(function(r){return r.json()}).then(function(j){EX=j;mfUI()}).catch(function(){$('mf-out').textContent='Não consegui ler o exemplo.'});$('mf-hoje').addEventListener('input',mfUI)})();
+
+// Importar carteira (importar.js) e exportar (exportar.js)
+(function(){var PL=null;
+ function baixa(nome,txt){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/csv;charset=utf-8'}));a.download=nome;document.body.appendChild(a);a.click();a.remove()}
+ function mostra(txt){var r=lerCarteiraCSV(txt);PL=r;var tot=r.clientes.reduce(function(s,c){return s+c.empregados.length},0);
+  $('im-out').innerHTML='<p><b>'+r.clientes.length+'</b> cliente(s), <b>'+tot+'</b> empregado(s) válidos, <b>'+r.erros.length+'</b> erro(s), '+r.avisos.length+' aviso(s).</p>'+(r.erros.length?'<table><tr><th>Linha</th><th>Erro</th></tr>'+r.erros.map(function(e){return '<tr><td>'+e.linha+'</td><td>'+esc(e.motivo)+'</td></tr>'}).join('')+'</table>':'')+(r.avisos.length?'<p class="mini">'+r.avisos.map(function(a){return 'Linha '+a.linha+': '+esc(a.motivo)}).join('<br>')+'</p>':'');
+  $('im-grava').hidden=!window.__bdDB||!tot}
+ $('im-arq').addEventListener('change',function(){var f=this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){mostra(rd.result)};rd.readAsText(f,'utf-8')});
+ $('im-ex').addEventListener('click',function(){mostra('cnpj;razão social;regime;cnae;abertura;cpf;nome;cargo;salário;admissão;dependentes\n11.222.333/0001-81;Clínica Um;Simples;8650004;2020-03-01;529.982.247-25;Ana Souza;Recepcionista;1800,50;10/01/2025;1\n11.222.333/0001-80;CNPJ com erro;;;;;;;;;\n')});
+ $('im-grava').addEventListener('click',async function(){try{var ex=await window.__bdDB.empresas(),jaTem={};for(var k=0;k<ex.length;k++){var l=await window.__bdDB.empregadosFicha(ex[k].id);jaTem[ex[k].id]=l.map(function(x){return (x.cpf||'').replace(/\D/g,'')})}
+   var P=planoImportacao(PL,ex,jaTem),r=await importarEmpregados(window.__bdDB,P);$('im-msg').textContent='Gravados '+r.gravados+'; já existiam '+P.pular.length+'; empresas a cadastrar pelo fluxo de entrada: '+P.criar.length+(r.falhas.length?'; falhas: '+r.falhas.map(function(f){return f.nome+': '+f.motivo}).join('; '):'')}catch(x){$('im-msg').textContent='Não gravei: '+x.message}});
+ function livroEx(){var L=criaLivro();L.gera.capital('2027-01-02',10000);L.lanca({data:'2027-01-10',historico:'Receita de janeiro',partidas:[{conta:'1.1.1.02',d:3000},{conta:'3.1.1.03',c:3000}]});L.gera.pagamentoFolha('2027-01-15',500.5);return L}
+ $('ex-l').addEventListener('click',function(){var r=csvLancamentos(livroEx().lancamentos(),CONTA,{formato:$('ex-f').value});baixa('lancamentos-exemplo.csv',r.csv);$('ex-out').textContent=r.lancamentos+' lançamento(s), '+r.linhas+' linha(s); débitos '+r.totalDebitos.toLocaleString('pt-BR')+' = créditos '+r.totalCreditos.toLocaleString('pt-BR')+(r.fecha?' (fecha).':' (NÃO FECHA).')+(r.avisos.length?' '+r.avisos.join('; '):'')});
+ $('ex-p').addEventListener('click',function(){baixa('plano-de-contas-de-para.csv',csvPlano(CONTA));$('ex-out').textContent='Preencha a coluna "codigo_no_seu_sistema" e devolva a planilha: o sistema lê o de-para.'})})();
 // escala do escritório (escala.js): premissas editáveis
 function escalaUI(){var num=function(i){return parseFloat(String($(i).value).replace(',','.'))||0},ov={};
   if(!$('esc-t').firstChild){$('esc-t').innerHTML=tab(['Rotina mensal por cliente','Horas hoje','% automático','Estado'],TAREFAS_ESCRITORIO.map(function(t){return [esc(t.nome)+(t.folha?' (por empregado)':'')+'<br><span class="mini">'+esc(t.como)+'</span>','<input class="esc-h" data-id="'+t.id+'" inputmode="decimal" value="'+String(t.horas).replace('.',',')+'" style="width:70px">','<input class="esc-a" data-id="'+t.id+'" inputmode="numeric" value="'+Math.round(t.auto*100)+'" style="width:60px">%',esc(t.estado)]}));
@@ -349,7 +396,7 @@ function eventos(){var t=$('e-tipo').value,p=planoEvento(t,{registro:$('e-reg').
  async function init(){await carrega();var sb=window.__SB_MOCK||(typeof supabase!=='undefined'&&typeof CONFIG!=='undefined'?supabase.createClient(CONFIG.url,CONFIG.chave):null),st=$('cx-st');
   if(!sb){st.textContent='modo exemplo (sem conexão com o banco)';return}
   try{var s=await sb.auth.getSession();if(!s.data||!s.data.session){st.innerHTML='modo exemplo. Para gravar, <a href="entrar.html">entre com o seu e-mail</a>.';return}
-   DB=criaDados(sb);var es=await DB.empresas();if(!es.length){st.textContent='você ainda não tem empresa cadastrada.';return}
+   DB=criaDados(sb);window.__bdDB=DB;var es=await DB.empresas();if(!es.length){st.textContent='você ainda não tem empresa cadastrada.';return}
    var sel=$('cx-emp');es.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=(e.razao_social||'Empresa sem nome')+(e.cnpj?' · '+e.cnpj:'');sel.appendChild(o)});$('cx-l').hidden=es.length<2;
    sel.onchange=function(){escolhe(sel.value)};st.textContent='conectado: '+(es[0].razao_social||'empresa');liga(true);await escolhe(es[0].id)}
   catch(e){st.textContent=traduzErroPj(e)}}

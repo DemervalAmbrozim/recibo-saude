@@ -1,0 +1,201 @@
+{
+ "_fonte": "Respostas reais do ambiente de demonstração (trial) do SERPRO Integra Contador, 21/11/2026; dados fictícios.",
+ "caixaPostal": {
+  "codigo": "00",
+  "conteudo": [
+   {
+    "quantidadeMensagens": "50",
+    "indicadorUltimaPagina": "N",
+    "ponteiroPaginaRetornada": "20220802160251",
+    "ponteiroProximaPagina": "20220613142525",
+    "cnpjMatriz": "99999999999999",
+    "listaMensagens": [
+     {
+      "codigoSistemaRemetente": "00019",
+      "codigoModelo": "00005",
+      "dataEnvio": "20220802",
+      "horaEnvio": "160251",
+      "numeroControle": "2022/000000000018062",
+      "indicadorLeitura": "0",
+      "dataLeitura": "",
+      "horaLeitura": "",
+      "dataExclusao": "",
+      "horaExclusao": "",
+      "dataCiencia": "20220817",
+      "assuntoModelo": "Notificação de recebimento de mensagem e-MAC - Mensagem nº ++VARIAVEL++ (complemento)",
+      "dataValidade": "20221101",
+      "origemModelo": "1",
+      "valorParametroAssunto": "083548",
+      "relevancia": "1",
+      "isn": "0001493189",
+      "tipoOrigem": "0",
+      "descricaoOrigem": "RECEITA FEDERAL DO BRASIL"
+     },
+     {
+      "codigoSistemaRemetente": "00019",
+      "codigoModelo": "00003",
+      "dataEnvio": "20220802",
+      "horaEnvio": "160216",
+      "numeroControle": "2022/000000000018084",
+      "indicadorLeitura": "0",
+      "dataLeitura": "",
+      "horaLeitura": "",
+      "dataExclusao": "",
+      "horaExclusao": "",
+      "dataCiencia": "20220817",
+      "assuntoModelo": "Notificação de recebimento de mensagem e-MAC - Mensagem nº ++VARIAVEL++ (nova)",
+      "dataValidade": "20221101",
+      "origemModelo": "1",
+      "valorParametroAssunto": "083549",
+      "relevancia": "2",
+      "isn": "0001493188",
+      "tipoOrigem": "0",
+      "descricaoOrigem": "RECEITA FEDERAL DO BRASIL"
+     },
+     {
+      "codigoSistemaRemetente": "00019",
+      "codigoModelo": "00003",
+      "dataEnvio": "20220802",
+      "horaEnvio": "155754",
+      "numeroControle": "2022/000000000018083",
+      "indicadorLeitura": "0",
+      "dataLeitura": "",
+      "horaLeitura": "",
+      "dataExclusao": "",
+      "horaExclusao": "",
+      "dataCiencia": "20220817",
+      "assuntoModelo": "Notificação de recebimento de mensagem e-MAC - Mensagem nº ++VARIAVEL++ (nova)",
+      "dataValidade": "20221101",
+      "origemModelo": "1",
+      "valorParametroAssunto": "083548",
+      "relevancia": "2",
+      "isn": "0001493175",
+      "tipoOrigem": "0",
+      "descricaoOrigem": "RECEITA FEDERAL DO BRASIL"
+     },
+     {
+      "codigoSistemaRemetente": "00019",
+      "codigoModelo": "00005",
+      "dataEnvio": "20220802",
+      "horaEnvio": "154013",
+      "numeroControle": "2022/000000000018081",
+      "indicadorLeitura": "0",
+      "dataLeitura": "",
+      "horaLeitura": "",
+      "dataExclusao": "",
+      "horaExclusao": "",
+      "dataCiencia": "20220817",
+      "assuntoModelo": "Notificação de recebimento de mensagem e-MAC - Mensagem nº ++VARIAVEL++ (complemento)",
+      "dataValidade": "20221101",
+      "origemModelo": "1",
+      "valorParametroAssunto": "083546",
+      "relevancia": "1",
+      "isn": "0001493174",
+      "tipoOrigem": "0",
+      "descricaoOrigem": "RECEITA FEDERAL DO BRASIL"
+     },
+     {
+      "codigoSistemaRemetente": "00019",
+      "codigoModelo": "00003",
+      "dataEnvio": "20220802",
+      "horaEnvio": "153934",
+      "numeroControle": "2022/000000000018061",
+      "indicadorLeitura": "0",
+      "dataLeitura": "",
+      "horaLeitura": "",
+      "dataExclusao": "",
+      "horaExclusao": "",
+      "dataCiencia": "20220817",
+      "assuntoModelo": "Notificação de recebimento de mensagem e-MAC - Mensagem nº ++VARIAVEL++ (nova)",
+      "dataValidade": "20221101",
+      "origemModelo": "1",
+      "valorParametroAssunto": "083546",
+      "relevancia": "2",
+      "isn": "0001493173",
+      "tipoOrigem": "0",
+      "descricaoOrigem": "RECEITA FEDERAL DO BRASIL"
+     },
+     {
+      "codigoSistemaRemetente": "00019",
+      "codigoModelo": "00003",
+      "dataEnvio": "20220802",
+      "horaEnvio": "060847",
+      "numeroControle": "2022/000000000021523",
+      "indicadorLeitura": "0",
+      "dataLeitura": "",
+      "horaLeitura": "",
+      "dataExclusao": "",
+      "horaExclusao": "",
+      "dataCiencia": "20220817",
+      "assuntoModelo": "Notificação de recebimento de mensagem e-MAC - Mensagem nº ++VARIAVEL++ (nova)",
+      "dataValidade": "20221101",
+      "origemModelo": "1",
+      "valorParametroAssunto": "118867",
+      "relevancia": "2",
+      "isn": "0001493118",
+      "tipoOrigem": "0",
+      "descricaoOrigem": "RECEITA FEDERAL DO BRASIL"
+     }
+    ]
+   }
+  ]
+ },
+ "novasMensagens": {
+  "codigo": "00",
+  "conteudo": [
+   {
+    "indicadorMensagensNovas": "2"
+   }
+  ]
+ },
+ "pagamentos": [
+  {
+   "numeroDocumento": "9999999999",
+   "tipo": {
+    "codigo": "4",
+    "descricao": "DOCUMENTO DE ARRECADAÇÃO DE RECEITAS FEDERAIS",
+    "descricaoAbreviada": "DARF"
+   },
+   "periodoApuracao": "2019-09-30T00:00:00-03:00",
+   "dataArrecadacao": "2019-09-30T00:00:00-03:00",
+   "dataVencimento": "2019-09-30T00:00:00-03:00",
+   "receitaPrincipal": {
+    "codigo": "481",
+    "descricao": "IRRF - Juros e Comissões em Geral - Residentes no Exterior",
+    "extensaoReceita": null
+   },
+   "referencia": null,
+   "valorTotal": 369176.53,
+   "valorPrincipal": 369176.53,
+   "valorMulta": null,
+   "valorJuros": null,
+   "valorSaldoTotal": null,
+   "valorSaldoPrincipal": null,
+   "valorSaldoMulta": null,
+   "valorSaldoJuros": null
+  }
+ ],
+ "procuracoes": [
+  {
+   "dtexpiracao": "20230414",
+   "nrsistemas": 2,
+   "sistemas": [
+    "Caixa Postal - Mensagens",
+    "Caixa Postal - Termo de Opção pelo Domicílio Tributário Eletrônico"
+   ]
+  },
+  {
+   "dtexpiracao": "20221231",
+   "nrsistemas": 3,
+   "sistemas": [
+    "Declarações - DIRPF",
+    "Meu Imposto de Renda",
+    "Opção de Impressão do IRPF"
+   ]
+  }
+ ],
+ "dte": {
+  "indicadorEnquadramento": 1,
+  "statusEnquadramento": "CNPJ Optante Simples"
+ }
+}
