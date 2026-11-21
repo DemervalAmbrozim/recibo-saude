@@ -154,7 +154,7 @@ section button,nav button,summary{min-height:44px}
 <script src="importar.js"></script>
 <script src="exportar.js"></script>
 <script src="monitor-fiscal.js"></script>
-<script src="folha-lote.js"></script>
+<script src="afastamentos.js"></script><script src="folha-lote.js"></script>
 <script src="folha-lote-db.js"></script>
 <script src="folha.js"></script>
 <script src="contabil.js"></script>
@@ -326,7 +326,7 @@ function loteUI(){var cart=LT.real?LT.cart:LT_EX,comp=ltComp();
   if(c.status==='pronta para aprovar'||c.status==='mudou depois de aprovada')acao='<button data-ap="'+c.id+'">Aprovar</button>';
   else if(c.status==='aguardando a cliente'){acao='<button data-sa="'+c.id+'">Todos sem alteração</button>'+c.folha.itens.filter(function(i){return !i.pronto}).map(function(i){return '<div class="mini">'+esc(i.nome)+': faltas <input type="number" min="0" max="31" value="0" data-f="'+c.id+'|'+i.id+'" style="width:46px"> horas extras <input type="number" min="0" max="100" value="0" data-h="'+c.id+'|'+i.id+'" style="width:46px"> <button data-reg="'+c.id+'|'+i.id+'">Registrar</button></div>'}).join('')}
   else if(c.status==='com erro')acao='<span class="mini">'+c.folha.itens.filter(function(i){return !i.pronto}).map(function(i){return esc(i.motivo)}).join('; ')+'</span>';
-  return '<tr><td>'+esc(c.nome)+'</td><td>'+c.status+'</td><td>'+(c.folha.completa?B(c.liquido):'-')+'</td><td>'+(c.folha.completa?B(c.fgts):'-')+'</td><td>'+acao+'</td></tr>'}).join('')+'</table>';
+  return '<tr><td>'+esc(c.nome)+'</td><td>'+c.status+'</td><td>'+(c.folha.completa?B(c.liquido):'-')+'</td><td>'+(c.folha.completa?B(c.fgts):'-')+'</td><td>'+acao+((c.avisos||[]).length?'<div class="mini">'+c.avisos.map(function(a){return (a.nivel==='critico'?'🚨 ':'• ')+esc(a.texto)}).join('<br>')+'</div>':'')+'</td></tr>'}).join('')+'</table>';
  var cb=cobrancaPendentes(lo);$('lt-cob').innerHTML=cb.length?'<p class="mini"><b>Texto para cobrar quem falta</b> (o envio pelo zap depende do modelo aprovado):</p>'+cb.map(function(x){return '<pre class="mini" style="white-space:pre-wrap">'+esc(x.texto)+'</pre>'}).join(''):''}
 async function ltRecarrega(){var R=await carregarCarteiraReal(window.__bdDB,$('lt-comp').value);LT.cart=R.carteira;LT.folhas=R.folhas;
  var tmp=loteFolha({carteira:R.carteira.map(function(c){return Object.assign({},c,{variaveis:LT.vars[c.id]||{}})}),comp:$('lt-comp').value,ano:+$('lt-comp').value.slice(0,4)});LT.ap=aprovacoesDoBanco(tmp,R.folhas);}

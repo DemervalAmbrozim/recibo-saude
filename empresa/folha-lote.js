@@ -12,7 +12,12 @@ function loteFolha({carteira,aprovacoes={},comp,ano}){
     const erro=fo.itens.some(i=>!i.pronto&&/^(erro|dados inválidos)/.test(i.motivo||''));
     const ap=aprovacoes[c.id],aprovada=!!(ap&&ap.assinatura===ass&&fo.completa&&!erro);
     let status=!(c.anterior||[]).length?'sem funcionários':erro?'com erro':!fo.completa?'aguardando a cliente':aprovada?'aprovada':ap?'mudou depois de aprovada':'pronta para aprovar';
-    return {id:c.id,nome:c.nome,status,assinatura:ass,folha:fo,aprovada,faltam:fo.pendentes.length,liquido:fo.totalLiquido,fgts:fo.totalFGTS,funcionarios:(c.anterior||[]).length}});
+    // 21/11: avisos de afastamento/SST (afastamentos.js). Só informam o contador; NÃO entram na assinatura da aprovação. c.afastamentos = {idEmpregado:[eventos]}
+    const avisos=[];
+    if(typeof alertasAfastamento==='function'&&c.afastamentos)for(const e of c.anterior||[]){const ev=c.afastamentos[e.id];if(!ev||!ev.length)continue;
+      const r=alertasAfastamento({nome:e.nome,salario:e.salario},ev,null);
+      if(r&&r.ok===false)avisos.push({nivel:'atencao',texto:`${e.nome}: ${r.erros.join('; ')}`});else if(r&&r.alertas)avisos.push(...r.alertas);else if(Array.isArray(r))avisos.push(...r)}
+    return {id:c.id,nome:c.nome,status,avisos,assinatura:ass,folha:fo,aprovada,faltam:fo.pendentes.length,liquido:fo.totalLiquido,fgts:fo.totalFGTS,funcionarios:(c.anterior||[]).length}});
   const ordem={'com erro':0,'mudou depois de aprovada':1,'pronta para aprovar':2,'aguardando a cliente':3,'aprovada':4,'sem funcionários':5};
   clientes.sort((a,b)=>ordem[a.status]-ordem[b.status]||a.nome.localeCompare(b.nome));
   const cont=s=>clientes.filter(c=>c.status===s).length;
