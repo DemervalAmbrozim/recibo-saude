@@ -20,11 +20,11 @@ function apurarRetencoes(pag,competencia,param){
     if(!(bruto>0)){L.motivo='valor zero';linhas.push(L);return}
     if(p.natureza==='cessao'){L.inss=r2R(bruto*P.inssCessao);L.motivo='cessão de mão de obra: INSS retido (R-2010)'}
     else if(p.optanteSimples&&p.declaracaoSimples){L.motivo='prestador optante do Simples com declaração: sem retenção de IR/CSRF'}
-    else{L.ir=r2R(bruto*P.irServico);L.csrf=r2R(bruto*P.csrf);L.motivo='serviço de PJ: IR e CSRF (R-4020)';
+    else{L.ir=r2R(bruto*P.irServico);L.csll=r2R(bruto*0.01);L.cofins=r2R(bruto*0.03);L.pp=r2R(bruto*0.0065);L.csrf=r2R(L.csll+L.cofins+L.pp);L.motivo='serviço de PJ: IR e CSRF (R-4020)';
       if(p.optanteSimples&&!p.declaracaoSimples)avisos.push(`Beneficiário ${cnpj} é optante do Simples mas não há declaração: pedir a declaração antes de reter.`)}
     // retenção de IR abaixo do mínimo não é recolhida; CSRF idem (regra de partida, conferir)
     if(L.ir>0&&L.ir<P.minRetencao){L.ir=0;L.motivo+=' (IR abaixo de R$ 10: não recolhe)'}
-    if(L.csrf>0&&L.csrf<P.minRetencao&&L.ir===0){L.csrf=0}
+    if(L.csrf>0&&L.csrf<P.minRetencao&&L.ir===0){L.csrf=0;L.csll=L.cofins=L.pp=0}
     linhas.push(L)});
   const t={ir:0,csrf:0,inss:0,bruto:0};linhas.forEach(l=>{t.ir+=l.ir;t.csrf+=l.csrf;t.inss+=l.inss;t.bruto+=l.bruto});
   Object.keys(t).forEach(k=>t[k]=r2R(t[k]));
@@ -56,7 +56,7 @@ function verificarECDECF(ficha){
   const f=ficha||{},R=f.regime||'simples',O=[];
   const add=(nome,obrigada,porque,fonte)=>O.push({nome,obrigada,porque,fonte});
   if(R==='simples'||R==='mei'){
-    add('ECD',false,'Optante do Simples e MEI são dispensados da ECD, exceto o optante que distribui lucro acima do limite isento sem escrituração completa ou que tenha sido [conferir hipóteses da IN RFB 2.003/2021, art. 3º].','IN RFB 2.003/2021 [conferir]');
+    add('ECD',false,'Optante do Simples e MEI são dispensados da ECD (IN RFB 2.003/2021, art. 3º, I), exceto se no ano receberam aporte de capital de investidor-anjo (LC 123/2006, arts. 61-A a 61-D). Fonte: comentário contábil de 21/11/2026; a IN foi alterada pela IN RFB 2.142/2023: o contador confere a redação consolidada [conferir].','IN RFB 2.003/2021 [conferir]');
     add('ECF',false,'Optante do Simples e MEI são dispensados da ECF (IN RFB 2.004/2021) [conferir].','IN RFB 2.004/2021 [conferir]')}
   else{
     add('ECD',R==='real'?true:'conferir',R==='real'?'Lucro real é obrigado à ECD.':'Lucro presumido só é obrigado à ECD se distribuir lucros acima da base presumida sem escrituração completa [conferir].','IN RFB 2.003/2021 [conferir]');
@@ -74,4 +74,47 @@ function pagamentosParaReinf(itens,cadastro){
     if(c)pagamentos.push({data:i.data,cnpjBeneficiario:c.cnpj,nomeBeneficiario:c.palavra,natureza:c.natureza||'servico',valorBruto:Math.abs(+i.valor),optanteSimples:!!c.optanteSimples,declaracaoSimples:!!c.declaracaoSimples,origemId:i.id});
     else semCadastro.push({data:i.data,descricao:i.descricao,valor:Math.abs(+i.valor),id:i.id})});
   return {pagamentos,semCadastro,aviso:semCadastro.length?`${semCadastro.length} pagamento(s) sem prestador cadastrado: informe o CNPJ e a natureza, ou marque que não é serviço de pessoa jurídica.`:''}}
-if(typeof module!=='undefined')module.exports={pagamentosParaReinf,apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};
+
+
+// ---- XML no leiaute oficial v2.1.2 (xmlns por evento), SEM assinatura: a assinatura (e-CNPJ A1) é feita na transmissão. Validado com referencias/reinf-xsd (ferramentas/reinf-validar.py).
+const NS_REINF={'R-1000':'evtInfoContribuinte','R-2099':'evtFechamento','R-4020':'evt4020PagtoBeneficiarioPJ','R-4099':'evt4099FechamentoDirf','R-2010':'evtTomadorServicos'};
+const tg=(n,v)=>`<${n}>${escX(v)}</${n}>`, dec=v=>(Math.round((+v||0)*100)/100).toFixed(2).replace('.',',');   // o leiaute exige vírgula decimal
+// ctx: {cnpj, razao, tpAmb:'2'(homologação)|'1', verProc, classTrib, contato:{nmCtt,cpfCtt}, natRend, perApur:'AAAA-MM', indEscrituracao:'0'|'1'}
+function xmlReinfOficial(tipo,dados,ctx){
+  const c=ctx||{},er=[],cnpj=soDig(c.cnpj),base=cnpj.slice(0,8);
+  if(cnpj.length!==14)er.push('CNPJ da empresa inválido.');
+  const ns=`http://www.reinf.esocial.gov.br/schemas/${NS_REINF[tipo]}/v2_01_02`;
+  const seq=String(c.seq||1).padStart(5,'0'),agora=(c.agora||'20260101000000').replace(/\D/g,'').padEnd(14,'0').slice(0,14),id='ID1'+cnpj+agora+seq;
+  const ideEvento=(ret)=>'<ideEvento>'+(ret?tg('indRetif','1'):'')+(tipo==='R-1000'?'':tg('perApur',c.perApur||''))+tg('tpAmb',c.tpAmb||'2')+tg('procEmi','1')+tg('verProc',c.verProc||'LadoALadoSaude-1')+'</ideEvento>';
+  const ideContri='<ideContri>'+tg('tpInsc','1')+tg('nrInsc',base)+'</ideContri>';
+  if(tipo!=='R-1000'&&!/^\d{4}-\d{2}$/.test(String(c.perApur||'')))er.push('Competência (perApur) AAAA-MM obrigatória.');
+  let corpo='',raiz='';
+  if(tipo==='R-1000'){raiz='evtInfoContri';
+    const ct=c.contato||{};if(!ct.nmCtt||soDig(ct.cpfCtt).length!==11)er.push('R-1000 exige contato com nome e CPF (11 dígitos).');
+    if(!/^\d{2}$/.test(String(c.classTrib||'')))er.push('R-1000 exige classTrib (2 dígitos, tabela 08 do manual: o contador define).');
+    corpo=ideEvento(false)+ideContri+'<infoContri><inclusao><idePeriodo>'+tg('iniValid',c.iniValid||c.perApur||'')+'</idePeriodo><infoCadastro>'+tg('classTrib',c.classTrib||'')+tg('indEscrituracao',c.indEscrituracao||'0')+tg('indDesoneracao','0')+tg('indAcordoIsenMulta','0')+'<contato>'+tg('nmCtt',ct.nmCtt||'')+tg('cpfCtt',soDig(ct.cpfCtt))+'</contato></infoCadastro></inclusao></infoContri>'}
+  else if(tipo==='R-2099'){raiz='evtFechaEvPer';
+    const cp=c.respInf;corpo=ideEvento(false)+ideContri+(cp?'<ideRespInf>'+tg('nmResp',cp.nmResp)+tg('cpfResp',soDig(cp.cpfResp))+'</ideRespInf>':'')+'<infoFech>'+['evtServTm','evtServPr','evtAssDespRec','evtAssDespRep','evtComProd','evtCPRB','evtAquis'].map(k=>tg(k,k==='evtServTm'&&dados.temR2010?'S':'N')).join('')+'</infoFech>'}
+  else if(tipo==='R-4099'){raiz='evtFech'; /* fechRet 0 = fechamento, 1 = reabertura (XSD v2.1.2) */
+    corpo=ideEvento(false)+ideContri+'<infoFech>'+tg('fechRet','0')+'</infoFech>'}
+  else if(tipo==='R-4020'){raiz='evtRetPJ';
+    if(!/^\d{5}$/.test(String(c.natRend||'')))er.push('R-4020 exige natRend (5 dígitos, tabela 01 do manual da EFD-Reinf: o contador define para cada serviço).');
+    const b=dados;if(soDig(b.cnpjBeneficiario).length!==14)er.push('R-4020: CNPJ do beneficiário inválido.');
+    const pg=(b.pagamentos||[]).map(x=>'<infoPgto>'+tg('dtFG',x.data)+tg('vlrBruto',dec(x.valorBruto))+'<retencoes>'+(x.ir>0?tg('vlrBaseIR',dec(x.valorBruto))+tg('vlrIR',dec(x.ir)):'')+(x.csll>0?tg('vlrBaseCSLL',dec(x.valorBruto))+tg('vlrCSLL',dec(x.csll))+tg('vlrBaseCofins',dec(x.valorBruto))+tg('vlrCofins',dec(x.cofins))+tg('vlrBasePP',dec(x.valorBruto))+tg('vlrPP',dec(x.pp)):'')+'</retencoes></infoPgto>').join('');
+    corpo=ideEvento(true)+ideContri+'<ideEstab>'+tg('tpInscEstab','1')+tg('nrInscEstab',cnpj)+'<ideBenef>'+tg('cnpjBenef',soDig(b.cnpjBeneficiario))+'<idePgto>'+tg('natRend',c.natRend||'')+pg+'</idePgto></ideBenef></ideEstab>'}
+  else if(tipo==='R-2010'){er.push('R-2010 exige as notas (série, número, data, tipo de serviço da tabela 06): ainda não geramos; o contador informa no portal.');}
+  else er.push('Evento '+tipo+' não suportado.');
+  if(er.length)return {ok:false,erros:er};
+  return {ok:true,erros:[],id,xml:`<Reinf xmlns="${ns}"><${raiz} id="${id}">${corpo}</${raiz}></Reinf>`}}
+// Todos os eventos do mês no leiaute oficial: R-1000 (se pedir), R-4020 por beneficiário, R-4099; (R-2099 se houver R-2010, ainda não gerado)
+function lotesReinfOficial(ap,ctx,opc){
+  const o=opc||{},out=[],erros=[];let seq=0;const c0=()=>({...ctx,perApur:ap.competencia,seq:++seq});
+  const add=(t,d)=>{const r=xmlReinfOficial(t,d,c0());(r.ok?out.push({tipo:t,id:r.id,xml:r.xml}):erros.push(...r.erros.map(e=>t+': '+e)))};
+  if(o.incluirR1000)add('R-1000',{});
+  const por={};ap.linhas.filter(l=>l.ir>0||l.csrf>0).forEach(l=>{(por[l.cnpj]=por[l.cnpj]||{cnpjBeneficiario:l.cnpj,pagamentos:[]}).pagamentos.push(l)});
+  Object.values(por).forEach(b=>add('R-4020',b));
+  const tem4020=Object.keys(por).length>0;
+  if(tem4020||o.fecharSempre)add('R-4099',{semMovimento:!tem4020});
+  if(ap.linhas.some(l=>l.inss>0))erros.push('R-2010: há retenção de INSS (cessão de mão de obra), mas o evento exige as notas: o contador informa no portal.');
+  return {eventos:out,erros}}
+if(typeof module!=='undefined')module.exports={xmlReinfOficial,lotesReinfOficial,pagamentosParaReinf,apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};
