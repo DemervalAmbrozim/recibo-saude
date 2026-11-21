@@ -556,7 +556,7 @@ Você em ${ano}: ${zBrl(rec)} recebidos (${Math.round(r.p*100)}% da linha). ${r.
   if(/^(novo|nova|cadastrar|cadastra)\b/.test(t))return 'Para cadastrar, escreva *paciente nova* e eu peço o nome e o CPF.';
   // Indicação (revisão item 19): código e link para mandar à colega
   if(/^(indicar|indicacao|indique|codigo)$/.test(t)){if(!api.indicacao)return 'Em breve.';let x;try{x=await api.indicacao()}catch(e){return zErro(String(e.message||e))}
-    return `Seu código: *${x.codigo}*. A colega ganha 60 dias de teste e você ganha 1 mês quando ela assinar.\nEncaminhe este link para ela: ${SITE}/venda.html?ind=${x.codigo}`
+    return `Seu código: *${x.codigo}*. A colega ganha mais 30 dias de teste, além dos 7 grátis, e você ganha 1 mês quando ela assinar.\nEncaminhe este link para ela: ${SITE}/venda.html?ind=${x.codigo}`
       +(x.indicadas?`\n${x.indicadas} já usaram seu código, ${x.pagaram} assinaram.`:'')}
   // Foto do comprovante lida (revisão item 14): "sim" lança o que foi lido
   if(/^(sim|s|ok|isso|pode|confirmo)$/.test(t)&&est.foto&&est.foto.lido){const l=est.foto.lido;
