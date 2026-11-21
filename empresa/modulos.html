@@ -28,7 +28,7 @@ input,select,textarea{font:inherit;font-size:max(16px,1em);padding:9px;min-heigh
 textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;min-height:150px}
 label.chk{display:flex;gap:8px;align-items:center;color:var(--fg)}label.chk input{width:auto}
 button.p{font:inherit;padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer;min-height:44px}
-.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mini{font-size:12px;opacity:.8}.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .big{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
 .tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;background:var(--soft);color:var(--accent)}
 .tag.at{background:var(--warnbg);color:var(--warn)}.tag.ruim{background:var(--badbg);color:var(--bad)}.tag.az{background:var(--bluebg);color:var(--blue)}
@@ -91,7 +91,9 @@ section button,nav button,summary{min-height:44px}
     <label style="max-width:240px;margin:8px 0">Empresa apta desde<input type="date" id="v-ap" value="2027-02-10"></label><div id="v-out" class="tbl"></div></div>
     <div class="card"><h2>Voltar para a pessoa física (baixa do CNPJ)</h2><p class="sub">Marque o que já foi feito; só abre o passo cujas dependências terminaram.</p><div id="v-baixa"></div></div></section>
 
-  <section id="t-cal"><div class="card"><h2>Calendário fiscal de 12 meses</h2><label class="chk" style="margin-bottom:8px"><input type="checkbox" id="k-folha" checked> Empresa com funcionários</label><div id="k-out" class="tbl"></div></div></section>
+  <section id="t-cal"><div class="card"><h2>Calendário fiscal de 12 meses</h2><label class="chk" style="margin-bottom:8px"><input type="checkbox" id="k-folha" checked> Empresa com funcionários</label><div id="k-out" class="tbl"></div></div>
+  <div class="card"><h2>Guias do mês (assistidas)</h2><p class="sub">Documento de apoio: valor, código, vencimento e passo a passo. <b>Não é a guia oficial</b> e não tem código de barras; a guia sai no portal indicado. A emissão automática pelo SERPRO depende do contrato.</p><label>Competência <select id="g-comp"><option value="2027-01">janeiro de 2027</option><option value="2027-02">fevereiro de 2027</option><option value="2027-03">março de 2027</option></select></label> <label class="chk"><input type="checkbox" id="g-folha" checked> Empresa com funcionários</label><div id="g-out" class="tbl"></div><div id="g-prev"></div></div>
+  <div class="card"><h2>Obrigações acessórias: quem precisa de quê</h2><label class="chk"><input type="checkbox" id="o-emp"> Tem empregado</label> <label class="chk"><input type="checkbox" id="o-pl" checked> Sócio com pró-labore</label> <label class="chk"><input type="checkbox" id="o-ret"> Tem retenção na fonte (INSS, IR, CSLL, PIS, COFINS)</label><div id="ob-out" class="tbl"></div><p class="sub">EFD-Reinf e DCTFWeb: o sistema orienta e avisa; não transmite. Onde aparece [conferir], o contador decide.</p></div></section>
 
   <section id="t-zap"><div class="card"><h2>Mensagens do WhatsApp</h2><p class="sub">Textos para você aprovar. Os campos entre chaves viram os dados da cliente (destacados). Nunca pedimos senha, documento ou dado de paciente por aqui.</p>
     <label style="max-width:260px;margin:8px 0">Mostrar<select id="z-fr"><option value="">todas</option><option value="comum">comuns</option><option value="autonoma">autônoma</option><option value="empresa">empresa</option><option value="ponte">ponte (virar CNPJ)</option></select></label><div id="z-out"></div></div></section>
@@ -127,6 +129,7 @@ section button,nav button,summary{min-height:44px}
 </main>
 <script src="../regras.js"></script>
 <script src="contab.js"></script>
+<script src="guias.js"></script>
 <script src="folha.js"></script>
 <script src="contabil.js"></script>
 <script src="concilia.js"></script>
@@ -262,6 +265,16 @@ $('r-comp').onchange=resumoMes;$('r-pend').oninput=resumoMes;resumoMes();
 ['l-rec','l-irpj','l-luc','l-dist','l-val','l-esc','p-r11','p-f11','p-rm'].forEach(function(i){$(i).oninput=lucros;$(i).onchange=lucros});lucros();
 $('v-ap').oninput=virada;virada();baixa();
 $('k-folha').onchange=cal;cal();
+// guias assistidas e obrigações acessórias (guias.js)
+var EXG={'2027-01':{das:600,inss:308,irrf:0,fgts:259.64},'2027-02':{das:720,inss:308,irrf:0,fgts:259.64},'2027-03':{das:720,inss:308,irrf:0,fgts:259.64}};
+function guias(){var c=$('g-comp').value,x=EXG[c],gs=guiasDoMes({comp:c,tipo:'pj',v:{das:x.das,inssProLabore:x.inss,irrfProLabore:x.irrf,fgts:x.fgts},temFolha:$('g-folha').checked});
+  $('g-out').innerHTML=tab(['Guia','Valor','Vence','Onde emitir','Situação'],gs.map(function(g){return [esc(g.nome)+"<br><span class=\"mini\">"+esc(g.codigoReceita)+"</span>",B(g.valor),D(g.vencimento)+(g.confirmarDia?' <span class="tag">confirmar o dia</span>':''),esc(g.ondeEmitir),esc(g.situacao)]}),[0,1]);
+  $('g-prev').innerHTML=gs.map(function(g,i){return '<button type="button" class="sec" data-gi="'+i+'">Ver documento de apoio: '+esc(g.nome)+'</button> '}).join('');
+  $('g-prev').querySelectorAll('button').forEach(function(b){b.onclick=function(){var w=window.open('','_blank');if(!w)return;w.document.write(htmlGuia(gs[+b.dataset.gi],{nome:'Clínica Exemplo',cnpj:'00.000.000/0001-00'}));w.document.close()}})}
+function obrig(){var o=obrigacoesAcessorias({temEmpregado:$('o-emp').checked,temProLabore:$('o-pl').checked,retencoesNaFonte:$('o-ret').checked,prestaServicoSaude:true});
+  $('ob-out').innerHTML=tab(['Obrigação','Precisa?','Por quê','Prazo'],o.map(function(x){return [esc(x.nome),x.obrigada===true?'<span class="tag ruim">sim</span>':(x.obrigada===false?'<span class="tag">não</span>':'<span class="tag">conferir</span>'),esc(x.porque)+'<br><span class="mini">'+esc(x.fonte)+'</span>',esc(x.prazo)]}))}
+$('g-comp').onchange=guias;$('g-folha').onchange=guias;['o-emp','o-pl','o-ret'].forEach(function(i){$(i).onchange=obrig});guias();obrig();
+
 $('z-fr').onchange=zap;fetch("zap-mensagens.json").then(function(r){return r.json()}).then(function(x){ZAP=x;zap()}).catch(function(){$("z-out")&&($("z-out").innerHTML="<p class=\"sub\">Mensagens não carregadas.</p>")});
 painel();['o-part','o-luc','o-rec','o-irpj','o-lc','o-esc','m-pl','m-emp'].forEach(function(i){$(i).oninput=socio;$(i).onchange=socio});socio();
 ['d-das','d-def','d-es','d-cp','d-hist','d-cf','d-reg','d-pr','d-ce'].forEach(function(i){$(i).oninput=diag;$(i).onchange=diag});diag();
