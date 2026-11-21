@@ -92,7 +92,8 @@ section button,nav button,summary{min-height:44px}
     <div class="card"><h2>Voltar para a pessoa física (baixa do CNPJ)</h2><p class="sub">Marque o que já foi feito; só abre o passo cujas dependências terminaram.</p><div id="v-baixa"></div></div></section>
 
   <section id="t-cal"><div class="card"><h2>Calendário fiscal de 12 meses</h2><label class="chk" style="margin-bottom:8px"><input type="checkbox" id="k-folha" checked> Empresa com funcionários</label><div id="k-out" class="tbl"></div></div>
-  <div class="card"><h2>Guias do mês (assistidas)</h2><p class="sub">Documento de apoio: valor, código, vencimento e passo a passo. <b>Não é a guia oficial</b> e não tem código de barras; a guia sai no portal indicado. A emissão automática pelo SERPRO depende do contrato.</p><label>Competência <select id="g-comp"><option value="2027-01">janeiro de 2027</option><option value="2027-02">fevereiro de 2027</option><option value="2027-03">março de 2027</option></select></label> <label class="chk"><input type="checkbox" id="g-folha" checked> Empresa com funcionários</label><div id="g-out" class="tbl"></div><div id="g-prev"></div></div>
+  <div class="card"><h2>Guias do mês (assistidas)</h2><p class="sub">Documento de apoio: valor, código, vencimento e passo a passo. <b>Não é a guia oficial</b> e não tem código de barras; a guia sai no portal indicado. A emissão automática pelo SERPRO depende do contrato.</p><label>Competência <select id="g-comp"><option value="2026-12">dezembro de 2026</option><option value="2027-01" selected>janeiro de 2027</option><option value="2027-02">fevereiro de 2027</option><option value="2027-03">março de 2027</option></select></label> <label class="chk"><input type="checkbox" id="g-folha" checked> Empresa com funcionários</label><div id="g-out" class="tbl"></div><p class="mini" id="g-ext"></p><div id="g-prev"></div></div>
+  <div class="card"><h2>Fila do dia (exemplo)</h2><p class="sub">O que acontece sozinho em cada dia útil do mês e o que precisa do OK do Demerval. Nada é enviado: é a prévia da rotina.</p><label>Dia <input type="date" id="f-dia" value="2027-03-05"></label><pre id="f-out" style="white-space:pre-wrap;font:14px/1.5 inherit;margin:8px 0 0"></pre></div>
   <div class="card"><h2>Obrigações acessórias: quem precisa de quê</h2><label class="chk"><input type="checkbox" id="o-emp"> Tem empregado</label> <label class="chk"><input type="checkbox" id="o-pl" checked> Sócio com pró-labore</label> <label class="chk"><input type="checkbox" id="o-ret"> Tem retenção na fonte (INSS, IR, CSLL, PIS, COFINS)</label><div id="ob-out" class="tbl"></div><p class="sub">EFD-Reinf e DCTFWeb: o sistema orienta e avisa; não transmite. Onde aparece [conferir], o contador decide.</p></div></section>
 
   <section id="t-zap"><div class="card"><h2>Mensagens do WhatsApp</h2><p class="sub">Textos para você aprovar. Os campos entre chaves viram os dados da cliente (destacados). Nunca pedimos senha, documento ou dado de paciente por aqui.</p>
@@ -130,6 +131,7 @@ section button,nav button,summary{min-height:44px}
 <script src="../regras.js"></script>
 <script src="contab.js"></script>
 <script src="guias.js"></script>
+<script src="fechamento.js"></script>
 <script src="folha.js"></script>
 <script src="contabil.js"></script>
 <script src="concilia.js"></script>
@@ -266,14 +268,17 @@ $('r-comp').onchange=resumoMes;$('r-pend').oninput=resumoMes;resumoMes();
 $('v-ap').oninput=virada;virada();baixa();
 $('k-folha').onchange=cal;cal();
 // guias assistidas e obrigações acessórias (guias.js)
-var EXG={'2027-01':{das:600,inss:308,irrf:0,fgts:259.64},'2027-02':{das:720,inss:308,irrf:0,fgts:259.64},'2027-03':{das:720,inss:308,irrf:0,fgts:259.64}};
+var EXG={'2026-12':{das:600,inss:308,irrf:0,fgts:259.64},'2027-01':{das:600,inss:308,irrf:0,fgts:259.64},'2027-02':{das:720,inss:308,irrf:0,fgts:259.64},'2027-03':{das:720,inss:308,irrf:0,fgts:259.64}};
 function guias(){var c=$('g-comp').value,x=EXG[c],gs=guiasDoMes({comp:c,tipo:'pj',v:{das:x.das,inssProLabore:x.inss,irrfProLabore:x.irrf,fgts:x.fgts},temFolha:$('g-folha').checked});
-  $('g-out').innerHTML=tab(['Guia','Valor','Vence','Onde emitir','Situação'],gs.map(function(g){return [esc(g.nome)+"<br><span class=\"mini\">"+esc(g.codigoReceita)+"</span>",B(g.valor),D(g.vencimento)+(g.confirmarDia?' <span class="tag">confirmar o dia</span>':''),esc(g.ondeEmitir),esc(g.situacao)]}),[0,1]);
+  var CSVG='Data;Histórico;Valor\n20/01/2027;DAS SIMPLES NACIONAL;-600,00\n25/01/2027;PAGTO FGTS DIGITAL;-259,64\n12/01/2027;PAGTO ALUGUEL SALA;-1.500,00',its=classifica(parseCSV(CSVG).transacoes,{}).itens,pg=marcaPagoPorExtrato(gs,its),PGT={pago:'<span class="tag">pago em dia</span>','pago com atraso':'<span class="tag ruim">pago com atraso</span>','conferir valor':'<span class="tag ruim">conferir valor</span>','em aberto':'<span class="tag">em aberto</span>','sem valor a pagar':'-'};
+  $('g-ext').textContent='Extrato de exemplo conciliado: DAS 20/01/2027 R$ 600,00 e FGTS 25/01/2027 R$ 259,64. A guia vira "paga" sozinha quando o débito aparece.';
+  $('g-out').innerHTML=tab(['Guia','Valor','Vence','Pago?','Onde emitir','Situação'],gs.map(function(g,i){return [esc(g.nome)+"<br><span class=\"mini\">"+esc(g.codigoReceita)+"</span>",B(g.valor),D(g.vencimento)+(g.confirmarDia?' <span class="tag">confirmar o dia</span>':''),PGT[pg[i].status]||esc(pg[i].status),esc(g.ondeEmitir),esc(g.situacao)]}),[0,1]);
   $('g-prev').innerHTML=gs.map(function(g,i){return '<button type="button" class="sec" data-gi="'+i+'">Ver documento de apoio: '+esc(g.nome)+'</button> '}).join('');
   $('g-prev').querySelectorAll('button').forEach(function(b){b.onclick=function(){var w=window.open('','_blank');if(!w)return;w.document.write(htmlGuia(gs[+b.dataset.gi],{nome:'Clínica Exemplo',cnpj:'00.000.000/0001-00'}));w.document.close()}})}
 function obrig(){var o=obrigacoesAcessorias({temEmpregado:$('o-emp').checked,temProLabore:$('o-pl').checked,retencoesNaFonte:$('o-ret').checked,prestaServicoSaude:true});
   $('ob-out').innerHTML=tab(['Obrigação','Precisa?','Por quê','Prazo'],o.map(function(x){return [esc(x.nome),x.obrigada===true?'<span class="tag ruim">sim</span>':(x.obrigada===false?'<span class="tag">não</span>':'<span class="tag">conferir</span>'),esc(x.porque)+'<br><span class="mini">'+esc(x.fonte)+'</span>',esc(x.prazo)]}))}
-$('g-comp').onchange=guias;$('g-folha').onchange=guias;['o-emp','o-pl','o-ret'].forEach(function(i){$(i).onchange=obrig});guias();obrig();
+function filaDiaUI(){var h=$('f-dia').value;if(!h)return;$('f-out').textContent=filaDoDia({hoje:h,tarefas:orquestradorMes(h),pendencias:{recibos:2,notas:1,guiasVencendo:3}})}
+$('f-dia').onchange=filaDiaUI;filaDiaUI();$('g-comp').onchange=guias;$('g-folha').onchange=guias;['o-emp','o-pl','o-ret'].forEach(function(i){$(i).onchange=obrig});guias();obrig();
 
 $('z-fr').onchange=zap;fetch("zap-mensagens.json").then(function(r){return r.json()}).then(function(x){ZAP=x;zap()}).catch(function(){$("z-out")&&($("z-out").innerHTML="<p class=\"sub\">Mensagens não carregadas.</p>")});
 painel();['o-part','o-luc','o-rec','o-irpj','o-lc','o-esc','m-pl','m-emp'].forEach(function(i){$(i).oninput=socio;$(i).onchange=socio});socio();
