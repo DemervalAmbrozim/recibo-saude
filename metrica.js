@@ -2,6 +2,7 @@
 // Respeita "Não rastrear" do navegador. Falha em silêncio: nunca atrapalha a página. Só entra nas páginas públicas (capa, venda, empresa, captação), nunca no app logado.
 (function(){try{
   if(navigator.doNotTrack==='1'||window.doNotTrack==='1'||typeof CONFIG==='undefined')return;
+  if(navigator.webdriver&&!window.__METRICA_TESTE)return; // 21/11: navegador automatizado (nossos próprios testes no site publicado) não conta como visita: sujava o funil
   if(/^(localhost|127\.|\[::1\])/.test(location.hostname)&&!window.__METRICA_TESTE)return; // desenvolvimento e testes não entram na contagem
   var pagina=(location.pathname.replace(/^\//,'')||'inicio').toLowerCase().replace(/[^a-z0-9/._-]/g,'-').slice(0,60);
   function manda(cta){try{fetch(CONFIG.url+'/rest/v1/rpc/registrar_clique',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:CONFIG.chave,Authorization:'Bearer '+CONFIG.chave},body:JSON.stringify({p_cta:cta,p_pagina:pagina})}).catch(function(){})}catch(e){}}

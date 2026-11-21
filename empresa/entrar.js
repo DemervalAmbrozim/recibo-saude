@@ -34,7 +34,7 @@ async function inicio(){
   const eq=await sb.rpc('e_equipe');if(eq.data){mostra('e-equipe');return}
   if(r.data.cadastrada){
     // quem já tem empresa vai para a área dela; "?nova=1" mantém o cadastro de outra empresa
-    if(!new URLSearchParams(location.search).get('nova')){try{const m=await sb.rpc('pj_minhas_empresas');if(Array.isArray(m.data)&&m.data.length){location.replace('cliente.html');return}}catch(e){}}
+    if(!new URLSearchParams(location.search).get('nova')){try{const m=await sb.rpc('pj_minhas_empresas');if(Array.isArray(m.data)&&m.data.length){location.replace('cliente.html');return}}catch(e){console.warn('[rs] entrar.js:37',e)}}
     mostra('e-emp');return}
   $('p-email').textContent=r.data.email||'';mostra('e-prof');
 }

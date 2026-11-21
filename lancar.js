@@ -162,7 +162,7 @@ document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.d
 
 // ---------- Procuração, pacote Vire CNPJ e preferências (supabase/016; revisão de 28/10/2026) ----------
 let EX=null,CONTA=null;const guardaLocal={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();try{proximaAcao();trilhaTela()}catch(e){}
+async function extrasTela(plano){const r=await sb.rpc('meus_extras',{tok:TOK});if(r.error||!r.data)return;EX=r.data;if(EX.drive_contas)$('drive-url').value=EX.drive_contas;empTela();try{proximaAcao();trilhaTela()}catch(e){console.warn('[rs] lancar.js:165',e)}
   // Procuração: quem emite sozinha (Essencial) não precisa; conferida some
   $('i-proc').hidden=EX.procuracao==='conferida'||plano==='essencial';
   const env=EX.procuracao==='enviada';$('b-proc').hidden=env;$('proc-passos').open=!env&&!$('proc-passos').dataset.visto;
@@ -344,11 +344,11 @@ $('b-exportar').onclick=async()=>{const st=$('exp-st'),b=$('b-exportar');b.disab
     if(CV.lancs.length){const cn=id=>CV.convenios.find(c=>c.id===id)||{};arqs.push({nome:'convenios.csv',dados:csv(['Convênio','CNPJ','Data do atendimento','Data do pagamento','Paciente','Guia','Apresentado','Pago','Glosa','IR retido','INSS retido'],
       CV.lancs.map(x=>[cn(x.convenio_id).nome,cn(x.convenio_id).cnpj,x.data_atend&&dBR(x.data_atend),x.data_pag&&dBR(x.data_pag),x.paciente,x.guia,+x.apresentado,+x.pago,+x.glosa,+x.irrf,+x.inss]))})}
     // PDFs: links de 1 h da função zap; sem a função (ou sem PDFs), seguem só as planilhas
-    let pdfs=[];try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
-      const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'exportar',tok:TOK})});if(f.ok)pdfs=(await f.json()).pdfs||[]}catch(e){}
+    let pdfFalhas=0;let pdfs=[];try{const {data}=await sb.auth.getSession(),h={'Content-Type':'application/json',apikey:CONFIG.chave};if(data.session)h.Authorization='Bearer '+data.session.access_token;
+      const f=await fetch(CONFIG.url+'/functions/v1/zap',{method:'POST',headers:h,body:JSON.stringify({acao:'exportar',tok:TOK})});if(f.ok)pdfs=(await f.json()).pdfs||[]}catch(e){console.warn('[rs] exportar: lista de PDFs',e)}
     let k=0;for(const p of pdfs){st.textContent=`Baixando os PDFs: ${++k} de ${pdfs.length}...`;
-      try{const f=await fetch(p.url);if(f.ok)arqs.push({nome:p.nome,dados:new Uint8Array(await f.arrayBuffer())})}catch(e){}}
-    const a=document.createElement('a');a.href=URL.createObjectURL(zip(arqs));a.download=`lado-a-lado-saude-${hojeISO()}.zip`;document.body.appendChild(a);a.click();a.remove();
+      try{const f=await fetch(p.url);if(f.ok)arqs.push({nome:p.nome,dados:new Uint8Array(await f.arrayBuffer())});else pdfFalhas++}catch(e){pdfFalhas++;console.warn('[rs] exportar: PDF',e)}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(zip(arqs));a.download=`lado-a-lado-saude-${hojeISO()}.zip`;document.body.appendChild(a);a.click();a.remove();if(pdfFalhas>0)avisa(`O arquivo foi baixado, mas ${pdfFalhas} PDF(s) não puderam ser incluídos. Tente de novo mais tarde para receber todos.`,true);
     st.textContent=`Pronto: ${ats.length} atendimentos, ${ds.length} despesas e ${arqs.filter(x=>/\.pdf$/i.test(x.nome)).length} PDF(s).`}
   catch(e){console.error(e);st.textContent='';avisa('Não consegui juntar os dados agora. Tente de novo.',true)}
   b.disabled=false};
@@ -483,7 +483,7 @@ function telaIni(){telaDarf();
     :`Este mês usou ${brl(Math.min(ap.anterior,ap.usado))} de despesas que sobraram de meses anteriores.`;
   const ano=m.slice(0,4), rf=reforma(pagos().filter(x=>x.data.startsWith(ano)).reduce((s,x)=>s+ +x.valor,0),ano);
   const mr=$('i-rmeter');mr.className='meter'+(rf.p>=1?' bad':rf.p>=0.8?' warn':'');mr.firstElementChild.style.width=Math.min(100,rf.p*100)+'%';const rr=reformaRitmo(pagos(),ano,+m.slice(5,7)-1);$('i-reforma').textContent=rf.txt+(rr&&rf.p<1?' '+rr.txt.replace(/ Mande \*reforma\*.*$/,''):'');
-  cnpjTela(m);telaPlano();try{trilhaTela()}catch(e){}
+  cnpjTela(m);telaPlano();try{trilhaTela()}catch(e){console.warn('[rs] lancar.js:486',e)}
   const porLocal={};pagos().filter(x=>x.data.startsWith(m)).forEach(x=>{const k=x.local_id||'';porLocal[k]=(porLocal[k]||0)+ +x.valor});
   const ks=Object.keys(porLocal);
   $('i-locais').innerHTML=ks.length>1||(ks.length===1&&ks[0])?ks.map(k=>`<div class="item"><span>${k?esc(localDe(k)?.nome||'Local'):'Sem local'}</span><span class="num">${brl(porLocal[k])}</span></div>`).join(''):'';
@@ -497,7 +497,7 @@ function telaIni(){telaDarf();
     <div style="text-align:right"><div class="num">${brl(x.valor)}</div><button class="small" data-cor="${x.id}" type="button">Corrigir</button> <button class="small" data-del="${x.id}" type="button">Apagar</button></div></div>`).join('')
     +`<div class="item"><b>Total</b><b class="num">${brl(pend.reduce((s,x)=>s+ +x.valor,0))}</b></div>`
     :'<div class="sub">Nada aguardando recibo. Lance os atendimentos na aba Lançar.</div>';
-  try{proximaAcao()}catch(e){}
+  try{proximaAcao()}catch(e){console.warn('[rs] lancar.js:500',e)}
   $('b-zap').hidden=!pend.length;
   telaConc();
 }
@@ -991,7 +991,7 @@ $('b-emp-dmed').onclick=async()=>{const r=await sb.rpc('link_exportar',{tok:TOK}
 
 $('pos-pedir').onclick=()=>{$('pos').hidden=true;$('b-zap').click();
   // 15/11: pedido registrado com relógio de 24 h (supabase/039); se a função ainda não existir, o zap segue normal
-  try{sb.rpc('link_pedir_recibo',{tok:TOK,p_obs:'Pedido pelo app: pedir o recibo agora',p_origem:'app'}).then(r=>{if(!r.error)avisa('Pedido registrado. Você recebe o recibo, ou o motivo de não termos conseguido, em no máximo 24 horas.')})}catch(e){}};
+  try{sb.rpc('link_pedir_recibo',{tok:TOK,p_obs:'Pedido pelo app: pedir o recibo agora',p_origem:'app'}).then(r=>{if(!r.error)avisa('Pedido registrado. Você recebe o recibo, ou o motivo de não termos conseguido, em no máximo 24 horas.');else{console.warn('[rs] pedir recibo',r.error);avisa('Não consegui registrar o pedido no app agora. O WhatsApp já foi aberto: mande a mensagem lá para garantir.',true)}})}catch(e){console.warn('[rs] pedir recibo',e)}};
 $('pos-ver').onclick=()=>{$('pos').hidden=true;document.querySelector('nav button[data-t=t-ini]').click();setTimeout(()=>$('i-pendcard').scrollIntoView({behavior:'smooth'}),150)};
 $('pos-fecha').onclick=()=>{$('pos').hidden=true};
 
@@ -1001,7 +1001,7 @@ async function recStatus(){try{const r=await sb.rpc('link_status_recibo',{tok:TO
   const T={novo:'Pedido de recibo recebido',conversando:'Pedido de recibo em andamento',emitindo:'Emitindo o seu recibo',feito:'Recibo entregue',nao_consegui:'Ainda não conseguimos emitir',desistiu:'Pedido cancelado'};
   $('rec-t').textContent=T[x.situacao]||'Pedido de recibo';
   $('rec-d').textContent=x.situacao==='feito'?'Entregue em '+f(x.entregue_em||x.criado_em)+'.':x.situacao==='nao_consegui'?'Motivo: '+(x.motivo||'—'):x.situacao==='desistiu'?'':'Entrega em no máximo 24 horas (até '+f(x.prazo_ate)+').';
-  $('rec-st').hidden=false}catch(e){}}
+  $('rec-st').hidden=false}catch(e){console.warn('[rs] lancar.js:1004',e)}}
 
 // ===== 15/11 (supabase/041): serviços à parte e questionário do profissional =====
 const SERVICOS=[['ir','Imposto de Renda','R$ 197 por declaração, uma vez por ano. Fazemos a declaração completa; casos com várias fontes de renda ou CNPJ têm valor combinado após a análise.'],
@@ -1033,7 +1033,7 @@ document.addEventListener('click',async e=>{const c=e.target.dataset&&e.target.d
 async function questTela(){const box=$('q-campos');if(!box||box.dataset.ok)return;box.dataset.ok='1';
   box.innerHTML=QUEST.map(([t,qs])=>`<h3 style="margin:8px 0 0">${esc(t)}</h3>`+qs.map(([id,p])=>`<label>${esc(p)}<textarea id="${id}" rows="2" maxlength="1500"></textarea></label>`).join('')).join('');
   try{const r=await sb.rpc('link_questionario_ler',{tok:TOK});const x=r.error?null:r.data;if(x&&x.respostas){for(const [k,v] of Object.entries(x.respostas)){const el=$(k);if(el)el.value=v}
-    if(x.concluido_em)$('q-msg').textContent='Respostas enviadas em '+new Date(x.concluido_em).toLocaleDateString('pt-BR')+'. Você pode atualizar quando quiser.'}}catch(e){}}
+    if(x.concluido_em)$('q-msg').textContent='Respostas enviadas em '+new Date(x.concluido_em).toLocaleDateString('pt-BR')+'. Você pode atualizar quando quiser.'}}catch(e){console.warn('[rs] lancar.js:1036',e)}}
 async function questSalva(concluir){const o={};QUEST.forEach(([,qs])=>qs.forEach(([id])=>{const v=($(id)||{}).value||'';if(v.trim())o[id]=v.trim()}));
   if(concluir&&Object.keys(o).length<8){$('q-msg').textContent='Responda pelo menos 8 perguntas para enviar (as outras podem ficar em branco).';return}
   const r=await sb.rpc('link_questionario_salvar',{tok:TOK,p_respostas:o,p_concluir:concluir});
@@ -1077,7 +1077,7 @@ setTimeout(atuaTela,1200);
 async function pausaTela(){const m=$('pausa-msg');if(!m)return;
   try{const r=await sb.rpc('minha_conta',{tok:TOK});const c=r.error?null:r.data;const p=c&&c.situacao==='pausada';
     $('pausa-pede').hidden=!!p||!(c&&c.situacao==='ativa');$('pausa-volta').hidden=!p;
-    if(p)m.textContent='Seu plano está pausado. Ele volta sozinho em até 60 dias, ou antes, se você pedir.'}catch(e){}}
+    if(p)m.textContent='Seu plano está pausado. Ele volta sozinho em até 60 dias, ou antes, se você pedir.'}catch(e){console.warn('[rs] lancar.js:1080',e)}}
 $('aj-pausa')&&$('aj-pausa').addEventListener('toggle',pausaTela);
 $('pausa-pede')&&($('pausa-pede').onclick=async()=>{if(!confirm('Pausar o plano por até 60 dias? Nada é apagado, os lembretes e as emissões ficam suspensos e a conta fica só para consulta.'))return;
   const r=await sb.rpc('link_pausar_plano',{tok:TOK});

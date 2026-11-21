@@ -31,7 +31,7 @@ async function inicio(){
   if(r.error||!r.data){avisa('Não consegui abrir sua conta. Confira a internet e tente de novo.',true);return}
   if(r.data.cadastrada){
     // Titular da frente Empresa que não ativou a autônoma vai para a área da empresa (só quando a frente está ligada no config.js)
-    if(typeof CONFIG!=='undefined'&&CONFIG.empresa){try{const t=await sb.rpc('pj_sou_titular');if(t.data&&t.data.titular&&!t.data.autonoma_ativa){location.replace('empresa/cliente.html');return}}catch(e){}}
+    if(typeof CONFIG!=='undefined'&&CONFIG.empresa){try{const t=await sb.rpc('pj_sou_titular');if(t.data&&t.data.titular&&!t.data.autonoma_ativa){location.replace('empresa/cliente.html');return}}catch(e){console.warn('[rs] entrar.js:34',e)}}
     location.replace('lancar.html');return}
   const eq=await sb.rpc('e_equipe');
   if(eq.data){mostra('e-equipe');return}
@@ -72,7 +72,7 @@ $('e-cad').onsubmit=async e=>{e.preventDefault();
   if(r.error){avisa(traduz(r.error.message),true);return}
   // 15/11 (supabase/040): ciclo do teste (7 dias em qualquer plano) e formas de atuação; sem a função no banco, segue com o padrão
   try{const ciclo=(document.querySelector('input[name="c-ciclo"]:checked')||{}).value||'mensal';await sb.rpc('definir_ciclo_teste',{p_ciclo:ciclo});
-    await sb.rpc('salvar_perfil_atuacao',{p_formas:[],p_vinculo:null,p_cnpj:null,p_origem:ORIGEM})}catch(e){}
+    await sb.rpc('salvar_perfil_atuacao',{p_formas:[],p_vinculo:null,p_cnpj:null,p_origem:ORIGEM})}catch(e){console.warn('[rs] entrar.js:75',e)}
   // Pacote Vire CNPJ (supabase/016): "sim" já vira pedido no Admin; sem a função no banco, segue sem
   if($('c-cnpj').value||$('c-novidades').checked)await sb.rpc('link_preferencias',{tok:'',p_cnpj:$('c-cnpj').value||null,p_novidades:$('c-novidades').checked});
   const ind=$('c-ind').value.trim().toUpperCase();

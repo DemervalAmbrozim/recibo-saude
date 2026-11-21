@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3vs7AE/FhtD3KYS2FeJDQe2NaNeHD/CnSCmVIYyWDMo=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-9/JZFY88BiEa7u7+/VT36plpezCDVeuWqIYDDs/tZEs=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Minha empresa · Lado a Lado Saúde</title>
 <meta name="robots" content="noindex">
@@ -110,7 +110,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
  var TIPO_DOC={extrato:'Extrato',nota:'Nota fiscal',contrato_social:'Contrato social',cartao_cnpj:'Cartão do CNPJ',alvara:'Alvará',outro:'Outro',carta_responsabilidade:'Carta de responsabilidade'};
  async function conversa(){var L=[];try{L=await DB.mensagens(EMP)}catch(e){$('m-lista').innerHTML='<p class="sub">'+esc(traduzErroPj(e,'ler'))+'</p>';return}
   $('m-lista').innerHTML=L.length?L.map(function(m){var meu=m.lado==='cliente';return '<div style="padding:8px 12px;border-radius:12px;max-width:90%;justify-self:'+(meu?'end':'start')+';background:'+(meu?'var(--accent)':'var(--card2,#eef2f0)')+';color:'+(meu?'var(--accent-fg,#fff)':'inherit')+'"><div style="white-space:pre-wrap">'+esc(m.texto)+'</div><div class="sub" style="opacity:.8">'+(meu?'Você':'Contador')+' · '+D(m.criado_em)+'</div></div>'}).join(''):'<p class="sub">Nenhuma mensagem ainda.</p>';
-  if(L.some(function(m){return m.lado==='contador'&&!m.lida_em})){try{await DB.marcarLidas(EMP)}catch(e){}}
+  if(L.some(function(m){return m.lado==='contador'&&!m.lida_em})){try{await DB.marcarLidas(EMP)}catch(e){console.warn('[rs] cliente.html:113',e)}}
   $('m-lista').scrollTop=$('m-lista').scrollHeight}
  async function docs(){var L=[];try{L=await DB.documentos(EMP)}catch(e){$('d-lista').innerHTML='<p class="sub">'+esc(traduzErroPj(e,'ler'))+'</p>';return}
   $('d-lista').innerHTML=L.length?L.map(function(d){return '<div class="item" style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0"><span>'+esc(TIPO_DOC[d.tipo]||d.tipo)+' · '+esc(d.nome_arquivo)+' <span class="sub">'+D(d.enviado_em)+'</span></span><button type="button" class="small" data-abre="'+esc(d.caminho)+'">Abrir</button></div>'}).join(''):'<p class="sub">Nenhum documento ainda.</p>';
@@ -121,7 +121,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
  $('m-env').onclick=async function(){var b=this,t=$('m-txt').value.trim();if(!t){msg('m-out','Escreva a mensagem.',1);return}b.disabled=true;try{await DB.enviarMensagem(EMP,t);$('m-txt').value='';msg('m-out','Enviada.');await conversa()}catch(e){msg('m-out',traduzErroPj(e),1)}b.disabled=false};
  $('d-env').onclick=async function(){var b=this,f=$('d-arq').files[0];if(!f){msg('d-out','Escolha o arquivo.',1);return}b.disabled=true;try{await DB.enviarDocumento(EMP,$('d-tipo').value,f);$('d-arq').value='';msg('d-out','Documento enviado.');await docs()}catch(e){msg('d-out',/Arquivo|Tipo de arquivo|Escolha/.test(e.message)?e.message:traduzErroPj(e),1)}b.disabled=false};
  $('s-dar').onclick=async function(){var b=this,m=$('s-email').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)){msg('s-out','Escreva o e-mail completo.',1);return}b.disabled=true;try{await DB.darAcessoSocio(EMP,m);$('s-email').value='';msg('s-out','Acesso de leitura dado.');await socios()}catch(e){msg('s-out',traduzErroPj(e),1)}b.disabled=false};
- async function escolhe(id){EMP=id;var e=EMPS.filter(function(x){return x.id===id})[0];if(e)cabecalho(e);var dono=true;try{dono=await DB.souDono()}catch(e){}
+ async function escolhe(id){EMP=id;var e=EMPS.filter(function(x){return x.id===id})[0];if(e)cabecalho(e);var dono=true;try{dono=await DB.souDono()}catch(e){console.warn('[rs] cliente.html:124',e)}
   ['c-msg','c-socio','c-docs'].forEach(function(i){$(i).hidden=!dono});
   var q=$('so-leitura');if(q)q.hidden=dono;
   await Promise.all([passos(),relatorio(),avisos(),pedidos()].concat(dono?[conversa(),docs(),socios()]:[]))}
@@ -134,7 +134,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
    DB=criaDados(sb);EMPS=await DB.empresas();
    if(!EMPS.length){st.innerHTML='Você ainda não cadastrou uma empresa. <a href="entrar.html">Cadastrar agora</a>.';return}
    var sel=$('sel');EMPS.forEach(function(e){var o=document.createElement('option');o.value=e.id;o.textContent=e.razao_social||'Empresa em abertura';sel.appendChild(o)});$('sel-l').hidden=EMPS.length<2;sel.onchange=function(){escolhe(sel.value)};
-   st.textContent='Conta conectada.';$('area').hidden=false;try{var ti=await DB.souTitular();if(ti&&ti.autonoma_ativa){var v=$('volta-aut');if(v)v.hidden=false}}catch(e){}await escolhe(EMPS[0].id)}
+   st.textContent='Conta conectada.';$('area').hidden=false;try{var ti=await DB.souTitular();if(ti&&ti.autonoma_ativa){var v=$('volta-aut');if(v)v.hidden=false}}catch(e){console.warn('[rs] cliente.html:137',e)}await escolhe(EMPS[0].id)}
   catch(e){st.textContent=traduzErroPj(e,'ler')}})();
 })();
 </script>
