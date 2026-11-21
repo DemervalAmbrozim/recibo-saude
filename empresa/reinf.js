@@ -62,4 +62,16 @@ function verificarECDECF(ficha){
     add('ECD',R==='real'?true:'conferir',R==='real'?'Lucro real é obrigado à ECD.':'Lucro presumido só é obrigado à ECD se distribuir lucros acima da base presumida sem escrituração completa [conferir].','IN RFB 2.003/2021 [conferir]');
     add('ECF',!f.inativa,f.inativa?'Pessoa jurídica inativa é dispensada [conferir].':'Lucro presumido e real entregam a ECF até o último dia útil de julho do ano seguinte [conferir].','IN RFB 2.004/2021 [conferir]')}
   return O.map(x=>({...x,aviso:R==='simples'||R==='mei'?'Se a empresa sair do Simples (excesso de receita ou mudança de regime), o sistema deve reavaliar ECD e ECF no mesmo mês.':''}))}
-if(typeof module!=='undefined')module.exports={apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};
+
+// Liga a Reinf aos pagamentos do sistema: itens do extrato conciliado (concilia.js: {data,valor<0,descricao,tipo:'despesa'}) + cadastro de prestadores
+// cadastro: [{palavra:'CONTABILIDADE XYZ',cnpj,natureza:'servico'|'cessao',optanteSimples,declaracaoSimples}]. Sem cadastro, o pagamento NÃO é adivinhado:
+// vai para "semCadastro" para o contador informar o CNPJ e a natureza (ou marcar que não é serviço de PJ).
+function pagamentosParaReinf(itens,cadastro){
+  const cad=(cadastro||[]).map(c=>({...c,_k:String(c.palavra||'').toUpperCase().trim()})).filter(c=>c._k);
+  const pagamentos=[],semCadastro=[];
+  (itens||[]).filter(i=>i&&i.tipo==='despesa'&&+i.valor<0).forEach(i=>{
+    const d=String(i.descricao||'').toUpperCase(),c=cad.find(x=>d.includes(x._k));
+    if(c)pagamentos.push({data:i.data,cnpjBeneficiario:c.cnpj,nomeBeneficiario:c.palavra,natureza:c.natureza||'servico',valorBruto:Math.abs(+i.valor),optanteSimples:!!c.optanteSimples,declaracaoSimples:!!c.declaracaoSimples,origemId:i.id});
+    else semCadastro.push({data:i.data,descricao:i.descricao,valor:Math.abs(+i.valor),id:i.id})});
+  return {pagamentos,semCadastro,aviso:semCadastro.length?`${semCadastro.length} pagamento(s) sem prestador cadastrado: informe o CNPJ e a natureza, ou marque que não é serviço de pessoa jurídica.`:''}}
+if(typeof module!=='undefined')module.exports={pagamentosParaReinf,apurarRetencoes,eventosReinf,xmlReinf,verificarECDECF,PARAM_REINF};

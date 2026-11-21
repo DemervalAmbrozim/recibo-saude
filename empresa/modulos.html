@@ -105,7 +105,10 @@ section button,nav button,summary{min-height:44px}
 
   <section id="t-pai"><div class="card"><h2>Painel do contador: fila de prioridades</h2><p class="sub">Carteira de exemplo com 4 clientes e a data de hoje fixa em 18/03/2027. A fila mostra o que olhar primeiro.</p><div id="p-fila" class="tbl"></div>
     <h3>Vencimentos dos próximos 7 dias</h3><div id="p-sem" class="tbl"></div><h3>Tempo e margem do mês</h3><div id="p-ind"></div></div>
-  <div class="card" id="escala"><h2>Escala do escritório: quanto a automação muda a sua capacidade</h2><p class="sub"><b>Horas e percentuais são premissas de partida (nossas): troque pelos números do seu escritório.</b> A conferência do contador continua em todas as clientes (0,25 h por cliente). Estimativa, não promessa.</p><div class="grid"><label>Clientes<input id="esc-n" inputmode="numeric" value="30"></label><label>% com folha<input id="esc-pf" inputmode="numeric" value="30"></label><label>Horas úteis do contador no mês<input id="esc-u" inputmode="numeric" value="140"></label><label>Honorário médio (R$)<input id="esc-h" inputmode="numeric" value="299"></label><label>Hora do contador (R$)<input id="esc-c" inputmode="numeric" value="60"></label></div><div id="esc-t" class="tbl"></div><div id="esc-o" class="tbl"></div></div><div class="card"><h2>Carteira no banco</h2><p class="sub">As empresas que você pode ver como equipe ou contador designado.</p><p><button class="p" id="bd-cart" disabled title="Entre na sua conta e escolha a empresa">Carregar carteira</button></p><div id="bd-cart-out" role="status" aria-live="polite"></div></div></section>
+    <div class="card" id="lote"><h2>Folha em lote: todos os clientes numa fila</h2><p class="sub">Exemplo com 4 clientes de teste. Só vem para você o que exige decisão: erros, folhas prontas e quem ainda não respondeu. A folha nunca nasce aprovada; o sistema não paga nada.</p>
+  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label>
+  <div id="lt-res" class="mini"></div><div id="lt-out" class="tbl"></div><div id="lt-msg" class="mini" role="status"></div><div id="lt-cob"></div></div>
+<div class="card" id="escala"><h2>Escala do escritório: quanto a automação muda a sua capacidade</h2><p class="sub"><b>Horas e percentuais são premissas de partida (nossas): troque pelos números do seu escritório.</b> A conferência do contador continua em todas as clientes (0,25 h por cliente). Estimativa, não promessa.</p><div class="grid"><label>Clientes<input id="esc-n" inputmode="numeric" value="30"></label><label>% com folha<input id="esc-pf" inputmode="numeric" value="30"></label><label>Horas úteis do contador no mês<input id="esc-u" inputmode="numeric" value="140"></label><label>Honorário médio (R$)<input id="esc-h" inputmode="numeric" value="299"></label><label>Hora do contador (R$)<input id="esc-c" inputmode="numeric" value="60"></label></div><div id="esc-t" class="tbl"></div><div id="esc-o" class="tbl"></div></div><div class="card"><h2>Carteira no banco</h2><p class="sub">As empresas que você pode ver como equipe ou contador designado.</p><p><button class="p" id="bd-cart" disabled title="Entre na sua conta e escolha a empresa">Carregar carteira</button></p><div id="bd-cart-out" role="status" aria-live="polite"></div></div></section>
 
   <section id="t-soc"><div class="card"><h2>Informe anual do sócio</h2>
     <div class="grid"><label>Participação do sócio (%)<input id="o-part" value="100" inputmode="decimal"></label><label>Lucros recebidos por mês (R$)<input id="o-luc" value="2.500" inputmode="decimal"></label><label>Receita do ano (R$)<input id="o-rec" value="120.000" inputmode="decimal"></label><label>IRPJ e CSLL pagos no DAS (R$)<input id="o-irpj" value="540" inputmode="decimal"></label><label class="chk"><input type="checkbox" id="o-esc" checked> Escrituração contábil completa</label><label>Lucro da escrituração (R$)<input id="o-lc" value="61.000" inputmode="decimal"></label></div><div id="o-out" style="margin-top:12px"></div></div>
@@ -139,6 +142,7 @@ section button,nav button,summary{min-height:44px}
 <script src="fechamento.js"></script>
 <script src="escala.js"></script>
 <script src="reinf.js"></script>
+<script src="folha-lote.js"></script>
 <script src="folha.js"></script>
 <script src="contabil.js"></script>
 <script src="concilia.js"></script>
@@ -294,6 +298,22 @@ function reinfUI(){const P=[{data:'2026-11-10',cnpjBeneficiario:$('rf-cnpj').val
  $('rf-xml').textContent=e.eventos.length?xmlReinf(e.eventos[Math.min(1,e.eventos.length-1)]):'';
  $('rf-ecd').innerHTML='<table>'+verificarECDECF({regime:$('rf-r').value}).map(o=>'<tr><td>'+o.nome+'</td><td>'+(o.obrigada===true?'sim':o.obrigada===false?'não':'conferir')+'</td><td class="mini">'+o.porque+(o.aviso?' '+o.aviso:'')+'</td></tr>').join('')+'</table>'}
 ['rf-cnpj','rf-v','rf-n','rf-s','rf-r'].forEach(i=>$(i).addEventListener('input',reinfUI));reinfUI();
+
+// Folha em lote (folha-lote.js)
+var LT={ap:{},vars:{a:{a1:null,a2:{faltasDias:1}},b:{},c:{c1:null},d:{}}};
+var LT_CART=[{id:'a',nome:'Clínica A',anterior:[{id:'a1',nome:'Ana',salario:2500,divisor:220,dependentes:0},{id:'a2',nome:'Bruno',salario:3000,divisor:220,dependentes:1}]},
+ {id:'b',nome:'Clínica B',anterior:[{id:'b1',nome:'Carla',salario:2500,divisor:220,dependentes:0}]},
+ {id:'c',nome:'Clínica C',anterior:[{id:'c1',nome:'Dado inválido',salario:-5,divisor:220}]},
+ {id:'d',nome:'Clínica D (sem funcionários)',anterior:[]}];
+function loteUI(){var lo=loteFolha({carteira:LT_CART.map(function(c){return Object.assign({},c,{variaveis:LT.vars[c.id]})}),aprovacoes:LT.ap,comp:'2026-12',ano:2026});LT.lo=lo;var r=lo.resumo,B=function(v){return (+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
+ $('lt-res').textContent='Para aprovar: '+r.paraAprovar+' · Aguardando a cliente: '+r.aguardando+' · Com erro: '+r.erros+' · Aprovadas: '+r.aprovadas+' (líquido '+B(r.liquido)+', FGTS '+B(r.fgts)+')';
+ $('lt-out').innerHTML='<table><tr><th>Cliente</th><th>Situação</th><th>Líquido</th><th>FGTS</th><th>Ação</th></tr>'+lo.clientes.map(function(c){var acao=c.status==='pronta para aprovar'||c.status==='mudou depois de aprovada'?'<button data-ap="'+c.id+'">Aprovar</button>':c.status==='aguardando a cliente'?'<button data-sa="'+c.id+'">Registrar "sem alteração"</button>':c.status==='com erro'?'<span class="mini">'+c.folha.itens.filter(function(i){return !i.pronto}).map(function(i){return i.motivo}).join('; ')+'</span>':'';
+  return '<tr><td>'+c.nome+'</td><td>'+c.status+'</td><td>'+(c.folha.completa?B(c.liquido):'-')+'</td><td>'+(c.folha.completa?B(c.fgts):'-')+'</td><td>'+acao+'</td></tr>'}).join('')+'</table>';
+ var cb=cobrancaPendentes(lo);$('lt-cob').innerHTML=cb.length?'<p class="mini"><b>Texto para cobrar quem falta</b> (o envio pelo zap depende do modelo aprovado):</p>'+cb.map(function(x){return '<pre class="mini" style="white-space:pre-wrap">'+x.texto+'</pre>'}).join(''):''}
+$('lt-out').addEventListener('click',function(e){var a=e.target.getAttribute('data-ap'),sa=e.target.getAttribute('data-sa');
+ if(a){try{LT.ap=aprovarFolha(LT.lo,a,$('lt-por').value,new Date().toISOString(),LT.ap);$('lt-msg').textContent='Aprovada.'}catch(x){$('lt-msg').textContent=x.message}loteUI()}
+ if(sa){var c=LT_CART.filter(function(k){return k.id===sa})[0],v={};c.anterior.forEach(function(f){v[f.id]=null});LT.vars[sa]=v;$('lt-msg').textContent='Registrado: sem alteração.';loteUI()}});
+$('lt-por').addEventListener('input',function(){});loteUI();
 // escala do escritório (escala.js): premissas editáveis
 function escalaUI(){var num=function(i){return parseFloat(String($(i).value).replace(',','.'))||0},ov={};
   if(!$('esc-t').firstChild){$('esc-t').innerHTML=tab(['Rotina mensal por cliente','Horas hoje','% automático','Estado'],TAREFAS_ESCRITORIO.map(function(t){return [esc(t.nome)+(t.folha?' (por empregado)':'')+'<br><span class="mini">'+esc(t.como)+'</span>','<input class="esc-h" data-id="'+t.id+'" inputmode="decimal" value="'+String(t.horas).replace('.',',')+'" style="width:70px">','<input class="esc-a" data-id="'+t.id+'" inputmode="numeric" value="'+Math.round(t.auto*100)+'" style="width:60px">%',esc(t.estado)]}));
