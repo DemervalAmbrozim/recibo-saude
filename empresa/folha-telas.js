@@ -158,14 +158,15 @@
         return '<p><b>'+ESC(r.codigo)+'</b> <span class="sub">('+ESC(r.tipo)+')</span></p><p>'+ESC(r.mensagem)+'</p>'+(r.acao?'<p><b>Ação sugerida pelo eSocial:</b> '+ESC(r.acao)+'</p>':'')
           +'<p class="sub">Fonte: '+ESC(r.fonte)+', página '+r.pagina+'. <a href="'+ESC(r.url)+'" rel="noopener" target="_blank">PDF oficial</a></p>'+AVISOS([r.aviso])}},
     rec:{nome:'Recibos para imprimir: férias, rescisão e RPA',campos:[
-      ['r-t','Recibo','ferias','s',[['ferias','Férias'],['rescisao','Rescisão (verbas, não é o TRCT)'],['rpa','RPA (autônomo)']]],
-      ['r-n','Nome','Ana Souza','t'],['r-c','CPF','123.456.789-09','t'],['r-s','Salário (R$) ou valor do serviço do RPA','3.000','n'],
+      ['r-t','Recibo','ferias','s',[['ferias','Férias'],['rescisao','Rescisão (verbas, não é o TRCT)'],['rpa','RPA (autônomo)'],['inter','Intermitente (convocação)']]],
+      ['r-n','Nome','Ana Souza','t'],['r-c','CPF','123.456.789-09','t'],['r-s','Salário (R$), valor do serviço (RPA) ou valor da HORA (intermitente)','3.000','n'],
       ['r-ad','Admissão (rescisão)','2024-02-01','t'],['r-sa','Saída ou início das férias (aaaa-mm-dd)','2026-11-20','t'],
       ['r-ti','Motivo da rescisão','sem_justa_causa','s',[['sem_justa_causa','Sem justa causa'],['pedido_demissao','Pedido de demissão'],['justa_causa','Justa causa'],['acordo','Acordo (art. 484-A)'],['termino_contrato','Término de contrato']]],
-      ['r-nr','Nº do recibo (RPA)','1','n']],
+      ['r-nr','Nº do recibo (RPA)','1','n'],['r-h','Horas da convocação (intermitente)','100','n']],
       calc:function(){var emp={nome:TXT('r-n'),cpf:TXT('r-c'),salario:NUM('r-s')},empresa={nome:'Empresa (exemplo)',cnpj:''},t=TXT('r-t'),r,out;
         if(t==='ferias'){r=window.reciboFeriasHTML(window.calculaFerias(emp,{diasGozo:30}),empresa,emp,{inicio:TXT('r-sa')})}
         else if(t==='rescisao'){r=window.reciboRescisaoHTML(window.calculaRescisao(emp,{tipo:TXT('r-ti'),admissao:TXT('r-ad'),saida:TXT('r-sa')}),empresa,emp,{saida:TXT('r-sa')})}
+        else if(t==='inter'){r=window.reciboIntermitenteHTML(window.calculaIntermitente({valorHora:NUM('r-s'),dependentes:0},{horas:NUM('r-h'),diasUteis:25,diasDescanso:5},2026),empresa,emp,{})}
         else{r=window.reciboRPAHTML(window.calculaRPA({nome:emp.nome,cpf:emp.cpf,valor:NUM('r-s')}),empresa,emp,{numero:NUM('r-nr'),data:TXT('r-sa')})}
         if(!r.ok)return ERROS(r.erros);
         return '<iframe title="Recibo" style="width:100%;height:520px;border:1px solid #999;background:#fff" srcdoc="'+r.html.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></iframe><p class="sub">Para imprimir, abra o recibo e use Imprimir do navegador. Estimativa até o contador conferir.</p>'}},
@@ -205,6 +206,31 @@
         var r=F().rotinaLote(e,TXT('f-h')||null);if(!r.ok)return ERROS(r.erros);var s=r.resumo;
         return '<p><span class="tag ruim">Bloqueadas: '+s.bloqueadas+'</span> <span class="tag at">Com pendência: '+s.comPendencia+'</span> <span class="tag">Prontas: '+s.prontas+'</span> <span class="tag az">Já fechadas: '+s.jaFechadas+'</span></p>'
           +TAB(['Empresa','Situação','Próxima ação'],r.itens.map(function(x){return [ESC(x.nome||'?'),x.jaFechada?'Fechada':!x.pode?'Bloqueada':x.pendencias.length?'Pode fechar, com pendência':'Pronta',ESC(x.proximaAcao)]}),[0,0,0])+AVISOS([r.aviso])}},
+    s1200:{nome:'eSocial S-1200: prévia da remuneração do mês (sem assinar, sem enviar)',campos:[
+      ['x-cnpj','CNPJ do empregador','11.222.333/0001-81','t'],['x-cpf','CPF do empregado','529.982.247-25','t'],['x-mat','Matrícula (a do S-2200)','0001','t'],['x-lot','Código da lotação tributária','LOT1','t'],
+      ['x-per','Competência (aaaa-mm)','2026-11','t'],['x-s','Salário (R$)','3.000','n'],['x-he','Horas extras 50% no mês','10','n'],['x-tab','Identificador da tabela de rubricas (ideTabRubr)','1','t'],['x-aut','É autônomo (RPA, categoria 701): o salário vira o valor do serviço','','c'],['x-nm','Autônomo: nome','Bia Autônoma Souza','t'],['x-nasc','Autônomo: nascimento (aaaa-mm-dd)','1985-04-10','t'],['x-cbo','Autônomo: CBO (6 números)','322205','t']],
+      calc:function(){var X=F(),tab=TXT('x-tab')||'1',aut=CHK('x-aut'),rb,f;
+        if(aut){var rp=X.calculaRPA({nome:TXT('x-nm'),cpf:TXT('x-cpf'),valor:NUM('x-s')},2026);if(!rp.ok)return ERROS(rp.erros);
+          rb={rubricas:[{codRubr:'RPA',ideTabRubr:tab,vrRubr:rp.valor,indApurIR:0,descricao:'Serviço de autônomo'}].concat(rp.inss>0?[{codRubr:'RPAINSS',ideTabRubr:tab,vrRubr:rp.inss,indApurIR:0,descricao:'INSS retido do autônomo'}]:[]).concat(rp.irrf>0?[{codRubr:'RPAIRRF',ideTabRubr:tab,vrRubr:rp.irrf,indApurIR:0,descricao:'IRRF retido do autônomo'}]:[])};rb.codigosNoS1010=rb.rubricas.map(function(x){return x.codRubr+' - '+x.descricao})}
+        else{f=X.calculaFolha({salario:NUM('x-s')},{heNormais:NUM('x-he')},2026);if(!f.ok)return ERROS(f.erros);rb=X.rubricasDaFolha(f,{ideTabRubr:tab})}
+        var r=X.montaS1200({tpAmb:2,empregador:{tpInsc:1,nrInsc:TXT('x-cnpj')},cpfTrab:TXT('x-cpf'),matricula:aut?'':TXT('x-mat'),codCateg:aut?'701':'101',autonomo:aut,nmTrab:TXT('x-nm'),dtNascto:TXT('x-nasc'),codCBO:TXT('x-cbo'),hoje:new Date().toISOString().slice(0,10),indApuracao:1,perApur:TXT('x-per'),ideDmDev:aut?'RPA1':'01',estab:{tpInsc:1,nrInsc:TXT('x-cnpj'),codLotacao:TXT('x-lot')},grauExp:1,rubricas:rb.rubricas});
+        if(!r.ok)return ERROS(r.erros);
+        return '<h3>Rubricas que precisam existir na tabela S-1010</h3><ul>'+rb.codigosNoS1010.map(function(x){return '<li>'+ESC(x)+'</li>'}).join('')+'</ul><h3>Prévia do evento (XML sem assinatura)</h3><pre style="white-space:pre-wrap;word-break:break-all;font-size:12px">'+ESC(r.xml)+'</pre>'+AVISOS(r.alertas.concat([r.aviso]))}},
+    t18:{nome:'eSocial: motivo de afastamento (Tabela 18) e se a empresa precisa enviar',campos:[
+      ['t-c','Código do motivo (1 a 51)','3','n']],
+      calc:function(){var m=F().motivoAfastamento(Math.floor(NUM('t-c')));if(!m.conhecido)return AVISOS([m.aviso]);
+        return '<p><b>'+ESC(m.cod)+' - '+ESC(m.descricao)+'</b></p><p><span class="tag '+(m.obrigatoriedade==='nao_enviar'?'ruim':m.obrigatoriedade==='obrigatoria'?'at':'az')+'">'+ESC(m.rotulo)+'</span></p>'+(m.nota?'<p>'+ESC(m.nota)+'</p>':'')+AVISOS(['Regra lida no MOS S-2230, item 2.1, para empregado CLT de empresa privada. [CONFERIR COM O DANIEL] em caso de dúvida.'])}},
+    vig:{nome:'Tabelas legais em uso: estão em dia?',campos:[['v-h','Hoje (aaaa-mm-dd)','','t'],['v-d','Avisar se conferida há mais de (dias)','90','n']],
+      calc:function(){var hoje=TXT('v-h')||new Date().toISOString().slice(0,10),r=F().statusTabelas(hoje,{diasConferencia:NUM('v-d')||90});if(!r.ok)return ERROS(r.erros);var s=r.resumo;
+        return '<p><span class="tag">Em dia: '+s.ok+'</span> <span class="tag at">Atenção: '+s.atencao+'</span> <span class="tag ruim">Crítico: '+s.critico+'</span></p>'
+          +TAB(['Tabela','Situação','Conferida em','Fonte e reajuste'],r.itens.map(function(x){return [ESC(x.nome),x.situacao==='ok'?'Em dia':x.situacao==='atencao'?'Atenção: '+ESC(x.motivo):'CRÍTICO: '+ESC(x.motivo),DT(x.conferido),ESC(x.fonte)+' · Reajuste: '+ESC(x.reajuste)]}),[0,0,0,0])+AVISOS([r.aviso])}},
+    fluxo:{nome:'Fluxo guiado do mês: onde estou e qual é o próximo passo',campos:[
+      ['g-c','Competência (aaaa-mm)','2026-11','t'],['g-1','Recebi as variáveis do mês (ponto, faltas, comissões)','','c'],['g-2','Rodei as conferências','','c'],['g-3','Calculei a folha','','c'],['g-4','O contador aprovou','','c'],
+      ['g-5','Gerei os recibos','','c'],['g-6','Preparei o S-1200','','c'],['g-7','Gerei as guias','','c'],['g-8','Fechei a competência','','c']],
+      calc:function(){var r=F().fluxoDoMes({competencia:TXT('g-c'),variaveis:CHK('g-1'),conferencia:CHK('g-2'),calculada:CHK('g-3'),aprovada:CHK('g-4'),recibos:CHK('g-5'),esocial:CHK('g-6'),guias:CHK('g-7'),fechada:CHK('g-8')});if(!r.ok)return ERROS(r.erros);
+        var h='<p><span class="tag az">'+r.obrigatoriosFeitos+' de '+r.obrigatoriosTotal+' passos obrigatórios</span> <b>'+ESC(r.resumo)+'</b></p>'
+          +TAB(['#','Passo','Quem','Situação',''],r.passos.map(function(p){return [p.n,ESC(p.nome),p.quem,p.estado==='feito'?'Feito':p.estado==='atual'?'<b>AGORA</b>':p.estado==='opcional'?'Opcional':'Aguarda',(p.estado==='atual'||p.estado==='opcional')?'<button type="button" data-abre="'+p.tela+'">Abrir a tela</button>':'']}),[1,0,0,0,0]);
+        if(r.incoerencias.length)h+=AVISOS(r.incoerencias);return h}},
     dup:{nome:'Importar rendimentos: barrar duplicados (Carnê-Leão soma, não sobrescreve)',campos:[
       ['d-e','Já lançados (data aaaa-mm-dd;CPF do pagador;valor, um por linha)','2026-05-10;123.456.789-09;1.500,00','a'],
       ['d-n','A importar (mesmo formato)','2026-05-10;12345678909;1.500,00\n2026-05-12;12345678909;800,00\n10/05/2026;123;5','a']],
@@ -283,7 +309,17 @@
       var T=TELAS[t];Q('vx-form').innerHTML=T.campos.map(campo).join('');
       Array.prototype.forEach.call(Q('vx-form').querySelectorAll('input,select,textarea'),function(e){e.oninput=saida;e.onchange=saida});saida()}
     function saida(){var t=sel.value;if(t==='param')return;var T=TELAS[t],h;try{h=T.calc()}catch(e){h=ERROS(['Não foi possível calcular: '+(e&&e.message||e)])}Q('vx-out').innerHTML=h}
-    sel.innerHTML=Object.keys(TELAS).map(function(k){return '<option value="'+k+'">'+ESC(TELAS[k].nome)+'</option>'}).join('')+'<option value="param">Parâmetros da empresa (vigência)</option>';
+    var TODAS=Object.keys(TELAS).map(function(k){return [k,TELAS[k].nome]}).concat([['param','Parâmetros da empresa (vigência)']]);
+    var sem=function(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')};
+    function opcoes(filtro,atual){var q=sem(filtro).split(/\s+/).filter(Boolean),L=TODAS.filter(function(p){var t=sem(p[1]+' '+p[0]);return q.every(function(w){return t.indexOf(w)>=0})});
+      sel.innerHTML=L.map(function(p){return '<option value="'+p[0]+'">'+ESC(p[1])+'</option>'}).join('')||'<option value="">Nenhuma tela com essa palavra</option>';
+      if(atual&&L.some(function(p){return p[0]===atual}))sel.value=atual;return L.length}
+    // 27/11: busca por palavra no seletor de telas (são mais de 30): digite "férias", "esocial", "recibo"...
+    var busca=Q('vx-busca');if(!busca){var lb=document.createElement('label');lb.style.maxWidth='420px';lb.innerHTML='Buscar tela por palavra <input id="vx-busca" type="search" placeholder="ex.: férias, esocial, recibo" autocomplete="off">';sel.parentNode.parentNode.insertBefore(lb,sel.parentNode);busca=Q('vx-busca')}
+    busca.oninput=function(){var antes=sel.value,n=opcoes(busca.value,antes);Q('vx-contagem')&&(Q('vx-contagem').textContent=n+' de '+TODAS.length+' telas');if(n&&sel.value!==antes)troca()};
+    var ct=document.createElement('p');ct.id='vx-contagem';ct.className='sub';ct.textContent=TODAS.length+' de '+TODAS.length+' telas';sel.parentNode.parentNode.insertBefore(ct,sel.parentNode.nextSibling);
+    opcoes('');
+    Q('vx-out').addEventListener('click',function(e){var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-abre');if(!k)return;var b=Q('vx-busca');if(b&&b.value){b.value='';opcoes('')}sel.value=k;troca();sel.scrollIntoView({block:'center'})});
     sel.onchange=troca;carrega();troca()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',monta);else monta();
 })();

@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-NybfGa91jrXI6iaNxh6pG898fja6Zcc3pnzZodCZohI=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-6JaNhaA6XPwdfBeY+3IEUdaCw4eydagr3jeZ89sJSi8=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Módulos do contador, Minha empresa</title>
@@ -137,7 +137,7 @@ section button,nav button,summary{min-height:44px}
   <section id="t-pai"><div class="card"><h2>Painel do contador: fila de prioridades</h2><p class="sub">Carteira de exemplo com 4 clientes e a data de hoje fixa em 18/03/2027. A fila mostra o que olhar primeiro.</p><div id="p-fila" class="tbl"></div>
     <h3>Vencimentos dos próximos 7 dias</h3><div id="p-sem" class="tbl"></div><h3>Tempo e margem do mês</h3><div id="p-ind"></div></div>
     <div class="card" id="lote"><h2>Folha em lote: todos os clientes numa fila</h2><p class="sub">Exemplo com 4 clientes de teste. Só vem para você o que exige decisão: erros, folhas prontas e quem ainda não respondeu. A folha nunca nasce aprovada; o sistema não paga nada.</p>
-  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label> <label>Mês <input id="lt-comp" value="2026-12" style="width:90px"></label> <label>Arredondamento do INSS <select id="lt-inss"><option value="total">Somar as faixas e arredondar no fim</option><option value="truncado">Truncar cada faixa (como o eSocial)</option></select></label> <button id="lt-real" type="button">Carregar clientes reais</button> <button id="lt-grava" type="button" hidden>Gravar folhas como sombra</button> <span id="lt-modo" class="mini">Modo exemplo.</span>
+  <label>Contador que aprova <input id="lt-por" value="Daniel" style="width:140px"></label> <label>Mês <input id="lt-comp" value="2026-12" style="width:90px"></label> <label>Arredondamento do INSS <select id="lt-inss"><option value="total">Somar as faixas e arredondar no fim</option><option value="truncado">Truncar cada faixa (como o eSocial)</option></select></label> <button id="lt-real" type="button">Carregar clientes reais</button> <button id="lt-grava" type="button" hidden>Gravar folhas como sombra</button> <button id="lt-recalc" type="button">Recalcular todas</button> <button id="lt-aprova-tudo" type="button">Aprovar todas as prontas</button> <span id="lt-modo" class="mini">Modo exemplo.</span>
   <div id="lt-tempo" class="mini" role="status"></div><div id="lt-res" class="mini"></div><div id="lt-out" class="tbl"></div><div id="lt-msg" class="mini" role="status"></div><div id="lt-cob"></div></div>
 <div class="card" id="afast" hidden><h2>Lançar afastamento</h2><p class="sub">Só no modo real. Guarda tipo e datas (sem CID). O aviso aparece na fila da folha em lote.</p>
   <label>Empregado <select id="af-e"></select></label> <label>Tipo <select id="af-t"><option value="atestado">Atestado</option><option value="doenca">Doença (benefício)</option><option value="acidente">Acidente</option><option value="maternidade">Maternidade</option><option value="paternidade">Paternidade</option><option value="demissao">Demissão</option><option value="mudanca_funcao">Mudança de função</option></select></label>
@@ -200,7 +200,7 @@ section button,nav button,summary{min-height:44px}
 <script src="monitor-fiscal.js"></script>
 <script src="afastamentos.js"></script><script src="folha-lote.js"></script>
 <script src="folha-lote-db.js"></script>
-<script src="folha.js"></script><script src="folha-extras.js"></script><script src="folha-confere-retorno.js"></script><script src="folha-ponto.js"></script><script src="esocial-explica.js"></script><script src="folha-plr.js"></script><script src="rendimentos-dup.js"></script><script src="folha-recibos.js"></script><script src="folha-complementar.js"></script><script src="folha-s2230.js"></script><script src="folha-rpa-lista.js"></script><script src="folha-fechamento.js"></script><script src="folha-telas.js"></script>
+<script src="folha.js"></script><script src="folha-extras.js"></script><script src="folha-confere-retorno.js"></script><script src="folha-ponto.js"></script><script src="esocial-explica.js"></script><script src="folha-plr.js"></script><script src="rendimentos-dup.js"></script><script src="folha-recibos.js"></script><script src="folha-complementar.js"></script><script src="folha-s2230.js"></script><script src="esocial-tabela18.js"></script><script src="folha-s2230-evento.js"></script><script src="folha-s1200-evento.js"></script><script src="folha-rpa-lista.js"></script><script src="folha-fechamento.js"></script><script src="folha-vigencia.js"></script><script src="folha-fluxo.js"></script><script src="folha-telas.js"></script>
 <script src="contabil.js"></script>
 <script src="concilia.js"></script>
 <script src="relatorio.js"></script>
@@ -592,6 +592,25 @@ function eventos(){var t=$('e-tipo').value,p=planoEvento(t,{registro:$('e-reg').
  $('bd-lc-mes').addEventListener('change',function(){if(DB)tudo().catch(function(e){m('bd-lc-out',traduzErroPj(e),true)})});
  var d=new Date();$('bd-lc-mes').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
  var antes=window.__bdLiga;window.__bdLiga=async function(db,emp){if(antes)await antes(db,emp);DB=db;EMP=emp;window.__bdCtx={DB:db,EMP:emp};['bd-lc-add','bd-lc-lista','bd-fc-fecha','bd-fc-reabre'].forEach(function(b){var e=$(b);e.disabled=false;e.removeAttribute('title')});try{await empregadosLc();await tudo()}catch(e){m('bd-lc-out',traduzErroPj(e,'ler'),true)}};
+})();
+
+// ===== lote: recalcular todas e aprovar todas as prontas, com 2 cliques (27/11/2026) =====
+(function(){var conf=false,t=null;
+ function pronto(){return (LT.lo&&LT.lo.clientes||[]).filter(function(c){return (c.status==='pronta para aprovar'||c.status==='mudou depois de aprovada')&&c.folha.completa})}
+ function zera(){conf=false;clearTimeout(t);$('lt-aprova-tudo').textContent='Aprovar todas as prontas'}
+ $('lt-recalc').addEventListener('click',async function(){var b=this;b.disabled=true;try{if(LT.real){LT.vars=LT.vars||{};await ltRecarrega()}loteUI();$('lt-msg').textContent='Recalculado: '+(LT.lo?LT.lo.clientes.length:0)+' cliente(s). Aprovação que dependia de número mudado voltou para a fila.'}catch(x){$('lt-msg').textContent=x.message}b.disabled=false;zera()});
+ $('lt-aprova-tudo').addEventListener('click',async function(){var b=this,L=pronto();
+  if(!L.length){$('lt-msg').textContent='Nenhuma folha pronta para aprovar.';return}
+  if(!$('lt-por').value.trim()){$('lt-msg').textContent='Informe quem aprova (contador).';return}
+  if(!conf){conf=true;b.textContent='Confirmar: aprovar '+L.length+' cliente(s)';$('lt-msg').textContent='Clique de novo em 10 segundos para confirmar. Só o contador deve aprovar.';t=setTimeout(zera,10000);return}
+  zera();b.disabled=true;
+  try{var ok=0,falhas=[];
+   if(LT.real){await gravarSombras(window.__bdDB,LT.lo,LT.folhas,'folha.js');await ltRecarrega();
+    for(var i=0;i<L.length;i++){var cl=LT.lo.clientes.filter(function(c){return c.id===L[i].id})[0];if(!cl)continue;var r=await aprovarClienteNoBanco(window.__bdDB,cl,LT.folhas);ok+=r.aprovadas;r.falhas.forEach(function(f){falhas.push(cl.nome+' - '+f.empregado+': '+f.motivo)})}
+    await ltRecarrega()}
+   else{L.forEach(function(c){try{LT.ap=aprovarFolha(LT.lo,c.id,$('lt-por').value,new Date().toISOString(),LT.ap);ok++}catch(x){falhas.push(c.nome+': '+x.message)}})}
+   loteUI();$('lt-msg').textContent='Aprovadas: '+ok+(falhas.length?'. O servidor recusou: '+falhas.join('; '):'.')}
+  catch(x){$('lt-msg').textContent=x.message}b.disabled=false});
 })();
 </script>
 

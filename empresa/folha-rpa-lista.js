@@ -20,6 +20,7 @@
     const tot=k=>r2(sel.reduce((s,r)=>s+(+r[k]||0),0));
     alertas.push('S-2300 é facultativo para autônomo em geral (categoria 701); a remuneração é informada no S-1200. [CONFERIR COM O DANIEL] como o escritório informa e como o INSS retido chega à DCTFWeb.');
     alertas.push('ISS: retenção e guia são do município do serviço. [CONFERIR COM O DANIEL]');
+    alertas.push('Guia: não há GPS separada. INSS e IRRF retidos saem no DARF único da DCTFWeb (competência 05/2023 em diante), alimentado pelo S-1200 e pelo S-1299 do mês (fonte: ajuda de um fabricante de sistema; não é texto oficial). Pagar o DARF gerado na DCTFWeb. [CONFERIR COM O DANIEL]');
     return{ok:true,competencia:comp,recibos:sel,quantidade:sel.length,primeiro:sel[0].numero,ultimo:sel[sel.length-1].numero,proximo:proximoNumeroRPA(recibos),
       totais:{valor:tot('valor'),inss:tot('inss'),irrf:tot('irrf'),iss:tot('iss'),liquido:tot('liquido')},alertas,aviso:'Estimativa; o contador confere antes do pagamento.'};
   }

@@ -2,6 +2,7 @@
 // Só MONTA e CONFERE os campos: o XML sai SEM assinatura e NÃO é enviado. Assinar com certificado digital e transmitir é do contador/procuração. A Tabela 18 (códigos de motivo) não foi lida: o código é aceito
 // como 2 dígitos e só as regras que o leiaute escreve com o número do código são validadas (01, 03, 14, 15, 18, 21, 22, 24). [CONFERIR COM O DANIEL] o código e a compatibilidade com a categoria.
 (function(){
+  const MOT=(typeof window!=='undefined'&&window.motivoAfastamento)||(typeof require!=='undefined'?(()=>{try{return require('./esocial-tabela18.js').motivoAfastamento}catch(e){return null}})():null);
   const dig=s=>String(s==null?'':s).replace(/\D/g,'');
   const parse=s=>{if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;const [a,m,d]=s.split('-').map(Number),x=new Date(Date.UTC(a,m-1,d));return(x.getUTCFullYear()===a&&x.getUTCMonth()===m-1&&x.getUTCDate()===d)?x:null};
   const dias=(a,b)=>Math.round((parse(b)-parse(a))/86400000);
@@ -26,7 +27,7 @@
     const x={ideEvento:{indRetif:d.retif&&d.retif.nrRecibo?2:1,tpAmb:+d.tpAmb,procEmi:1,verProc:'lado-a-lado-previa'},ideEmpregador:{tpInsc:+e.tpInsc,nrInsc:ni},ideVinculo:{cpfTrab:dig(d.cpfTrab)}};
     if(mat)x.ideVinculo.matricula=mat;else x.ideVinculo.codCateg=String(d.codCateg);
     if(d.retif&&d.retif.nrRecibo){if(String(d.retif.nrRecibo).length!==23)erros.push('nrRecibo da retificação deve ter 23 caracteres');x.ideEvento.nrRecibo=String(d.retif.nrRecibo)}
-    const alertas=['Prévia SEM assinatura e SEM envio. Assinar com certificado digital e transmitir é do contador (procuração).','Código do motivo (Tabela 18) e compatibilidade com a categoria não foram conferidos aqui. [CONFERIR COM O DANIEL]'];
+    const alertas=['Prévia SEM assinatura e SEM envio. Assinar com certificado digital e transmitir é do contador (procuração).'];
     if(ini){
       const cod=String(ini.codMotAfast||'');if(!/^\d{2}$/.test(cod))erros.push('codMotAfast deve ter 2 dígitos (Tabela 18)');
       if(!parse(ini.dtIniAfast))erros.push('dtIniAfast inválida (aaaa-mm-dd)');
@@ -38,6 +39,7 @@
         if(ini.tpAcidTransito!=null&&ini.tpAcidTransito!==''){if(!['01','03'].includes(cod))erros.push('tpAcidTransito só vale para codMotAfast 01 ou 03');else if(![1,2,3].includes(+ini.tpAcidTransito))erros.push('tpAcidTransito: 1 atropelamento, 2 colisão, 3 outros')}
         if(ini.infoMesmoMtv!=null&&ini.infoMesmoMtv!==''){if(!['01','03'].includes(cod))erros.push('infoMesmoMtv só vale para codMotAfast 01 ou 03');else if(!['S','N','I'].includes(ini.infoMesmoMtv))erros.push('infoMesmoMtv: S, N ou I');else if(cod==='01'&&ini.infoMesmoMtv==='I')erros.push('para codMotAfast 01, infoMesmoMtv só aceita S ou N')}
         if((cod==='01'||cod==='03')&&ini.dtIniAfast>='2026-10-26'&&ini.existeAfastamentoAnterior60d&&!ini.infoMesmoMtv)erros.push('desde 26/10/2026, com outro afastamento anterior em até 60 dias pelo mesmo motivo, infoMesmoMtv é obrigatório (leiaute)');
+        if(MOT){const mv=MOT(cod);if(!mv.conhecido)alertas.push(mv.aviso);else{alertas.push('Motivo '+mv.cod+': '+mv.descricao+'. '+mv.rotulo+(mv.nota?' ('+mv.nota+')':'')+'. [CONFERIR COM O DANIEL] a categoria do trabalhador.');if(mv.obrigatoriedade==='nao_enviar')alertas.push('ATENÇÃO: este motivo não deve ser enviado por empresa privada com empregado CLT (MOS S-2230, item 2.1).')}}
         if(cod==='15'&&!ini.perAquis)alertas.push('Férias (15): o período aquisitivo (perAquis) é obrigatório para empregado CLT com início a partir de 19/07/2021 (leiaute). Informe dtInicio. [CONFERIR COM O DANIEL] a categoria.');
         if(ini.perAquis){if(!parse(ini.perAquis.dtInicio))erros.push('perAquis.dtInicio inválida');if(ini.perAquis.dtFim&&(!parse(ini.perAquis.dtFim)||ini.perAquis.dtFim<=ini.perAquis.dtInicio))erros.push('perAquis.dtFim deve ser posterior ao início (e só se o período não for de 1 ano)')}
         if(['14','22','24'].includes(cod))erros.push('código '+cod+' (cessão, mandato eletivo ou sindical) exige grupo complementar que esta prévia não monta');

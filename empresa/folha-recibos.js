@@ -36,6 +36,16 @@
       +(r.alertas&&r.alertas.length?'<ul class="peq">'+r.alertas.map(a=>'<li>'+esc(a)+'</li>').join('')+'</ul>':'');
     return {ok:true,html:moldura('Recibo de verbas rescisórias',empresa,emp,'Rescisão',corpo,r.aviso)};
   }
+  // Intermitente: r = resultado de calculaIntermitente; o: {inicio, fim} do período da convocação
+  function reciboIntermitenteHTML(r,empresa,emp,o={}){
+    if(!r||!r.ok)return erro(r);
+    const linhas=[...r.proventos.map(x=>[x.cod,x.desc,x.ref,x.valor,'']),...r.descontos.map(x=>[x.cod,x.desc,x.ref||'','',x.valor])];
+    const per=o.inicio?'Convocação de '+dt(o.inicio)+(o.fim?' a '+dt(o.fim):''):'Trabalho intermitente';
+    const corpo=tab(linhas,r.totalProventos,r.totalDescontos)+'<p><b>Líquido a receber ao fim da convocação: '+brl(r.liquido)+'</b></p>'
+      +'<p class="peq">FGTS do mês (depósito do empregador) '+brl(r.fgts)+'. Pagamento ao fim de cada período de convocação, com RSR, férias com 1/3 e 13º proporcionais discriminados (CLT art. 452-A, §6º).</p>'
+      +(r.alertas&&r.alertas.length?'<ul class="peq">'+r.alertas.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'');
+    return {ok:true,html:moldura('Recibo de trabalho intermitente',empresa,emp,esc(per),corpo,r.aviso)};
+  }
   // RPA: a = autônomo {nome,cpf,descricao?}; r = resultado de calculaRPA; o: {numero, data}
   function reciboRPAHTML(r,empresa,a,o={}){
     if(!r||!r.ok)return erro(r);
@@ -45,7 +55,7 @@
       +'<p class="peq">A contribuição patronal ('+brl(r.patronal)+') é encargo da empresa e não é descontada do autônomo.</p>'+(r.alertas&&r.alertas.length?'<ul class="peq">'+r.alertas.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'');
     return {ok:true,html:moldura('Recibo de pagamento a autônomo (RPA) nº '+String(Math.trunc(+o.numero)).padStart(6,'0'),empresa,a,o.data?'Data '+dt(o.data):'',corpo,r.aviso)};
   }
-  const api={reciboFeriasHTML,reciboRescisaoHTML,reciboRPAHTML};
+  const api={reciboFeriasHTML,reciboRescisaoHTML,reciboRPAHTML,reciboIntermitenteHTML};
   if(typeof module!=='undefined')module.exports=api;
   if(typeof window!=='undefined')Object.assign(window,api);
 })();
