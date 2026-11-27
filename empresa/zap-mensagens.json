@@ -1,0 +1,353 @@
+{
+ "versao": "2026-11-17",
+ "observacao": "Rascunho para o Demerval aprovar. Variáveis entre chaves são preenchidas pelo sistema. Links só do domínio ladoaladosaude.com.br. Nunca pedir senha, documento ou dado de paciente por zap.",
+ "mensagens": [
+  {
+   "id": "menu-inicial",
+   "frente": "comum",
+   "quando": "Primeiro contato: pessoa manda oi, bom dia ou menu",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Oi! Eu sou o Hexa, da Lado a Lado Saúde. Para onde você quer ir?\n1. Sou profissional autônomo(a): atendo com o meu CPF\n2. Tenho empresa de saúde (CNPJ)\n3. Quero abrir o meu CNPJ\n4. Falar com uma pessoa",
+   "respostas": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "regra": "Sem perguntar situação: ela escolhe o caminho. Resposta fora do menu repete o menu uma vez e depois chama uma pessoa."
+  },
+  {
+   "id": "menu-1-autonoma",
+   "frente": "autonoma",
+   "quando": "Respondeu 1",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Ótimo! Aqui você vê como funciona e cria a sua conta: {link_autonoma}\nO teste é sem cartão: 7 dias, em qualquer plano. Dúvida? É só responder aqui.",
+   "respostas": [],
+   "regra": "Link só do nosso domínio."
+  },
+  {
+   "id": "menu-2-empresa",
+   "frente": "empresa",
+   "quando": "Respondeu 2",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Ótimo! Aqui você vê o plano para empresa e faz o cadastro: {link_empresa}\nÉ para empresa de saúde no Simples Nacional, com até 3 funcionários. O teste é sem cartão: 7 dias, em qualquer plano.",
+   "respostas": [],
+   "regra": "Link só do nosso domínio."
+  },
+  {
+   "id": "menu-3-abrir",
+   "frente": "ponte",
+   "quando": "Respondeu 3",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "A gente abre a sua empresa e segue com você depois. Primeiro, uma conversa de 20 minutos com a conta na tela. Qual horário é melhor?\n1. Manhã\n2. Tarde\n3. Prefiro por mensagem mesmo\nVocê também pode começar pelo cadastro: {link_ponte}",
+   "respostas": [
+    "1",
+    "2",
+    "3"
+   ],
+   "regra": "Agenda cai na Fernanda ou no contador; nada é enviado à Receita antes do contrato."
+  },
+  {
+   "id": "menu-4-pessoa",
+   "frente": "comum",
+   "quando": "Respondeu 4 ou pediu pessoa",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Combinado. Já avisei a equipe e alguém responde por aqui em até 1 dia útil. Se for urgente, escreva a palavra URGENTE e o assunto.",
+   "respostas": [],
+   "regra": "Cria tarefa para a Fernanda; responder em 1 dia útil."
+  },
+  {
+   "id": "empresa-boas-vindas",
+   "frente": "empresa",
+   "quando": "Logo após o cadastro da empresa",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Oi, {nome}! A {empresa} está cadastrada na Lado a Lado Saúde. Seu teste vai até {data}, sem cartão.\nOs próximos passos: 1) conversa rápida com a equipe, 2) contrato, 3) acessos. Nada é enviado à Receita antes do contrato. Posso te ligar?\n1. Sim, pode ligar\n2. Prefiro por mensagem",
+   "respostas": [
+    "1",
+    "2"
+   ],
+   "regra": "Teste da empresa é separado do teste da autônoma."
+  },
+  {
+   "id": "empresa-acessos",
+   "frente": "empresa",
+   "quando": "Depois da conversa, para pedir acessos",
+   "de": "equipe",
+   "nivel": "normal",
+   "texto": "{nome}, para começar precisamos de 3 acessos da {empresa}: a procuração no e-CAC, a procuração da nota fiscal e o certificado digital da empresa. A gente faz junto, pelo app: {link_acessos}\nImportante: nunca mande sua senha do gov.br, documentos ou fotos de documentos por aqui. Tudo vai no app, no cofre.",
+   "respostas": [],
+   "regra": "Nunca pedir senha nem documento por zap. Documento só no cofre do app."
+  },
+  {
+   "id": "empresa-contrato-pronto",
+   "frente": "empresa",
+   "quando": "Contrato e proposta prontos para assinar",
+   "de": "equipe",
+   "nivel": "normal",
+   "texto": "{nome}, o contrato e a proposta da {empresa} estão prontos para assinar no app: {link_contrato}\nLeia com calma. Se quiser tirar dúvida antes, responda aqui. A gente só começa a enviar coisas à Receita depois da assinatura.",
+   "respostas": [],
+   "regra": "Assinatura eletrônica registrada; sem assinatura nada é transmitido."
+  },
+  {
+   "id": "empresa-ainda-autonoma",
+   "frente": "empresa",
+   "quando": "Logo após o cadastro, se atendia como autônoma",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Uma pergunta rápida, {nome}: você ainda atende alguns pacientes pelo seu CPF, ou agora tudo passa pela empresa?\n1. Só pela empresa\n2. Ainda tenho pacientes no CPF\n3. Não sei ainda",
+   "respostas": [
+    "1",
+    "2",
+    "3"
+   ],
+   "regra": "Se 2 ou 3, abre o fluxo de virada e regime misto (módulo B10) para o contador."
+  },
+  {
+   "id": "empresa-envio-dia1",
+   "frente": "empresa",
+   "quando": "1º dia útil do mês",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Bom dia, {nome}! Começou {mes}. Até o 5º dia útil ({data}) preciso do extrato do banco e das notas do mês passado da {empresa}. Pode mandar pelo app: {link_envio}",
+   "respostas": [],
+   "regra": "Só vale com tique de entrega; sem tique, reenvia no dia seguinte."
+  },
+  {
+   "id": "empresa-envio-dia5",
+   "frente": "empresa",
+   "quando": "5º dia útil, se ainda não enviou",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, hoje é o último dia para enviar o extrato e as notas da {empresa}. Envie pelo app: {link_envio}\nSe tiver funcionário, avise também faltas e horas extras do mês.",
+   "respostas": [],
+   "regra": ""
+  },
+  {
+   "id": "empresa-envio-atraso",
+   "frente": "empresa",
+   "quando": "6º dia útil sem envio",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, ainda não recebi o extrato e as notas da {empresa}. Vou fechar o mês com o que tenho e deixar a pendência registrada. O imposto vence em {data}. Quer mandar agora?\n1. Mando hoje\n2. Não tive movimento no mês\n3. Preciso de ajuda",
+   "respostas": [
+    "1",
+    "2",
+    "3"
+   ],
+   "regra": "Contrato cl. 3.1: apura com o que tem e registra a pendência. Resposta 2 vira 'sem movimento'."
+  },
+  {
+   "id": "empresa-pergunta-extrato",
+   "frente": "empresa",
+   "quando": "Lançamento do extrato sem classificação",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "Entrou R$ {valor} em {data}: \"{descricao}\". É de qual atendimento?\n1. {nota_sugerida}\n2. Outra nota\n3. Não tem nota\n4. Não sei",
+   "respostas": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "regra": "Resposta 3 gera alerta de recebimento sem nota fiscal para o contador. Sem dado clínico: só valor, data e a descrição do banco."
+  },
+  {
+   "id": "empresa-recebimento-sem-nota",
+   "frente": "empresa",
+   "quando": "Fim do mês com recebimento sem nota",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, a {empresa} recebeu R$ {valor} neste mês sem nota fiscal correspondente. Para fechar certo, a nota precisa ser emitida. Quer que a gente emita?\n1. Sim, emitir\n2. Esse valor não é de serviço\n3. Quero falar com o contador",
+   "respostas": [
+    "1",
+    "2",
+    "3"
+   ],
+   "regra": "Contador decide; nunca orientar a omitir receita."
+  },
+  {
+   "id": "empresa-resumo-mensal",
+   "frente": "empresa",
+   "quando": "Fim do mês, depois do fechamento conferido pelo contador",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{resumo}",
+   "respostas": [],
+   "regra": "Texto vem de app/empresa/relatorio.js (textoZap): entrou, imposto e vencimento, despesas, sobrou, saldo, atenção e o que fazer. Sempre com 'estimativa; o contador confere'."
+  },
+  {
+   "id": "empresa-das-d3",
+   "frente": "empresa",
+   "quando": "3 dias antes do vencimento do DAS",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, o imposto do Simples da {empresa} vence em 3 dias, dia {data}: R$ {valor}. A guia está no app: {link_guia}\nSe já pagou, responda PAGO.",
+   "respostas": [
+    "PAGO"
+   ],
+   "regra": ""
+  },
+  {
+   "id": "empresa-das-d1",
+   "frente": "empresa",
+   "quando": "1 dia antes do vencimento do DAS, sem pagamento",
+   "de": "auto",
+   "nivel": "critico",
+   "texto": "{nome}, o imposto do Simples da {empresa} vence AMANHÃ ({data}): R$ {valor}. Guia: {link_guia}\nPagando depois do vencimento há multa e juros. Se já pagou, responda PAGO.",
+   "respostas": [
+    "PAGO"
+   ],
+   "regra": "Prazo legal: Central de Avisos crítico, repete a cada 1 hora até VISTO."
+  },
+  {
+   "id": "empresa-opcao-simples",
+   "frente": "empresa",
+   "quando": "Prazo da opção pelo Simples: 15, 7, 3 e 1 dia antes",
+   "de": "auto",
+   "nivel": "critico",
+   "texto": "{nome}, o prazo para a opção da {empresa} pelo Simples Nacional termina em {dias} dia(s), dia {data}. Perdendo o prazo, só em janeiro e o imposto fica bem maior. O contador já está cuidando; precisamos que você conclua: {pendencia}.\nResponda OK para eu saber que você viu.",
+   "respostas": [
+    "OK"
+   ],
+   "regra": "Prazo legal duro (30 dias do último deferimento, teto 60 da abertura). Crítico a partir de D-7."
+  },
+  {
+   "id": "empresa-folha-eventos",
+   "frente": "empresa",
+   "quando": "Dia 1 do mês, empresa com folha",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, para a folha de {mes} da {empresa} me conte o que houve no mês: faltas, horas extras, atestados, férias, admissões ou saídas.\n1. Nada de diferente\n2. Houve alguma coisa\n3. Preciso de ajuda",
+   "respostas": [
+    "1",
+    "2",
+    "3"
+   ],
+   "regra": "Resposta 2 abre formulário no app (sem dado clínico: atestado só registra o período)."
+  },
+  {
+   "id": "empresa-esocial-fgts",
+   "frente": "empresa",
+   "quando": "Dias 13 e 18, empresa com folha",
+   "de": "auto",
+   "nivel": "critico",
+   "texto": "{nome}, vencimentos da folha da {empresa}: eSocial até dia 15 e FGTS Digital até dia 20 (R$ {valor}, pago por Pix). O contador conferiu a folha. Guia do FGTS: {link_guia}\nResponda OK quando ver.",
+   "respostas": [
+    "OK"
+   ],
+   "regra": "Prazo legal. Só envia depois de a folha estar APROVADA pelo contador."
+  },
+  {
+   "id": "empresa-fator-r",
+   "frente": "empresa",
+   "quando": "Fator R abaixo de 28% ou perto, no fechamento",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, uma conversa importante: a folha da {empresa} (incluindo o seu pró-labore) está em {fator} da receita dos últimos 12 meses. Abaixo de 28% o imposto passa para uma tabela mais cara. O contador quer ver com você se vale ajustar o pró-labore. Podemos marcar?\n1. Sim, esta semana\n2. Prefiro por mensagem",
+   "respostas": [
+    "1",
+    "2"
+   ],
+   "regra": "Estimativa; decisão do contador com ela."
+  },
+  {
+   "id": "empresa-limite-80",
+   "frente": "empresa",
+   "quando": "Receita dos últimos 12 meses passou de 80% do limite de ME",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, a receita da {empresa} nos últimos 12 meses chegou a {pct} do limite de microempresa (R$ 360 mil). Passando disso, o imposto muda de faixa e entra a regra de empresa de pequeno porte. O contador vai conversar com você sobre o planejamento.",
+   "respostas": [],
+   "regra": ""
+  },
+  {
+   "id": "empresa-teste-fim-d1",
+   "frente": "empresa",
+   "quando": "1 dia antes do fim do teste",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, seu teste da {empresa} termina amanhã ({data}). Se quiser seguir, é só confirmar o plano no app: {link_plano}. Se não quiser, não precisa fazer nada: encerra sem custo e você leva os seus arquivos.",
+   "respostas": [],
+   "regra": "Sem cartão; encerrar sem custo se não responder."
+  },
+  {
+   "id": "empresa-teste-fim-d0",
+   "frente": "empresa",
+   "quando": "Dia do fim do teste, se não confirmou",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, o teste da {empresa} terminou hoje. A conta fica só para consulta e você pode baixar tudo. Quando quiser voltar, é só confirmar o plano: {link_plano}. Obrigado por testar!",
+   "respostas": [],
+   "regra": "Conta em leitura; nada é apagado."
+  },
+  {
+   "id": "ponte-convite",
+   "frente": "ponte",
+   "quando": "App detecta diferença acima de R$ 300 por mês pela média de 3 meses (autônoma)",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, pela média dos seus últimos 3 meses, uma empresa no Simples Nacional pode deixar cerca de R$ {valor} a mais por mês do que atender como autônoma. É uma estimativa com os seus números; o contador confirma. Quer ver a conta?\n1. Quero ver\n2. Agora não",
+   "respostas": [
+    "1",
+    "2"
+   ],
+   "regra": "Resposta 2: não insiste por 90 dias. Sem promessa de economia."
+  },
+  {
+   "id": "ponte-passo-feito",
+   "frente": "ponte",
+   "quando": "Cada passo da abertura concluído",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, passo {n} da abertura da sua empresa concluído: {passo}. Falta(m) {faltam} passo(s). Próximo: {proximo}. Acompanhe no app: {link_abertura}",
+   "respostas": [],
+   "regra": "Só avisa com prova registrada no passo."
+  },
+  {
+   "id": "ponte-conselho",
+   "frente": "ponte",
+   "quando": "Passo de registro no conselho ou alvará pendente com o cliente",
+   "de": "auto",
+   "nivel": "atencao",
+   "texto": "{nome}, para atender como empresa você precisa do registro da empresa no {conselho} e do alvará. Esses dois passos são seus, e a gente te guia: {link_abertura}\nSem eles não dá para começar a atender pela empresa.",
+   "respostas": [],
+   "regra": "Cliente atende como PJ só com registro; roteiro de ligação no app."
+  },
+  {
+   "id": "ponte-entrega",
+   "frente": "ponte",
+   "quando": "Reunião de entrega concluída",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, a {empresa} está pronta! CNPJ ativo, nota fiscal testada e calendário ligado. Daqui para frente, todo mês: você envia o extrato e as notas até o 5º dia útil e recebe o resumo de uma página. Seu plano de autônoma segue por mais um mês para a virada ficar tranquila.",
+   "respostas": [],
+   "regra": "Sobreposição de 1 mês entre os planos."
+  },
+  {
+   "id": "saida-pedido",
+   "frente": "comum",
+   "quando": "Pessoa pede para cancelar",
+   "de": "equipe",
+   "nivel": "normal",
+   "texto": "Entendi, {nome}. Obrigado por ter ficado com a gente. Pode me dizer em uma frase o que não funcionou? Isso nos ajuda a melhorar.\nSobre o cancelamento: {regra}. Seus arquivos e documentos ficam com você.",
+   "respostas": [],
+   "regra": "{regra} vem do plano: mensal livre; anual perde só o desconto (arrependimento de 7 dias devolve tudo); empresa tem aviso de 30 dias (60 de janeiro a abril)."
+  },
+  {
+   "id": "saida-documentos",
+   "frente": "empresa",
+   "quando": "Distrato assinado",
+   "de": "auto",
+   "nivel": "normal",
+   "texto": "{nome}, o distrato da {empresa} foi assinado. Os seus livros, documentos e arquivos estão no app para baixar até {data}, e a gente também envia a cópia por e-mail. Foi uma honra cuidar da sua empresa.",
+   "respostas": [],
+   "regra": "Devolução em até 10 dias úteis, sem reter."
+  }
+ ]
+}
