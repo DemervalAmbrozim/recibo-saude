@@ -6,10 +6,10 @@
 
 // [código, nome, grupo, natureza] natureza: D = saldo normal devedor, C = credor
 const PLANO=[
-  ['1.1.1.01','Caixa','ativo','D'],['1.1.1.02','Banco conta movimento','ativo','D'],['1.1.2.01','Clientes a receber','ativo','D'],
-  ['1.1.3.01','Tributos a recuperar (salário-família e compensações)','ativo','D'],['1.1.4.01','Adiantamentos a empregados','ativo','D'],['1.2.1.01','Equipamentos e móveis','ativo','D'],['1.2.1.99','(-) Depreciação acumulada','ativo','C'],
+  ['1.1.1.01','Caixa','ativo','D'],['1.1.1.02','Banco conta movimento','ativo','D'],['1.1.1.03','Aplicações financeiras de liquidez imediata','ativo','D'],['1.1.2.01','Clientes a receber','ativo','D'],['1.1.2.02','Cartões a receber (adquirentes)','ativo','D'],
+  ['1.1.3.01','Tributos a recuperar (salário-família e compensações)','ativo','D'],['1.1.3.02','CBS a recuperar','ativo','D'],['1.1.3.03','IBS a recuperar','ativo','D'],['1.1.4.01','Adiantamentos a empregados','ativo','D'],['1.1.4.02','Adiantamentos a sócios (não é distribuição de lucros)','ativo','D'],['1.2.1.01','Equipamentos e móveis','ativo','D'],['1.2.1.99','(-) Depreciação acumulada','ativo','C'],
   ['2.1.1.01','Fornecedores','passivo','C'],['2.1.2.01','Simples Nacional a recolher','passivo','C'],['2.1.2.02','INSS a recolher','passivo','C'],['2.1.2.03','IRRF a recolher','passivo','C'],
-  ['2.1.2.04','FGTS a recolher','passivo','C'],['2.1.2.05','ISS retido a recolher','passivo','C'],['2.1.3.01','Salários a pagar','passivo','C'],['2.1.3.02','Pró-labore a pagar','passivo','C'],
+  ['2.1.2.04','FGTS a recolher','passivo','C'],['2.1.2.05','ISS retido a recolher','passivo','C'],['2.1.2.06','CBS a recolher','passivo','C'],['2.1.2.07','IBS a recolher','passivo','C'],['2.1.3.01','Salários a pagar','passivo','C'],['2.1.3.02','Pró-labore a pagar','passivo','C'],
   ['2.1.3.03','Provisão de férias','passivo','C'],['2.1.3.04','Provisão de 13º salário','passivo','C'],['2.1.3.05','Provisão de FGTS sobre férias e 13º','passivo','C'],['2.1.3.06','Pensão alimentícia a pagar (retida em folha)','passivo','C'],['2.1.3.07','Consignado a repassar (retido em folha)','passivo','C'],['2.1.3.08','Outros descontos de empregados a repassar','passivo','C'],['2.1.4.01','Lucros a distribuir','passivo','C'],
   ['2.3.1.01','Capital social','pl','C'],['2.3.2.01','Lucros ou prejuízos acumulados','pl','C'],['2.3.3.01','Lucros distribuídos','pl','D'],
   ['3.1.1.03','Venda de serviços','receita','C'],['3.1.2.01','(-) Simples Nacional sobre a receita','deducao','D'],['3.1.2.02','(-) Cancelamentos e devoluções','deducao','D'],

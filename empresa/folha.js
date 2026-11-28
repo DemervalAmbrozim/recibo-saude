@@ -57,7 +57,10 @@ function calculaFolha(emp,mov={},ano=2026){
   add(D,'104','Dias de férias (pagos no recibo de férias)',m.diasFerias+' dias',S/30*m.diasFerias,{base:true});
   const redBase=D.filter(x=>x.base).reduce((s,x)=>s+x.valor,0);
   const bruto=r2f(tributavel-redBase),baseINSS=Math.max(0,bruto),baseFGTS=baseINSS;
-  const inss=inssFolha(baseINSS,ano);
+  let inss=inssFolha(baseINSS,ano),inssOutroVinculo=null;
+  // Outro vínculo (075, pj_inss_outro_vinculo): o INSS do empregado tem teto único. O desconto aqui é o INSS sobre a soma das remunerações (com o teto) menos o que já foi descontado no outro vínculo, e nunca passa do que seria sem o outro vínculo [conferir com o S-1200: remuneração de outra empresa].
+  if(emp.outroVinculo&&+emp.outroVinculo.remuneracao>0){const ov=emp.outroVinculo,total=inssFolha(baseINSS+ +ov.remuneracao,ano),aqui=Math.max(0,r2f(total-(+ov.inss||0))),semOutro=inss;
+    inss=Math.min(semOutro,aqui);inssOutroVinculo={remuneracaoOutro:r2f(+ov.remuneracao),inssOutro:r2f(+ov.inss||0),inssTotalComTeto:total,inssSemOutroVinculo:semOutro,teto:T.teto}}
   // IRRF: o desconto simplificado (regras.js) vale se maior que INSS + dependentes; a redução da Lei 15.270 já está em carneLeao
   const ir=r2f(carneLeao(baseINSS,inss+(emp.dependentes||0)*T.depIR+(+emp.deducaoIRRFExtra||0)).devido); // deducaoIRRFExtra: pensão alimentícia judicial (dedutível do IRRF); 0 por padrão
   const vtDesc=emp.vtCusto>0?r2f(Math.min(.06*S,+emp.vtCusto)):0;
@@ -71,7 +74,7 @@ function calculaFolha(emp,mov={},ano=2026){
   const fgts=r2f(baseFGTS*fgtsAl);
   const prov=baseFGTS/12+baseFGTS/12*4/3,custo=r2f(bruto+sf+fgts+prov+fgtsAl*prov+Math.max(0,(+emp.vtCusto||0)-vtDesc));
   if(liquido<0)return {ok:false,erros:['líquido negativo: descontos maiores que os proventos; revisar os lançamentos']};
-  return {ok:true,ano,proventos:P,descontos:D,bruto,baseINSS,baseIRRF:baseINSS,baseFGTS,inss,irrf:ir,fgts,vt:vtDesc,salarioFamilia:sf,totalProventos:totP,totalDescontos:totD,liquido,valorHora:r2f(vh),custoMensal:custo,
+  return {ok:true,ano,proventos:P,descontos:D,bruto,baseINSS,baseIRRF:baseINSS,baseFGTS,inss,inssOutroVinculo,irrf:ir,fgts,vt:vtDesc,salarioFamilia:sf,totalProventos:totP,totalDescontos:totD,liquido,valorHora:r2f(vh),custoMensal:custo,
     aviso:'Estimativa: o contador responsável confere a folha antes de qualquer pagamento ou envio ao eSocial.'}}
 
 const esc2=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
