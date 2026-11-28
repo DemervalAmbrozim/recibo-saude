@@ -269,6 +269,16 @@
       calc:function(){var fer=TXT('g-f').split(/\s+/).filter(function(x){return /^\d{4}-\d{2}-\d{2}$/.test(x)});
         var r=F().dataDePagamento(TXT('g-c'),{pagamentoRegra:TXT('g-r'),diaFixoPagamento:NUM('g-d'),sabadoDiaUtil:CHK('g-sab'),antecipaNaoUtil:CHK('g-ant')},fer);
         if(!r.ok)return ERROS(r.erros);return '<p>Pagar até <span class="big">'+DT(r.data)+'</span></p>'+(r.limiteLegal?'<p class="sub">Prazo legal: '+DT(r.limiteLegal)+'.</p>':'')+AVISOS(r.alertas)}},
+    custo:{nome:'Custo total do empregado e previsão de 12 meses (simula contratação e reajuste)',campos:[
+      ['u-s','Salário (R$)','3.000','n'],['u-dep','Dependentes','0','n'],['u-vt','Custo do vale-transporte (R$/mês)','0','n'],['u-ben','Outros benefícios pagos pela empresa (R$/mês)','0','n'],
+      ['u-an','Anexo do Simples da empresa','III','s',[['III','Anexo III (a contribuição patronal já está no DAS)'],['V','Anexo V (a contribuição patronal já está no DAS)'],['IV','Anexo IV (paga a contribuição patronal de 20% fora do DAS)']]],
+      ['u-rj','Reajuste de salário (%)','0','n'],['u-mj','A partir de qual mês (1 a 12)','7','n']],
+      calc:function(){var X=F(),S=NUM('u-s'),dep=NUM('u-dep'),vt=NUM('u-vt'),ben=NUM('u-ben'),an=TXT('u-an'),rj=NUM('u-rj')/100,mj=Math.max(1,Math.min(12,Math.floor(NUM('u-mj')||7))),rows=[],tot={bruto:0,fgts:0,custo:0,liq:0},er=[];
+        for(var m=1;m<=12;m++){var sal=Math.round(S*(m>=mj?1+rj:1)*100)/100,r=X.calculaFolha({salario:sal,dependentes:dep,vtCusto:vt},{});if(!r.ok){er=r.erros;break}
+          var cpp=an==='IV'?Math.round(sal*0.2*100)/100:0,custo=Math.round((r.custoMensal+cpp+ben)*100)/100;rows.push([String(m),BR(sal),BR(r.liquido),BR(r.fgts),BR(cpp),BR(custo)]);tot.bruto+=sal;tot.fgts+=r.fgts;tot.liq+=r.liquido;tot.custo+=custo}
+        if(er.length)return ERROS(er);
+        return TAB(['Mês','Salário','Líquido do empregado','FGTS','Contribuição patronal fora do DAS','Custo total para a empresa'],rows,[0,1,1,1,1,1])+'<p><b>Em 12 meses:</b> salários '+BR(tot.bruto)+' · custo total '+BR(tot.custo)+' · custo por mês, em média '+BR(tot.custo/12)+' ('+(tot.bruto?Math.round(tot.custo/tot.bruto*100):0)+'% sobre o salário).</p>'
+          +AVISOS(['O custo mensal já traz o 13º e as férias com 1/3 provisionados e o FGTS sobre eles. Não inclui rescisão, exames e uniforme. É simulação: nada é gravado. [CONFERIR COM O CONTADOR]'])}},
     ficha:{nome:'Ficha financeira e informe do empregado',campos:[
       ['h-s','Salário (R$)','3.000','n'],['h-ano','Ano','2026','n'],['h-m','Meses trabalhados','12','n'],['h-he','Horas extras por mês','5','n'],['h-d13','Incluir 13º','1','c'],['h-fer','Mês das férias (1 a 12, 0 = nenhum)','7','n']],
       calc:function(){var X=F(),ano=NUM('h-ano')||2026,n=Math.max(1,Math.min(12,Math.floor(NUM('h-m')))),it=[],S=NUM('h-s'),pad=function(i){return ano+'-'+(i<10?'0':'')+i};

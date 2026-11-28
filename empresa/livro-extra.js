@@ -82,4 +82,26 @@ A.registra('pessoas','Pessoas',async function(){var c=L(),$=c.$,esc=c.esc,R=c.R,
     $('io-ok').onclick=function(){c.ok(async function(){await c.DB.salvarInssOutroVinculo(c.EMP,id,{competencia:$('io-mes').value,remuneracao:N('io-rem'),inss:N('io-inss')});c.aviso('Registrado.');detalhe()})}}
   if($('d-emp')){$('d-emp').onchange=detalhe;detalhe()}
 });
+
+// ===== Contas a pagar (despesa reconhecida na competência, baixada no pagamento) e fluxo projetado
+A.registra('pagar','Contas a pagar',async function(){var c=L(),$=c.$,esc=c.esc,R=c.R,N=c.N,cp=await c.tenta(function(){return c.DB.contasAPagar(c.EMP)},[]),pl=await c.tenta(function(){return c.DB.planoDaEmpresa(c.EMP)},[]),
+  desp=pl.filter(function(x){return x.grupo==='despesa'&&x.ativa&&!pl.some(function(f){return f.codigo.indexOf(x.codigo+'.')===0})}),
+  bancos=pl.filter(function(x){return /^1\.1\.1\./.test(x.codigo)&&x.ativa&&!pl.some(function(f){return f.codigo.indexOf(x.codigo+'.')===0})}),
+  hj=c.hoje(),fl=await c.tenta(function(){return c.DB.fluxoProjetado(c.EMP,hj.slice(0,4)+'-01-01',(+hj.slice(0,4)+1)+'-12-31')},[]);
+  $('tela').innerHTML='<h2>Contas a pagar</h2><p class="sub">A despesa entra no resultado na competência (data do fato). O dinheiro só sai do caixa no pagamento. Os dois nunca se somam.</p>'
+   +'<div class="grid"><label>Fornecedor<input id="p-forn" maxlength="80"></label><label>Documento (opcional)<input id="p-doc" maxlength="40"></label><label>Vencimento<input type="date" id="p-venc"></label><label>Competência (data do fato)<input type="date" id="p-comp"></label><label>Valor (R$)<input id="p-val" inputmode="numeric"></label><label>Conta de despesa<select id="p-conta">'+c.opt(desp,'codigo','nome')+'</select></label></div><p style="margin-top:8px"><button class="bt pri" id="p-ok">Lançar a conta a pagar</button></p>'
+   +'<h3 style="margin-top:14px">Em aberto e pagas</h3>'+c.tabela(['Fornecedor','Vencimento','Valor','Situação',''],cp.map(function(x){return [esc(x.fornecedor+(x.documento?' · '+x.documento:'')),esc(String(x.vencimento).slice(0,10)),R(x.valor),x.status==='paga'?'paga em '+esc(String(x.data_pagamento).slice(0,10)):(String(x.vencimento).slice(0,10)<hj?'<b style="color:var(--bad,#a00)">atrasada</b>':'aberta'),x.status==='aberta'?'<input type="date" data-d="'+esc(x.id)+'" value="'+hj+'"> <button class="bt" data-p="'+esc(x.id)+'">Pagar</button>':'']}),[2])
+   +(bancos.length?'<p class="sub" style="margin-top:6px">Conta do banco para o pagamento: <select id="p-banco">'+c.opt(bancos,'codigo','nome')+'</select></p>':'')
+   +'<h3 style="margin-top:14px">Fluxo projetado (saídas previstas por mês de vencimento)</h3>'+c.tabela(['Mês','Saídas previstas','Contas','Já atrasadas'],fl.map(function(x){return [esc(String(x.mes).slice(0,7)),R(x.saidas_previstas),esc(x.qtd),R(x.atrasadas)]}),[1,3]);
+  $('p-ok').onclick=function(){c.ok(async function(){await c.DB.lancarContaPagar(c.EMP,{fornecedor:$('p-forn').value,documento:$('p-doc').value,vencimento:$('p-venc').value,competencia:$('p-comp').value,valor:N('p-val'),contaDespesa:$('p-conta').value});c.aviso('Conta a pagar lançada.');c.desenha()})};
+  $('tela').querySelectorAll('button[data-p]').forEach(function(b){b.onclick=function(){c.ok(async function(){var id=b.getAttribute('data-p'),d=$('tela').querySelector('input[data-d="'+id+'"]').value;await c.DB.pagarConta(c.EMP,id,d,$('p-banco').value);c.aviso('Pagamento lançado na data de caixa '+d+'.');c.desenha()})}});
+});
+
+// ===== Rastro: de um lançamento até a nota, o recebimento, a conciliação, o extrato e o selo do mês
+A.registra('rastro','Rastro',async function(){var c=L(),$=c.$,esc=c.esc,R=c.R,lc=await c.tenta(function(){return c.DB.lancamentos(c.EMP,c.hoje().slice(0,4)+'-01-01',c.hoje())},[]);
+  $('tela').innerHTML='<h2>Rastro do lançamento</h2><p class="sub">Escolha um lançamento e veja de onde ele veio: nota, recebimento, conciliação, extrato do banco e o selo do mês fechado.</p>'
+   +(lc.length?'<label>Lançamento<select id="t-lc">'+lc.map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.exercicio+'/'+x.numero+' · '+String(x.data).slice(0,10)+' · '+String(x.historico).slice(0,50))+'</option>'}).join('')+'</select></label><div id="t-out" style="margin-top:10px"></div>':'<p class="msg">Nenhum lançamento neste ano.</p>');
+  async function mostra(){var r=await c.DB.rastroLancamento(c.EMP,+$('t-lc').value);$('t-out').innerHTML=c.tabela(['Origem','Referência','Detalhe','Data','Valor'],r.map(function(x){return [esc(x.tipo),esc(x.referencia),esc(x.detalhe),esc(String(x.data||'').slice(0,10)),x.valor==null?'':R(x.valor)]}),[4])}
+  if($('t-lc')){$('t-lc').onchange=function(){c.ok(mostra)};c.ok(mostra)}
+});
 })();

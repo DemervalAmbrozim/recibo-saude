@@ -118,16 +118,23 @@ function alertas(r){const L=[],add=(nivel,txt)=>L.push({nivel,txt});
 function fatorRMovel(hist,{atraso=0,ano}={}){const out=[];for(let i=11+atraso;i<hist.length;i++){const j=hist.slice(i-11-atraso,i+1-atraso),r=j.reduce((s,x)=>s+x.receita,0),f=j.reduce((s,x)=>s+x.folha,0);
   out.push({mes:hist[i].mes,...anexoSaude(r,f,ano)})}return out}
 
-// Fator "r" em início de atividade (lido em 28/11/2026 na Res. CGSN 140, art. 26 § 6º, texto vigente, e na 190/2026).
-// Até 2026: no MÊS DE INÍCIO, folha do mês (FSPA) > 0 e receita do mês (RPAr) = 0 -> 0,28; FSPA = 0 e RPAr > 0 -> 0,01; os dois > 0 -> FSPA / RPAr. Depois do mês de início, regra normal (12 meses).
-// De 2027 em diante (Res. 190, art. 26 § 6º): nos 2 primeiros meses de atividade o fator r é 0,28. O § 7º (depois do 2º mês) só tem o caput no texto lido: usa a regra normal e avisa. [CONFERIR COM O CONTADOR]
-function fatorRInicio(fspa,rpar,mesDeAtividade,ano){const m=Math.floor(mesDeAtividade);
+// Fator "r" em início de atividade (lido em 28/11/2026 na Res. CGSN 140, art. 26 §§ 6º e 7º, texto vigente, e na 190/2026 que só troca o começo do § 7º).
+// § 6º (2026): no MÊS DE INÍCIO, FSPA = folha do mês e RPAr = receita do mês. FSPA>0 e RPAr=0 -> 0,28; FSPA=0 e RPAr>0 -> 0,01; os dois >0 -> FSPA/RPAr.
+// § 7º (depois do mês de início; de 2027, depois do 2º mês): FS12 = folha dos 12 meses e RBT12r = receita dos 12 meses (anualizadas pelo art. 22 quando há menos de 14 meses, § 4º):
+//   I FS12=0 e RBT12r=0 -> 0,01; II FS12>0 e RBT12r=0 -> 0,28; III os dois >0 -> FS12/RBT12r; IV FS12=0 e RBT12r>0 -> 0,01.
+// De 2027 (Res. 190, § 6º): nos 2 primeiros meses de atividade o fator r é 0,28. [CONFERIR COM O CONTADOR]
+function fatorRInicio(fspa,rpar,mesDeAtividade,ano,fs12,rbt12r){const m=Math.floor(mesDeAtividade),r6=x=>Math.round(x*1e6)/1e6;
   if(!(m>=1))return {ok:false,erros:['informe o mês de atividade (1 = mês de início)']};
-  if(ano>=2027){if(m<=2)return {ok:true,fator:0.28,regra:'0,28 nos 2 primeiros meses (Res. 190/2026, art. 26 § 6º)'};return {ok:true,fator:null,regra:'depois do 2º mês: regra do § 7º (texto não lido por inteiro); use a regra normal e confira com o contador'}}
-  if(m>1)return {ok:true,fator:null,regra:'depois do mês de início: regra normal de 12 meses'};
-  if(fspa>0&&rpar===0)return {ok:true,fator:0.28,regra:'folha > 0 e receita = 0 no mês de início: 0,28'};
-  if(fspa===0&&rpar>0)return {ok:true,fator:0.01,regra:'folha = 0 e receita > 0 no mês de início: 0,01'};
-  if(fspa>0&&rpar>0)return {ok:true,fator:Math.round(fspa/rpar*1e6)/1e6,regra:'folha e receita > 0 no mês de início: folha / receita do mês'};
-  return {ok:true,fator:null,regra:'folha e receita zeradas: sem fator r no mês'}}
+  if(ano>=2027&&m<=2)return {ok:true,fator:0.28,regra:'0,28 nos 2 primeiros meses (Res. 190/2026, art. 26 § 6º)'};
+  if(ano<2027&&m===1){
+    if(fspa>0&&rpar===0)return {ok:true,fator:0.28,regra:'§ 6º, I: folha > 0 e receita = 0 no mês de início'};
+    if(fspa===0&&rpar>0)return {ok:true,fator:0.01,regra:'§ 6º, II: folha = 0 e receita > 0 no mês de início'};
+    if(fspa>0&&rpar>0)return {ok:true,fator:r6(fspa/rpar),regra:'§ 6º, III: folha / receita do mês de início'};
+    return {ok:true,fator:null,regra:'folha e receita zeradas no mês de início: sem fator r'}}
+  if(!(fs12>=0)||!(rbt12r>=0))return {ok:false,erros:['informe a folha e a receita dos 12 meses (FS12 e RBT12r); com menos de 14 meses de atividade, anualizadas pelo art. 22']};
+  if(fs12===0&&rbt12r===0)return {ok:true,fator:0.01,regra:'§ 7º, I: FS12 e RBT12r iguais a zero'};
+  if(fs12>0&&rbt12r===0)return {ok:true,fator:0.28,regra:'§ 7º, II: FS12 > 0 e RBT12r = 0'};
+  if(fs12===0)return {ok:true,fator:0.01,regra:'§ 7º, IV: FS12 = 0 e RBT12r > 0'};
+  return {ok:true,fator:r6(fs12/rbt12r),regra:'§ 7º, III: FS12 / RBT12r'}}
 
 if(typeof module!=='undefined')module.exports={fatorRInicio,anexoSaude,inssEmpregado,holerite,simulaPJ,prazoOpcaoSimples,custosAbertura,PASSOS,proximosPassos,calendario,alertas,fatorRMovel};

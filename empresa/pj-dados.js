@@ -2,6 +2,12 @@
 // Regra: nada de dado clínico de paciente. Erros do banco viram frases em português. RLS e permissões moram no banco; aqui só chamamos.
 // Rascunho: o SQL 048 só existe no PC até o "pode publicar" da frente Empresa; sem ele, o banco real responde "função não existe" e a tela mostra o aviso certo.
 const ERROS_PJ_EXTRA={
+ 'o vencimento nao pode ser antes da competencia':'O vencimento não pode ser antes da competência.',
+ 'o pagamento nao pode ser antes da competencia':'O pagamento não pode ser antes da competência da despesa.',
+ 'conta a pagar nao encontrada':'Conta a pagar não encontrada nesta empresa.',
+ 'conta a pagar ja paga':'Essa conta já foi paga.',
+ 'conta a pagar nao se apaga':'Conta a pagar não se apaga: estorne o lançamento.',
+ 'conta a pagar so muda':'A conta a pagar só muda ao ser paga, uma vez.',
  'so o contador registra nota fiscal':'Só o contador registra nota fiscal.',
  'informe ao menos um item da nota':'Informe ao menos um item da nota.',
  'nota ja registrada':'Essa nota já está registrada nesta empresa.',
@@ -225,6 +231,11 @@ function criaDados(sb){
     async novoSalario(emp,empregado,s){return ck(await sb.from('pj_salario_historico').insert({empresa_id:emp,empregado_id:empregado,vigencia_inicio:s.vigencia,valor:+s.valor,motivo:s.motivo||'reajuste'}))},
     // ===== 078: notas fiscais, recebimentos, regime do Simples, base segregada e apuração gravada
     async notas(emp,de,ate){return ck(await sb.from('pj_documento_fiscal').select('id,chave_acesso,tipo_operacao,incide_simples,serie,numero,data_emissao,data_competencia,status,valor_total,tomador_tipo,lancamento_id').eq('empresa_id',emp).gte('data_emissao',de).lte('data_emissao',ate).order('data_emissao',{ascending:false}))||[]},
+    async rastroLancamento(emp,id){return ck(await sb.rpc('pj_rastro_lancamento',{emp,p_lancamento:id}))||[]},
+    async lancarContaPagar(emp,c){return ck(await sb.rpc('pj_lancar_conta_pagar',{emp,p_fornecedor:c.fornecedor,p_documento:c.documento||null,p_vencimento:c.vencimento,p_competencia:c.competencia,p_valor:+c.valor,p_conta_despesa:c.contaDespesa}))},
+    async pagarConta(emp,id,data,contaBanco){return ck(await sb.rpc('pj_pagar_conta',{emp,p_id:id,p_data_pagamento:data,p_conta_banco:contaBanco}))},
+    async contasAPagar(emp){return ck(await sb.from('pj_conta_pagar').select('id,fornecedor,documento,vencimento,competencia,valor,conta_despesa,status,data_pagamento').eq('empresa_id',emp).order('vencimento'))||[]},
+    async fluxoProjetado(emp,de,ate){return ck(await sb.rpc('pj_fluxo_projetado',{emp,p_de:de,p_ate:ate}))||[]},
     async registrarNota(emp,nota,itens){return ck(await sb.rpc('pj_registrar_nota',{emp,p_nota:nota,p_itens:itens}))},
     async cancelarNota(emp,documento,motivo){await ck(await sb.rpc('pj_cancelar_documento',{emp,p_documento:documento,p_motivo:String(motivo||'')}));return true},
     async definirRegimeSimples(emp,ano,regime){await ck(await sb.rpc('pj_definir_regime_simples',{emp,p_ano:+ano,p_regime:regime}));return true},
