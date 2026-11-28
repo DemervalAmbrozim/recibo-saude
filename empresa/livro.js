@@ -2,6 +2,7 @@
 // DRE é por COMPETÊNCIA; fluxo de caixa é por data de CAIXA; ficam lado a lado e nunca se somam.
 (function(){
 var $=function(i){return document.getElementById(i)},DB=null,EMP=null,aba='lancar';
+var EXTRAS={};
 var ABAS=[['lancar','Lançar'],['livro','Livro'],['meses','Meses'],['rel','Relatórios'],['plano','Plano de contas'],['extrato','Extrato do banco'],['conciliar','Conciliar'],['lucros','Lucros e ano'],['auditor','Conferir o livro']];
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
 var R=function(n){return window.Mascaras?window.Mascaras.reais(+n||0):String(n)};   // reais com 2 casas
@@ -70,10 +71,11 @@ async function telaAuditor(){var r=await DB.auditarLivro(EMP)||[],fo=await tenta
   $('tela').innerHTML='<h2>Conferência do livro</h2><p class="sub">Regras que o banco confere sozinho. Tudo em zero = livro íntegro.</p>'+tabela(['Regra','Ocorrências','Exemplo'],todas.map(function(x){return [esc(x.regra),'<b'+(+x.qtd?' style="color:var(--bad)"':'')+'>'+esc(x.qtd)+'</b>',esc(x.exemplo||'')]}),[1])+'<p class="msg" style="margin-top:8px">'+(limpo?'Nada de errado encontrado.':'Há ocorrências: leve ao contador responsável.')+'</p>'
    +(ck.length?'<h3 style="margin-top:14px">Checklist de fechamento de '+esc(mes)+'</h3><p class="sub">Itens que bloqueiam o fechamento do mês precisam estar em ordem.</p>'+tabela(['Item','Bloqueia','Situação','Detalhe'],ck.map(function(x){return [esc(x.item),x.bloqueia?'sim':'aviso',x.ok?'ok':'<b style="color:var(--bad)">pendente</b>',esc(x.detalhe||'')]})):'')
    +(an.length?'<h3 style="margin-top:14px">Para olhar com atenção (anomalias do ano)</h3><p class="sub">Nada é bloqueado: é uma lista para o contador conferir.</p>'+tabela(['Tipo','Referência','Detalhe'],an.map(function(x){return [esc(x.tipo),esc(x.referencia),esc(x.detalhe)]})):'')}
-async function desenha(){if(!EMP)return;var f={lancar:telaLancar,livro:telaLivro,meses:telaMeses,rel:telaRel,plano:telaPlano,extrato:telaExtrato,conciliar:telaConciliar,lucros:telaLucros,auditor:telaAuditor}[aba];$('tela').innerHTML='<p class="sub">Carregando…</p>';await ok(f,true)}
+async function desenha(){if(!EMP)return;var f=EXTRAS[aba]||{lancar:telaLancar,livro:telaLivro,meses:telaMeses,rel:telaRel,plano:telaPlano,extrato:telaExtrato,conciliar:telaConciliar,lucros:telaLucros,auditor:telaAuditor}[aba];$('tela').innerHTML='<p class="sub">Carregando…</p>';await ok(f,true)}
 function carrega(){return new Promise(function(res){if(window.__SB_MOCK||typeof supabase!=='undefined')return res();var s=document.createElement('script'),t=setTimeout(res,5000);s.integrity='sha384-rwykjmWNwVxboyFmvK9OXN0wj9hnMHA2aAHtits54DuACyCq0M2PrSNxhRb+hvXT';s.crossOrigin='anonymous';s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';s.onload=function(){clearTimeout(t);res()};s.onerror=function(){clearTimeout(t);res()};document.head.appendChild(s)})}
 async function init(){await carrega();var sb=window.__SB_MOCK||(typeof supabase!=='undefined'&&typeof CONFIG!=='undefined'?supabase.createClient(CONFIG.url,CONFIG.chave):null);if(!sb){$('st').textContent='Não consegui ligar ao servidor.';return}
   DB=criaDados(sb);var es=await ok(function(){return DB.empresas()})||[];if(!es.length){$('st').textContent='Entre na sua conta pelo app e volte aqui. Nenhuma empresa encontrada.';return}
   $('emp').innerHTML=es.map(function(e){return '<option value="'+esc(e.id)+'">'+esc(e.razao_social||e.id)+'</option>'}).join('');$('emp').onchange=function(){EMP=$('emp').value;desenha()};EMP=$('emp').value;$('st').textContent=es.length+' empresa(s).';abas();desenha()}
 document.addEventListener('DOMContentLoaded',init);
+window.LivroApi={registra:function(k,rot,fn){ABAS.push([k,rot]);EXTRAS[k]=fn},ctx:function(){return {DB:DB,EMP:EMP,$:$,esc:esc,R:R,N:N,tabela:tabela,aviso:aviso,ok:ok,desenha:desenha,hoje:hoje,tenta:tenta,opt:opt}}};
 })();
