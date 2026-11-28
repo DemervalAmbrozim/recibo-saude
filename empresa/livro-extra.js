@@ -12,12 +12,21 @@ A.registra('notas','Notas',async function(){var c=L(),$=c.$,esc=c.esc,R=c.R,lida
   $('tela').innerHTML='<h2>Notas fiscais</h2><p class="sub">Importe o XML da NFS-e Nacional (um ou vários arquivos). O nome do tomador não é lido nem guardado. O anexo do Simples não vem no XML: escolha abaixo. Só o contador registra.</p>'
    +'<div class="grid"><label>Arquivos XML<input type="file" id="n-arq" accept=".xml,text/xml,application/xml" multiple></label><label>Anexo do Simples<select id="n-anexo"><option value="III">III (saúde, Fator R de 28% ou mais)</option><option value="V">V (saúde, Fator R abaixo de 28%)</option><option value="I">I</option><option value="II">II</option><option value="IV">IV</option></select></label></div>'
    +'<p style="margin-top:8px"><label><input type="checkbox" id="n-fr" checked> Receita sujeita ao Fator R</label></p><div id="n-prev" style="margin-top:10px"></div><p style="margin-top:10px"><button class="bt pri" id="n-reg" disabled>Registrar as notas lidas</button></p>'
+   +'<h3 style="margin-top:14px">Cancelamento por evento</h3><p class="sub">Importe o XML do evento de cancelamento da NFS-e (leiaute oficial de eventos). A nota é achada pela chave de acesso; o banco estorna o lançamento. Nota com recebimento não cancela: estorne o recebimento antes.</p><div class="grid"><label>XML do evento<input type="file" id="v-arq" accept=".xml,text/xml,application/xml"></label></div><div id="v-prev" style="margin-top:8px"></div><p style="margin-top:8px"><button class="bt" id="v-ok" disabled>Cancelar a nota pelo evento</button></p>'
    +'<h3 style="margin-top:14px">Notas de '+esc(ano)+'</h3>'+c.tabela(['Número','Emissão','Competência','Situação','Valor'],nt.map(function(n){return [esc(n.serie+'/'+n.numero),esc(String(n.data_emissao).slice(0,10)),esc(String(n.data_competencia).slice(0,10)),esc(n.status),R(n.valor_total)]}),[4]);
   $('n-arq').onchange=async function(){lidas=[];var fs=Array.prototype.slice.call($('n-arq').files||[]),h='';
     for(var i=0;i<fs.length;i++){var t=await fs[i].text(),r=window.NfseXml.lerNFSe(t);lidas.push(r);
       h+='<tr><td>'+esc(fs[i].name)+'</td><td>'+(r.ok?esc(r.nota.serie+'/'+r.nota.numero):'—')+'</td><td>'+(r.ok?esc(r.nota.data_emissao):'')+'</td><td class="n">'+(r.ok?R(r.nota.valor_total):'')+'</td><td>'+(r.ok?BADGE(true,'lida')+(r.alertas.length?' · '+esc(r.alertas.join('; ')):''):BADGE(false,esc(r.erros.join('; '))))+'</td></tr>'}
     $('n-prev').innerHTML=fs.length?'<div class="tw"><table><thead><tr><th>Arquivo</th><th>Nota</th><th>Emissão</th><th class="n">Valor</th><th>Situação</th></tr></thead><tbody>'+h+'</tbody></table></div>':'';
     $('n-reg').disabled=!lidas.some(function(r){return r.ok})};
+  var evt=null,alvo=null;
+  $('v-arq').onchange=async function(){evt=null;alvo=null;$('v-ok').disabled=true;var f=$('v-arq').files[0];if(!f){$('v-prev').innerHTML='';return}
+    var r=window.NfseXml.lerEventoCancelamento(await f.text());
+    if(!r.ok){$('v-prev').innerHTML='<p class="msg">'+esc(r.erros.join('; '))+'</p>';return}
+    alvo=nt.filter(function(n){return n.chave_acesso===r.chave})[0]||null;evt=r;
+    $('v-prev').innerHTML='<p class="msg">'+esc(r.motivo)+'. '+(alvo?'Nota '+esc(alvo.serie+'/'+alvo.numero)+' ('+R(alvo.valor_total)+', '+esc(alvo.status)+').':'Nenhuma nota desta empresa tem essa chave: registre a nota primeiro.')+(r.alerta?' '+esc(r.alerta)+'.':'')+'</p>';
+    $('v-ok').disabled=!(r.cancela&&alvo&&alvo.status==='autorizada')};
+  $('v-ok').onclick=function(){c.ok(async function(){await c.DB.cancelarNota(c.EMP,alvo.id,'Cancelamento da NFS-e por evento oficial: '+evt.motivo);c.aviso('Nota cancelada e lançamento estornado.');c.desenha()})};
   $('n-reg').onclick=function(){c.ok(async function(){var ok=0,rep=0,err=[];
     for(var i=0;i<lidas.length;i++){if(!lidas[i].ok)continue;var reg=window.NfseXml.paraRegistro(lidas[i],{anexo:$('n-anexo').value,sujeitoFatorR:$('n-fr').checked});
       try{await c.DB.registrarNota(c.EMP,reg.nota,reg.itens);ok++}catch(e){var m=window.traduzErroPj?window.traduzErroPj(e):String(e.message||e);if(/já está registrada/.test(m))rep++;else err.push(m)}}

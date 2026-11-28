@@ -118,4 +118,16 @@ function alertas(r){const L=[],add=(nivel,txt)=>L.push({nivel,txt});
 function fatorRMovel(hist,{atraso=0,ano}={}){const out=[];for(let i=11+atraso;i<hist.length;i++){const j=hist.slice(i-11-atraso,i+1-atraso),r=j.reduce((s,x)=>s+x.receita,0),f=j.reduce((s,x)=>s+x.folha,0);
   out.push({mes:hist[i].mes,...anexoSaude(r,f,ano)})}return out}
 
-if(typeof module!=='undefined')module.exports={anexoSaude,inssEmpregado,holerite,simulaPJ,prazoOpcaoSimples,custosAbertura,PASSOS,proximosPassos,calendario,alertas,fatorRMovel};
+// Fator "r" em início de atividade (lido em 28/11/2026 na Res. CGSN 140, art. 26 § 6º, texto vigente, e na 190/2026).
+// Até 2026: no MÊS DE INÍCIO, folha do mês (FSPA) > 0 e receita do mês (RPAr) = 0 -> 0,28; FSPA = 0 e RPAr > 0 -> 0,01; os dois > 0 -> FSPA / RPAr. Depois do mês de início, regra normal (12 meses).
+// De 2027 em diante (Res. 190, art. 26 § 6º): nos 2 primeiros meses de atividade o fator r é 0,28. O § 7º (depois do 2º mês) só tem o caput no texto lido: usa a regra normal e avisa. [CONFERIR COM O CONTADOR]
+function fatorRInicio(fspa,rpar,mesDeAtividade,ano){const m=Math.floor(mesDeAtividade);
+  if(!(m>=1))return {ok:false,erros:['informe o mês de atividade (1 = mês de início)']};
+  if(ano>=2027){if(m<=2)return {ok:true,fator:0.28,regra:'0,28 nos 2 primeiros meses (Res. 190/2026, art. 26 § 6º)'};return {ok:true,fator:null,regra:'depois do 2º mês: regra do § 7º (texto não lido por inteiro); use a regra normal e confira com o contador'}}
+  if(m>1)return {ok:true,fator:null,regra:'depois do mês de início: regra normal de 12 meses'};
+  if(fspa>0&&rpar===0)return {ok:true,fator:0.28,regra:'folha > 0 e receita = 0 no mês de início: 0,28'};
+  if(fspa===0&&rpar>0)return {ok:true,fator:0.01,regra:'folha = 0 e receita > 0 no mês de início: 0,01'};
+  if(fspa>0&&rpar>0)return {ok:true,fator:Math.round(fspa/rpar*1e6)/1e6,regra:'folha e receita > 0 no mês de início: folha / receita do mês'};
+  return {ok:true,fator:null,regra:'folha e receita zeradas: sem fator r no mês'}}
+
+if(typeof module!=='undefined')module.exports={fatorRInicio,anexoSaude,inssEmpregado,holerite,simulaPJ,prazoOpcaoSimples,custosAbertura,PASSOS,proximosPassos,calendario,alertas,fatorRMovel};

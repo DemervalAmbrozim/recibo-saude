@@ -224,7 +224,7 @@ function criaDados(sb){
     async historicoSalario(emp,empregado){return ck(await sb.from('pj_salario_historico').select('vigencia_inicio,valor,motivo').eq('empresa_id',emp).eq('empregado_id',empregado).order('vigencia_inicio',{ascending:false}))||[]},
     async novoSalario(emp,empregado,s){return ck(await sb.from('pj_salario_historico').insert({empresa_id:emp,empregado_id:empregado,vigencia_inicio:s.vigencia,valor:+s.valor,motivo:s.motivo||'reajuste'}))},
     // ===== 078: notas fiscais, recebimentos, regime do Simples, base segregada e apuração gravada
-    async notas(emp,de,ate){return ck(await sb.from('pj_documento_fiscal').select('id,tipo_operacao,incide_simples,serie,numero,data_emissao,data_competencia,status,valor_total,tomador_tipo,lancamento_id').eq('empresa_id',emp).gte('data_emissao',de).lte('data_emissao',ate).order('data_emissao',{ascending:false}))||[]},
+    async notas(emp,de,ate){return ck(await sb.from('pj_documento_fiscal').select('id,chave_acesso,tipo_operacao,incide_simples,serie,numero,data_emissao,data_competencia,status,valor_total,tomador_tipo,lancamento_id').eq('empresa_id',emp).gte('data_emissao',de).lte('data_emissao',ate).order('data_emissao',{ascending:false}))||[]},
     async registrarNota(emp,nota,itens){return ck(await sb.rpc('pj_registrar_nota',{emp,p_nota:nota,p_itens:itens}))},
     async cancelarNota(emp,documento,motivo){await ck(await sb.rpc('pj_cancelar_documento',{emp,p_documento:documento,p_motivo:String(motivo||'')}));return true},
     async definirRegimeSimples(emp,ano,regime){await ck(await sb.rpc('pj_definir_regime_simples',{emp,p_ano:+ano,p_regime:regime}));return true},

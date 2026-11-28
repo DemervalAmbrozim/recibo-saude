@@ -58,6 +58,23 @@
     var o=opcoes||{};if(['I','II','III','IV','V'].indexOf(o.anexo)<0)return {ok:false,erros:['informe o anexo do Simples desta nota (III ou V para saúde, conforme o Fator R)']};
     return {ok:true,nota:lida.nota,itens:[{anexo:o.anexo,sujeito_fator_r:!!o.sujeitoFatorR,iss_retido:!!lida.issRetido,iss_fixo:!!o.issFixo,valor:lida.nota.valor_total}]};
   }
-  var api={lerNFSe:lerNFSe,paraRegistro:paraRegistro,parse:parse};
+  // Evento de cancelamento da NFS-e (leiaute oficial Anexo II SEFIN/ADN PEDREGEVT/EVT v1.01 de 22/01/2026). Procura os campos pelo nome, porque a planilha oficial mostra o grupo
+  // pedRegEvento ora dentro, ora ao lado de infEvento. Cancelam: e101101 (cancelamento), e105102 (por substituição), e105104 (deferido por análise fiscal), e305101 (por ofício).
+  // NÃO cancelam: e101103 (só solicita a análise) e e105105 (análise indeferida).
+  var CANCELA={e101101:'Cancelamento de NFS-e',e105102:'Cancelamento de NFS-e por substituição',e105104:'Cancelamento deferido por análise fiscal',e305101:'Cancelamento por ofício'},NAO={e101103:'Solicitação de análise fiscal para cancelamento',e105105:'Cancelamento indeferido por análise fiscal'};
+  var MOTIVO={'1':'Erro na emissão','2':'Serviço não prestado','9':'Outros'};
+  function acha(no,nome){if(!no)return null;if(no.nome===nome)return no;for(var i=0;i<no.filhos.length;i++){var r=acha(no.filhos[i],nome);if(r)return r}return null}
+  function lerEventoCancelamento(xml){
+    var p=parse(xml);if(p.erro)return {ok:false,erros:[p.erro]};
+    var ev=p.raiz;if(!ev||ev.nome!=='evento')return {ok:false,erros:['não é um evento da NFS-e (raiz evento não encontrada)']};
+    var ch=(acha(ev,'chNFSe')||{texto:''}).texto.trim();if(!/^\d{50}$/.test(ch))return {ok:false,erros:['chave da NFS-e (chNFSe) ausente ou fora do padrão de 50 dígitos']};
+    var cod=Object.keys(CANCELA).concat(Object.keys(NAO)).filter(function(k){return acha(ev,k)})[0];
+    if(!cod)return {ok:false,erros:['tipo de evento não reconhecido (esperado um evento de cancelamento da NFS-e)']};
+    var g=acha(ev,cod),tx=function(n){var x=acha(g,n);return x?x.texto.trim():''},dh=(acha(ev,'dhEvento')||acha(ev,'dhProc')||{texto:''}).texto.trim().slice(0,10);
+    var cancela=!!CANCELA[cod],cm=tx('cMotivo'),xm=tx('xMotivo');
+    var motivo=(CANCELA[cod]||NAO[cod])+(cm&&MOTIVO[cm]?' (motivo '+cm+': '+MOTIVO[cm]+')':'')+(xm?': '+xm:'')+(tx('nProcAdm')?' (processo '+tx('nProcAdm')+')':'');
+    return {ok:true,cancela:cancela,tipoEvento:cod.slice(1),chave:ch,data:/^\d{4}-\d{2}-\d{2}$/.test(dh)?dh:null,motivo:motivo.length<10?motivo+' (evento da NFS-e)':motivo,alerta:cancela?null:'este evento não cancela a nota'};
+  }
+  var api={lerNFSe:lerNFSe,paraRegistro:paraRegistro,lerEventoCancelamento:lerEventoCancelamento,parse:parse};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else g.NfseXml=api;
 })(typeof window!=='undefined'?window:globalThis);
