@@ -1,7 +1,7 @@
 // Prévia do evento S-1200 (remuneração do trabalhador no RGPS) de empregado CLT, conforme o LEIAUTE S-1.3 (NT 07/2026) lido em 27/11/2026.
 // Só MONTA e CONFERE: o XML sai SEM assinatura e NÃO é enviado. Cobre o caso mensal ou 13º do empregado com vínculo e do autônomo em geral (categoria 701, sem S-2300), no grupo infoPerApur. NÃO cobre: períodos anteriores (infoPerAnt),
 // RRA, múltiplos vínculos, sucessão, processo judicial, desconto de empréstimo (descFolha) e trabalhador intermitente (infoInterm, obrigatório para categoria 111). Quem usar esses casos precisa do contador.
-// O código de cada rubrica (codRubr) e o ideTabRubr têm de existir na tabela S-1010 da empresa: este arquivo não cria a tabela. [CONFERIR COM O DANIEL]
+// O código de cada rubrica (codRubr) e o ideTabRubr têm de existir na tabela S-1010 da empresa: este arquivo não cria a tabela. [CONFERIR COM O CONTADOR]
 (function(){
   const dig=s=>String(s==null?'':s).replace(/\D/g,'');
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -63,9 +63,9 @@
       +'<remunPerApur>'+(Rm.matricula?tag('matricula',Rm.matricula):'')+(Rm.indSimples?tag('indSimples',Rm.indSimples):'')
       +Rm.itensRemun.map(x=>'<itensRemun>'+tag('codRubr',x.codRubr)+tag('ideTabRubr',x.ideTabRubr)+(x.qtdRubr?tag('qtdRubr',dec(x.qtdRubr,2)):'')+(x.fatorRubr?tag('fatorRubr',dec(x.fatorRubr,2)):'')+tag('vrRubr',dec(x.vrRubr,2))+tag('indApurIR',x.indApurIR)+'</itensRemun>').join('')
       +(Rm.infoAgNocivo?'<infoAgNocivo>'+tag('grauExp',Rm.infoAgNocivo.grauExp)+'</infoAgNocivo>':'')+'</remunPerApur></ideEstabLot></infoPerApur>'+(ev.dmDev.infoComplCont?'<infoComplCont>'+tag('codCBO',ev.dmDev.infoComplCont.codCBO)+'</infoComplCont>':'')+'</dmDev></evtRemun></eSocial>';
-    const alertas=['Prévia SEM assinatura e SEM envio. Assinar com certificado digital e transmitir é do contador (procuração).','Os códigos de rubrica (codRubr/ideTabRubr) precisam existir na tabela S-1010 da empresa; sem isso o eSocial recusa. [CONFERIR COM O DANIEL]',
+    const alertas=['Prévia SEM assinatura e SEM envio. Assinar com certificado digital e transmitir é do contador (procuração).','Os códigos de rubrica (codRubr/ideTabRubr) precisam existir na tabela S-1010 da empresa; sem isso o eSocial recusa. [CONFERIR COM O CONTADOR]',
       'Esta prévia cobre só o empregado com vínculo, mensal ou 13º. Intermitente (categoria 111) exige o grupo infoInterm, que não é montado aqui.'];
-    if(aut)alertas.push('Autônomo em geral (categoria 701): o S-2300 é facultativo; sem ele, o nome, a data de nascimento e o CBO vão neste S-1200 (infoComplem e infoComplCont). INSS e IRRF retidos entram como rubricas cadastradas na S-1010. [CONFERIR COM O DANIEL]');
+    if(aut)alertas.push('Autônomo em geral (categoria 701): o S-2300 é facultativo; sem ele, o nome, a data de nascimento e o CBO vão neste S-1200 (infoComplem e infoComplCont). INSS e IRRF retidos entram como rubricas cadastradas na S-1010. [CONFERIR COM O CONTADOR]');
     if(+d.indApuracao===1&&String(d.codCateg)==='111')alertas.push('Categoria 111 (intermitente): o grupo infoInterm é obrigatório e NÃO está nesta prévia.');
     const tot=R.reduce((s,x)=>s+ +x.vrRubr,0);alertas.push('Soma das rubricas informadas: '+dec(tot,2).replace('.',',')+' (proventos e descontos juntos: o tipo vem da S-1010; confira o líquido na folha).');
     return{ok:true,evento:ev,xml,alertas,aviso:'Prévia do evento, sem assinatura e sem envio.'};

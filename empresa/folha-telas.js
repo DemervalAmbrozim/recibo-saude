@@ -11,7 +11,7 @@
   var DT=function(s){return s?s.split('-').reverse().join('/'):''};
   var TAB=function(h,rows,num){return '<div class="tbl"><table>'+(h?'<tr>'+h.map(function(x,i){return '<th'+(num&&num[i]?' class="n"':'')+'>'+ESC(x)+'</th>'}).join('')+'</tr>':'')+rows.map(function(r){return '<tr>'+r.map(function(x,i){return '<td'+(num&&num[i]?' class="n"':'')+'>'+x+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>'};
   var ERROS=function(e){return (e||[]).map(function(x){return '<div class="alerta crit" role="alert">'+ESC(x)+'</div>'}).join('')};
-  var AVISOS=function(a){return (a||[]).map(function(x){return '<div class="alerta">'+ESC(x)+(/CONFERIR COM O DANIEL/i.test(x)?'':'')+'</div>'}).join('')};
+  var AVISOS=function(a){return (a||[]).map(function(x){return '<div class="alerta">'+ESC(x)+(/CONFERIR COM O CONTADOR/i.test(x)?'':'')+'</div>'}).join('')};
   var LISTA=function(r){var P=r.proventos||[],D=r.descontos||[];
     return TAB(['Cód.','Descrição','Ref.','Proventos','Descontos'],P.map(function(x){return [ESC(x.cod),ESC(x.desc),ESC(x.ref||''),BR(x.valor),'']}).concat(D.map(function(x){return [ESC(x.cod),ESC(x.desc),ESC(x.ref||''),'',BR(x.valor)]})),[0,0,0,1,1])};
   var TOTAL=function(r){return '<p>Líquido <span class="big">'+BR(r.liquido)+'</span>'+(r.fgts!=null?' · FGTS do mês '+BR(typeof r.fgts==='object'?r.fgts.deposito:r.fgts):'')+'</p>'};
@@ -226,7 +226,7 @@
     t18:{nome:'eSocial: motivo de afastamento (Tabela 18) e se a empresa precisa enviar',campos:[
       ['t-c','Código do motivo (1 a 51)','3','n']],
       calc:function(){var m=F().motivoAfastamento(Math.floor(NUM('t-c')));if(!m.conhecido)return AVISOS([m.aviso]);
-        return '<p><b>'+ESC(m.cod)+' - '+ESC(m.descricao)+'</b></p><p><span class="tag '+(m.obrigatoriedade==='nao_enviar'?'ruim':m.obrigatoriedade==='obrigatoria'?'at':'az')+'">'+ESC(m.rotulo)+'</span></p>'+(m.nota?'<p>'+ESC(m.nota)+'</p>':'')+AVISOS(['Regra lida no MOS S-2230, item 2.1, para empregado CLT de empresa privada. [CONFERIR COM O DANIEL] em caso de dúvida.'])}},
+        return '<p><b>'+ESC(m.cod)+' - '+ESC(m.descricao)+'</b></p><p><span class="tag '+(m.obrigatoriedade==='nao_enviar'?'ruim':m.obrigatoriedade==='obrigatoria'?'at':'az')+'">'+ESC(m.rotulo)+'</span></p>'+(m.nota?'<p>'+ESC(m.nota)+'</p>':'')+AVISOS(['Regra lida no MOS S-2230, item 2.1, para empregado CLT de empresa privada. [CONFERIR COM O CONTADOR] em caso de dúvida.'])}},
     vig:{nome:'Tabelas legais em uso: estão em dia?',campos:[['v-h','Hoje (aaaa-mm-dd)','','t'],['v-d','Avisar se conferida há mais de (dias)','90','n']],
       calc:function(){var hoje=TXT('v-h')||new Date().toISOString().slice(0,10),r=F().statusTabelas(hoje,{diasConferencia:NUM('v-d')||90});if(!r.ok)return ERROS(r.erros);var s=r.resumo;
         return '<p><span class="tag">Em dia: '+s.ok+'</span> <span class="tag at">Atenção: '+s.atencao+'</span> <span class="tag ruim">Crítico: '+s.critico+'</span></p>'
@@ -290,7 +290,7 @@
      +'<p id="pa-ex" class="sub"></p><p><button class="p" id="pa-add" type="button">Registrar nova vigência</button></p><div id="pa-msg"></div>'
      +'<label style="max-width:240px">Ver o que valia em<input id="pa-q" type="date" value="2026-12-01"></label><div id="pa-tab"></div><h3>Histórico</h3><div id="pa-his"></div>';
     Q('vx-out').innerHTML=h;
-    function explica(){var c=cat[Q('pa-k').value];Q('pa-ex').innerHTML=ESC(c.explicacao)+' <b>Base:</b> '+ESC(c.base)+(c.conferir?' <span class="tag at">CONFERIR COM O DANIEL</span>':'')+(c.opcoes?' <b>Opções:</b> '+ESC(c.opcoes.join(', ')):'');if(!Q('pa-v').value)Q('pa-v').placeholder=String(c.padrao)}
+    function explica(){var c=cat[Q('pa-k').value];Q('pa-ex').innerHTML=ESC(c.explicacao)+' <b>Base:</b> '+ESC(c.base)+(c.conferir?' <span class="tag at">CONFERIR COM O CONTADOR</span>':'')+(c.opcoes?' <b>Opções:</b> '+ESC(c.opcoes.join(', ')):'');if(!Q('pa-v').value)Q('pa-v').placeholder=String(c.padrao)}
     function mostra(){var p=X.parametrosEm(CFG,Q('pa-q').value||'2026-12-01');
       Q('pa-tab').innerHTML=TAB(['Parâmetro','Valor na data','Explicação','Base legal'],chaves.map(function(k){var c=cat[k],v=p[k];return [ESC(c.titulo)+(c.conferir?' <span class="tag at">conferir</span>':''),'<b>'+ESC(typeof v==='number'&&v<1&&v>0&&k!=='fgtsAprendiz'?(v*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%':v===true?'sim':v===false?'não':String(v))+'</b>',ESC(c.explicacao),ESC(c.base)]}));
       Q('pa-his').innerHTML=CFG.vigencias.length?TAB(['Desde','Motivo','O que mudou'],CFG.vigencias.map(function(v){return [DT(v.desde),ESC(v.motivo),ESC(Object.keys(v.valores).map(function(k){return cat[k].titulo+' = '+v.valores[k]}).join('; '))]})):'<p class="sub">Nenhuma mudança registrada: valem os padrões.</p>'}

@@ -1,6 +1,6 @@
 // Tabela 18 do eSocial (motivos de afastamento temporário) como o MOS S-1.3 a descreve, evento S-2230, item 2.1 "obrigatoriedade" (LIDO em 27/11/2026).
 // Lida só a regra para o nosso público: empregado CLT de empresa privada (categoria 1XX, tpRegTrab [1], tpRegPrev [1]). Quadro lido até o código 51; os códigos 2, 4, 8, 9, 14, 23, 30, 32, 33 e do 52 em diante
-// NÃO constam do trecho lido e aparecem como "desconhecido". 'condicional' = a obrigação depende de uma condição escrita em 'nota'. [CONFERIR COM O DANIEL] em dúvida.
+// Códigos encerrados (8, 14, 23, 30, 33) e inexistentes (2, 4, 9, 32) conferidos na Tabela 18 oficial das Tabelas S-1.3; do 52 em diante não consta e aparece como "desconhecido". 'condicional' = a obrigação depende de uma condição escrita em 'nota'. [CONFERIR COM O CONTADOR] em dúvida.
 (function(){
   const O='obrigatoria',F='facultativa',N='nao_enviar',C='condicional';
   const T=[
@@ -47,11 +47,16 @@
     [50,'Licença-paternidade: prorrogação de 1/3 do período (Lei 15.371/2026, art. 12)',O,''],
     [51,'Licença-paternidade: equiparação à licença-maternidade por ausência materna no registro civil',O,'']
   ].map(([cod,descricao,obrigatoriedade,nota])=>({cod:String(cod).padStart(2,'0'),descricao,obrigatoriedade,nota}));
+  // Tabela 18 oficial (Tabelas do eSocial S-1.3, gov.br): códigos ENCERRADOS (não usar em período posterior ao término) e códigos que não constam da tabela.
+  const ENCERRADOS={'08':['Afastamento do empregado para participar de atividade do Conselho Curador do FGTS','18/07/2021'],'14':['Cessão/Requisição','09/03/2022'],'23':['Mandato eleitoral, com remuneração','18/07/2021'],'30':['Suspensão disciplinar (art. 474 da CLT)','18/07/2021'],'33':['Licença maternidade 180 dias, Lei 13.301/2016','18/07/2021']};
+  const INEXISTENTES=['02','04','09','32'];
   const POR=Object.fromEntries(T.map(x=>[x.cod,x]));
   const ROT={obrigatoria:'Obrigatória para empregado CLT',facultativa:'Facultativa',nao_enviar:'Não deve ser enviada por empresa privada com empregado CLT',condicional:'Obrigatória só em certas condições'};
   // codigo: '1', '01' ou 1. Devolve {conhecido, cod, descricao, obrigatoriedade, rotulo, nota}
   function motivoAfastamento(codigo){const cod=String(codigo==null?'':codigo).replace(/\D/g,'').padStart(2,'0'),x=POR[cod];
-    if(!x)return{conhecido:false,cod,aviso:'Código '+cod+' fora do quadro lido (códigos 1 a 51 do MOS S-2230 item 2.1). Confira na Tabela 18 do eSocial. [CONFERIR COM O DANIEL]'};
+    if(!x&&ENCERRADOS[cod])return{conhecido:true,encerrado:true,cod,descricao:ENCERRADOS[cod][0],termino:ENCERRADOS[cod][1],obrigatoriedade:'nao_enviar',rotulo:'Código encerrado em '+ENCERRADOS[cod][1]+' (Tabela 18 oficial): não usar em afastamento posterior',nota:'Fonte: Tabelas do eSocial S-1.3, Tabela 18.'};
+    if(!x&&INEXISTENTES.indexOf(cod)>=0)return{conhecido:false,cod,inexistente:true,aviso:'Código '+cod+' não consta da Tabela 18 (Tabelas do eSocial S-1.3). Confira o motivo do afastamento.'};
+    if(!x)return{conhecido:false,cod,aviso:'Código '+cod+' fora do quadro lido (códigos 1 a 51 do MOS S-2230 item 2.1). Confira na Tabela 18 do eSocial. [CONFERIR COM O CONTADOR]'};
     return{conhecido:true,...x,rotulo:ROT[x.obrigatoriedade]}}
   const api={motivoAfastamento,listaMotivos:()=>T.map(x=>({...x,rotulo:ROT[x.obrigatoriedade]}))};
   if(typeof module!=='undefined')module.exports=api;

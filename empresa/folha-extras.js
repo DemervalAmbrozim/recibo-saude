@@ -1,6 +1,6 @@
 // Folha: verbas especiais e tipos de vínculo (26/11/2026, folha completa).
 // Carregar DEPOIS de regras.js e folha.js (usa tabelaFolha, inssFolha, calculaFolha, calculaFerias, calculaDecimoTerceiro, irrf13, carneLeao).
-// ESTIMATIVA até o contador conferir (folha sombra). Regra legal que a lei deixa em aberto vira PARÂMETRO e leva a marca [CONFERIR COM O DANIEL].
+// ESTIMATIVA até o contador conferir (folha sombra). Regra legal que a lei deixa em aberto vira PARÂMETRO e leva a marca [CONFERIR COM O CONTADOR].
 // Cada função devolve {ok, ..., alertas[], fonte}. Nada aqui paga, transmite ou grava: só calcula.
 // Vigência das tabelas: tabelaFolha(ano) (folha.js). Valores em reais com 2 casas.
 
@@ -9,7 +9,7 @@ const falhaX=(...erros)=>({ok:false,erros});
 
 // ===== 1. Adicionais de insalubridade e periculosidade
 // Insalubridade: CLT art. 192: 10% (mínimo), 20% (médio) ou 40% (máximo) sobre o SALÁRIO MÍNIMO, salvo convenção/acordo que fixe outra base
-// [CONFERIR COM O DANIEL: Súmula Vinculante 4 do STF veda usar o salário mínimo como indexador, mas o TST mantém o mínimo até lei nova; confira a convenção do sindicato].
+// [CONFERIR COM O CONTADOR: Súmula Vinculante 4 do STF veda usar o salário mínimo como indexador, mas o TST mantém o mínimo até lei nova; confira a convenção do sindicato].
 // Periculosidade: CLT art. 193 §1º: 30% sobre o salário-base, sem gratificações, prêmios ou participação nos lucros.
 // Não se acumulam: o empregado opta pelo mais favorável (CLT art. 193 §2º). Grau e enquadramento dependem de LAUDO (NR-15 e NR-16): o sistema não decide o grau.
 const GRAUS_INSALUB={minimo:.10,medio:.20,maximo:.40};
@@ -19,19 +19,19 @@ function adicionalInsalubridade(grau,o={},ano=2026){
   if(!(base>0))return falhaX('base do adicional inválida');
   return {ok:true,tipo:'insalubridade',grau,pct,base:r2x(base),valor:r2x(base*pct),fonte:'CLT art. 192 (laudo NR-15)',
     provento:{cod:'060',desc:'Adicional de insalubridade '+Math.round(pct*100)+'%',ref:' ',valor:r2x(base*pct),inss:true,irrf:true,fgts:true},
-    alertas:['Grau definido por laudo técnico (NR-15); sem laudo, não pagar nem deixar de pagar por estimativa.','Base padrão: salário mínimo. [CONFERIR COM O DANIEL] se a convenção coletiva fixa outra base.']}}
+    alertas:['Grau definido por laudo técnico (NR-15); sem laudo, não pagar nem deixar de pagar por estimativa.','Base padrão: salário mínimo. [CONFERIR COM O CONTADOR] se a convenção coletiva fixa outra base.']}}
 function adicionalPericulosidade(salario,o={}){
   const S=+salario;if(!(S>0))return falhaX('salário inválido');const pct=o.pct>0?+o.pct:.30;
   return {ok:true,tipo:'periculosidade',pct,base:r2x(S),valor:r2x(S*pct),fonte:'CLT art. 193 §1º (laudo NR-16)',
     provento:{cod:'061',desc:'Adicional de periculosidade '+Math.round(pct*100)+'%',ref:' ',valor:r2x(S*pct),inss:true,irrf:true,fgts:true},
-    alertas:['Atividade perigosa definida por laudo (NR-16). [CONFERIR COM O DANIEL] se a radiação ionizante (radiologia, odontologia) se enquadra no caso.']}}
+    alertas:['Atividade perigosa definida por laudo (NR-16). [CONFERIR COM O CONTADOR] se a radiação ionizante (radiologia, odontologia) se enquadra no caso.']}}
 // O empregado não recebe os dois: devolve o mais favorável e avisa.
 function escolheAdicional(ins,per){
   if(ins&&ins.ok&&per&&per.ok){const m=ins.valor>=per.valor?ins:per;return {...m,alertas:(m.alertas||[]).concat(['Insalubridade e periculosidade não se acumulam (CLT art. 193 §2º): foi usado o mais favorável ao empregado ('+m.tipo+'); o empregado pode optar por escrito.'])}}
   return ins&&ins.ok?ins:per&&per.ok?per:null}
 
 // ===== 2. Pensão alimentícia (desconto judicial)
-// Fonte do valor: SEMPRE a sentença/ofício ou acordo homologado. A base (bruto, líquido, salário mínimo) varia: é parâmetro. [CONFERIR COM O DANIEL em cada ofício.]
+// Fonte do valor: SEMPRE a sentença/ofício ou acordo homologado. A base (bruto, líquido, salário mínimo) varia: é parâmetro. [CONFERIR COM O CONTADOR em cada ofício.]
 // A pensão paga conforme decisão judicial é DEDUTÍVEL da base do IRRF (usa emp.deducaoIRRFExtra de calculaFolha).
 // base 'liquido' = rendimento líquido depois de INSS e IRRF (o IRRF já considera a própria pensão: resolvido por iteração).
 function pensaoValor(p,r){
@@ -47,7 +47,7 @@ function validaPensao(p){
   return null}
 
 // ===== 3. Consignado: limite sobre a remuneração disponível
-// Lei 10.820/2003 (consignado em folha): limite de 35% da remuneração disponível (parâmetro; a lei já mudou de percentual antes) [CONFERIR COM O DANIEL a vigência].
+// Lei 10.820/2003 (consignado em folha): limite de 35% da remuneração disponível (parâmetro; a lei já mudou de percentual antes) [CONFERIR COM O CONTADOR a vigência].
 // Remuneração disponível = bruto menos descontos obrigatórios (INSS, IRRF, pensão judicial). Se a parcela passa do limite, desconta só até o limite e avisa o trabalhador.
 function consignadoLimite(disp,parcela,limite=.35){
   const max=r2x(Math.max(0,disp)*limite),desc=r2x(Math.min(+parcela,max)),dif=r2x(+parcela-desc);
@@ -56,7 +56,7 @@ function consignadoLimite(disp,parcela,limite=.35){
 
 // ===== 4. Adiantamento salarial
 // Adiantamento é antecipação do salário do mês (CLT art. 462 permite descontar adiantamento). Percentual é combinado ou da convenção (parâmetro, padrão 40%).
-// Regra comum (fonte: curso de DP, [CONFERIR COM O DANIEL]): se a folha é paga até o fim do mês, o adiantamento não tem IR próprio (tributa-se tudo na folha).
+// Regra comum (fonte: curso de DP, [CONFERIR COM O CONTADOR]): se a folha é paga até o fim do mês, o adiantamento não tem IR próprio (tributa-se tudo na folha).
 // Se a folha é paga no mês seguinte, o adiantamento avulso exige retenção de IRRF: o sistema calcula bruto a partir do líquido e depois credita o IR já retido.
 function adiantamentoValor(salario,o={}){
   const pct=o.percentual>0?+o.percentual:.40,v=o.valor>0?+o.valor:+salario*pct;
@@ -67,7 +67,7 @@ function adiantamentoAvulsoPorLiquido(liquido,ano=2026){
   const L=+liquido;if(!(L>0))return falhaX('líquido inválido');
   const ir=b=>carneLeao(b,0).devido;let lo=L,hi=L*2+1000;
   for(let i=0;i<80;i++){const m=(lo+hi)/2;if(m-ir(m)<L)lo=m;else hi=m}
-  const B=r2x((lo+hi)/2),I=r2x(ir(B));return {ok:true,liquido:r2x(L),bruto:B,irrf:I,aviso:'Cálculo reverso do IRRF do adiantamento avulso (sem INSS, sem dedução). [CONFERIR COM O DANIEL] a regra de retenção.'}}
+  const B=r2x((lo+hi)/2),I=r2x(ir(B));return {ok:true,liquido:r2x(L),bruto:B,irrf:I,aviso:'Cálculo reverso do IRRF do adiantamento avulso (sem INSS, sem dedução). [CONFERIR COM O CONTADOR] a regra de retenção.'}}
 
 // ===== 5. Folha completa: encaixa adicionais, retroativo, pensão, consignado e adiantamento em calculaFolha
 // opc: {adicional:{grau}|{periculosidade:true}|{ins,per}, pensao:{tipo,valor|percentual}, consignado:{parcela,limite}, adiantamento:{valor|percentual,irRetido}, retroativo:resultado de calculaRetroativo, params}
@@ -92,7 +92,7 @@ function calculaFolhaCompleta(emp,mov={},ano=2026,opc={}){
       r=calculaFolha({...emp2,deducaoIRRFExtra:P},mov2,ano);if(!r.ok)return r;
       pensao={tipo:opc.pensao.tipo,percentual:opc.pensao.percentual||null,valor:P};
       r.descontos.push({cod:'140',desc:'Pensão alimentícia (judicial)',ref:opc.pensao.tipo==='valor_fixo'?' ':Math.round((opc.pensao.percentual||0)*1000)/10+'%',valor:P});
-      alertas.push('Pensão alimentícia deduzida da base do IRRF (desconto judicial). Conferir o ofício: base (bruto/líquido/salário mínimo) e se incide sobre férias e 13º. [CONFERIR COM O DANIEL]')}
+      alertas.push('Pensão alimentícia deduzida da base do IRRF (desconto judicial). Conferir o ofício: base (bruto/líquido/salário mínimo) e se incide sobre férias e 13º. [CONFERIR COM O CONTADOR]')}
     let consignado=null;
     if(opc.consignado&&+opc.consignado.parcela>0){
       const disp=r.bruto-r.inss-r.irrf-(pensao?pensao.valor:0);
@@ -104,7 +104,7 @@ function calculaFolhaCompleta(emp,mov={},ano=2026,opc={}){
       const a=adiantamentoValor(emp.salario,{percentual:opc.adiantamento.percentual||P0.adiantamentoPct,valor:opc.adiantamento.valor});if(!a.ok)return a;
       adiantamento={valor:a.valor,irRetido:0};
       r.descontos.push({cod:'150',desc:'Adiantamento salarial',ref:a.percentual?Math.round(a.percentual*100)+'%':' ',valor:a.valor});
-      if(opc.adiantamento.irRetido>0){adiantamento.irRetido=r2x(opc.adiantamento.irRetido);r.descontos.push({cod:'151',desc:'IRRF já retido no adiantamento (crédito)',ref:' ',valor:-adiantamento.irRetido});alertas.push('Adiantamento avulso com IRRF retido: o crédito foi abatido do IRRF da folha. [CONFERIR COM O DANIEL]')}}
+      if(opc.adiantamento.irRetido>0){adiantamento.irRetido=r2x(opc.adiantamento.irRetido);r.descontos.push({cod:'151',desc:'IRRF já retido no adiantamento (crédito)',ref:' ',valor:-adiantamento.irRetido});alertas.push('Adiantamento avulso com IRRF retido: o crédito foi abatido do IRRF da folha. [CONFERIR COM O CONTADOR]')}}
     if(opc.retroativo&&opc.retroativo.irrfRRA>0)r.descontos.push({cod:'122',desc:'IRRF sobre rendimentos acumulados (RRA)',ref:' ',valor:opc.retroativo.irrfRRA});
     if(opc.retroativo&&opc.retroativo.inssRetroativo>0)r.descontos.push({cod:'112',desc:'INSS do retroativo (por competência)',ref:' ',valor:opc.retroativo.inssRetroativo});
     r.totalDescontos=r2x(r.descontos.reduce((s,x)=>s+x.valor,0));r.liquido=r2x(r.totalProventos-r.totalDescontos);
@@ -117,7 +117,7 @@ function calculaFolhaCompleta(emp,mov={},ano=2026,opc={}){
 // Recesso de 30 dias a cada 12 meses, remunerado quando há bolsa e proporcional se o estágio dura menos de 1 ano (art. 13). Seguro contra acidentes obrigatório (art. 9º IV).
 // Jornada (art. 10): 4 h/dia e 20 h/semana (educação especial e anos finais do fundamental); 6 h/dia e 30 h/semana (ensino médio, superior, profissional).
 // Duração máxima de 2 anos na mesma empresa, exceto pessoa com deficiência (art. 11). Cota (art. 17): 1 a 5 empregados: 1 estagiário; 6 a 10: até 2; 11 a 25: até 5; acima de 25: até 20%.
-// IRRF sobre a bolsa: tabela mensal, sem dedução de INSS [CONFERIR COM O DANIEL: bolsa de estágio é rendimento tributável; confirme a regra atual].
+// IRRF sobre a bolsa: tabela mensal, sem dedução de INSS [CONFERIR COM O CONTADOR: bolsa de estágio é rendimento tributável; confirme a regra atual].
 const LIM_JORNADA_ESTAGIO={especial:[4,20],fundamental_final:[4,20],medio:[6,30],superior:[6,30],profissional:[6,30]};
 function cotaEstagiarios(empregados){const n=+empregados;if(!(n>=1))return 0;if(n<=5)return 1;if(n<=10)return 2;if(n<=25)return 5;return Math.floor(n*.20)}
 function mesesCompletos(ini,fim){const a=String(ini).split('-').map(Number),b=String(fim).split('-').map(Number);let m=(b[0]-a[0])*12+(b[1]-a[1]);if(b[2]<a[2])m--;return Math.max(0,m)}
@@ -143,21 +143,21 @@ function calculaEstagiario(est,mov={},ano=2026,ctx={}){
   alertas.push('Recesso de 30 dias a cada 12 meses de estágio, remunerado e proporcional se menor que 1 ano (art. 13).');
   alertas.push('Sem INSS, FGTS e 13º (sem vínculo, art. 3º). Termo de compromisso e seguro de acidentes pessoais são obrigatórios.');
   if(!seguro)alertas.push('Informe o valor mensal do seguro de acidentes pessoais (apólice) para o custo ficar completo.');
-  alertas.push('IRRF da bolsa pela tabela mensal [CONFERIR COM O DANIEL].');
+  alertas.push('IRRF da bolsa pela tabela mensal [CONFERIR COM O CONTADOR].');
   return {ok:true,tipo:'estagiario',ano,proventos:P,descontos:D,totalProventos:totP,totalDescontos:totD,liquido:r2x(totP-totD),irrf:ir,inss:0,fgts:0,
     recessoDiasDireito:meses==null?null:recessoEstagio(meses),custoMensal:custo,cotaMaxima:ctx.totalEmpregados!=null?cotaEstagiarios(ctx.totalEmpregados):null,alertas,
     aviso:'Estimativa; o contador confere antes de qualquer pagamento.'}}
 
 // ===== 5-B. Férias e 13º completos: pensão alimentícia e médias do histórico
 // A pensão por PERCENTUAL do ofício vale também sobre férias e 13º (o ofício diz a base: bruto ou líquido). Pensão de VALOR FIXO e % do salário mínimo valem só na folha mensal: aqui não são aplicadas e o resultado avisa.
-// [CONFERIR COM O DANIEL em cada ofício.] A pensão é dedutível da base do IRRF: resolvida por iteração (usa emp.deducaoIRRFExtra).
+// [CONFERIR COM O CONTADOR em cada ofício.] A pensão é dedutível da base do IRRF: resolvida por iteração (usa emp.deducaoIRRFExtra).
 function comPensaoEventual(emp,pensao,calc,baseDe,liquidoDe){
   let r=calc(emp);if(!r.ok||!pensao)return r;
   const e=validaPensao(pensao);if(e)return falhaX(e);
-  if(pensao.tipo==='valor_fixo'||pensao.tipo==='percentual_sm')return {...r,pensao:null,alertas:(r.alertas||[]).concat(['Pensão de valor fixo ou em % do salário mínimo não foi aplicada: vale só na folha mensal. Confirme no ofício se incide aqui. [CONFERIR COM O DANIEL]'])};
+  if(pensao.tipo==='valor_fixo'||pensao.tipo==='percentual_sm')return {...r,pensao:null,alertas:(r.alertas||[]).concat(['Pensão de valor fixo ou em % do salário mínimo não foi aplicada: vale só na folha mensal. Confirme no ofício se incide aqui. [CONFERIR COM O CONTADOR]'])};
   let P=0;for(let i=0;i<40;i++){r=calc({...emp,deducaoIRRFExtra:P});if(!r.ok)return r;const nP=r2x((pensao.tipo==='percentual_bruto'?baseDe(r):liquidoDe(r))*pensao.percentual);if(Math.abs(nP-P)<0.005){P=nP;break}P=nP}
   r=calc({...emp,deducaoIRRFExtra:P});if(!r.ok)return r;
-  return {...r,pensao:{tipo:pensao.tipo,percentual:pensao.percentual,valor:P},liquidoAposPensao:r2x(r.liquido-P),alertas:(r.alertas||[]).concat(['Pensão alimentícia de '+Math.round(pensao.percentual*1000)/10+'% aplicada sobre esta verba e deduzida do IRRF. [CONFERIR COM O DANIEL] a base no ofício.'])}}
+  return {...r,pensao:{tipo:pensao.tipo,percentual:pensao.percentual,valor:P},liquidoAposPensao:r2x(r.liquido-P),alertas:(r.alertas||[]).concat(['Pensão alimentícia de '+Math.round(pensao.percentual*1000)/10+'% aplicada sobre esta verba e deduzida do IRRF. [CONFERIR COM O CONTADOR] a base no ofício.'])}}
 function calculaFeriasCompleta(emp,o,ano=2026,opc={}){
   let oo=o,medias=null;
   if(opc.historico){medias=mediasVariaveis(opc.historico,opc.opMedia||{});if(!medias.ok)return medias;oo={...o,mediaVariaveis:medias.media}}
@@ -173,7 +173,7 @@ function calculaDecimoCompleto(emp,o,ano=2026,opc={}){
   return medias&&r.ok?{...r,medias}:r}
 
 // Fim do estágio (rescisão do termo de compromisso): saldo da bolsa dos dias trabalhados e RECESSO PROPORCIONAL não gozado (Lei 11.788 art. 13 §2º). Sem aviso prévio, sem multa de FGTS, sem 13º.
-// o: {saidaDia (1 a 31, dia do desligamento), diasMes, diasRecessoGozados}. IRRF pela tabela mensal sobre saldo + recesso [CONFERIR COM O DANIEL].
+// o: {saidaDia (1 a 31, dia do desligamento), diasMes, diasRecessoGozados}. IRRF pela tabela mensal sobre saldo + recesso [CONFERIR COM O CONTADOR].
 function rescisaoEstagiario(est,o,ano=2026,ctx={}){
   const erros=[],T=tabelaFolha(ano),B=+est.bolsa,dm=+(o.diasMes||30),sd=+o.saidaDia;
   if(!(B>0))erros.push('informe a bolsa-auxílio');if(!(sd>=1&&sd<=dm))erros.push('dia da saída deve ficar entre 1 e '+dm);
@@ -183,13 +183,13 @@ function rescisaoEstagiario(est,o,ano=2026,ctx={}){
   const saldo=r2x(B/30*sd),recesso=r2x(B/30*aGozar),total=r2x(saldo+recesso),ir=total>0?r2x(carneLeao(total,(est.dependentes||0)*T.depIR).devido):0;
   const P=[{cod:'201',desc:'Saldo da bolsa',ref:sd+' dias',valor:saldo},{cod:'205',desc:'Recesso proporcional não gozado',ref:aGozar+' dias',valor:recesso}].filter(x=>x.valor>0),D=ir>0?[{cod:'203',desc:'IRRF',valor:ir}]:[];
   return {ok:true,tipo:'rescisao_estagiario',ano,mesesEstagio:meses,recessoDireito:direito,recessoGozado:gozados,recessoAGozar:aGozar,proventos:P,descontos:D,totalProventos:total,totalDescontos:ir,liquido:r2x(total-ir),irrf:ir,inss:0,fgts:0,
-    alertas:['Sem aviso prévio, multa de FGTS ou 13º (estágio não gera vínculo).','Entregar ao estagiário o termo de realização do estágio, com período e atividades (Lei 11.788 art. 9º, V). [CONFERIR COM O DANIEL] o artigo e o modelo.','IRRF pela tabela mensal. [CONFERIR COM O DANIEL]'],aviso:'Estimativa; o contador confere antes do pagamento.'}}
+    alertas:['Sem aviso prévio, multa de FGTS ou 13º (estágio não gera vínculo).','Entregar ao estagiário o termo de realização do estágio, com período e atividades (Lei 11.788 art. 9º, V). [CONFERIR COM O CONTADOR] o artigo e o modelo.','IRRF pela tabela mensal. [CONFERIR COM O CONTADOR]'],aviso:'Estimativa; o contador confere antes do pagamento.'}}
 
 // ===== 7. Aprendiz (CLT arts. 428 a 433)
 // Contrato por prazo determinado de até 2 anos, exceto pessoa com deficiência (art. 428 §3º); idade de 14 a 24 anos, sem limite para PcD (art. 428).
 // Jornada de até 6 h/dia (30 h/semana) para quem não concluiu o fundamental; até 8 h/dia (40 h/semana) para quem concluiu, contando as horas de aula teórica; vedadas prorrogação e compensação (art. 432).
 // Salário: salário mínimo-hora × horas trabalhadas, salvo condição mais favorável (Decreto 9.579/2018). FGTS de 2% (Lei 8.036/1990 art. 15 §7º). INSS, 13º e VT como o empregado comum.
-// Cota de aprendizes (art. 429, 5% a 15% da função que exige formação) NÃO se aplica a microempresa e empresa de pequeno porte [CONFERIR COM O DANIEL: Lei 9.841/1999 e Decreto 9.579 art. 54].
+// Cota de aprendizes (art. 429, 5% a 15% da função que exige formação) NÃO se aplica a microempresa e empresa de pequeno porte [CONFERIR COM O CONTADOR: Lei 9.841/1999 e Decreto 9.579 art. 54].
 function calculaAprendiz(emp,mov={},ano=2026){
   const erros=[],alertas=[],T=tabelaFolha(ano),h=+emp.horasSemanais;
   if(!(h>0))erros.push('informe as horas semanais');
@@ -206,14 +206,14 @@ function calculaAprendiz(emp,mov={},ano=2026){
   const r=calculaFolhaCompleta({...emp,divisor:h*5,tipoVinculo:'aprendiz',fgtsAliq:.02,jornadaParcial:true},mov,ano,{});
   if(!r.ok)return r;
   alertas.push('FGTS de 2% (Lei 8.036 art. 15 §7º). Contrato por prazo determinado; férias coincidem com as férias escolares (CLT art. 136 §2º).');
-  alertas.push('Cota de aprendizes não vale para ME e EPP [CONFERIR COM O DANIEL].');
+  alertas.push('Cota de aprendizes não vale para ME e EPP [CONFERIR COM O CONTADOR].');
   return {...r,tipo:'aprendiz',minimoSalario:minimo,alertas:(r.alertas||[]).concat(alertas)}}
 
 // ===== 8. Trabalho intermitente (CLT art. 443 §3º e 452-A)
 // Pagamento ao FIM de cada período de convocação: remuneração, férias proporcionais com 1/3, 13º proporcional, repouso semanal remunerado e adicionais (art. 452-A §6º).
 // Valor-hora nunca abaixo do salário mínimo-hora nem do valor pago aos demais empregados da função (art. 452-A). Convocação com 3 dias corridos de antecedência; resposta em 1 dia útil;
 // multa de 50% da remuneração para quem descumpre sem motivo (art. 452-A §§1º a 4º). FGTS e INSS sobre as parcelas pagas (art. 452-A §8º).
-// RSR: padrão = (remuneração ÷ dias úteis) × dias de descanso, como no horista; pode vir embutido no valor-hora (rsrEmbutido) [CONFERIR COM O DANIEL].
+// RSR: padrão = (remuneração ÷ dias úteis) × dias de descanso, como no horista; pode vir embutido no valor-hora (rsrEmbutido) [CONFERIR COM O CONTADOR].
 function calculaIntermitente(emp,conv,ano=2026){
   const erros=[],T=tabelaFolha(ano),vh=+emp.valorHora,horas=+conv.horas;
   if(!(vh>0))erros.push('informe o valor-hora');if(!(horas>0))erros.push('informe as horas trabalhadas na convocação');
@@ -228,13 +228,13 @@ function calculaIntermitente(emp,conv,ano=2026){
   const P=[{cod:'301',desc:'Horas trabalhadas',ref:horas+' h',valor:rem},{cod:'302',desc:'Repouso semanal remunerado',ref:' ',valor:rsr},{cod:'303',desc:'Férias proporcionais',ref:'1/12',valor:ferias},{cod:'304',desc:'1/3 de férias',ref:' ',valor:terco},{cod:'305',desc:'13º proporcional',ref:'1/12',valor:d13}].filter(x=>x.valor>0);
   const D=[{cod:'110',desc:'INSS',valor:inss},{cod:'111',desc:'INSS sobre o 13º',valor:inss13},{cod:'120',desc:'IRRF',valor:ir},{cod:'121',desc:'IRRF sobre o 13º',valor:ir13}].filter(x=>x.valor>0);
   return {ok:true,tipo:'intermitente',ano,proventos:P,descontos:D,bruto,inss,inss13,irrf:ir,irrf13:ir13,fgts,liquido,totalProventos:bruto,totalDescontos:r2x(inss+inss13+ir+ir13),
-    alertas:['Pagamento ao fim da convocação, com todas as parcelas (art. 452-A §6º). Registrar convocação (3 dias corridos), aceite (1 dia útil) e o contrato por escrito.','Multa de 50% da remuneração por descumprimento sem motivo (art. 452-A §4º).','RSR calculado como no horista; confirme a prática do escritório. [CONFERIR COM O DANIEL]'],
+    alertas:['Pagamento ao fim da convocação, com todas as parcelas (art. 452-A §6º). Registrar convocação (3 dias corridos), aceite (1 dia útil) e o contrato por escrito.','Multa de 50% da remuneração por descumprimento sem motivo (art. 452-A §4º).','RSR calculado como no horista; confirme a prática do escritório. [CONFERIR COM O CONTADOR]'],
     aviso:'Estimativa; o contador confere antes de qualquer pagamento ou envio ao eSocial.'}}
 
 // ===== 8-B. Rendimentos recebidos acumuladamente (RRA), Lei 7.713/1988 art. 12-A
 // Vale para rendimento de AÇÃO JUDICIAL pago de uma vez. Base = rendimento − despesas da ação (custas, honorários) − INSS − pensão alimentícia.
 // Divide-se a base pelo número de meses (NM), aplica-se a tabela progressiva MENSAL ao valor de 1 mês e multiplica-se o imposto por NM.
-// Sem desconto simplificado e sem dedução de dependentes aqui. [CONFERIR COM O DANIEL: a redução da Lei 15.270/2025 e os dependentes no RRA; o texto de 12-A e a IN RFB vigente.]
+// Sem desconto simplificado e sem dedução de dependentes aqui. [CONFERIR COM O CONTADOR: a redução da Lei 15.270/2025 e os dependentes no RRA; o texto de 12-A e a IN RFB vigente.]
 function calculaRRA(o){
   const erros=[],R=+o.rendimentos,NM=+o.meses;
   if(!(R>0))erros.push('informe o rendimento acumulado');if(!(NM>=1&&Number.isInteger(NM)))erros.push('informe o número de meses (inteiro, 1 ou mais)');
@@ -242,12 +242,12 @@ function calculaRRA(o){
   if(erros.length)return falhaX(...erros);
   const base=r2x(R-ded),mensal=base/NM,[,al,pd]=TAB.find(f=>mensal<=f[0]),irMes=Math.max(0,mensal*al-pd),ir=r2x(irMes*NM);
   return {ok:true,rendimentos:r2x(R),deducoes:r2x(ded),base,meses:NM,baseMensal:r2x(mensal),aliquota:al,irrf:ir,aliquotaEfetiva:R>0?r2x(ir/R*100):0,fonte:'Lei 7.713/1988 art. 12-A',
-    alertas:['IRRF calculado como rendimento recebido acumuladamente (RRA), só para ação judicial. [CONFERIR COM O DANIEL] a redução da Lei 15.270 e dependentes.']}}
+    alertas:['IRRF calculado como rendimento recebido acumuladamente (RRA), só para ação judicial. [CONFERIR COM O CONTADOR] a redução da Lei 15.270 e dependentes.']}}
 
 // ===== 9. Retroativo e dissídio (diferença salarial paga depois)
 // Calcula, mês a mês, a diferença entre o salário novo e o que foi pago; reflexos de 13º (1/12) e férias com 1/3 (1/12 × 4/3) sobre a diferença; FGTS de 8% sobre tudo.
 // INSS: apurado POR COMPETÊNCIA (diferença entre o INSS com o salário novo e o que foi recolhido, respeitando o teto de cada mês).
-// IRRF: pago no mês do pagamento, junto da folha (regime de caixa). Se a diferença vier de AÇÃO JUDICIAL, pode valer o cálculo de rendimentos acumulados (RRA); NÃO implementado: [CONFERIR COM O DANIEL].
+// IRRF: pago no mês do pagamento, junto da folha (regime de caixa). Se a diferença vier de AÇÃO JUDICIAL, pode valer o cálculo de rendimentos acumulados (RRA); NÃO implementado: [CONFERIR COM O CONTADOR].
 // Os dados do processo/acordo (homologação, número, vara) vão ao eSocial; o sistema só exige que existam.
 function calculaRetroativo(emp,r,ano=2026){
   const erros=[],T=tabelaFolha(ano);
@@ -269,7 +269,7 @@ function calculaRetroativo(emp,r,ano=2026){
   return {ok:true,motivo:r.motivo,linhas,diferenca:dif,reflexo13:refl13,reflexoFerias:reflFerias,totalBruto,inssRetroativo:inssRetro,fgts,
     rra,irrfRRA:rra?rra.irrf:0,proventosFolha:[{cod:'070',desc:'Retroativo ('+r.motivo+')',ref:linhas.length+' mês(es)',valor:dif,inss:false,irrf:!rra,fgts:true},
       {cod:'071',desc:'Reflexo no 13º',ref:'1/12',valor:refl13,inss:false,irrf:!rra,fgts:true},{cod:'072',desc:'Reflexo nas férias + 1/3',ref:'1/12 + 1/3',valor:reflFerias,inss:false,irrf:!rra,fgts:true}].filter(x=>x.valor>0),
-    alertas:['INSS do retroativo apurado por competência (R$ '+inssRetro.toFixed(2).replace('.',',')+'): vira linha própria de desconto na folha completa.',rra?'IRRF pelo cálculo de rendimentos acumulados (RRA), em desconto separado. [CONFERIR COM O DANIEL]':'IRRF no mês do pagamento. Retroativo judicial pode pedir rendimentos acumulados (RRA): marque usarRRA. [CONFERIR COM O DANIEL]'].concat(rra?rra.alertas:[]),
+    alertas:['INSS do retroativo apurado por competência (R$ '+inssRetro.toFixed(2).replace('.',',')+'): vira linha própria de desconto na folha completa.',rra?'IRRF pelo cálculo de rendimentos acumulados (RRA), em desconto separado. [CONFERIR COM O CONTADOR]':'IRRF no mês do pagamento. Retroativo judicial pode pedir rendimentos acumulados (RRA): marque usarRRA. [CONFERIR COM O CONTADOR]'].concat(rra?rra.alertas:[]),
     aviso:'Estimativa; o contador confere antes de pagar ou enviar ao eSocial.'}}
 
 // ===== 10. Médias de férias e 13º (CLT art. 142 §§ 3º a 5º; art. 130, 13º: Lei 4.090/1962)
@@ -287,7 +287,7 @@ function mediasVariaveis(historico,o={}){
     let media;if(metodo==='quantidade'){const vu=+unidade[cod];if(!(vu>0))return falhaX('verba '+cod+': para média por quantidade informe o valor atual da hora em valorAtualPorVerba');media=mediaQtd*vu}else media=mediaValor;
     media=r2x(media);total+=media;linhas.push({verba:cod,metodo,mesesComLancamento:x.meses,mediaQuantidade:r2x(mediaQtd),mediaValor:r2x(mediaValor),media})}
   return {ok:true,meses,mesesLidos:ordenado.length,linhas,media:r2x(total),
-    alertas:ordenado.length<meses?['Histórico com '+ordenado.length+' de '+meses+' meses; meses sem registro contam como zero. Confirme se o empregado trabalhou o período inteiro. [CONFERIR COM O DANIEL]']:[],
+    alertas:ordenado.length<meses?['Histórico com '+ordenado.length+' de '+meses+' meses; meses sem registro contam como zero. Confirme se o empregado trabalhou o período inteiro. [CONFERIR COM O CONTADOR]']:[],
     fonte:'CLT art. 142 §§ 3º a 5º; Lei 4.090/1962 (13º)'}}
 function calculaFeriasComHistorico(emp,o,historico,opMedia={},ano=2026){
   const m=mediasVariaveis(historico,opMedia);if(!m.ok)return m;
@@ -299,7 +299,7 @@ function calculaDecimoComHistorico(emp,o,historico,opMedia={},ano=2026){
 // ===== 11. RPA: recibo de pagamento a autônomo (pessoa física sem vínculo)
 // INSS do contribuinte individual: 11% sobre o valor, limitado ao teto da competência (Lei 10.666/2003 art. 4º; Lei 8.212/1991). Se já houve INSS em outra fonte no mês, desconta só até o teto.
 // IRRF: tabela mensal progressiva com dedução do INSS e dependentes. ISS: retenção só se o município exigir; alíquota é do município (parâmetro).
-// Parte da empresa: 20% sobre o valor pago (Lei 8.212 art. 22 III), EXCETO empresa do Simples nos Anexos I a III, em que a contribuição patronal já está no DAS [CONFERIR COM O DANIEL].
+// Parte da empresa: 20% sobre o valor pago (Lei 8.212 art. 22 III), EXCETO empresa do Simples nos Anexos I a III, em que a contribuição patronal já está no DAS [CONFERIR COM O CONTADOR].
 function calculaRPA(a,ano=2026){
   const erros=[],T=tabelaFolha(ano),V=+a.valor;if(!(V>0))erros.push('informe o valor do serviço');
   if(!a.cpf)erros.push('informe o CPF do autônomo');if(!a.nome)erros.push('informe o nome do autônomo');
@@ -309,7 +309,7 @@ function calculaRPA(a,ano=2026){
   const ir=r2x(carneLeao(V,inss+(a.dependentes||0)*T.depIR).devido),issV=r2x(V*iss),liquido=r2x(V-inss-ir-issV);
   const patronal=a.anexoSimples&&['I','II','III'].includes(String(a.anexoSimples).toUpperCase())?0:r2x(V*.20);
   return {ok:true,tipo:'rpa',ano,valor:r2x(V),inss,irrf:ir,iss:issV,liquido,patronal,custoEmpresa:r2x(V+patronal),
-    alertas:['INSS de 11% limitado ao teto ('+T.teto.toFixed(2).replace('.',',')+') menos o já recolhido em outras fontes.','ISS: alíquota e retenção são do município do serviço. [CONFERIR COM O DANIEL]','Contribuição patronal: Simples Anexos I a III já inclui no DAS. [CONFERIR COM O DANIEL]','Informar o pagamento no eSocial como contribuinte individual [CONFERIR COM O DANIEL o evento e a categoria].'],
+    alertas:['INSS de 11% limitado ao teto ('+T.teto.toFixed(2).replace('.',',')+') menos o já recolhido em outras fontes.','ISS: alíquota e retenção são do município do serviço. [CONFERIR COM O CONTADOR]','Contribuição patronal: Simples Anexos I a III já inclui no DAS. [CONFERIR COM O CONTADOR]','Informar o pagamento no eSocial como contribuinte individual [CONFERIR COM O CONTADOR o evento e a categoria].'],
     aviso:'Estimativa; o contador confere antes do pagamento.'}}
 
 // ===== 12. Ficha financeira e informe de rendimentos do empregado
@@ -335,8 +335,8 @@ function fichaFinanceira(itens){
   const lista=Object.values(meses).sort((a,b)=>a.comp<b.comp?-1:1),tot=k=>r2x(lista.reduce((s,x)=>s+x[k],0));
   return {ok:true,meses:lista,rubricas:rub,totais:{proventos:tot('proventos'),descontos:tot('descontos'),liquido:tot('liquido'),inss:tot('inss'),irrf:tot('irrf'),fgts:tot('fgts')}}}
 // Informe de rendimentos (resumo dos quadros): rendimentos tributáveis, previdência oficial, IRRF, 13º (tributação exclusiva na fonte), pensão paga.
-// RESCISÃO fica FORA deste resumo: indenizações isentas (aviso indenizado, multa do FGTS) precisam de separação própria. [CONFERIR COM O DANIEL]
-// Layout oficial da Receita: [CONFERIR COM O DANIEL] antes de entregar ao empregado.
+// RESCISÃO fica FORA deste resumo: indenizações isentas (aviso indenizado, multa do FGTS) precisam de separação própria. [CONFERIR COM O CONTADOR]
+// Layout oficial da Receita: [CONFERIR COM O CONTADOR] antes de entregar ao empregado.
 function informeRendimentos(itens,ano){
   const f=fichaFinanceira(itens);if(!f.ok)return f;let trib=0,prev=0,ir=0,d13=0,ir13=0,pensao=0,sf=0;const fora=[];
   for(const it of itens){if(!String(it.comp).startsWith(String(ano)))continue;const tipo=it.tipo||'mensal';
@@ -346,7 +346,7 @@ function informeRendimentos(itens,ano){
     trib+=n.bruto;prev+=n.inss;ir+=n.irrf;sf+=n.salarioFamilia;
     for(const d of n.descontos)if(d.cod==='140')pensao+=d.valor}
   return {ok:true,ano,rendimentosTributaveis:r2x(trib),previdenciaOficial:r2x(prev),irrf:r2x(ir),decimoTerceiro:r2x(d13),irrf13:r2x(ir13),pensaoAlimenticia:r2x(pensao),salarioFamiliaIsento:r2x(sf),rescisoesForaDoResumo:fora,
-    alertas:['Resumo calculado das folhas lançadas. Conferir contra o layout oficial do informe de rendimentos. [CONFERIR COM O DANIEL]'].concat(fora.length?['Rescisão em '+fora.join(', ')+' não entra neste resumo: indenizações isentas exigem separação própria. [CONFERIR COM O DANIEL]']:[])}}
+    alertas:['Resumo calculado das folhas lançadas. Conferir contra o layout oficial do informe de rendimentos. [CONFERIR COM O CONTADOR]'].concat(fora.length?['Rescisão em '+fora.join(', ')+' não entra neste resumo: indenizações isentas exigem separação própria. [CONFERIR COM O CONTADOR]']:[])}}
 
 // ===== 13. Integração contábil: o gerador folha(), adiantamentoPago(), repassePensao() e repasseConsignado() ficam em contabil.js (contas 2.1.3.06, 2.1.3.07, 2.1.3.08 e 1.1.4.01).
 
@@ -398,7 +398,7 @@ function dataDePagamento(competencia,p={},feriados=[]){
   else{alvo=new Date(Date.UTC(a,m,1));let n=0;while(true){if(diaUtilX(alvo,feriados,sab)){n++;if(n===5)break}alvo.setUTCDate(alvo.getUTCDate()+1)}}
   const iso=alvo.toISOString().slice(0,10),limite=regra==='quinto_dia_util'?iso:null;
   return {ok:true,competencia,regra,data:iso,limiteLegal:limite,
-    alertas:['Pagamento até o 5º dia útil do mês seguinte (CLT art. 459 §1º). Sábado '+(sab?'conta':'não conta')+' como dia útil [CONFERIR COM O DANIEL].']}}
+    alertas:['Pagamento até o 5º dia útil do mês seguinte (CLT art. 459 §1º). Sábado '+(sab?'conta':'não conta')+' como dia útil [CONFERIR COM O CONTADOR].']}}
 
 // ===== 16. Avisos de vencimento (férias em dobro, experiência, estágio, aprendiz)
 // Cada aviso traz a data, os dias que faltam e o nível: critico, atencao ou info. Ninguém é desligado nem pago por aqui: é só o alerta para o contador agir a tempo.
@@ -423,7 +423,7 @@ function avisosVencimento(emp,ref){
     const dd=+emp.experienciaDias;
     if(!(dd>=1&&dd<=90))erros.push('contrato de experiência vai de 1 a 90 dias no total (CLT art. 445)');
     else{const fim=somaDiasU(emp.admissao,dd-1),d=diasU(ref,fim);
-      av.push(d<0?{tipo:'experiencia',nivel:'atencao',data:fim,dias:d,texto:'Experiência terminou em '+fim+'. Se o empregado continua, o contrato passou a prazo indeterminado: confirmar e registrar. [CONFERIR COM O DANIEL]'}
+      av.push(d<0?{tipo:'experiencia',nivel:'atencao',data:fim,dias:d,texto:'Experiência terminou em '+fim+'. Se o empregado continua, o contrato passou a prazo indeterminado: confirmar e registrar. [CONFERIR COM O CONTADOR]'}
         :{tipo:'experiencia',nivel:nivelU(d,10,30),data:fim,dias:d,texto:'Experiência termina em '+fim+' ('+d+' dia(s)). Decidir: efetivar, prorrogar (uma vez, até 90 dias no total) ou encerrar, avisando por escrito.'})}}
   if(emp.tipoVinculo==='estagiario'&&emp.inicioContrato&&!emp.pcd){
     const fim=somaDiasU(somaMesesU(emp.inicioContrato,24),-1),d=diasU(ref,fim);
@@ -433,11 +433,11 @@ function avisosVencimento(emp,ref){
     if(lim.length){const fim=lim.sort()[0],d=diasU(ref,fim);av.push({tipo:'aprendiz',nivel:d<0?'critico':nivelU(d,30,60),data:fim,dias:d,texto:d<0?'Contrato de aprendizagem já devia ter terminado em '+fim+'.':'Contrato de aprendizagem termina em '+fim+' ('+d+' dia(s)): no prazo ou ao completar 24 anos, o que vier primeiro (CLT art. 433).'})}}
   if(erros.length)return falhaX(...erros);
   const ord={critico:0,atencao:1,info:2};av.sort((a,b)=>ord[a.nivel]-ord[b.nivel]||a.dias-b.dias);
-  return {ok:true,referencia:ref,avisos:av,alertas:['Prazos calculados por data corrida; feriado e acordo coletivo podem mudar a contagem. [CONFERIR COM O DANIEL]']}}
+  return {ok:true,referencia:ref,avisos:av,alertas:['Prazos calculados por data corrida; feriado e acordo coletivo podem mudar a contagem. [CONFERIR COM O CONTADOR]']}}
 
 // ===== 17. Conferências antes do cálculo (avisos de conferência antes do cálculo)
 // Olha o cadastro e o movimento de UM empregado e avisa o erro antes de a folha fechar. Cada regra diz o porquê e a base. Nada é corrigido sozinho.
-// Regras ligadas a lei trazem a marca [CONFERIR COM O DANIEL] quando dependem de convenção ou de leitura do caso.
+// Regras ligadas a lei trazem a marca [CONFERIR COM O CONTADOR] quando dependem de convenção ou de leitura do caso.
 function conferenciasFolha(emp,mov={},ano=2026){
   const T=tabelaFolha(ano),av=[],S=+emp.salario,M={heNormais:0,heDescanso:0,horasNoturnas:0,faltasDias:0,diasTrabalhados:22,...mov};
   const add=(regra,nivel,texto)=>av.push({regra,nivel,texto});
@@ -447,13 +447,13 @@ function conferenciasFolha(emp,mov={},ano=2026){
     if(he>0)add('aprendiz-hora-extra','critico','Aprendiz com hora extra lançada: prorrogação e compensação de jornada são vedadas (CLT art. 432).');
   }
   if(emp.tipoVinculo==='estagiario'){
-    if(he>0)add('estagiario-hora-extra','atencao','Estagiário com hora extra: a jornada do estágio é limitada pelo termo de compromisso e pela Lei 11.788 art. 10. [CONFERIR COM O DANIEL]');
+    if(he>0)add('estagiario-hora-extra','atencao','Estagiário com hora extra: a jornada do estágio é limitada pelo termo de compromisso e pela Lei 11.788 art. 10. [CONFERIR COM O CONTADOR]');
     if(emp.fgtsAliq>0)add('estagiario-fgts','critico','Estagiário com FGTS: estágio não gera vínculo de emprego (Lei 11.788 art. 3º); não há FGTS.');
   }
   if(S>0&&S<T.sm&&!emp.jornadaParcial&&emp.tipoVinculo!=='estagiario'&&emp.tipoVinculo!=='intermitente')add('abaixo-do-minimo','critico','Salário de R$ '+S.toFixed(2).replace('.',',')+' abaixo do mínimo vigente (R$ '+T.sm.toFixed(2).replace('.',',')+'). Só vale para jornada parcial proporcional ou piso diferente por convenção.');
   const dias=+M.diasTrabalhados>0?+M.diasTrabalhados:22;
-  if(he>0&&he/dias>2)add('hora-extra-excesso','atencao','Média de '+(he/dias).toFixed(1).replace('.',',')+' h extras por dia trabalhado: o acréscimo diário tem limite de 2 horas (CLT art. 59). [CONFERIR COM O DANIEL] acordo ou convenção.');
-  if(he>0&&emp.cargoConfianca)add('cargo-confianca-hora-extra','atencao','Cargo de confiança com hora extra: quem ocupa função de gestão com adicional de 40% fica fora do controle de jornada (CLT art. 62, II). Conferir o enquadramento. [CONFERIR COM O DANIEL]');
+  if(he>0&&he/dias>2)add('hora-extra-excesso','atencao','Média de '+(he/dias).toFixed(1).replace('.',',')+' h extras por dia trabalhado: o acréscimo diário tem limite de 2 horas (CLT art. 59). [CONFERIR COM O CONTADOR] acordo ou convenção.');
+  if(he>0&&emp.cargoConfianca)add('cargo-confianca-hora-extra','atencao','Cargo de confiança com hora extra: quem ocupa função de gestão com adicional de 40% fica fora do controle de jornada (CLT art. 62, II). Conferir o enquadramento. [CONFERIR COM O CONTADOR]');
   if(emp.adicionalTipo&&!emp.adicionalLaudo)add('adicional-sem-laudo','atencao','Adicional de '+String(emp.adicionalTipo).replace('_',' ')+' sem a referência do laudo (NR-15 / NR-16) no cadastro. O pagamento precisa do laudo.');
   if(emp.pensaoTipo&&!(+emp.pensaoValor>0||+emp.pensaoPercentual>0))add('pensao-incompleta','critico','Pensão alimentícia cadastrada sem valor ou percentual: desconto não será feito. Conferir o ofício.');
   if(+emp.vtCusto>0&&+emp.vtCusto>0.06*S&&S>0)add('vt-acima-6','info','Custo do vale-transporte (R$ '+(+emp.vtCusto).toFixed(2).replace('.',',')+') passa de 6% do salário: o desconto do empregado fica limitado a 6%; o resto é custo da empresa.');
@@ -477,7 +477,7 @@ function memoriaDeCalculo(r,emp,mov={},ano=2026){
   add('Valor da hora','salário R$ '+fmtM(S)+' ÷ '+div+' horas',vh,'CLT art. 64 (divisor da jornada)');
   const m={heNormais:0,heDescanso:0,horasNoturnas:0,faltasDias:0,diasUteis:25,diasDescanso:5,comissao:0,...mov};
   if(m.heNormais>0)add('Horas extras 50%',m.heNormais+' h × R$ '+fmtM(vh)+' × 1,5',m.heNormais*vh*1.5,'CF art. 7º XVI; CLT art. 59');
-  if(m.heDescanso>0)add('Horas extras 100% (descanso e feriado)',m.heDescanso+' h × R$ '+fmtM(vh)+' × 2',m.heDescanso*vh*2,'Lei 605/1949; convenção coletiva [CONFERIR COM O DANIEL]');
+  if(m.heDescanso>0)add('Horas extras 100% (descanso e feriado)',m.heDescanso+' h × R$ '+fmtM(vh)+' × 2',m.heDescanso*vh*2,'Lei 605/1949; convenção coletiva [CONFERIR COM O CONTADOR]');
   if(m.horasNoturnas>0)add('Adicional noturno 20%',m.horasNoturnas+' h × R$ '+fmtM(vh)+' × 0,20',m.horasNoturnas*vh*.2,'CLT art. 73');
   const variavel=m.heNormais*vh*1.5+m.heDescanso*vh*2+m.horasNoturnas*vh*.2+(+m.comissao||0);
   if(variavel>0)add('DSR sobre variáveis','R$ '+fmtM(variavel)+' ÷ '+m.diasUteis+' dias úteis × '+m.diasDescanso+' dias de descanso',variavel/m.diasUteis*m.diasDescanso,'Lei 605/1949 art. 7º');
@@ -504,7 +504,7 @@ function memoriaDeCalculo(r,emp,mov={},ano=2026){
 // ===== 19. Programação de férias em lote e férias coletivas
 // Regras: aviso ao empregado 30 dias antes (CLT art. 135); pagamento até 2 dias antes do início (art. 145); fracionamento em até 3 períodos, um com 14 dias ou mais e os outros com 5 dias ou mais (art. 134 §1º);
 // é vedado começar as férias nos 2 dias que antecedem feriado ou dia de repouso semanal (art. 134 §3º). Coletivas (arts. 139 a 141): até 2 períodos, nenhum com menos de 10 dias; comunicar o órgão local do Ministério do Trabalho
-// e o sindicato com 15 dias de antecedência (§§ 2º e 3º) [CONFERIR COM O DANIEL o canal e o prazo vigentes].
+// e o sindicato com 15 dias de antecedência (§§ 2º e 3º) [CONFERIR COM O CONTADOR o canal e o prazo vigentes].
 const dowU=s=>pU(s).getUTCDay();
 function inicioValidoFerias(iso,feriados=[],dsr=0){
   for(let k=1;k<=2;k++){const d=somaDiasU(iso,k);if(dowU(d)===dsr||feriados.includes(d))return {ok:false,motivo:'o início cai em um dos 2 dias que antecedem '+(dowU(d)===dsr?'o repouso semanal':'um feriado')+' ('+d+'): vedado pela CLT art. 134 §3º'}}
@@ -528,7 +528,7 @@ function programaFeriasLote(empregados,ref,opc={}){
     const fim=somaDiasU(ini,b.dias-1);ocupa.push([ini,fim]);
     l.situacao=ini>b.limite?'fora do prazo: dobro':'programada';l.inicio=ini;l.fim=fim;l.avisarAte=somaDiasU(ini,-30);l.pagarAte=somaDiasU(ini,-2);
     if(ini>b.limite)l.alertas.push('O início sugerido passa do limite concessivo ('+b.limite+'): as férias saem em dobro (CLT art. 137). Antecipar o aviso e negociar uma data anterior.');
-    if(diasU(ref,l.avisarAte)<0)l.alertas.push('O aviso de 30 dias já devia ter sido dado ('+l.avisarAte+'). [CONFERIR COM O DANIEL] o aviso ou o acordo por escrito.');
+    if(diasU(ref,l.avisarAte)<0)l.alertas.push('O aviso de 30 dias já devia ter sido dado ('+l.avisarAte+'). [CONFERIR COM O CONTADOR] o aviso ou o acordo por escrito.');
     linhas.push(l)}
   return {ok:true,referencia:ref,linhas,alertas:['Sugestão de datas: o contador e o empregado confirmam. Feriado municipal entra em opc.feriados.']}}
 function feriasColetivas(o){
@@ -542,7 +542,7 @@ function feriasColetivas(o){
   if(!v.ok)alertas.push('Início inválido: '+v.motivo);
   const fim=somaDiasU(o.inicio,p[0]-1);
   return {ok:true,inicio:o.inicio,fimPrimeiroPeriodo:fim,comunicarAte:somaDiasU(o.inicio,-15),avisarEmpregadosAte:somaDiasU(o.inicio,-30),pagarAte:somaDiasU(o.inicio,-2),inicioValido:v.ok,
-    alertas:alertas.concat(['Comunicar o órgão local do Ministério do Trabalho e o sindicato com 15 dias de antecedência (art. 139 §§ 2º e 3º). [CONFERIR COM O DANIEL] o canal e o prazo.','Quem não completou o período aquisitivo goza só as férias proporcionais e inicia novo período aquisitivo (art. 140). [CONFERIR COM O DANIEL]'])}}
+    alertas:alertas.concat(['Comunicar o órgão local do Ministério do Trabalho e o sindicato com 15 dias de antecedência (art. 139 §§ 2º e 3º). [CONFERIR COM O CONTADOR] o canal e o prazo.','Quem não completou o período aquisitivo goza só as férias proporcionais e inicia novo período aquisitivo (art. 140). [CONFERIR COM O CONTADOR]'])}}
 
 if(typeof module!=='undefined')module.exports={adicionalInsalubridade,adicionalPericulosidade,escolheAdicional,calculaFeriasCompleta,calculaDecimoCompleto,rescisaoEstagiario,pensaoValor,validaPensao,consignadoLimite,adiantamentoValor,adiantamentoAvulsoPorLiquido,calculaFolhaCompleta,
   cotaEstagiarios,recessoEstagio,calculaEstagiario,calculaAprendiz,calculaIntermitente,programaFeriasLote,feriasColetivas,inicioValidoFerias,memoriaDeCalculo,conferenciasFolha,avisosVencimento,calculaRRA,calculaRetroativo,mediasVariaveis,calculaFeriasComHistorico,calculaDecimoComHistorico,calculaRPA,

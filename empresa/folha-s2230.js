@@ -1,5 +1,5 @@
 // Prazo de envio do S-2230 (afastamento temporário) e do término (27/11/2026). Fonte LIDA: MOS S-1.3 consolidado, evento S-2230, "Prazo de envio" itens a a g e "Informações adicionais" 1.1 a 1.4.
-// Só PREPARA a data e os avisos: não gera nem envia o evento. A tabela de obrigatoriedade por motivo (item 2.1 do MOS) NÃO foi usada aqui: [CONFERIR COM O DANIEL] se o motivo exige o evento.
+// Só PREPARA a data e os avisos: não gera nem envia o evento. A tabela de obrigatoriedade por motivo (item 2.1 do MOS) NÃO foi usada aqui: [CONFERIR COM O CONTADOR] se o motivo exige o evento.
 (function(){
   const MS=86400000;
   const parse=s=>{if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;const [a,m,d]=s.split('-').map(Number),x=new Date(Date.UTC(a,m-1,d));return(x.getUTCFullYear()===a&&x.getUTCMonth()===m-1&&x.getUTCDate()===d)?x:null};
@@ -23,8 +23,8 @@
     else{regra='f: demais afastamentos: até o dia 15 do mês seguinte à ocorrência';bruto=dia15Seguinte(o.inicio)}
     const inicioAte=util(bruto,fer);
     const alertas=['O eSocial não aceita afastamentos ao mesmo tempo: informe o término de um antes de informar o início de outro (por exemplo, férias e depois licença-maternidade). (MOS S-2230, item 1.1)','Desligamento por pedido de demissão, encerramento da empresa, falecimento do empregador individual, transferência ou óbito dispensa o envio do retorno. (item 1.2)'];
-    if(trab)alertas.push('Acidente ou doença do trabalho (e licença-maternidade paga direto pelo INSS): observar também o item 36 do S-1200. (item 1.4) [CONFERIR COM O DANIEL]');
-    alertas.push('Se o motivo exige o evento para este tipo de trabalhador (tabela do item 2.1 do MOS) não foi conferido aqui. [CONFERIR COM O DANIEL]');
+    if(trab)alertas.push('Acidente ou doença do trabalho (e licença-maternidade paga direto pelo INSS): observar também o item 36 do S-1200. (item 1.4) [CONFERIR COM O CONTADOR]');
+    alertas.push('Se o motivo exige o evento para este tipo de trabalhador (tabela do item 2.1 do MOS) não foi conferido aqui. [CONFERIR COM O CONTADOR]');
     if(bruto!==inicioAte)alertas.push('O prazo caía em dia não útil e foi levado para o primeiro dia útil seguinte (informe os feriados para conferir).');
     const r={ok:true,regra,inicioAte,alertas,aviso:'Estimativa; o contador confere.'};
     if(o.retorno){const ate=dia15Seguinte(o.retorno);r.terminoAte=util(ate,fer);r.terminoRegra='g: término do afastamento: até o dia 15 do mês seguinte à competência do retorno'}

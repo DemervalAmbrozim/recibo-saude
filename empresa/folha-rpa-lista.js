@@ -1,5 +1,5 @@
 // Lista numerada de RPA (recibo de pagamento a autônomo) do mês (27/11/2026): próximo número, saltos, duplicados, totais retidos e avisos.
-// Fonte lida: MOS S-1.3, tabela 10.2.1 (categoria 701, autônomo em geral): o S-2300 é FACULTATIVO para a categoria 701; a remuneração é informada no S-1200. [CONFERIR COM O DANIEL] como o escritório informa.
+// Fonte lida: MOS S-1.3, tabela 10.2.1 (categoria 701, autônomo em geral): o S-2300 é FACULTATIVO para a categoria 701; a remuneração é informada no S-1200. [CONFERIR COM O CONTADOR] como o escritório informa.
 // Não calcula o RPA (use calculaRPA) nem gera guia: só organiza os recibos já calculados. ESTIMATIVA até o contador conferir.
 (function(){
   const r2=x=>Math.round((+x+Number.EPSILON)*100)/100,dig=s=>String(s==null?'':s).replace(/\D/g,'');
@@ -18,9 +18,9 @@
     const porCpf=new Map();sel.forEach(r=>{const k=dig(r.cpf);porCpf.set(k,(porCpf.get(k)||0)+1)});
     porCpf.forEach((q,k)=>{if(q>1)alertas.push('O autônomo de CPF final '+k.slice(-4)+' tem '+q+' RPA no mês: o INSS retido tem teto somando os recibos (use o campo de INSS já recolhido em outras fontes no cálculo).')});
     const tot=k=>r2(sel.reduce((s,r)=>s+(+r[k]||0),0));
-    alertas.push('S-2300 é facultativo para autônomo em geral (categoria 701); a remuneração é informada no S-1200. [CONFERIR COM O DANIEL] como o escritório informa e como o INSS retido chega à DCTFWeb.');
-    alertas.push('ISS: retenção e guia são do município do serviço. [CONFERIR COM O DANIEL]');
-    alertas.push('Guia: não há GPS separada. INSS e IRRF retidos saem no DARF único da DCTFWeb (competência 05/2023 em diante), alimentado pelo S-1200 e pelo S-1299 do mês (fonte: ajuda de um fabricante de sistema; não é texto oficial). Pagar o DARF gerado na DCTFWeb. [CONFERIR COM O DANIEL]');
+    alertas.push('S-2300 é facultativo para autônomo em geral (categoria 701); a remuneração é informada no S-1200. [CONFERIR COM O CONTADOR] como o escritório informa e como o INSS retido chega à DCTFWeb.');
+    alertas.push('ISS: retenção e guia são do município do serviço. [CONFERIR COM O CONTADOR]');
+    alertas.push('Guia: o que foi declarado no S-1200 e fechado no S-1299 do mês segue para a DCTFWeb (o eSocial devolve o S-5011 com as bases e os créditos apurados) e o pagamento é o DARF numerado emitido na DCTFWeb (texto oficial: Manual de Orientação do eSocial S-1.3, evento S-5011; Manual da DCTFWeb de jan/2025, cap. 16). Que o IRRF retido do autônomo vai no mesmo DARF e que isso vale de 05/2023 em diante só consta em ajuda de fabricante de sistema, não em texto oficial lido. [CONFERIR COM O CONTADOR]');
     return{ok:true,competencia:comp,recibos:sel,quantidade:sel.length,primeiro:sel[0].numero,ultimo:sel[sel.length-1].numero,proximo:proximoNumeroRPA(recibos),
       totais:{valor:tot('valor'),inss:tot('inss'),irrf:tot('irrf'),iss:tot('iss'),liquido:tot('liquido')},alertas,aviso:'Estimativa; o contador confere antes do pagamento.'};
   }

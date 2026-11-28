@@ -1,6 +1,6 @@
 // Prévia do evento S-2230 (afastamento temporário) conforme o LEIAUTE S-1.3 (NT 07/2026), lido em 27/11/2026 em gov.br/esocial/.../leiautes-esocial-versao-s-1-3-nt-07-2026.
 // Só MONTA e CONFERE os campos: o XML sai SEM assinatura e NÃO é enviado. Assinar com certificado digital e transmitir é do contador/procuração. A Tabela 18 (códigos de motivo) não foi lida: o código é aceito
-// como 2 dígitos e só as regras que o leiaute escreve com o número do código são validadas (01, 03, 14, 15, 18, 21, 22, 24). [CONFERIR COM O DANIEL] o código e a compatibilidade com a categoria.
+// como 2 dígitos e só as regras que o leiaute escreve com o número do código são validadas (01, 03, 14, 15, 18, 21, 22, 24). [CONFERIR COM O CONTADOR] o código e a compatibilidade com a categoria.
 (function(){
   const MOT=(typeof window!=='undefined'&&window.motivoAfastamento)||(typeof require!=='undefined'?(()=>{try{return require('./esocial-tabela18.js').motivoAfastamento}catch(e){return null}})():null);
   const dig=s=>String(s==null?'':s).replace(/\D/g,'');
@@ -39,8 +39,8 @@
         if(ini.tpAcidTransito!=null&&ini.tpAcidTransito!==''){if(!['01','03'].includes(cod))erros.push('tpAcidTransito só vale para codMotAfast 01 ou 03');else if(![1,2,3].includes(+ini.tpAcidTransito))erros.push('tpAcidTransito: 1 atropelamento, 2 colisão, 3 outros')}
         if(ini.infoMesmoMtv!=null&&ini.infoMesmoMtv!==''){if(!['01','03'].includes(cod))erros.push('infoMesmoMtv só vale para codMotAfast 01 ou 03');else if(!['S','N','I'].includes(ini.infoMesmoMtv))erros.push('infoMesmoMtv: S, N ou I');else if(cod==='01'&&ini.infoMesmoMtv==='I')erros.push('para codMotAfast 01, infoMesmoMtv só aceita S ou N')}
         if((cod==='01'||cod==='03')&&ini.dtIniAfast>='2026-10-26'&&ini.existeAfastamentoAnterior60d&&!ini.infoMesmoMtv)erros.push('desde 26/10/2026, com outro afastamento anterior em até 60 dias pelo mesmo motivo, infoMesmoMtv é obrigatório (leiaute)');
-        if(MOT){const mv=MOT(cod);if(!mv.conhecido)alertas.push(mv.aviso);else{alertas.push('Motivo '+mv.cod+': '+mv.descricao+'. '+mv.rotulo+(mv.nota?' ('+mv.nota+')':'')+'. [CONFERIR COM O DANIEL] a categoria do trabalhador.');if(mv.obrigatoriedade==='nao_enviar')alertas.push('ATENÇÃO: este motivo não deve ser enviado por empresa privada com empregado CLT (MOS S-2230, item 2.1).')}}
-        if(cod==='15'&&!ini.perAquis)alertas.push('Férias (15): o período aquisitivo (perAquis) é obrigatório para empregado CLT com início a partir de 19/07/2021 (leiaute). Informe dtInicio. [CONFERIR COM O DANIEL] a categoria.');
+        if(MOT){const mv=MOT(cod);if(!mv.conhecido)alertas.push(mv.aviso);else{alertas.push('Motivo '+mv.cod+': '+mv.descricao+'. '+mv.rotulo+(mv.nota?' ('+mv.nota+')':'')+'. [CONFERIR COM O CONTADOR] a categoria do trabalhador.');if(mv.obrigatoriedade==='nao_enviar')alertas.push('ATENÇÃO: este motivo não deve ser enviado por empresa privada com empregado CLT (MOS S-2230, item 2.1).')}}
+        if(cod==='15'&&!ini.perAquis)alertas.push('Férias (15): o período aquisitivo (perAquis) é obrigatório para empregado CLT com início a partir de 19/07/2021 (leiaute). Informe dtInicio. [CONFERIR COM O CONTADOR] a categoria.');
         if(ini.perAquis){if(!parse(ini.perAquis.dtInicio))erros.push('perAquis.dtInicio inválida');if(ini.perAquis.dtFim&&(!parse(ini.perAquis.dtFim)||ini.perAquis.dtFim<=ini.perAquis.dtInicio))erros.push('perAquis.dtFim deve ser posterior ao início (e só se o período não for de 1 ano)')}
         if(['14','22','24'].includes(cod))erros.push('código '+cod+' (cessão, mandato eletivo ou sindical) exige grupo complementar que esta prévia não monta');
       }

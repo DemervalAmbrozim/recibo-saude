@@ -23,8 +23,8 @@
     const alertas=[];
     if(liquido<0)alertas.push('Os descontos passam do valor da complementar: o líquido ficou negativo.');
     if(original.baseINSS+addINSS>T.teto)alertas.push('A base do INSS passou do teto (R$ '+String(T.teto.toFixed(2)).replace('.',',')+'): o INSS da complementar é só a diferença até o teto.');
-    alertas.push('eSocial (MOS S-1.3, lido 27/11): se a folha do mês já foi enviada, o S-1200 é retificado com um NOVO demonstrativo (ideDmDev próprio) para o valor pago nesta data. [CONFERIR COM O DANIEL]');
-    alertas.push('O recibo e o pagamento são separados da folha original. Pensão judicial, consignado e salário-família não foram recalculados aqui. [CONFERIR COM O DANIEL]');
+    alertas.push('eSocial (MOS S-1.3, lido 27/11): se a folha do mês já foi enviada, o S-1200 é retificado com um NOVO demonstrativo (ideDmDev próprio) para o valor pago nesta data. [CONFERIR COM O CONTADOR]');
+    alertas.push('O recibo e o pagamento são separados da folha original. Pensão judicial, consignado e salário-família não foram recalculados aqui. [CONFERIR COM O CONTADOR]');
     return{ok:true,tipo:'complementar',ano:a,motivo:compl.motivo||'',proventos:compl.proventos.map(p=>({cod:p.cod||'090',desc:p.desc,ref:p.ref||' ',valor:r2(p.valor)})),
       bruto,inss:inssC,irrf:irrfC,outrosDescontos:outros,fgts:fgtsC,liquido,
       totalMes:{inss:r2(original.inss+inssC),irrf:r2(original.irrf+irrfC),fgts:r2(original.fgts+fgtsC)},alertas,aviso:'Estimativa; o contador confere antes do pagamento.'};

@@ -3,7 +3,7 @@
 // NÃO adivinha o layout de nenhum fabricante de relógio: o contador confere os nomes das colunas. Nada é gravado nem enviado.
 // Colunas aceitas (maiúscula, acento e espaço não importam): id|matricula|cpf, nome, he50|horas extras 50, he100|horas extras 100 (descanso e feriado),
 // noturnas|horas noturnas, faltas|faltas dias, atraso|atrasos (horas), comissao|comissoes (R$), salario (opcional, só para mostrar o cálculo).
-// Horas: "10,5", "10.5" ou "10:30".  [CONFERIR COM O DANIEL] a regra da empresa para atraso, tolerância de minutos e banco de horas: aqui o atraso entra como veio.
+// Horas: "10,5", "10.5" ou "10:30".  [CONFERIR COM O CONTADOR] a regra da empresa para atraso, tolerância de minutos e banco de horas: aqui o atraso entra como veio.
 (function(){
   const r2p=x=>Math.round((+x+Number.EPSILON)*100)/100;
   const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');

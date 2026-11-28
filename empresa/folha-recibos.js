@@ -32,7 +32,7 @@
     const f=r.fgts||{},corpo='<p>Motivo: <b>'+esc(String(r.tipo).replace(/_/g,' '))+'</b>'+(o.saida?' · saída em '+dt(o.saida):'')+(r.vencimento?' · pagamento das verbas até '+dt(r.vencimento):'')+'</p>'
       +tab(linhas,r.totalProventos,r.totalDescontos)+'<p><b>Líquido da rescisão: '+brl(r.liquido)+'</b></p>'
       +'<p class="peq">FGTS: depósito rescisório '+brl(f.deposito)+' · multa '+brl(f.multa)+(f.multaPct?' ('+Math.round(f.multaPct*100)+'%)':'')+'. A guia é gerada no FGTS Digital; este recibo não a substitui.</p>'
-      +'<p class="peq"><b>Este documento NÃO é o Termo de Rescisão (TRCT) oficial.</b> O modelo vigente do TRCT ainda precisa ser confirmado com o contador. [CONFERIR COM O DANIEL]</p>'
+      +'<p class="peq"><b>Este documento NÃO é o Termo de Rescisão (TRCT) oficial.</b> O modelo vigente do TRCT ainda precisa ser confirmado com o contador. [CONFERIR COM O CONTADOR]</p>'
       +(r.alertas&&r.alertas.length?'<ul class="peq">'+r.alertas.map(a=>'<li>'+esc(a)+'</li>').join('')+'</ul>':'');
     return {ok:true,html:moldura('Recibo de verbas rescisórias',empresa,emp,'Rescisão',corpo,r.aviso)};
   }

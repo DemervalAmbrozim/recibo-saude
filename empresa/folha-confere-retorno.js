@@ -1,7 +1,7 @@
 // Folha: conferência do que CALCULAMOS contra o que o GOVERNO devolveu (27/11/2026; matriz da folha, linha 29: outros sistemas têm; nós não tínhamos).
 // Carregar DEPOIS de folha.js. Só COMPARA números: não transmite, não paga, não decide quem está certo.
 // Retorno do governo (digitado ou importado pelo contador): por empregado {id, inss, irrf, fgts}. Origem usual: retornos do eSocial por trabalhador
-// (S-5001 contribuições, S-5002 IRRF, S-5003 FGTS) [CONFERIR COM O DANIEL o campo exato de cada leiaute antes de importar automático].
+// (S-5001 contribuições, S-5002 IRRF, S-5003 FGTS) [CONFERIR COM O CONTADOR o campo exato de cada leiaute antes de importar automático].
 // Diferença só vira "possível causa" quando a conta fecha com dado NOSSO; o resto fica "a investigar". Nada de causa inventada.
 (function(){
 const r2cr=x=>Math.round((+x+Number.EPSILON)*100)/100;
