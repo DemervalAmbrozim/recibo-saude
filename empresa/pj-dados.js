@@ -156,6 +156,17 @@ function criaDados(sb){
     async encerrarExercicio(emp,ano){return ck(await sb.rpc('pj_encerrar_exercicio',{emp,p_ano:+ano}))},
     async desfazerEncerramento(emp,ano,motivo){return ck(await sb.rpc('pj_desfazer_encerramento',{emp,p_ano:+ano,p_motivo:String(motivo||'')}))},
     async exerciciosEncerrados(emp){return ck(await sb.from('pj_exercicio_encerrado').select('ano,lancamento_id,resultado,encerrado_em').eq('empresa_id',emp).order('ano',{ascending:false}))||[]},
+    // ===== 080: De/Para dos eventos contábeis (regra em dados) e lançamento por evento
+    async eventosContabeis(){return ck(await sb.from('pj_evento_contabil').select('codigo,versao,nome,origem').order('nome'))||[]},
+    async camposDoEvento(codigo){const l=ck(await sb.from('pj_evento_contabil_linha').select('conta,campo,obrigatoria,ordem,lado').eq('codigo',codigo).order('ordem'))||[];const campos=[],vistos={};
+      for(const x of l){if(!vistos[x.campo]){vistos[x.campo]=1;campos.push({campo:x.campo,obrigatoria:x.obrigatoria})}if(String(x.conta).startsWith('@')){const v=String(x.conta).slice(1);if(!vistos[v]){vistos[v]=1;campos.push({campo:v,conta:true,obrigatoria:true})}}}return campos},
+    async contabilizar(emp,evento,data,valores,ref,chaveIdem){return ck(await sb.rpc('pj_contabilizar',{emp,p_evento:evento,p_data:data,p_valores:valores||{},p_historico:null,p_ref:ref||null,p_chave_idem:chaveIdem||null}))},
+    async lancamentos(emp,de,ate){return ck(await sb.from('pj_lancamento').select('id,exercicio,numero,data,data_caixa,historico,origem,estorna_id,pj_partida(conta,debito,credito)').eq('empresa_id',emp).gte('data',de).lte('data',ate).order('exercicio').order('numero'))||[]},
+    // ===== 075: parâmetros legais do ano vindos do banco, aplicados ao motor (INSS, IRRF com a redução da Lei 15.270, salário mínimo, salário-família, VT, FGTS)
+    async parametrosLegaisDoAno(ano){const d=ano+'-06-30',g=async k=>ck(await sb.rpc('pj_parametro_legal_em',{p_chave:k,p_data:d})),sm=await g('salario_minimo'),inss=await g('inss_empregado'),sf=await g('salario_familia'),vt=await g('vale_transporte'),fg=await g('fgts'),ir=await g('irrf_mensal');
+      if(![sm,inss,sf,vt,fg,ir].every(Boolean))throw new Error('parâmetros legais de '+ano+' não cadastrados no banco');
+      return {folha:{sm:sm.valor,teto:inss.teto,inss:inss.faixas,depIR:ir.deducao_dependente,sfLimite:sf.limite,sfCota:sf.cota,vtPct:vt.pct_desconto_max,fgts:fg.aliquota,fonte:'parâmetros legais do banco (pj_parametro_legal)',conferido:'vigência de '+ano},ir}},
+    async aplicaParametrosLegais(ano){const p=await this.parametrosLegaisDoAno(ano);if(typeof registraTabelaFolha==='function')registraTabelaFolha(ano,p.folha);if(typeof aplicaTabelaIR==='function')aplicaTabelaIR(p.ir);return p},
     // ===== 075: cadastro completo da folha
     async dependentes(emp,empregado){return ck(await sb.from('pj_dependente').select('id,nome,cpf,nascimento,tipo,deduz_irrf,salario_familia').eq('empresa_id',emp).eq('empregado_id',empregado).order('nome'))||[]},
     async salvarDependente(emp,empregado,d){const cpf=String(d.cpf||'').replace(/\D/g,'');return ck(await sb.from('pj_dependente').insert({empresa_id:emp,empregado_id:empregado,nome:String(d.nome||'').trim(),cpf:cpf||null,nascimento:d.nascimento,tipo:d.tipo,deduz_irrf:!!d.deduzIrrf,salario_familia:!!d.salarioFamilia}))},

@@ -30,12 +30,17 @@ const TIPOS={consultorio:['Consultório',1,'Abate 100% das contas deste local.']
   domicilio:['Domiciliar',0,'Sem conta de imóvel para abater. Combustível e carro não abatem no Carnê-Leão.']};
 
 // Carnê-Leão 2026: tabela mensal + desconto simplificado + redução da Lei 15.270/2025 (conferido na Receita em 18/10/2026)
-const LIM=5000, LIM2=7350, SIMPL=607.20;
-const TAB=[[2428.80,0,0],[2826.65,.075,182.16],[3751.05,.15,394.16],[4664.68,.225,675.49],[Infinity,.275,908.73]];
+let LIM=5000, LIM2=7350, SIMPL=607.20, RED_TETO=312.89, RED_A=978.62, RED_B=0.133145;
+let TAB=[[2428.80,0,0],[2826.65,.075,182.16],[3751.05,.15,394.16],[4664.68,.225,675.49],[Infinity,.275,908.73]];
+// Troca a tabela do IR pelos parâmetros legais vindos do banco (pj_parametro_legal 'irrf_mensal'). Recusa formato inválido e não muda nada se algo estiver errado.
+function aplicaTabelaIR(p){if(!p||!Array.isArray(p.tabela)||p.tabela.length<2||!p.reducao)throw new Error('tabela do IR inválida');
+  const tab=p.tabela.map(f=>[f[0]===null||f[0]===undefined?Infinity:+f[0],+f[1],+f[2]]);if(tab.some(f=>f.some(x=>isNaN(x)))||tab[tab.length-1][0]!==Infinity)throw new Error('tabela do IR inválida');
+  const r=p.reducao;if(![r.ate,r.ate2,r.teto_reducao,r.a,r.b,p.desconto_simplificado].every(x=>typeof x==='number'&&isFinite(x)))throw new Error('redução do IR inválida');
+  TAB=tab;LIM=r.ate;LIM2=r.ate2;RED_TETO=r.teto_reducao;RED_A=r.a;RED_B=r.b;SIMPL=p.desconto_simplificado}
 function carneLeao(rend,ded){
   const deducao=Math.max(ded,SIMPL), base=Math.max(0,rend-deducao);
   const [,al,pd]=TAB.find(f=>base<=f[0]); const bruto=Math.max(0,base*al-pd);
-  const red=rend<=LIM?Math.min(bruto,312.89):rend<=LIM2?Math.max(0,978.62-0.133145*rend):0;
+  const red=rend<=LIM?Math.min(bruto,RED_TETO):rend<=LIM2?Math.max(0,RED_A-RED_B*rend):0;
   return {deducao,usaSimpl:ded<SIMPL,base,bruto,red,devido:Math.max(0,Math.round((bruto-red)*100)/100)};
 }
 const soma=xs=>xs.reduce((s,x)=>s+ +x.valor,0);

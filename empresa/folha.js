@@ -9,6 +9,8 @@ const TABELAS_FOLHA={
     conferido:'21/11/2026: faixas do INSS (7,5% até 1.621,00; 9% até 2.902,84; 12% até 4.354,27; 14% até 8.475,55), teto de 8.475,55, salário-família de R$ 67,54 para remuneração até R$ 1.980,38 (filho até 14 anos ou inválido) LIDOS no texto da Portaria Interministerial MPS/MF 13, de 09/01/2026 (DOU 12/01/2026), em site de legislação; a contribuição máxima de 988,09 é conta nossa (confere). Conferir no DOU/gov.br ao assinar a 1ª folha.'}};
 const r2f=x=>Math.round((x+Number.EPSILON)*100)/100;
 
+// Registra a tabela de um ano com os parâmetros legais do banco (pj_parametro_legal). Recusa tabela incompleta.
+function registraTabelaFolha(ano,t){const ok=t&&[t.sm,t.teto,t.depIR,t.sfLimite,t.sfCota,t.vtPct,t.fgts].every(x=>typeof x==='number'&&isFinite(x))&&Array.isArray(t.inss)&&t.inss.length>=2&&t.inss.every(f=>f.length===2&&isFinite(f[0])&&isFinite(f[1]));if(!ok)throw new Error('tabela da folha inválida para '+ano);TABELAS_FOLHA[ano]=t}
 function tabelaFolha(ano){const t=TABELAS_FOLHA[ano];if(!t)throw new Error('Tabela da folha de '+ano+' não cadastrada: cadastre em TABELAS_FOLHA antes de calcular');return t}
 
 // Modo do arredondamento do INSS (21/11/2026): 'total' = soma as faixas e arredonda no fim; 'truncado' = trunca cada faixa em centavos (como o eSocial S-5001, leitura de 17/11).

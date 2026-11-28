@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://yfcogdqahsmaynyggqnk.supabase.co; connect-src 'self' https://yfcogdqahsmaynyggqnk.supabase.co wss://yfcogdqahsmaynyggqnk.supabase.co; font-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Livro contábil do contador</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: seletor de empresa no topo, abas (Lançar, Livro, Meses, Relatórios, Plano, Lucros, Auditor) e uma tabela ou formulário por aba */
+:root{--bg:#f3f6f4;--card:#fff;--fg:#17231e;--muted:#5d6e66;--line:#d9e2dd;--accent:#0f6b55;--accent-fg:#fff;--soft:#e2efe9;--warn:#8a5a00;--warnbg:#fbeedb;--bad:#a32121;--field:#76867e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d2d27;--warn:#e7a559;--warnbg:#33260f;--bad:#ff8a8a;--field:#7b9086;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1714;--card:#17221e;--fg:#e4ede8;--muted:#94a89f;--line:#2a3833;--accent:#4cc3a0;--accent-fg:#06221a;--soft:#1d2d27;--warn:#e7a559;--warnbg:#33260f;--bad:#ff8a8a;--field:#7b9086;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:14px}main>*{min-width:0}
+h1{font-size:clamp(22px,5vw,30px);margin:0}h2{font-size:18px;margin:0 0 8px}p{margin:0}.sub{color:var(--muted);font-size:14px}
+nav{display:flex;gap:6px;flex-wrap:wrap}nav button,.bt{font:inherit;padding:9px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:44px}
+nav button[aria-selected=true],.bt.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}label{display:grid;gap:3px;font-size:14px;color:var(--muted)}
+input,select{font:inherit;padding:9px 10px;border:1px solid var(--field);border-radius:8px;background:var(--card);color:var(--fg);min-height:44px;min-width:0}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.msg{padding:9px 12px;border-radius:10px;background:var(--soft);font-size:14px}.msg.erro{background:var(--warnbg);color:var(--bad)}
+.dois{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.pill{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--soft);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Livro contábil</h1><p class="sub">Lançamentos, meses, relatórios, plano de contas, lucros e conferência do livro. Só o contador escreve; o livro não se altera: correção é por estorno.</p></header>
+<div class="card"><label>Empresa<select id="emp"></select></label><p class="sub" id="st"></p></div>
+<nav id="abas" role="tablist"></nav>
+<section id="tela" class="card" aria-live="polite"></section>
+<p class="msg" id="msg" hidden></p>
+</main>
+<script src="../config.js"></script>
+<script src="mascaras.js"></script>
+<script src="pj-dados.js"></script>
+<script src="livro.js"></script>
+</body>
+</html>
