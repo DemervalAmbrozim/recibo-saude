@@ -10,7 +10,7 @@ const PLANO=[
   ['1.1.3.01','Tributos a recuperar (salário-família e compensações)','ativo','D'],['1.1.3.02','CBS a recuperar','ativo','D'],['1.1.3.03','IBS a recuperar','ativo','D'],['1.1.4.01','Adiantamentos a empregados','ativo','D'],['1.1.4.02','Adiantamentos a sócios (não é distribuição de lucros)','ativo','D'],['1.2.1.01','Equipamentos e móveis','ativo','D'],['1.2.1.99','(-) Depreciação acumulada','ativo','C'],
   ['2.1.1.01','Fornecedores','passivo','C'],['2.1.2.01','Simples Nacional a recolher','passivo','C'],['2.1.2.02','INSS a recolher','passivo','C'],['2.1.2.03','IRRF a recolher','passivo','C'],
   ['2.1.2.04','FGTS a recolher','passivo','C'],['2.1.2.05','ISS retido a recolher','passivo','C'],['2.1.2.06','CBS a recolher','passivo','C'],['2.1.2.07','IBS a recolher','passivo','C'],['2.1.3.01','Salários a pagar','passivo','C'],['2.1.3.02','Pró-labore a pagar','passivo','C'],
-  ['2.1.3.03','Provisão de férias','passivo','C'],['2.1.3.04','Provisão de 13º salário','passivo','C'],['2.1.3.05','Provisão de FGTS sobre férias e 13º','passivo','C'],['2.1.3.06','Pensão alimentícia a pagar (retida em folha)','passivo','C'],['2.1.3.07','Consignado a repassar (retido em folha)','passivo','C'],['2.1.3.08','Outros descontos de empregados a repassar','passivo','C'],['2.1.4.01','Lucros a distribuir','passivo','C'],
+  ['2.1.3.03','Provisão de férias','passivo','C'],['2.1.3.04','Provisão de 13º salário','passivo','C'],['2.1.3.05','Provisão de FGTS sobre férias e 13º','passivo','C'],['2.1.3.06','Pensão alimentícia a pagar (retida em folha)','passivo','C'],['2.1.3.07','Consignado a repassar (retido em folha)','passivo','C'],['2.1.3.08','Outros descontos de empregados a repassar','passivo','C'],['2.1.4.01','Lucros a distribuir','passivo','C'],['2.1.9.99','Movimentos a classificar (transitória)','passivo','C'],
   ['2.3.1.01','Capital social','pl','C'],['2.3.2.01','Lucros ou prejuízos acumulados','pl','C'],['2.3.3.01','Lucros distribuídos','pl','D'],
   ['3.1.1.03','Venda de serviços','receita','C'],['3.1.2.01','(-) Simples Nacional sobre a receita','deducao','D'],['3.1.2.02','(-) Cancelamentos e devoluções','deducao','D'],
   ['3.2.1.01.001','Pró-labore','despesa','D'],['3.2.1.01.002','Salários e ordenados','despesa','D'],['3.2.1.01.003','FGTS','despesa','D'],['3.2.1.01.004','Férias e 13º salário (provisão)','despesa','D'],
@@ -93,6 +93,10 @@ function criaLivro(){
     // despesa paga na hora: código P10 do app ou conta direta
     despesaPaga:(data,v,contaOuP10,hist)=>{const conta=CONTA[contaOuP10]?contaOuP10:contaDeP10(contaOuP10);if(!conta)throw new Error('despesa sem conta no plano: '+contaOuP10);
       return lanca({data,historico:hist||CONTA[conta].nome,origem:'despesa',partidas:[{conta,d:v},{conta:'1.1.1.02',c:v}]})},
+    // C2 (28/11/2026): despesa com ciclo completo. Reconhece na COMPETÊNCIA (a pagar a fornecedores) e baixa no PAGAMENTO (data de caixa). A DRE vê só o reconhecimento; o fluxo de caixa só a baixa.
+    despesaAPagar:(data,v,contaOuP10,hist)=>{const conta=CONTA[contaOuP10]?contaOuP10:contaDeP10(contaOuP10);if(!conta)throw new Error('despesa sem conta no plano: '+contaOuP10);
+      return lanca({data,historico:hist||('A pagar: '+CONTA[conta].nome),origem:'despesa',partidas:[{conta,d:v},{conta:'2.1.1.01',c:v}]})},
+    despesaBaixa:(data,v,hist)=>lanca({data,historico:hist||'Pagamento a fornecedor',origem:'despesa',partidas:[{conta:'2.1.1.01',d:v},{conta:'1.1.1.02',c:v}]}),
     // DAS: apuração na competência (dedução da receita) e pagamento
     dasApurado:(data,v,comp)=>lanca({data,historico:'Simples Nacional da competência '+comp,origem:'das',ref:comp,partidas:[{conta:'3.1.2.01',d:v},{conta:'2.1.2.01',c:v}]}),
     dasPago:(data,v,comp)=>lanca({data,historico:'Pagamento do DAS '+comp,origem:'das',ref:comp,partidas:[{conta:'2.1.2.01',d:v},{conta:'1.1.1.02',c:v}]}),

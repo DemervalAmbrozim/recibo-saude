@@ -16,6 +16,14 @@
     return TAB(['Cód.','Descrição','Ref.','Proventos','Descontos'],P.map(function(x){return [ESC(x.cod),ESC(x.desc),ESC(x.ref||''),BR(x.valor),'']}).concat(D.map(function(x){return [ESC(x.cod),ESC(x.desc),ESC(x.ref||''),'',BR(x.valor)]})),[0,0,0,1,1])};
   var TOTAL=function(r){return '<p>Líquido <span class="big">'+BR(r.liquido)+'</span>'+(r.fgts!=null?' · FGTS do mês '+BR(typeof r.fgts==='object'?r.fgts.deposito:r.fgts):'')+'</p>'};
   var F=function(){return window};
+  var ULT=null; // último cálculo de férias ou rescisão da tela de recibos (o que o botão "Guardar no banco" grava)
+  // 28/11: com a empresa conectada, guarda férias e rescisão em pj_folha_calculo (sombra; o contador aprova no banco).
+  function barraGuardar(){var out=Q('vx-out'),CTX=window.__bdCtx;if(!out||!ULT||!CTX||!CTX.DB||!CTX.EMP)return;
+    var box=document.createElement('div');box.id='vx-gb';box.className='alerta';box.innerHTML='<label>Guardar no banco para o empregado <select id="vx-gb-e"><option value="">Carregando...</option></select></label> <button type="button" id="vx-gb-b">Guardar no banco</button><div id="vx-gb-m" role="status"></div>';out.appendChild(box);
+    CTX.DB.empregados(CTX.EMP).then(function(L){var s=Q('vx-gb-e');if(!s)return;s.innerHTML='<option value="">Escolha o empregado cadastrado</option>'+L.map(function(e){return '<option value="'+ESC(e.id)+'">'+ESC(e.nome)+'</option>'}).join('')}).catch(function(e){var m=Q('vx-gb-m');if(m)m.innerHTML=ERROS([window.traduzErroPj?window.traduzErroPj(e,'ler'):'Não consegui ler os empregados.'])});
+    Q('vx-gb-b').onclick=function(){var m=Q('vx-gb-m'),id=Q('vx-gb-e').value,u=ULT;if(!id){m.innerHTML=ERROS(['Escolha o empregado cadastrado.']);return}
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(u.competencia)){m.innerHTML=ERROS(['Informe a data de saída ou de início das férias (aaaa-mm-dd).']);return}
+      CTX.DB.salvarCalculo(CTX.EMP,id,{tipo:u.tipo,competencia:u.competencia,referencia:u.referencia,resultado:u.resultado,versaoRegras:'folha.js 2026-11-17',bruto:u.bruto,liquido:u.liquido,status:'sombra'}).then(function(){m.innerHTML='<div class="alerta">Guardado como sombra. O contador aprova no banco; depois de aprovado não muda.</div>'}).catch(function(e){m.innerHTML=ERROS([window.traduzErroPj?window.traduzErroPj(e):'Não consegui guardar.'])})}}
 
   // campo: [id, rótulo, padrão, tipo, opções]. tipo: n número, d data, m mês, t texto, s lista, c caixa, a área de texto
   var SEL_ADIC=[['','Sem adicional'],['minimo','Insalubridade mínima (10%)'],['medio','Insalubridade média (20%)'],['maximo','Insalubridade máxima (40%)'],['peri','Periculosidade (30%)']];
@@ -164,8 +172,9 @@
       ['r-ti','Motivo da rescisão','sem_justa_causa','s',[['sem_justa_causa','Sem justa causa'],['pedido_demissao','Pedido de demissão'],['justa_causa','Justa causa'],['acordo','Acordo (art. 484-A)'],['termino_contrato','Término de contrato']]],
       ['r-nr','Nº do recibo (RPA)','1','n'],['r-h','Horas da convocação (intermitente)','100','n']],
       calc:function(){var emp={nome:TXT('r-n'),cpf:TXT('r-c'),salario:NUM('r-s')},empresa={nome:'Empresa (exemplo)',cnpj:''},t=TXT('r-t'),r,out;
-        if(t==='ferias'){r=window.reciboFeriasHTML(window.calculaFerias(emp,{diasGozo:30}),empresa,emp,{inicio:TXT('r-sa')})}
-        else if(t==='rescisao'){r=window.reciboRescisaoHTML(window.calculaRescisao(emp,{tipo:TXT('r-ti'),admissao:TXT('r-ad'),saida:TXT('r-sa')}),empresa,emp,{saida:TXT('r-sa')})}
+        ULT=null;
+        if(t==='ferias'){var cf=window.calculaFerias(emp,{diasGozo:30});r=window.reciboFeriasHTML(cf,empresa,emp,{inicio:TXT('r-sa')});if(cf.ok)ULT={tipo:'ferias',resultado:cf,bruto:cf.bruto,liquido:cf.liquido,competencia:TXT('r-sa'),referencia:'Férias a partir de '+TXT('r-sa')}}
+        else if(t==='rescisao'){var cr=window.calculaRescisao(emp,{tipo:TXT('r-ti'),admissao:TXT('r-ad'),saida:TXT('r-sa')});r=window.reciboRescisaoHTML(cr,empresa,emp,{saida:TXT('r-sa')});if(cr.ok)ULT={tipo:'rescisao',resultado:cr,bruto:cr.totalProventos,liquido:cr.liquido,competencia:TXT('r-sa'),referencia:'Rescisão ('+TXT('r-ti')+') em '+TXT('r-sa')}}
         else if(t==='inter'){r=window.reciboIntermitenteHTML(window.calculaIntermitente({valorHora:NUM('r-s'),dependentes:0},{horas:NUM('r-h'),diasUteis:25,diasDescanso:5},2026),empresa,emp,{})}
         else{r=window.reciboRPAHTML(window.calculaRPA({nome:emp.nome,cpf:emp.cpf,valor:NUM('r-s')}),empresa,emp,{numero:NUM('r-nr'),data:TXT('r-sa')})}
         if(!r.ok)return ERROS(r.erros);
@@ -315,7 +324,7 @@
       if(t==='param'){Q('vx-form').innerHTML='';telaParam();return}
       var T=TELAS[t];Q('vx-form').innerHTML=T.campos.map(campo).join('');
       Array.prototype.forEach.call(Q('vx-form').querySelectorAll('input,select,textarea'),function(e){e.oninput=saida;e.onchange=saida});saida()}
-    function saida(){var t=sel.value;if(t==='param')return;var T=TELAS[t],h;try{h=T.calc()}catch(e){h=ERROS(['Não foi possível calcular: '+(e&&e.message||e)])}Q('vx-out').innerHTML=h}
+    function saida(){var t=sel.value;if(t==='param')return;var T=TELAS[t],h;try{h=T.calc()}catch(e){h=ERROS(['Não foi possível calcular: '+(e&&e.message||e)])}Q('vx-out').innerHTML=h;if(t==='rec')barraGuardar()}
     var TODAS=Object.keys(TELAS).map(function(k){return [k,TELAS[k].nome]}).concat([['param','Parâmetros da empresa (vigência)']]);
     var sem=function(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')};
     function opcoes(filtro,atual){var q=sem(filtro).split(/\s+/).filter(Boolean),L=TODAS.filter(function(p){var t=sem(p[1]+' '+p[0]);return q.every(function(w){return t.indexOf(w)>=0})});
@@ -328,5 +337,6 @@
     opcoes('');
     Q('vx-out').addEventListener('click',function(e){var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-abre');if(!k)return;var b=Q('vx-busca');if(b&&b.value){b.value='';opcoes('')}sel.value=k;troca();sel.scrollIntoView({block:'center'})});
     sel.onchange=troca;carrega();troca()}
+  if(typeof module!=='undefined'&&module.exports)module.exports={TELAS:TELAS};   // só para o teste em node (testes/telas-verbas.test.js)
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',monta);else monta();
 })();

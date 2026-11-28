@@ -35,10 +35,19 @@ function parseOFX(txt){const erros=[],T=[];const tag=(b,n)=>{const m=b.match(new
   const blocos=String(txt).match(/<STMTTRN>[\s\S]*?(?=<\/STMTTRN>|<STMTTRN>|<\/BANKTRANLIST>|$)/gi)||[];
   blocos.forEach((b,i)=>{const data=dataISO(tag(b,'DTPOSTED')),valor=numeroBR(tag(b,'TRNAMT')),fit=tag(b,'FITID'),desc=(tag(b,'MEMO')||tag(b,'NAME')).replace(/\s+/g,' ');
     if(!dataValida(data)||isNaN(valor)||valor===0){erros.push({linha:i+1,motivo:'transação ilegível (data ou valor inválido)',trecho:b.slice(0,80)});return}
-    T.push({id:fit||('sem-id-'+data+'-'+valor+'-'+i),data,valor:r2k(valor),descricao:desc,origem:'ofx'})});
+    // G14: o identificador E2E do Pix (32 caracteres: E ou D, ISPB de 8 dígitos, data e hora de 12 dígitos e 11 caracteres) identifica a operação em qualquer banco; vale mais que o FITID, que muda de banco para banco
+    const e2e=(desc.match(/(?:^|[^A-Za-z0-9])([ED]\d{8}\d{12}[A-Za-z0-9]{11})(?![A-Za-z0-9])/)||[])[1];
+    // fuso: a data é lida como o banco imprimiu; se vier com deslocamento diferente de -3 (Brasília), vira aviso para o contador conferir o dia
+    const fz=(tag(b,'DTPOSTED').match(/\[\s*([+-]?\d+(?:\.\d+)?)\s*:/)||[])[1];
+    if(fz!==undefined&&+fz!==-3&&+fz!==-2)erros.push({linha:i+1,motivo:'data do OFX com fuso '+fz+' (diferente de Brasília): confira o dia do lançamento',aviso:true});
+    T.push({id:e2e?('pix-'+e2e):fit||('sem-id-'+data+'-'+valor+'-'+i),data,valor:r2k(valor),descricao:desc,origem:'ofx',...(e2e?{e2e}:{})})});
   const lb=String(txt).match(/<LEDGERBAL>[\s\S]*?(?=<\/LEDGERBAL>|$)/i),saldo=lb?numeroBR(tag(lb[0],'BALAMT')):NaN,ds=lb?dataISO(tag(lb[0],'DTASOF')):null;
   if(!blocos.length)erros.push({linha:0,motivo:'nenhuma transação encontrada no OFX'});
   return {transacoes:T,saldoFinal:isNaN(saldo)?null:r2k(saldo),dataSaldo:ds,erros}}
+
+// G14: texto do arquivo do banco. Muitos OFX e CSV vêm em Latin-1 (CHARSET:1252 ou ISO-8859-1); lido como UTF-8 viram "�". Tenta UTF-8 estrito e cai para windows-1252.
+function decodificaArquivoBanco(buf){const u=buf instanceof Uint8Array?buf:new Uint8Array(buf);
+  try{return new TextDecoder('utf-8',{fatal:true}).decode(u)}catch(e){return new TextDecoder('windows-1252').decode(u)}}
 
 // CSV de banco: separador ; ou , detectado; cabeçalho com data, descrição/histórico, valor (ou crédito e débito em colunas separadas), saldo opcional
 function parseCSV(txt){const linhas=String(txt).replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()),erros=[],T=[];
